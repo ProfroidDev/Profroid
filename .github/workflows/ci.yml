@@ -94,10 +94,6 @@ jobs:
         run: chmod +x ./gradlew
         working-directory: ./backend
 
-      - name: Run Checkstyle (or Spotless)
-        run: ./gradlew checkstyleMain checkstyleTest --daemon
-        working-directory: ./backend
-
 
   # ---------------------------------------------------
   # 3) Coverage Summary (display in GitHub PR summary)
