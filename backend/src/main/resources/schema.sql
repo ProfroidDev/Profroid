@@ -18,3 +18,19 @@ CREATE TABLE IF NOT EXISTS customer_phonenumbers (
     number VARCHAR(50)
 
     );
+
+CREATE TABLE jobs (
+                      id INT AUTO_INCREMENT PRIMARY KEY,
+
+                      job_id VARCHAR(50) NOT NULL UNIQUE,    -- from JobIdentifier
+                      job_name VARCHAR(255) NOT NULL,
+                      job_description VARCHAR(500),
+
+                      hourly_rate DOUBLE NOT NULL,
+                      estimated_duration_minutes INT NOT NULL,
+
+                      job_type VARCHAR(50) NOT NULL,
+
+                      is_active BOOLEAN NOT NULL
+);
+

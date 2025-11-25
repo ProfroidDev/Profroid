@@ -5,10 +5,21 @@ FROM eclipse-temurin:17-jdk AS builder
 
 WORKDIR /workspace
 
-COPY . .
+# Copy Gradle wrapper files first
+COPY gradlew .
+COPY gradlew.bat .
+COPY gradle gradle
 
-RUN chmod +x gradlew
-RUN ./gradlew clean bootJar --no-daemon
+# Copy build files
+COPY build.gradle .
+COPY settings.gradle .
+
+# Copy source code
+COPY src src
+
+# Make gradlew executable and build
+RUN chmod +x gradlew && \
+    ./gradlew clean bootJar --no-daemon
 
 # ============================
 # 2 - Runtime Image

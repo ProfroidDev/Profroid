@@ -12,13 +12,27 @@ public class SecurityConfig {
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+
         http
-                .csrf(csrf -> csrf.disable())
+                // H2 console requires these
+                .csrf(csrf -> csrf
+                        .ignoringRequestMatchers("/h2-console/**")
+                        .disable()
+                )
+                .headers(headers -> headers
+                        .frameOptions(frame -> frame.disable())
+                )
+
+                // Authorization rules
                 .authorizeHttpRequests(auth -> auth
+                        .requestMatchers("/h2-console/**").permitAll()
                         .requestMatchers("/api/v1/customers/**").permitAll()
+                        .requestMatchers("/api/v1/jobs/**").permitAll()
                         .anyRequest().authenticated()
                 )
-                .formLogin(login -> login.disable())
+
+                // No login UI or basic auth
+                .formLogin(form -> form.disable())
                 .httpBasic(httpBasic -> httpBasic.disable());
 
         return http.build();

@@ -72,7 +72,7 @@ spring:
   sql:
     init:
       platform: mysql
-      mode: never
+      mode: always
 
 server:
   port: 8080
