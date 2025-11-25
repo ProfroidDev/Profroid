@@ -43,7 +43,7 @@ jobs:
           path: |
             ~/.gradle/caches
             ~/.gradle/wrapper
-          key: ${{ runner.os }}-gradle-monolith-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+          key: ${{ runner.os }}-gradle-monolith-${{ hashFiles('backend/**/*.gradle*', 'backend/gradle-wrapper.properties') }}
           restore-keys: |
             ${{ runner.os }}-gradle-monolith-
             ${{ runner.os }}-gradle-
@@ -53,18 +53,21 @@ jobs:
 
       - name: Make gradlew executable
         run: chmod +x ./gradlew
+        working-directory: ./backend
 
       - name: Build monolith with Gradle
         run: ./gradlew clean build jacocoTestReport --daemon
+        working-directory: ./backend
 
       - name: Verify coverage threshold
         run: ./gradlew jacocoTestCoverageVerification --daemon
+        working-directory: ./backend
 
       - name: Upload JaCoCo Coverage Report
         uses: actions/upload-artifact@v4
         with:
           name: monolith-coverage-report
-          path: build/reports/jacoco/test/html/
+          path: backend/build/reports/jacoco/test/html/
           retention-days: 14
         if: always()
 
@@ -86,9 +89,11 @@ jobs:
 
       - name: Make gradlew executable
         run: chmod +x ./gradlew
+        working-directory: ./backend
 
       - name: Run Checkstyle (or Spotless)
         run: ./gradlew checkstyleMain checkstyleTest --daemon
+        working-directory: ./backend
 
 
   # ---------------------------------------------------
@@ -142,3 +147,5 @@ jobs:
 
       - name: Generate and submit dependency graph
         uses: gradle/actions/dependency-submission@v3
+        with:
+          working-directory: backend
