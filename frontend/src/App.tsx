@@ -1,17 +1,23 @@
 import React from "react";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Link } from "react-router-dom";
 import "./App.css";
 
+import CustomerListPage from "./pages/Customer/CustomerListPage";
+import ServicesPage from "./pages/jobs/ServicesPage";
 import Navigation from "./shared/components/Navigation";
 import Footer from "./shared/components/Footer";
 
-import CustomerListPage from "./pages/Customer/CustomerListPage";
-
-function Home() {
+function Home(): React.ReactElement {
   return (
-    <div className="home-container">
+    <div style={{ padding: 16 }}>
       <h1>Profroid</h1>
       <p>Welcome to the Profroid frontend.</p>
+      <p>
+        <Link to="/customers">View Customers</Link>
+      </p>
+      <p>
+        <Link to="/services">View Services</Link>
+      </p>
     </div>
   );
 }
@@ -19,15 +25,14 @@ function Home() {
 function App(): React.ReactElement {
   return (
     <BrowserRouter>
-      {/* 🌟 BEAUTIFUL NAVBAR */}
       <Navigation />
 
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/customers" element={<CustomerListPage />} />
+        <Route path="/services" element={<ServicesPage />} />
       </Routes>
 
-      {/* 🌟 BEAUTIFUL FOOTER */}
       <Footer />
     </BrowserRouter>
   );
