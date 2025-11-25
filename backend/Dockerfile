@@ -1,7 +1,7 @@
 FROM gradle:8.8-jdk17 AS builder
 WORKDIR /app
 
-COPY backend/ /app/
+COPY . /app/
 
 RUN gradle clean bootJar --no-daemon
 
