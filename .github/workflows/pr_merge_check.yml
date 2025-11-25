@@ -1,40 +1,26 @@
 name: Is PR Mergable Today?
 
 on:
+  push:
+    branches: ["master"]
   pull_request:
-    types: [opened, synchronize, reopened, labeled, unlabeled]
+    branches: ["master"]
 
 jobs:
-  check-mergeability:
+  block:
     runs-on: ubuntu-latest
-
+    permissions:
+      contents: read
+      pull-requests: read
+      statuses: write
     steps:
-      - name: Check out repository
-        uses: actions/checkout@v4
-
-      - name: Check PR mergeability using GitHub API
-        id: merge_check
-        uses: octokit/request-action@v2.x
+      - uses: yykamei/block-merge-based-on-time@main
+        id: block
         with:
-          route: GET /repos/${{ github.repository }}/pulls/${{ github.event.pull_request.number }}
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Analyze mergeability
-        run: |
-          MERGEABLE=$(echo "${{ steps.merge_check.outputs.data }}" | jq -r '.mergeable')
-          BLOCKED=$(echo "${{ steps.merge_check.outputs.data }}" | jq -r '.mergeable_state')
-          
-          echo "Mergeable: $MERGEABLE"
-          echo "Merge State: $BLOCKED"
-
-          echo "## PR Mergeability Status" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-
-          if [ "$MERGEABLE" = "true" ]; then
-            echo "✔️ This PR is mergeable!" >> $GITHUB_STEP_SUMMARY
-          else
-            echo "❌ This PR is currently **NOT mergeable**." >> $GITHUB_STEP_SUMMARY
-            echo "**Reason:** $BLOCKED" >> $GITHUB_STEP_SUMMARY
-            exit 1
-          fi
+          timezone: "UTC-4"
+          after: 00:00
+          before: 00:00
+          base-branches: "(default)"
+          prohibited-days-dates: "2025-09-29, 2025-10-15, 2025-10-27"
+      - run: echo pr-blocked=${{ steps.block.outputs.pr-blocked }}
+        if: github.event_name == 'pull_request'
