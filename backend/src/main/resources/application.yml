@@ -1,17 +1,80 @@
+## ===============================
+## DEFAULT PROFILE (prod unless overridden)
+## ===============================
+
+server:
+  error:
+    include-message: always
+
+logging:
+  level:
+    root: INFO
+    com.profroid: DEBUG
+    org.hibernate.SQL: DEBUG
+    org.hibernate.type.descriptor.sql.BasicBinder: TRACE
+
 spring:
+  profiles:
+    active: h2   # IDE + CI will default to H2 (safe)
+---
+## ===============================
+## H2 PROFILE (local dev + CI tests)
+## ===============================
+spring:
+  config:
+    activate:
+      on-profile: h2
+
+  h2:
+    console:
+      enabled: true
+
   datasource:
-    url: jdbc:mysql://profroid-mysql:3306/profroiddb
-    username: profroid
-    password: profroid
+    url: jdbc:h2:mem:profroid-db;DB_CLOSE_DELAY=-1;MODE=MYSQL
+    driver-class-name: org.h2.Driver
+    username: sa
+    password:
+
+  jpa:
+    show-sql: true
+    hibernate:
+      ddl-auto: update
+
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.H2Dialect
+        format_sql: true
+
+  sql:
+    init:
+      platform: h2
+      mode: always  # prevents loading MySQL scripts
+
+---
+## ===============================
+## DOCKER PROFILE (MySQL)
+## ===============================
+spring:
+  config:
+    activate:
+      on-profile: docker
+
+  datasource:
+    url: jdbc:mysql://mysql:3306/profroid
+    username: root
+    password: root
     driver-class-name: com.mysql.cj.jdbc.Driver
 
   jpa:
     hibernate:
       ddl-auto: update
-    show-sql: true
-    properties:
-      hibernate:
-        dialect: org.hibernate.dialect.MySQLDialect
+
+  sql:
+    init:
+      platform: mysql
+      mode: always
 
 server:
   port: 8080
+
+spring.datasource.hikari.initializationFailTimeout: 60000
