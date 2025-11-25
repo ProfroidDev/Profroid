@@ -1,0 +1,40 @@
+name: Is PR Mergable Today?
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, labeled, unlabeled]
+
+jobs:
+  check-mergeability:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Check PR mergeability using GitHub API
+        id: merge_check
+        uses: octokit/request-action@v2.x
+        with:
+          route: GET /repos/${{ github.repository }}/pulls/${{ github.event.pull_request.number }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Analyze mergeability
+        run: |
+          MERGEABLE=$(echo "${{ steps.merge_check.outputs.data }}" | jq -r '.mergeable')
+          BLOCKED=$(echo "${{ steps.merge_check.outputs.data }}" | jq -r '.mergeable_state')
+          
+          echo "Mergeable: $MERGEABLE"
+          echo "Merge State: $BLOCKED"
+
+          echo "## PR Mergeability Status" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+
+          if [ "$MERGEABLE" = "true" ]; then
+            echo "✔️ This PR is mergeable!" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "❌ This PR is currently **NOT mergeable**." >> $GITHUB_STEP_SUMMARY
+            echo "**Reason:** $BLOCKED" >> $GITHUB_STEP_SUMMARY
+            exit 1
+          fi
