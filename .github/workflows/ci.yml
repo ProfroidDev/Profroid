@@ -1,3 +1,4 @@
+---
 # This workflow uses actions that are not certified by GitHub.
 # They are provided by a third-party and are governed by
 # separate terms of service, privacy policy, and support
@@ -50,6 +51,8 @@ jobs:
 
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v3
+        with:
+          build-root-directory: backend
 
       - name: Make gradlew executable
         run: chmod +x ./gradlew
@@ -148,4 +151,4 @@ jobs:
       - name: Generate and submit dependency graph
         uses: gradle/actions/dependency-submission@v3
         with:
-          working-directory: backend
+          build-root-directory: backend
