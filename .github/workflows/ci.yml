@@ -1,0 +1,144 @@
+# This workflow uses actions that are not certified by GitHub.
+# They are provided by a third-party and are governed by
+# separate terms of service, privacy policy, and support
+# documentation.
+# This workflow will build a Java project with Gradle and cache/restore any dependencies to improve the workflow execution time
+# For more information see: https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-java-with-gradle
+
+name: Java CI with Gradle
+
+on:
+  push:
+    branches: ["main"]
+  pull_request:
+    branches: ["main"]
+
+permissions:
+  contents: read
+
+env:
+  JAVA_VERSION: 17
+
+jobs:
+
+  # ---------------------------------------------------
+  # 1) Build + Test + Coverage for the Spring Boot monolith
+  # ---------------------------------------------------
+  build_test:
+    runs-on: ubuntu-22.04
+    timeout-minutes: 15
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: ${{ env.JAVA_VERSION }}
+          distribution: "temurin"
+
+      - name: Cache Gradle packages
+        uses: actions/cache@v3
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+          key: ${{ runner.os }}-gradle-monolith-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+          restore-keys: |
+            ${{ runner.os }}-gradle-monolith-
+            ${{ runner.os }}-gradle-
+
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v3
+
+      - name: Make gradlew executable
+        run: chmod +x ./gradlew
+
+      - name: Build monolith with Gradle
+        run: ./gradlew clean build jacocoTestReport --daemon
+
+      - name: Verify coverage threshold
+        run: ./gradlew jacocoTestCoverageVerification --daemon
+
+      - name: Upload JaCoCo Coverage Report
+        uses: actions/upload-artifact@v4
+        with:
+          name: monolith-coverage-report
+          path: build/reports/jacoco/test/html/
+          retention-days: 14
+        if: always()
+
+
+  # ---------------------------------------------------
+  # 2) Lint / Checkstyle (runs in parallel)
+  # ---------------------------------------------------
+  lint:
+    runs-on: ubuntu-22.04
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up JDK
+        uses: actions/setup-java@v4
+        with:
+          distribution: "temurin"
+          java-version: ${{ env.JAVA_VERSION }}
+
+      - name: Make gradlew executable
+        run: chmod +x ./gradlew
+
+      - name: Run Checkstyle (or Spotless)
+        run: ./gradlew checkstyleMain checkstyleTest --daemon
+
+
+  # ---------------------------------------------------
+  # 3) Coverage Summary (display in GitHub PR summary)
+  # ---------------------------------------------------
+  coverage_summary:
+    runs-on: ubuntu-22.04
+    needs: [build_test]
+    if: always()
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Download coverage artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: monolith-coverage-report
+          path: coverage-report
+
+      - name: Produce PR Coverage Summary
+        run: |
+          echo "## Code Coverage Summary – Monolith" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+
+          INDEX_FILE=$(find coverage-report -name "index.html" | head -1)
+
+          if [ -f "$INDEX_FILE" ]; then
+            COVERAGE=$(grep -o '[0-9]\+%' "$INDEX_FILE" | head -1)
+            echo "**Coverage:** $COVERAGE" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "Coverage file not found." >> $GITHUB_STEP_SUMMARY
+          fi
+
+
+  # ---------------------------------------------------
+  # 4) Dependency Graph Submission (for GitHub security)
+  # ---------------------------------------------------
+  dependency_submission:
+    runs-on: ubuntu-22.04
+    permissions:
+      contents: write
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: ${{ env.JAVA_VERSION }}
+          distribution: "temurin"
+
+      - name: Generate and submit dependency graph
+        uses: gradle/actions/dependency-submission@v3
