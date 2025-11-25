@@ -1,0 +1,59 @@
+package com.profroid.profroidapp.customersubdomain.businessLayer;
+
+import com.profroid.profroidapp.customersubdomain.dataAccessLayer.Customer;
+import com.profroid.profroidapp.customersubdomain.dataAccessLayer.CustomerRepository;
+import com.profroid.profroidapp.customersubdomain.mappingLayer.CustomerRequestMapper;
+import com.profroid.profroidapp.customersubdomain.mappingLayer.CustomerResponseMapper;
+import com.profroid.profroidapp.customersubdomain.presentationLayer.CustomerRequestModel;
+import com.profroid.profroidapp.customersubdomain.presentationLayer.CustomerResponseModel;
+import jakarta.persistence.EntityNotFoundException;
+import org.springframework.stereotype.Service;
+
+import java.util.List;
+
+@Service
+public class CustomerServiceImpl implements CustomerService {
+
+    private final CustomerRepository customerRepository;
+    private final CustomerRequestMapper customerRequestMapper;
+    private final CustomerResponseMapper customerResponseMapper;
+
+    public CustomerServiceImpl(CustomerRepository customerRepository, CustomerRequestMapper customerRequestMapper, CustomerResponseMapper customerResponseMapper) {
+        this.customerRepository = customerRepository;
+        this.customerRequestMapper = customerRequestMapper;
+        this.customerResponseMapper = customerResponseMapper;
+    }
+
+
+    @Override
+    public List<CustomerResponseModel> getAllCustomers() {
+        List<Customer> customers = customerRepository.findAll();
+        return customerResponseMapper.toResponseModelList(customers);
+    }
+
+    @Override
+    public CustomerResponseModel getCustomerById(String customerId) {
+        Customer foundCustomer = customerRepository.findCustomerByCustomerIdentifier_CustomerId(customerId);
+
+        if (foundCustomer == null) {
+            throw new EntityNotFoundException("Customer not found: " + customerId);
+        }
+
+        return customerResponseMapper.toResponseModel(foundCustomer);
+    }
+
+    @Override
+    public CustomerResponseModel createCustomer(CustomerRequestModel requestModel) {
+        return null;
+    }
+
+    @Override
+    public CustomerResponseModel updateCustomer(String customerId, CustomerRequestModel requestModel) {
+        return null;
+    }
+
+    @Override
+    public void deleteCustomer(String customerId) {
+
+    }
+}
