@@ -45,6 +45,7 @@ export default function Navigation(): React.ReactElement {
         <div className="nav-mobile-menu">
           <a href="/products">Products</a>
           <a href="/services">Services</a>
+          <a href="/customers">Customers</a>
           <a href="/#about">About</a>
           <a href="/#contact">Contact</a>
 
