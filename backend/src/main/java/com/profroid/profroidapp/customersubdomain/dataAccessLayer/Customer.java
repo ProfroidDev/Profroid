@@ -1,6 +1,7 @@
 package com.profroid.profroidapp.customersubdomain.dataAccessLayer;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import java.util.List;
@@ -20,8 +21,6 @@ public class Customer {
 
     private String firstName;
     private String lastName;
-    private String email;
-    private String password;
 
     @ElementCollection
     @CollectionTable(name = "customer_phonenumbers", joinColumns = @JoinColumn(name = "customer_id"))
@@ -30,13 +29,15 @@ public class Customer {
     @Embedded
     private CustomerAddress customerAddress;
 
-    public Customer(String firstName, String lastName,
-                    String email, String password, List<CustomerPhoneNumber> phoneNumbersList, CustomerAddress customerAddress) {
+    private String userId;
+
+    public Customer(@NotNull String firstName, @NotNull String lastName,
+                    @NotNull List<CustomerPhoneNumber> phoneNumbersList, @NotNull CustomerAddress customerAddress, String userId) {
         this.customerIdentifier = new CustomerIdentifier();
         this.firstName = firstName;
         this.lastName = lastName;
-        this.email = email;
-        this.password = password;
         this.phoneNumbers = phoneNumbersList;
+        this.userId = userId;
+        this.customerAddress = customerAddress;
     }
 }

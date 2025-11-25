@@ -14,7 +14,6 @@ public interface CustomerResponseMapper {
             @Mapping(source = "customer.customerIdentifier.customerId", target = "customerId"),
             @Mapping(source = "customer.firstName", target = "firstName"),
             @Mapping(source = "customer.lastName", target = "lastName"),
-            @Mapping(source = "customer.email", target = "email"),
 
             // Mapping Address fields
             @Mapping(source = "customer.customerAddress.streetAddress", target = "streetAddress"),
@@ -22,6 +21,7 @@ public interface CustomerResponseMapper {
             @Mapping(source = "customer.customerAddress.province", target = "province"),
             @Mapping(source = "customer.customerAddress.country", target = "country"),
             @Mapping(source = "customer.customerAddress.postalCode", target = "postalCode"),
+            @Mapping(source = "customer.userId", target = "userId"),
     })
     CustomerResponseModel toResponseModel(Customer customer);
 

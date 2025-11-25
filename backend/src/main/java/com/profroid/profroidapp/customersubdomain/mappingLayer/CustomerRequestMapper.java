@@ -15,8 +15,6 @@ public interface CustomerRequestMapper {
             @Mapping(source = "customerIdentifier", target = "customerIdentifier"),
             @Mapping(source = "customerRequestModel.firstName", target = "firstName"),
             @Mapping(source = "customerRequestModel.lastName", target = "lastName"),
-            @Mapping(source = "customerRequestModel.email", target = "email"),
-            @Mapping(source = "customerRequestModel.password", target = "password"),
 
             // Mapping Address fields
             @Mapping(source = "customerRequestModel.streetAddress", target = "customerAddress.streetAddress"),
@@ -26,7 +24,7 @@ public interface CustomerRequestMapper {
             @Mapping(source = "customerRequestModel.postalCode", target = "customerAddress.postalCode"),
 
             // Mapping Phone Numbers if needed
-            @Mapping(source = "customerRequestModel.phoneNumbers", target = "phoneNumbers")
+            @Mapping(source = "customerRequestModel.phoneNumbers", target = "phoneNumbers"),
     })
-    Customer toEntity(CustomerRequestModel customerRequestModel, CustomerIdentifier customerIdentifier, CustomerPhoneNumber customerPhoneNumber);
+    Customer toEntity(CustomerRequestModel customerRequestModel, CustomerIdentifier customerIdentifier);
 }

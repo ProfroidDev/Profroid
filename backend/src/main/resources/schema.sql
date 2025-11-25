@@ -4,13 +4,12 @@ create table if not exists customers
     customer_id VARCHAR(36) UNIQUE,
     first_name VARCHAR(50),
     last_name VARCHAR(50),
-    email VARCHAR(50),
-    password VARCHAR(255),
     street_address VARCHAR(50),
     city VARCHAR(50),
     province VARCHAR(50),
     country VARCHAR(50),
-    postal_code VARCHAR(9)
+    postal_code VARCHAR(9),
+    user_id VARCHAR(36)
     );
 
 CREATE TABLE IF NOT EXISTS customer_phonenumbers (

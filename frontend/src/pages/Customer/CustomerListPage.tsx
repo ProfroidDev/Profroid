@@ -106,11 +106,6 @@ export default function CustomerListPage(): React.ReactElement {
                   </p>
                 </div>
 
-                <div className="modal-section">
-                  <h4 className="modal-label">Email</h4>
-                  <p className="modal-value">{selectedCustomer.email}</p>
-                </div>
-
                 {/* Section: Phones */}
                 <div className="modal-section">
                   <h4 className="modal-label">Phone Numbers</h4>
@@ -134,6 +129,13 @@ export default function CustomerListPage(): React.ReactElement {
                       `, ${selectedCustomer.province}`}
                     <br />
                     {selectedCustomer.country} {selectedCustomer.postalCode}
+                  </p>
+                </div>
+
+                <div className="modal-section">
+                  <h4 className="modal-label">UserId</h4>
+                  <p className="modal-value">
+                    {selectedCustomer.userId}
                   </p>
                 </div>
               </div>

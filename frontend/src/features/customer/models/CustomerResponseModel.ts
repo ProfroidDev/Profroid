@@ -4,8 +4,6 @@ export interface CustomerResponseModel {
   customerId: string;
   firstName: string;
   lastName: string;
-  email: string;
-  password: string;
 
   phoneNumbers: CustomerPhoneNumber[];
 
@@ -14,4 +12,5 @@ export interface CustomerResponseModel {
   province: string;
   country: string;
   postalCode: string;
+  userId: string;
 }

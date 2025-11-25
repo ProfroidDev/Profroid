@@ -1,6 +1,7 @@
 package com.profroid.profroidapp.customersubdomain.presentationLayer;
 
 import com.profroid.profroidapp.customersubdomain.dataAccessLayer.CustomerPhoneNumber;
+import jakarta.annotation.Nullable;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -15,8 +16,6 @@ import java.util.List;
 public class CustomerRequestModel {
     String firstName;
     String lastName;
-    String email;
-    String password;
     List<CustomerPhoneNumber> phoneNumbers;
 
     String streetAddress;

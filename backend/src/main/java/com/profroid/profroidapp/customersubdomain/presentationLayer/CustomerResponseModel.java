@@ -16,8 +16,6 @@ public class CustomerResponseModel {
     String customerId;
     String firstName;
     String lastName;
-    String email;
-    String password;
     List<CustomerPhoneNumber> phoneNumbers;
 
     String streetAddress;
@@ -25,4 +23,5 @@ public class CustomerResponseModel {
     String province;
     String country;
     String postalCode;
+    String userId;
 }
