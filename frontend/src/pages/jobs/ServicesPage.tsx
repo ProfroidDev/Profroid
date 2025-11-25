@@ -16,7 +16,7 @@ export default function ServicesPage(): React.ReactElement {
       setLoading(true);
       try {
         const data = await getJobs();
-        setJobs(data.slice(0, 4)); // show first 4 services
+        setJobs(data.slice(0, 4)); 
       } catch {
         // handle error
       } finally {
