@@ -1,0 +1,64 @@
+version: '3.9'
+
+services:
+
+  profroid-mysql:
+    image: mysql:8.0
+    container_name: profroid-mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: profroiddb
+      MYSQL_USER: profroid
+      MYSQL_PASSWORD: profroid
+    ports:
+      - "3307:3306"
+    volumes:
+      - profroid-mysql-data:/var/lib/mysql
+    networks:
+      - profroid-net
+
+  profroid-phpmyadmin:
+    image: phpmyadmin/phpmyadmin
+    container_name: profroid-phpmyadmin
+    environment:
+      PMA_HOST: profroid-mysql
+      MYSQL_ROOT_PASSWORD: root
+    ports:
+      - "8081:80"
+    depends_on:
+      - profroid-mysql
+    networks:
+      - profroid-net
+
+  profroid-app:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: profroid-app
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mysql://profroid-mysql:3306/profroiddb?connectTimeout=30000&socketTimeout=30000&autoReconnect=true
+      SPRING_DATASOURCE_USERNAME: profroid
+      SPRING_DATASOURCE_PASSWORD: profroid
+      SPRING_JPA_HIBERNATE_DDL_AUTO: update
+    ports:
+      - "8080:8080"
+    depends_on:
+      - profroid-mysql
+    networks:
+      - profroid-net
+
+  profroid-frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: profroid-frontend
+    ports:
+      - "5173:80"
+    networks:
+      - profroid-net
+
+volumes:
+  profroid-mysql-data:
+
+networks:
+  profroid-net:
