@@ -15,6 +15,8 @@ export default function ServicesPage(): React.ReactElement {
   const [createModalOpen, setCreateModalOpen] = useState<boolean>(false);
   const [createLoading, setCreateLoading] = useState<boolean>(false);
   const [createError, setCreateError] = useState<string>("");
+  const [showSuccessNotification, setShowSuccessNotification] =
+    useState<boolean>(false);
   const [formData, setFormData] = useState<JobRequestModel>({
     jobName: "",
     jobDescription: "",
@@ -132,6 +134,12 @@ export default function ServicesPage(): React.ReactElement {
       // Add the newly created job to the end of the list
       setJobs((prevJobs) => [...prevJobs, newJob]);
       closeCreateModal();
+      // Show success notification
+      setShowSuccessNotification(true);
+      // Auto-hide after 3 seconds
+      setTimeout(() => {
+        setShowSuccessNotification(false);
+      }, 3000);
     } catch (error) {
       setCreateError(
         error instanceof Error ? error.message : "Failed to create service"
@@ -362,6 +370,27 @@ export default function ServicesPage(): React.ReactElement {
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {showSuccessNotification && (
+        <div className="success-notification">
+          <div className="success-content">
+            <div className="success-icon">
+              <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="black"
+                strokeWidth="3.5"
+              >
+                <polyline points="20 6 9 17 4 12"></polyline>
+              </svg>
+            </div>
+            <div className="success-text">
+              <h4>Service Added Successfully</h4>
+              <p>The Service is now active</p>
+            </div>
           </div>
         </div>
       )}
