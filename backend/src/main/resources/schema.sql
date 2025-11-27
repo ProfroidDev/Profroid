@@ -31,6 +31,6 @@ CREATE TABLE jobs (
 
                       job_type VARCHAR(50) NOT NULL,
 
-                      is_active BOOLEAN NOT NULL
+                      active BOOLEAN NOT NULL
 );
 

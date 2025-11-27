@@ -20,5 +20,5 @@ public class JobResponseModel {
 
     private JobType jobType;
 
-    private boolean isActive;
+    private boolean active;
 }

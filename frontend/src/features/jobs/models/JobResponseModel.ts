@@ -10,11 +10,5 @@ export interface JobResponseModel {
   estimatedDurationMinutes: number;
 
   jobType: JobType;
-  isActive?: boolean;
-
-  /**
-   * Some backends return `active` instead of `isActive`.
-   * Support both shapes by making both optional.
-   */
-  active?: boolean;
+  active: boolean;
 }
