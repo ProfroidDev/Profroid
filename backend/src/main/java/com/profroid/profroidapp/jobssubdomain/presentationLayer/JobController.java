@@ -1,6 +1,7 @@
 package com.profroid.profroidapp.jobssubdomain.presentationLayer;
 
 import com.profroid.profroidapp.jobssubdomain.businessLayer.JobService;
+import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -28,7 +29,7 @@ public class JobController {
     }
 
     @PostMapping
-    public ResponseEntity<JobResponseModel> createJob(@RequestBody JobRequestModel requestModel){
+    public ResponseEntity<JobResponseModel> createJob(@Valid @RequestBody JobRequestModel requestModel){
         return ResponseEntity.status(HttpStatus.CREATED).body(jobService.createJob(requestModel));
     }
 }
