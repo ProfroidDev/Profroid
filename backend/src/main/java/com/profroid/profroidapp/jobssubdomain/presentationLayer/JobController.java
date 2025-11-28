@@ -1,11 +1,10 @@
 package com.profroid.profroidapp.jobssubdomain.presentationLayer;
 
 import com.profroid.profroidapp.jobssubdomain.businessLayer.JobService;
+import jakarta.validation.Valid;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -27,5 +26,10 @@ public class JobController {
     @GetMapping("/{jobId}")
     public ResponseEntity<JobResponseModel> getJobById(@PathVariable String jobId){
         return ResponseEntity.ok(jobService.getJobById(jobId));
+    }
+
+    @PostMapping
+    public ResponseEntity<JobResponseModel> createJob(@Valid @RequestBody JobRequestModel requestModel){
+        return ResponseEntity.status(HttpStatus.CREATED).body(jobService.createJob(requestModel));
     }
 }

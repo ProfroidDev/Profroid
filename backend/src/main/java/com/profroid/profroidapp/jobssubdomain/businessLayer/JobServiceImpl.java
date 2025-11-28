@@ -1,6 +1,7 @@
 package com.profroid.profroidapp.jobssubdomain.businessLayer;
 
 import com.profroid.profroidapp.jobssubdomain.dataAccessLayer.Job;
+import com.profroid.profroidapp.jobssubdomain.dataAccessLayer.JobIdentifier;
 import com.profroid.profroidapp.jobssubdomain.dataAccessLayer.JobRepository;
 import com.profroid.profroidapp.jobssubdomain.mappingLayer.JobRequestMapper;
 import com.profroid.profroidapp.jobssubdomain.mappingLayer.JobResponseMapper;
@@ -43,7 +44,10 @@ public class JobServiceImpl implements JobService {
 
     @Override
     public JobResponseModel createJob(JobRequestModel requestModel) {
-        return null;
+        JobIdentifier jobIdentifier = new JobIdentifier();
+        Job job = jobRequestMapper.toEntity(requestModel, jobIdentifier);
+        Job savedJob = jobRepository.save(job);
+        return jobResponseMapper.toResponseModel(savedJob);
     }
 
     @Override

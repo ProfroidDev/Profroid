@@ -27,5 +27,5 @@ public class Job {
     @Enumerated(EnumType.STRING)
     private JobType jobType;
 
-    private boolean isActive;
+    private boolean active;
 }

@@ -68,7 +68,7 @@ INSERT INTO customer_phonenumbers (customer_id, type, number) VALUES
     (10, 'MOBILE', '514-555-6781'),
     (10, 'WORK', '514-555-5555');
 
-INSERT INTO jobs (job_id, job_name, job_description, hourly_rate, estimated_duration_minutes, job_type, is_active)
+INSERT INTO jobs (job_id, job_name, job_description, hourly_rate, estimated_duration_minutes, job_type, active)
 VALUES
     -- QUOTATION
     (UUID(), 'Free Quotation', 'Technician visits the site to evaluate cellar needs and prepare a detailed quote.', 0.00, 30, 'QUOTATION', TRUE),
