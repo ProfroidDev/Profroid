@@ -226,8 +226,7 @@ export default function ServicesPage(): React.ReactElement {
                   <strong>Type:</strong> {selectedJob.jobType}
                 </p>
                 <p>
-                  <strong>Active:</strong>{" "}
-                  {selectedJob.active ? "Yes" : "No"}
+                  <strong>Active:</strong> {selectedJob.active ? "Yes" : "No"}
                 </p>
               </div>
             )}

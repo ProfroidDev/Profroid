@@ -57,6 +57,12 @@ public class JobServiceImpl implements JobService {
 
     @Override
     public void deleteJob(String jobId) {
+        Job foundJob = jobRepository.findJobByJobIdentifier_JobId(jobId);
 
+        if (foundJob == null) {
+            throw new EntityNotFoundException("Job not found: " + jobId);
+        }
+
+        jobRepository.delete(foundJob);
     }
 }
