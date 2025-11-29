@@ -1,6 +1,7 @@
 package com.profroid.profroidapp.customersubdomain.businessLayer;
 
 import com.profroid.profroidapp.customersubdomain.dataAccessLayer.Customer;
+import com.profroid.profroidapp.customersubdomain.dataAccessLayer.CustomerIdentifier;
 import com.profroid.profroidapp.customersubdomain.dataAccessLayer.CustomerRepository;
 import com.profroid.profroidapp.customersubdomain.mappingLayer.CustomerRequestMapper;
 import com.profroid.profroidapp.customersubdomain.mappingLayer.CustomerResponseMapper;
@@ -44,7 +45,10 @@ public class CustomerServiceImpl implements CustomerService {
 
     @Override
     public CustomerResponseModel createCustomer(CustomerRequestModel requestModel) {
-        return null;
+        CustomerIdentifier customerIdentifier = new CustomerIdentifier();
+        Customer customer = customerRequestMapper.toEntity(requestModel, customerIdentifier);
+        Customer savedCustomer = customerRepository.save(customer);
+        return customerResponseMapper.toResponseModel(savedCustomer);
     }
 
     @Override

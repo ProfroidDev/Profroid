@@ -2,10 +2,7 @@ package com.profroid.profroidapp.customersubdomain.presentationLayer;
 
 import com.profroid.profroidapp.customersubdomain.businessLayer.CustomerService;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -27,5 +24,11 @@ public class CustomerController {
     @GetMapping("/{customerId}")
     public ResponseEntity<CustomerResponseModel> getCustomerById(@PathVariable String customerId) {
         return ResponseEntity.ok(customerService.getCustomerById(customerId));
+    }
+
+    @PostMapping
+    public ResponseEntity<CustomerResponseModel> createCustomer(@RequestBody CustomerRequestModel requestModel) {
+        CustomerResponseModel createdCustomer = customerService.createCustomer(requestModel);
+        return ResponseEntity.ok(createdCustomer);
     }
 }

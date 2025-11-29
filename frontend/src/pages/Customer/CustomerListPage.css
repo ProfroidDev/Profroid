@@ -1,15 +1,17 @@
-/* ===== Background (matches sections like Our Collections) ===== */
+/* ===============================
+   PAGE & TABLE
+================================= */
+
 .customers-page-light {
   padding-top: 140px;
   padding-bottom: 80px;
   min-height: 100vh;
-  background: #f4f1ec; /* warm cream */
+  background: #f4f1ec;
   display: flex;
   flex-direction: column;
   align-items: center;
 }
 
-/* ===== Title ===== */
 .customers-title-light {
   font-size: 2.8rem;
   font-weight: 700;
@@ -18,18 +20,16 @@
   margin-bottom: 30px;
 }
 
-/* ===== Card ===== */
 .customers-card-light {
   width: 85%;
   max-width: 1000px;
-  background: #ffffff;
+  background: #fff;
   border: 1px solid #e5e3df;
   border-radius: 22px;
   padding: 32px;
   box-shadow: 0 6px 18px rgba(0,0,0,0.06);
 }
 
-/* ===== Table ===== */
 .customers-table-light {
   width: 100%;
   border-collapse: collapse;
@@ -43,53 +43,74 @@
   padding: 14px;
   text-align: left;
   font-size: 1rem;
-  font-weight: 600;
 }
 
 .customers-table-light td {
   padding: 14px;
   border-bottom: 1px solid #eee8e2;
-  background: white;
 }
 
 .customers-table-light tr:hover td {
   background: #fdf7f6;
 }
 
-/* ===== Buttons ===== */
+/* ===============================
+   BUTTONS
+================================= */
+
 .btn-view-light {
-  background: #7a0901;
+  background-color: #5a2a27;
   color: white;
   border: none;
   padding: 8px 18px;
   border-radius: 8px;
-  font-size: 0.9rem;
   cursor: pointer;
-  transition: 0.2s;
+  transition: 0.2s ease;
 }
 
 .btn-view-light:hover {
-  background: #8e0a03;
+  background-color: #8e0a03;
 }
 
-/* ===== Modal (light) ===== */
+/* ===============================
+   MODAL OVERLAY
+================================= */
+
 .modal-overlay-light {
   position: fixed;
   inset: 0;
-  background: rgba(0,0,0,0.2);
+  background: rgba(0,0,0,0.25);
   display: flex;
   justify-content: center;
   align-items: center;
+  z-index: 2000;
 }
+
+/* ===============================
+   WIDE MODAL CONTAINER
+================================= */
 
 .modal-container-light {
   background: #ffffff;
-  width: 450px;
-  border-radius: 18px;
+  width: 85vw;
+  max-width: 1300px;
+  border-radius: 22px;
   border: 1px solid #e4e2df;
-  padding: 24px;
-  box-shadow: 0 15px 35px rgba(0,0,0,0.12);
+  padding: 40px 60px;
+  box-shadow: 0 25px 45px rgba(0,0,0,0.15),
+              0 8px 20px rgba(0,0,0,0.08);
+
+  display: flex;
+  flex-direction: column;
+
+  max-height: 90vh;
+  overflow-y: auto;
+  overflow-x: hidden;
 }
+
+/* ===============================
+   MODAL HEADER
+================================= */
 
 .modal-header-light {
   display: flex;
@@ -97,13 +118,13 @@
   align-items: center;
   border-bottom: 1px solid #ece8e3;
   padding-bottom: 12px;
-  margin-bottom: 18px;
+  margin-bottom: 24px;
 }
 
 .modal-close-light {
   background: transparent;
   border: none;
-  font-size: 1.4rem;
+  font-size: 1.6rem;
   cursor: pointer;
   color: #5a2a27;
 }
@@ -112,14 +133,146 @@
   color: #8e0a03;
 }
 
-.modal-content-light p,
-.modal-content-light li {
-  margin-bottom: 8px;
-  color: #4a3a37;
+/* ===============================
+   CONTENT CONTAINER
+================================= */
+
+.modal-content-light {
+  width: 100%;
+  max-width: 650px;
+  margin: 0 auto;
+  padding-right: 8px;
 }
 
-.loading-light {
+/* ===============================
+   DETAILS SECTIONS
+================================= */
+
+.modal-section {
+  display: grid;
+  grid-template-columns: 140px 1fr;
+  gap: 8px 12px;
+  padding: 12px 0;
+}
+
+.modal-label {
+  font-weight: 600;
+  color: #3d2d2b;
+}
+
+.modal-value {
+  padding: 8px 12px;
+  background: #faf8f7;
+  border-radius: 6px;
+}
+
+/* ===============================
+   CREATE CUSTOMER FORM (MATCH JOB)
+================================= */
+
+.create-customer-form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.error-message {
+  background-color: #fee;
+  color: #c33;
+  border: 1px solid #fcc;
+  padding: 12px;
+  border-radius: 6px;
+}
+
+/* Same form styles as Create Job */
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.form-group label {
+  font-weight: 600;
+  color: #333;
+}
+
+.form-group input,
+.form-group select {
+  padding: 10px 12px;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  font-size: 0.95rem;
+}
+
+.form-group input:focus,
+.form-group select:focus {
+  outline: none;
+  border-color: #5a2a27;
+  box-shadow: 0 0 0 3px rgba(90,42,39,0.1);
+}
+
+.form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+/* Form section titles */
+.form-section-title {
+  font-size: 1.15rem;
+  font-weight: 600;
   color: #7a0901;
-  font-size: 1rem;
-  text-align: center;
+  margin-top: 20px;
+  border-bottom: 1px solid #eee;
+  padding-bottom: 4px;
+}
+
+/* Actions */
+.form-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-top: 20px;
+  border-top: 1px solid #ece8e3;
+  padding-top: 16px;
+}
+
+.btn-create,
+.btn-cancel {
+  padding: 10px 20px;
+  border: none;
+  border-radius: 6px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.btn-create {
+  background: #5a2a27;
+  color: white;
+}
+
+.btn-create:hover {
+  background: #8e0a03;
+}
+
+.btn-cancel {
+  background: #f0ede8;
+  color: #333;
+}
+
+.btn-cancel:hover {
+  background: #e4dfd8;
+}
+
+/* Responsive */
+@media (max-width: 700px) {
+  .form-row {
+    grid-template-columns: 1fr;
+  }
+
+  .modal-container-light {
+    width: 95vw;
+    padding: 20px;
+  }
 }

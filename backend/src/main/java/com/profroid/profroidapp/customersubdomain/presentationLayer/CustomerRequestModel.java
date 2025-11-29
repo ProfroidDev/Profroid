@@ -23,4 +23,5 @@ public class CustomerRequestModel {
     String province;
     String country;
     String postalCode;
+    String userId;
 }
