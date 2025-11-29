@@ -37,20 +37,48 @@
   width: 100%;
 }
 
+.service-card-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 70%;
+  max-width: 850px;
+}
+
 .service-card {
   display: flex;
   flex-direction: row;
   align-items: center;
   gap: 16px;
 
-  width: 70%; /* ⬅ centered card width (adjust to taste) */
-  max-width: 850px; /* ⬅ optional: avoid cards becoming too big */
+  flex: 1;
 
   border: 1px solid #e6e6e6;
   border-radius: 8px;
   padding: 12px 24px 12px 12px;
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04);
   background: #fff;
+}
+
+.service-delete-btn {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  font-size: 1rem;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.2s ease, opacity 0.2s ease;
+}
+
+.service-delete-btn:hover {
+  transform: scale(1.2);
+  opacity: 0.7;
+}
+
+.service-delete-btn:active {
+  transform: scale(0.95);
 }
 
 .service-image {
@@ -278,6 +306,7 @@
   cursor: pointer;
   font-weight: 500;
   transition: background-color 0.2s ease;
+  white-space: nowrap;
 }
 
 .btn-view-light:hover {
@@ -346,4 +375,57 @@
   margin: 2px 0 0 0;
   font-size: 0.8rem;
   color: #333;
+}
+
+.delete-success-notification {
+  position: fixed;
+  top: 30px;
+  right: 30px;
+  background-color: transparent;
+  border-radius: 12px;
+  padding: 0;
+  z-index: 2000;
+  animation: slideInRight 0.3s ease-out;
+}
+
+.delete-success-content {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background-color: #c8f5d8; /* light green */
+  border-radius: 10px;
+  padding: 10px 14px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.delete-success-icon {
+  width: 28px;
+  height: 28px;
+  min-width: 28px;
+  background-color: #c8f5d8;
+  border: 2.5px solid #000; /* green border */
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.delete-success-icon svg {
+  width: 18px;
+  height: 18px;
+  color: #000;
+}
+
+.delete-success-text h4 {
+  margin: 0;
+  font-size: 0.95rem;
+  color: #000;
+  font-weight: 600;
+}
+
+.delete-success-text p {
+  margin: 2px 0 0 0;
+  font-size: 0.8rem;
+  color: #000;
 }

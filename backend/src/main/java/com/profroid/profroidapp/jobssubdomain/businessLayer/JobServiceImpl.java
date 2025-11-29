@@ -66,3 +66,5 @@ public class JobServiceImpl implements JobService {
         jobRepository.delete(foundJob);
     }
 }
+
+
