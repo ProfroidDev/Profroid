@@ -20,6 +20,7 @@ export default function Navigation(): React.ReactElement {
           <a href="/products">Products</a>
           <a href="/services">Services</a>
           <a href="/customers">Customers</a>
+          <a href="/employees">Employees</a>
           <a href="/#about">About</a>
           <a href="/#contact">Contact</a>
 
@@ -46,6 +47,7 @@ export default function Navigation(): React.ReactElement {
           <a href="/products">Products</a>
           <a href="/services">Services</a>
           <a href="/customers">Customers</a>
+          <a href="/employees">Employees</a>
           <a href="/#about">About</a>
           <a href="/#contact">Contact</a>
 

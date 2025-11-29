@@ -1,0 +1,39 @@
+package com.profroid.profroidapp.utils.handlers;
+
+import com.profroid.profroidapp.utils.exceptions.InvalidIdentifierException;
+import com.profroid.profroidapp.utils.exceptions.ResourceNotFoundException;
+import org.springframework.http.HttpStatus;
+import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.annotation.ResponseStatus;
+import org.springframework.web.bind.annotation.RestControllerAdvice;
+
+@RestControllerAdvice
+public class GlobalControllerExceptionHandler{
+
+    @ResponseStatus(HttpStatus.UNPROCESSABLE_ENTITY)
+    @ExceptionHandler(InvalidIdentifierException.class)
+    public String handleInvalidIdentifierException(InvalidIdentifierException ex) {
+        return ex.getMessage();
+    }
+
+
+    @ResponseStatus(HttpStatus.NOT_FOUND)
+    @ExceptionHandler(ResourceNotFoundException.class)
+    public String handleResourceNotFoundException(ResourceNotFoundException ex) {
+        return ex.getMessage();
+    }
+
+
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    @ExceptionHandler(IllegalArgumentException.class)
+    public String handleIllegalArgumentException(IllegalArgumentException ex) {
+        return ex.getMessage();
+    }
+
+
+    @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
+    @ExceptionHandler(Exception.class)
+    public String handleGeneralException(Exception ex) {
+        return "An unexpected error occurred. Please try again or contact support.";
+    }
+}

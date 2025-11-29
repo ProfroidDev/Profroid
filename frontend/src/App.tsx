@@ -6,6 +6,8 @@ import CustomerListPage from "./pages/Customer/CustomerListPage";
 import ServicesPage from "./pages/jobs/ServicesPage";
 import Navigation from "./shared/components/Navigation";
 import Footer from "./shared/components/Footer";
+import EmployeeSchedulePage from "./pages/Employee/EmployeeSchedulePage";
+import EmployeeListPage from "./pages/Employee/EmployeeListPage";
 
 function Home(): React.ReactElement {
   return (
@@ -31,6 +33,11 @@ function App(): React.ReactElement {
         <Route path="/" element={<Home />} />
         <Route path="/customers" element={<CustomerListPage />} />
         <Route path="/services" element={<ServicesPage />} />
+        <Route path="/employees" element={<EmployeeListPage />} />
+        <Route
+          path="/employees/schedule"
+          element={<EmployeeSchedulePage />}
+        />
       </Routes>
 
       <Footer />

@@ -81,3 +81,139 @@ VALUES
 
     -- MAINTENANCE
     (UUID(), 'Annual Maintenance', 'Full system checkup, cleaning, refrigerant check and performance optimization.', 85.00, 60, 'MAINTENANCE', TRUE);
+
+INSERT INTO employees (
+    employee_id, first_name, last_name, user_id, employee_role_type,
+    street_address, city, province, country, postal_code
+) VALUES (
+             'c41b8f1c-7f5d-4f0e-8f2e-4b7d1e8c0b2d', -- Unique UUID
+             'Alice',
+             'Johnson',
+             'AJOHNSON',
+             'ADMIN', -- Role: ADMIN
+             '45 Admin Plaza',
+             'Toronto',
+             'Ontario',
+             'Canada',
+             'M5V 2T3'
+         );
+
+-- Employee 2: TECHNICIAN
+INSERT INTO employees (
+    employee_id, first_name, last_name, user_id, employee_role_type,
+    street_address, city, province, country, postal_code
+) VALUES (
+             'a9e6d3f2-1c0a-4b5c-9d8e-7a6f5e4d3c2b', -- Unique UUID
+             'Bob',
+             'Williams',
+             'BWILLIAMS',
+             'TECHNICIAN', -- Role: TECHNICIAN
+             '101 Commerce Ave',
+             'Montreal',
+             'Quebec',
+             'Canada',
+             'H3B 2S2'
+         );
+
+-- Employee 3: SUPPORT
+INSERT INTO employees (
+    employee_id, first_name, last_name, user_id, employee_role_type,
+    street_address, city, province, country, postal_code
+) VALUES (
+             '3f2c1b4a-9e7d-5c6b-1d0e-2a4f6b8c0d1e', -- Unique UUID
+             'Carol',
+             'Davis',
+             'CDAVIS',
+             'SUPPORT', -- Role: SUPPORT
+             '707 Help Desk Dr',
+             'Vancouver',
+             'British Columbia',
+             'Canada',
+             'V6B 1P1'
+         );
+
+-- Employee 4: SALES
+INSERT INTO employees (
+    employee_id, first_name, last_name, user_id, employee_role_type,
+    street_address, city, province, country, postal_code
+) VALUES (
+             '1e8c0b2d-4b7d-1e8c-0b2d-4b7d1e8c0b2d', -- Unique UUID
+             'David',
+             'Smith',
+             'DSMITH',
+             'SALES', -- Role: SALES
+             '909 Commission Ct',
+             'Calgary',
+             'Alberta',
+             'Canada',
+             'T2G 0B8'
+         );
+
+-- ---------------------------------
+-- 3. Insert Phone Number Data
+-- ---------------------------------
+
+-- Phones for Alice Johnson (ID = 1)
+INSERT INTO employee_phonenumbers (employee_id, type, number) VALUES
+    (1, 'WORK', '555-123-4567');
+
+-- Phones for Bob Williams (ID = 2)
+INSERT INTO employee_phonenumbers (employee_id, type, number) VALUES
+                                                                  (2, 'WORK', '555-200-3000'),
+                                                                  (2, 'MOBILE', '555-400-5000');
+
+-- Phones for Carol Davis (ID = 3)
+INSERT INTO employee_phonenumbers (employee_id, type, number) VALUES
+    (3, 'WORK', '555-888-9999');
+
+-- Phones for David Smith (ID = 4)
+INSERT INTO employee_phonenumbers (employee_id, type, number) VALUES
+    (4, 'MOBILE', '555-777-6666');
+
+INSERT INTO schedules (employee_fk, day_of_week, time_slot)
+SELECT
+    e.id AS employee_fk,
+    s.day_of_week,
+    s.time_slot
+FROM
+    employees e
+        CROSS JOIN
+    (
+        -- Virtual Table 's' that defines all 30 possible shifts
+        SELECT 'MONDAY' AS day_of_week, 'NINE_AM' AS time_slot
+        UNION ALL SELECT 'MONDAY', 'ELEVEN_AM'
+        UNION ALL SELECT 'MONDAY', 'ONE_PM'
+        UNION ALL SELECT 'MONDAY', 'THREE_PM'
+        UNION ALL SELECT 'MONDAY', 'FOUR_PM'
+        UNION ALL SELECT 'MONDAY', 'SIX_PM'
+
+        UNION ALL SELECT 'TUESDAY', 'NINE_AM'
+        UNION ALL SELECT 'TUESDAY', 'ELEVEN_AM'
+        UNION ALL SELECT 'TUESDAY', 'ONE_PM'
+        UNION ALL SELECT 'TUESDAY', 'THREE_PM'
+        UNION ALL SELECT 'TUESDAY', 'FOUR_PM'
+        UNION ALL SELECT 'TUESDAY', 'SIX_PM'
+
+        UNION ALL SELECT 'WEDNESDAY', 'NINE_AM'
+        UNION ALL SELECT 'WEDNESDAY', 'ELEVEN_AM'
+        UNION ALL SELECT 'WEDNESDAY', 'ONE_PM'
+        UNION ALL SELECT 'WEDNESDAY', 'THREE_PM'
+        UNION ALL SELECT 'WEDNESDAY', 'FOUR_PM'
+        UNION ALL SELECT 'WEDNESDAY', 'SIX_PM'
+
+        UNION ALL SELECT 'THURSDAY', 'NINE_AM'
+        UNION ALL SELECT 'THURSDAY', 'ELEVEN_AM'
+        UNION ALL SELECT 'THURSDAY', 'ONE_PM'
+        UNION ALL SELECT 'THURSDAY', 'THREE_PM'
+        UNION ALL SELECT 'THURSDAY', 'FOUR_PM'
+        UNION ALL SELECT 'THURSDAY', 'SIX_PM'
+
+        UNION ALL SELECT 'FRIDAY', 'NINE_AM'
+        UNION ALL SELECT 'FRIDAY', 'ELEVEN_AM'
+        UNION ALL SELECT 'FRIDAY', 'ONE_PM'
+        UNION ALL SELECT 'FRIDAY', 'THREE_PM'
+        UNION ALL SELECT 'FRIDAY', 'FOUR_PM'
+        UNION ALL SELECT 'FRIDAY', 'SIX_PM'
+    ) s
+-- Filter to only include the first four employees (IDs 1, 2, 3, and 4)
+WHERE e.id IN (1, 2, 3, 4);
