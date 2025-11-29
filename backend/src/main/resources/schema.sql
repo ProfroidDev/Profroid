@@ -1,3 +1,9 @@
+DROP TABLE IF EXISTS employee_phonenumbers;
+DROP TABLE IF EXISTS customer_phonenumbers;
+DROP TABLE IF EXISTS jobs;
+DROP TABLE IF EXISTS employees;
+DROP TABLE IF EXISTS customers;
+
 create table if not exists customers
 (
     id INTEGER NOT NULL AUTO_INCREMENT PRIMARY KEY,
@@ -19,7 +25,7 @@ CREATE TABLE IF NOT EXISTS customer_phonenumbers (
 
     );
 
-CREATE TABLE jobs (
+CREATE TABLE IF NOT EXISTS jobs  (
                       id INT AUTO_INCREMENT PRIMARY KEY,
 
                       job_id VARCHAR(50) NOT NULL UNIQUE,    -- from JobIdentifier
@@ -32,5 +38,29 @@ CREATE TABLE jobs (
                       job_type VARCHAR(50) NOT NULL,
 
                       active BOOLEAN NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS employees (
+                           id INT PRIMARY KEY AUTO_INCREMENT,
+                           employee_id VARCHAR(36) NOT NULL UNIQUE,
+                           first_name VARCHAR(255) NOT NULL,
+                           last_name VARCHAR(255) NOT NULL,
+                           user_id VARCHAR(255) NOT NULL UNIQUE,
+                           employee_role_type VARCHAR(50) NOT NULL,
+                           street_address VARCHAR(255) NOT NULL,
+                           city VARCHAR(255) NOT NULL,
+                           province VARCHAR(255) NOT NULL,
+                           country VARCHAR(255) NOT NULL,
+                           postal_code VARCHAR(10) NOT NULL
+);
+
+
+CREATE TABLE IF NOT EXISTS employee_phonenumbers (
+
+                                       employee_id INT NOT NULL,
+                                       type VARCHAR(10) NOT NULL,
+                                       number VARCHAR(20) NOT NULL,
+                                       FOREIGN KEY (employee_id) REFERENCES employees(id) ON DELETE CASCADE,
+                                       PRIMARY KEY (employee_id, number)
 );
 
