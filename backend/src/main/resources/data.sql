@@ -169,3 +169,51 @@ INSERT INTO employee_phonenumbers (employee_id, type, number) VALUES
 -- Phones for David Smith (ID = 4)
 INSERT INTO employee_phonenumbers (employee_id, type, number) VALUES
     (4, 'MOBILE', '555-777-6666');
+
+INSERT INTO schedules (employee_fk, day_of_week, time_slot)
+SELECT
+    e.id AS employee_fk,
+    s.day_of_week,
+    s.time_slot
+FROM
+    employees e
+        CROSS JOIN
+    (
+        -- Virtual Table 's' that defines all 30 possible shifts
+        SELECT 'MONDAY' AS day_of_week, 'NINE_AM' AS time_slot
+        UNION ALL SELECT 'MONDAY', 'ELEVEN_AM'
+        UNION ALL SELECT 'MONDAY', 'ONE_PM'
+        UNION ALL SELECT 'MONDAY', 'THREE_PM'
+        UNION ALL SELECT 'MONDAY', 'FOUR_PM'
+        UNION ALL SELECT 'MONDAY', 'SIX_PM'
+
+        UNION ALL SELECT 'TUESDAY', 'NINE_AM'
+        UNION ALL SELECT 'TUESDAY', 'ELEVEN_AM'
+        UNION ALL SELECT 'TUESDAY', 'ONE_PM'
+        UNION ALL SELECT 'TUESDAY', 'THREE_PM'
+        UNION ALL SELECT 'TUESDAY', 'FOUR_PM'
+        UNION ALL SELECT 'TUESDAY', 'SIX_PM'
+
+        UNION ALL SELECT 'WEDNESDAY', 'NINE_AM'
+        UNION ALL SELECT 'WEDNESDAY', 'ELEVEN_AM'
+        UNION ALL SELECT 'WEDNESDAY', 'ONE_PM'
+        UNION ALL SELECT 'WEDNESDAY', 'THREE_PM'
+        UNION ALL SELECT 'WEDNESDAY', 'FOUR_PM'
+        UNION ALL SELECT 'WEDNESDAY', 'SIX_PM'
+
+        UNION ALL SELECT 'THURSDAY', 'NINE_AM'
+        UNION ALL SELECT 'THURSDAY', 'ELEVEN_AM'
+        UNION ALL SELECT 'THURSDAY', 'ONE_PM'
+        UNION ALL SELECT 'THURSDAY', 'THREE_PM'
+        UNION ALL SELECT 'THURSDAY', 'FOUR_PM'
+        UNION ALL SELECT 'THURSDAY', 'SIX_PM'
+
+        UNION ALL SELECT 'FRIDAY', 'NINE_AM'
+        UNION ALL SELECT 'FRIDAY', 'ELEVEN_AM'
+        UNION ALL SELECT 'FRIDAY', 'ONE_PM'
+        UNION ALL SELECT 'FRIDAY', 'THREE_PM'
+        UNION ALL SELECT 'FRIDAY', 'FOUR_PM'
+        UNION ALL SELECT 'FRIDAY', 'SIX_PM'
+    ) s
+-- Filter to only include the first four employees (IDs 1, 2, 3, and 4)
+WHERE e.id IN (1, 2, 3, 4);
