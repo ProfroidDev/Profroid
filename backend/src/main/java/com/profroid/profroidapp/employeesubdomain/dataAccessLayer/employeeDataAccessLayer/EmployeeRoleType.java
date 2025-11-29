@@ -6,6 +6,7 @@ import jakarta.persistence.Enumerated;
 
 public enum EmployeeRoleType {
 
+    ADMIN,
     TECHNICIAN,
     SUPPORT,
     SALES

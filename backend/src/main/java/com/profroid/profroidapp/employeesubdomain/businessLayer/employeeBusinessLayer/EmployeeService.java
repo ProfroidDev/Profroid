@@ -10,4 +10,6 @@ import java.util.List;
 public interface EmployeeService {
 
     List<EmployeeResponseModel> getAllEmployees();
+
+    EmployeeResponseModel getEmployeeById(String employeeId);
 }

@@ -5,6 +5,9 @@ import com.profroid.profroidapp.employeesubdomain.dataAccessLayer.employeeDataAc
 import com.profroid.profroidapp.employeesubdomain.mappingLayer.employeeMappers.EmployeeRequestMapper;
 import com.profroid.profroidapp.employeesubdomain.mappingLayer.employeeMappers.EmployeeResponseMapper;
 import com.profroid.profroidapp.employeesubdomain.presentationLayer.employeePresentationLayer.EmployeeResponseModel;
+import com.profroid.profroidapp.utils.exceptions.InvalidIdentifierException;
+import com.profroid.profroidapp.utils.exceptions.ResourceNotFoundException;
+import org.springframework.security.core.parameters.P;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -28,5 +31,20 @@ public class EmployeeServiceImpl implements EmployeeService {
     public List<EmployeeResponseModel> getAllEmployees() {
         List<Employee> employees = employeeRepository.findAll();
         return employeeResponseMapper.toResponseModelList(employees);
+    }
+
+    @Override
+    public EmployeeResponseModel getEmployeeById(String employeeId) {
+
+        if (employeeId == null || employeeId.trim().length() != 36) {
+            throw new InvalidIdentifierException("Employee ID must be a 36-character UUID string.");
+        }
+
+        Employee employee = employeeRepository.findEmployeeByEmployeeIdentifier_EmployeeId(employeeId);
+
+        if (employee == null) {
+            throw new ResourceNotFoundException("Employee " + employeeId + " not found.");
+        }
+        return employeeResponseMapper.toResponseModel(employee);
     }
 }
