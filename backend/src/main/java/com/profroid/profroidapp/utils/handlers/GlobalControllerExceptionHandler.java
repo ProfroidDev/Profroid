@@ -8,6 +8,7 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import com.profroid.profroidapp.utils.exceptions.MissingDataException;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -18,6 +19,12 @@ public class GlobalControllerExceptionHandler{
     @ResponseStatus(HttpStatus.CONFLICT)
     @ExceptionHandler(ResourceAlreadyExistsException.class)
     public String handleResourceAlreadyExistsException(ResourceAlreadyExistsException ex) {
+        return ex.getMessage();
+    }
+
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    @ExceptionHandler(MissingDataException.class)
+    public String handleMissingDataException(MissingDataException ex) {
         return ex.getMessage();
     }
 
