@@ -2,6 +2,10 @@ import React, { useEffect, useState } from "react";
 import { getEmployees } from "../../features/employee/api/getAllEmployees";
 import { getEmployee } from "../../features/employee/api/getEmployeeById";
 import type { EmployeeResponseModel } from "../../features/employee/models/EmployeeResponseModel";
+import type { EmployeeSchedule } from "../../features/employee/models/EmployeeSchedule";
+import { getEmployeeSchedule } from "../../features/employee/api/getEmployeeSchedule";
+import Calendar from 'react-calendar';
+import 'react-calendar/dist/Calendar.css';
 
 import "./EmployeeListPage.css";
 
@@ -12,6 +16,11 @@ export default function EmployeeListPage(): React.ReactElement {
     useState<EmployeeResponseModel | null>(null);
   const [modalOpen, setModalOpen] = useState<boolean>(false);
   const [detailLoading, setDetailLoading] = useState<boolean>(false);
+  const [scheduleModalOpen, setScheduleModalOpen] = useState<boolean>(false);
+  const [scheduleLoading, setScheduleLoading] = useState<boolean>(false);
+  const [employeeSchedule, setEmployeeSchedule] = useState<EmployeeSchedule[]>([]);
+  // Removed unused selectedDay state
+  const [selectedDate, setSelectedDate] = useState<Date | null>(null);
 
   useEffect(() => {
     async function load() {
@@ -57,6 +66,29 @@ export default function EmployeeListPage(): React.ReactElement {
   function closeModal() {
     setModalOpen(false);
     setSelectedEmployee(null);
+    setScheduleModalOpen(false);
+    // Removed setSelectedDay
+    setSelectedDate(null);
+  }
+
+  async function openSchedule(employee: EmployeeResponseModel) {
+    setScheduleModalOpen(true);
+    setScheduleLoading(true);
+    try {
+      const employeeId = (employee.employeeIdentifier as EmployeeResponseModel['employeeIdentifier'] & Record<string, unknown>)?.employeeId;
+      if (employeeId) {
+        const scheduleData = await getEmployeeSchedule(String(employeeId));
+        setEmployeeSchedule(scheduleData);
+        // No need to setSelectedDay
+      } else {
+        setEmployeeSchedule([]);
+      }
+    } catch (error) {
+      console.error("Error fetching employee schedule:", error);
+      setEmployeeSchedule([]);
+    } finally {
+      setScheduleLoading(false);
+    }
   }
 
   return (
@@ -87,6 +119,13 @@ export default function EmployeeListPage(): React.ReactElement {
                       onClick={() => openDetails(e)}
                     >
                       View Details
+                    </button>
+                    <button
+                      className="btn-view-light"
+                      style={{ marginLeft: 8 }}
+                      onClick={() => openSchedule(e)}
+                    >
+                      View Schedule
                     </button>
                   </td>
                 </tr>
@@ -170,6 +209,53 @@ export default function EmployeeListPage(): React.ReactElement {
                   </p>
                 </div>
               </div>
+            )}
+          </div>
+        </div>
+      )}
+
+      {scheduleModalOpen && (
+        <div className="modal-overlay-light">
+          <div className="modal-container-light">
+            <div className="modal-header-light">
+              <h3>Employee Schedule</h3>
+              <button className="modal-close-light" onClick={closeModal}>
+                ✕
+              </button>
+            </div>
+            {scheduleLoading && (
+              <div className="loading-light">Loading schedule...</div>
+            )}
+            {!scheduleLoading && employeeSchedule.length > 0 && (
+              <div className="modal-content-light">
+                <div className="modal-section">
+                  <h4 className="modal-label">Select Date</h4>
+                  <div className="calendar-center">
+                    <Calendar
+                      onChange={(date) => setSelectedDate(date as Date | null)}
+                      value={selectedDate}
+                    />
+                  </div>
+                </div>
+                <div className="modal-section">
+                  <h4 className="modal-label">Time Slots</h4>
+                  <ul className="modal-list">
+                    {(() => {
+                      if (!selectedDate) return <li className="modal-list-item">Select a date</li>;
+                      // Get the day of week for the selected date
+                      const dayOfWeek = selectedDate.toLocaleDateString('en-US', { weekday: 'long' }).toUpperCase();
+                      const sched = employeeSchedule.find(s => s.dayOfWeek.toUpperCase() === dayOfWeek);
+                      if (!sched || !sched.timeSlots.length) return <li className="modal-list-item">No schedule for this date</li>;
+                      return sched.timeSlots.map((slot, i) => (
+                        <li key={i} className="modal-list-item">{slot}</li>
+                      ));
+                    })()}
+                  </ul>
+                </div>
+              </div>
+            )}
+            {!scheduleLoading && employeeSchedule.length === 0 && (
+              <div className="loading-light">No schedule found.</div>
             )}
           </div>
         </div>

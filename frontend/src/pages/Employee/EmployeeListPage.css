@@ -1,9 +1,9 @@
 /* ===== Background (matches sections like Our Collections) ===== */
 .employees-page-light {
-  padding-top: 140px;
-  padding-bottom: 80px;
+  padding-top: 120px;
+  padding-bottom: 60px;
   min-height: 100vh;
-  background: #f4f1ec; /* warm cream */
+  background: #f7f6f3;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -11,84 +11,100 @@
 
 /* ===== Title ===== */
 .employees-title-light {
-  font-size: 2.8rem;
+  font-size: 2.6rem;
   font-weight: 700;
-  font-family: "Georgia", serif;
-  color: #5a2a27;
-  margin-bottom: 30px;
+  font-family: 'Georgia', serif;
+  color: #7a0901;
+  margin-bottom: 28px;
+  letter-spacing: 1px;
 }
 
 /* ===== Card ===== */
 .employees-card-light {
-  width: 85%;
-  max-width: 1000px;
-  background: #ffffff;
-  border: 1px solid #e5e3df;
-  border-radius: 22px;
-  padding: 32px;
-  box-shadow: 0 6px 18px rgba(0,0,0,0.06);
+  width: 90%;
+  max-width: 950px;
+  background: #fff;
+  border: none;
+  border-radius: 24px;
+  padding: 28px 32px;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.08);
 }
 
 /* ===== Table ===== */
 .employees-table-light {
   width: 100%;
-  border-collapse: collapse;
-  border-radius: 16px;
+  border-collapse: separate;
+  border-spacing: 0;
+  border-radius: 18px;
   overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.04);
 }
 
 .employees-table-light th {
   background: #7a0901;
-  color: white;
-  padding: 14px;
+  color: #fff;
+  padding: 16px 10px;
   text-align: left;
-  font-size: 1rem;
-  font-weight: 600;
+  font-size: 1.08rem;
+  font-weight: 700;
+  border-top-left-radius: 14px;
+  border-top-right-radius: 14px;
 }
 
 .employees-table-light td {
-  padding: 14px;
-  border-bottom: 1px solid #eee8e2;
-  background: white;
+  padding: 16px 10px;
+  border-bottom: 1px solid #f0ece7;
+  background: #fff;
+  font-size: 1.04rem;
 }
 
 .employees-table-light tr:hover td {
-  background: #fdf7f6;
+  background: #f8f4f2;
 }
+.employees-table-light tr:last-child td {
+  border-bottom: none;
+}
+
 
 /* ===== Buttons ===== */
 .btn-view-light {
-  background: #7a0901;
-  color: white;
+  background: linear-gradient(90deg, #7a0901 60%, #a32c1a 100%);
+  color: #fff;
   border: none;
-  padding: 8px 18px;
-  border-radius: 8px;
-  font-size: 0.9rem;
+  padding: 9px 22px;
+  border-radius: 10px;
+  font-size: 1rem;
+  font-weight: 600;
   cursor: pointer;
-  transition: 0.2s;
+  box-shadow: 0 2px 8px rgba(122,9,1,0.08);
+  margin-bottom: 4px;
+  transition: background 0.2s, box-shadow 0.2s, transform 0.2s;
 }
 
 .btn-view-light:hover {
-  background: #8e0a03;
+  background: linear-gradient(90deg, #a32c1a 60%, #7a0901 100%);
+  box-shadow: 0 4px 16px rgba(122,9,1,0.12);
+  transform: translateY(-2px) scale(1.04);
 }
 
 /* ===== Modal (light) ===== */
 .modal-overlay-light {
   position: fixed;
   inset: 0;
-  background: rgba(0,0,0,0.2);
+  background: rgba(0,0,0,0.18);
   display: flex;
   justify-content: center;
   align-items: center;
+  z-index: 1000;
 }
 
 .modal-container-light {
-  background: #ffffff;
-  width: 450px;
-  border-radius: 18px;
+  background: #fff;
+  width: 480px;
+  border-radius: 22px;
   border: 1px solid #e4e2df;
-  padding: 24px;
-  box-shadow: 0 15px 35px rgba(0,0,0,0.12);
+  padding: 28px 28px 22px 28px;
+  box-shadow: 0 18px 38px rgba(0,0,0,0.13);
 }
 
 .modal-header-light {
@@ -103,23 +119,72 @@
 .modal-close-light {
   background: transparent;
   border: none;
-  font-size: 1.4rem;
+  font-size: 1.5rem;
   cursor: pointer;
-  color: #5a2a27;
+  color: #7a0901;
+  transition: color 0.2s;
 }
 
 .modal-close-light:hover {
-  color: #8e0a03;
+  color: #a32c1a;
 }
 
 .modal-content-light p,
-.modal-content-light li {
+  .modal-content-light li {
   margin-bottom: 8px;
   color: #4a3a37;
+  font-size: 1.05rem;
+}
+.modal-section {
+  margin-bottom: 18px;
 }
 
 .loading-light {
   color: #7a0901;
-  font-size: 1rem;
+  font-size: 1.08rem;
   text-align: center;
+  margin: 18px 0;
+}
+
+/* Calendar custom styles */
+.calendar-center {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  margin-bottom: 18px;
+}
+.react-calendar {
+  border: none;
+  border-radius: 16px;
+  box-shadow: 0 2px 12px rgba(122,9,1,0.07);
+  font-family: 'Georgia', serif;
+}
+.react-calendar__tile {
+  border-radius: 8px;
+  padding: 8px 0;
+  font-size: 1rem;
+  color: #7a0901;
+  transition: background 0.2s, color 0.2s;
+}
+.react-calendar__tile--active {
+  background: #a32c1a !important;
+  color: #fff !important;
+}
+.react-calendar__tile--now {
+  background: #f7e3e0 !important;
+  color: #7a0901 !important;
+}
+.react-calendar__tile:enabled:hover {
+  background: #f8f4f2 !important;
+  color: #a32c1a !important;
+}
+.react-calendar__navigation button {
+  color: #7a0901;
+  font-weight: 600;
+  font-size: 1.1rem;
+}
+.react-calendar__month-view__weekdays {
+  font-weight: 700;
+  color: #a32c1a;
 }
