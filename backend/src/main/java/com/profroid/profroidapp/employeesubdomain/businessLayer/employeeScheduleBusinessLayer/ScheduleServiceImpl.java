@@ -116,7 +116,65 @@ public class ScheduleServiceImpl implements ScheduleService {
                     throw new MissingDataException("Time slot cannot be null for day " + request.getDayOfWeek());
                 }
             }
+
+                boolean isTechnician = employee.getEmployeeRole() != null &&
+                    employee.getEmployeeRole().getEmployeeRoleType() == com.profroid.profroidapp.employeesubdomain.dataAccessLayer.employeeDataAccessLayer.EmployeeRoleType.TECHNICIAN;
+
+            if (!isTechnician) {
+                if (request.getTimeSlots().size() != 2) {
+                    throw new MissingDataException("Non-technician employees must provide exactly 2 time slots per day: start and end times.");
+                }
+                List<TimeSlotType> sorted = request.getTimeSlots().stream().sorted(Comparator.comparingInt(this::toMinutes)).toList();
+                if (sorted.get(0) != TimeSlotType.NINE_AM) {
+                    throw new MissingDataException("Non-technician employees must start at NINE_AM (9:00 AM).");
+                }
+                int startMinutes = toMinutes(sorted.get(0));
+                int endMinutes = toMinutes(sorted.get(1));
+                int dailyHours = (endMinutes - startMinutes) / 60;
+                if (dailyHours > 8) {
+                    throw new MissingDataException("Non-technician employees cannot work more than 8 hours per day. Day: " + request.getDayOfWeek() + ", Hours: " + dailyHours);
+                }
+            } else {
+                List<Integer> minutes = request.getTimeSlots().stream()
+                        .map(this::toMinutes)
+                        .sorted()
+                        .toList();
+                for (int i = 1; i < minutes.size(); i++) {
+                    if (minutes.get(i) - minutes.get(i - 1) < 120) {
+                        throw new MissingDataException("Technician time slots must be at least 2 hours apart.");
+                    }
+                }
+                if (request.getTimeSlots().size() > 4) {
+                    throw new MissingDataException("Technician cannot exceed 8 hours in a single day (max 4 slots of 2h each). Day: " + request.getDayOfWeek());
+                }
+            }
         }
+        boolean isTechnician = employee.getEmployeeRole() != null &&
+                employee.getEmployeeRole().getEmployeeRoleType() == com.profroid.profroidapp.employeesubdomain.dataAccessLayer.employeeDataAccessLayer.EmployeeRoleType.TECHNICIAN;
+
+        int totalHours;
+        if (isTechnician) {
+            int totalSlots = scheduleRequests.stream()
+                    .mapToInt(r -> r.getTimeSlots() == null ? 0 : r.getTimeSlots().size())
+                    .sum();
+            totalHours = totalSlots * 2;
+        } else {
+            totalHours = 0;
+            for (EmployeeScheduleRequestModel request : scheduleRequests) {
+                List<TimeSlotType> sorted = request.getTimeSlots().stream()
+                        .sorted(Comparator.comparingInt(this::toMinutes))
+                        .toList();
+                int startMinutes = toMinutes(sorted.get(0));
+                int endMinutes = toMinutes(sorted.get(1));
+                int dailyHours = (endMinutes - startMinutes) / 60;
+                totalHours += dailyHours;
+            }
+        }
+
+        if (totalHours > 40) {
+            throw new MissingDataException("Employee cannot exceed 40 hours in a 5-day week. Requested: " + totalHours + " hours.");
+        }
+
         List<Schedule> schedulesToSave = new ArrayList<>();
         for (EmployeeScheduleRequestModel request : scheduleRequests) {
             List<Schedule> daySchedules = requestMapper.toEntityList(request);
@@ -137,6 +195,17 @@ public class ScheduleServiceImpl implements ScheduleService {
         scheduleRepository.saveAll(schedulesToSave);
 
         return getEmployeeSchedule(employeeId);
+    }
+
+    private int toMinutes(TimeSlotType slot) {
+        return switch (slot) {
+            case NINE_AM -> 9 * 60;
+            case ELEVEN_AM -> 11 * 60;
+            case ONE_PM -> 13 * 60;
+            case THREE_PM -> 15 * 60;
+            case FOUR_PM -> 16 * 60;
+            case SIX_PM -> 18 * 60;
+        };
     }
 
 

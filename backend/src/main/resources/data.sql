@@ -170,50 +170,49 @@ INSERT INTO employee_phonenumbers (employee_id, type, number) VALUES
 INSERT INTO employee_phonenumbers (employee_id, type, number) VALUES
     (4, 'MOBILE', '555-777-6666');
 
+-- Seed schedules according to role rules
+-- Technician (id=2): multiple appointment slots with >= 2h spacing
 INSERT INTO schedules (employee_fk, day_of_week, time_slot)
-SELECT
-    e.id AS employee_fk,
-    s.day_of_week,
-    s.time_slot
-FROM
-    employees e
-        CROSS JOIN
-    (
-        -- Virtual Table 's' that defines all 30 possible shifts
-        SELECT 'MONDAY' AS day_of_week, 'NINE_AM' AS time_slot
-        UNION ALL SELECT 'MONDAY', 'ELEVEN_AM'
-        UNION ALL SELECT 'MONDAY', 'ONE_PM'
-        UNION ALL SELECT 'MONDAY', 'THREE_PM'
-        UNION ALL SELECT 'MONDAY', 'FOUR_PM'
-        UNION ALL SELECT 'MONDAY', 'SIX_PM'
+SELECT 2, day_of_week, time_slot FROM (
+    SELECT 'MONDAY' AS day_of_week, 'NINE_AM' AS time_slot
+    UNION ALL SELECT 'MONDAY', 'ELEVEN_AM'
+    UNION ALL SELECT 'MONDAY', 'ONE_PM'
+    UNION ALL SELECT 'MONDAY', 'THREE_PM'
+    UNION ALL SELECT 'TUESDAY', 'NINE_AM'
+    UNION ALL SELECT 'TUESDAY', 'ELEVEN_AM'
+    UNION ALL SELECT 'TUESDAY', 'ONE_PM'
+    UNION ALL SELECT 'TUESDAY', 'THREE_PM'
+    UNION ALL SELECT 'WEDNESDAY', 'NINE_AM'
+    UNION ALL SELECT 'WEDNESDAY', 'ELEVEN_AM'
+    UNION ALL SELECT 'WEDNESDAY', 'ONE_PM'
+    UNION ALL SELECT 'WEDNESDAY', 'THREE_PM'
+    UNION ALL SELECT 'THURSDAY', 'NINE_AM'
+    UNION ALL SELECT 'THURSDAY', 'ELEVEN_AM'
+    UNION ALL SELECT 'THURSDAY', 'ONE_PM'
+    UNION ALL SELECT 'THURSDAY', 'THREE_PM'
+    UNION ALL SELECT 'FRIDAY', 'NINE_AM'
+    UNION ALL SELECT 'FRIDAY', 'ELEVEN_AM'
+    UNION ALL SELECT 'FRIDAY', 'ONE_PM'
+    UNION ALL SELECT 'FRIDAY', 'THREE_PM'
+) t;
 
-        UNION ALL SELECT 'TUESDAY', 'NINE_AM'
-        UNION ALL SELECT 'TUESDAY', 'ELEVEN_AM'
-        UNION ALL SELECT 'TUESDAY', 'ONE_PM'
-        UNION ALL SELECT 'TUESDAY', 'THREE_PM'
-        UNION ALL SELECT 'TUESDAY', 'FOUR_PM'
-        UNION ALL SELECT 'TUESDAY', 'SIX_PM'
-
-        UNION ALL SELECT 'WEDNESDAY', 'NINE_AM'
-        UNION ALL SELECT 'WEDNESDAY', 'ELEVEN_AM'
-        UNION ALL SELECT 'WEDNESDAY', 'ONE_PM'
-        UNION ALL SELECT 'WEDNESDAY', 'THREE_PM'
-        UNION ALL SELECT 'WEDNESDAY', 'FOUR_PM'
-        UNION ALL SELECT 'WEDNESDAY', 'SIX_PM'
-
-        UNION ALL SELECT 'THURSDAY', 'NINE_AM'
-        UNION ALL SELECT 'THURSDAY', 'ELEVEN_AM'
-        UNION ALL SELECT 'THURSDAY', 'ONE_PM'
-        UNION ALL SELECT 'THURSDAY', 'THREE_PM'
-        UNION ALL SELECT 'THURSDAY', 'FOUR_PM'
-        UNION ALL SELECT 'THURSDAY', 'SIX_PM'
-
-        UNION ALL SELECT 'FRIDAY', 'NINE_AM'
-        UNION ALL SELECT 'FRIDAY', 'ELEVEN_AM'
-        UNION ALL SELECT 'FRIDAY', 'ONE_PM'
-        UNION ALL SELECT 'FRIDAY', 'THREE_PM'
-        UNION ALL SELECT 'FRIDAY', 'FOUR_PM'
-        UNION ALL SELECT 'FRIDAY', 'SIX_PM'
-    ) s
--- Filter to only include the first four employees (IDs 1, 2, 3, and 4)
-WHERE e.id IN (1, 2, 3, 4);
+-- Non-technicians (ids=1,3,4): one continuous work slot per day.
+-- Since continuous range isn’t represented in enum, seed a single marker slot per day (e.g., NINE_AM).
+-- The service enforces only one slot per day for these roles.
+-- For non-technicians, seed both start (9 AM) and end (6 PM) markers per day to reflect a full work day visually
+INSERT INTO schedules (employee_fk, day_of_week, time_slot) VALUES
+    (1, 'MONDAY', 'NINE_AM'),(1, 'MONDAY', 'SIX_PM'),
+    (1, 'TUESDAY', 'NINE_AM'),(1, 'TUESDAY', 'SIX_PM'),
+    (1, 'WEDNESDAY', 'NINE_AM'),(1, 'WEDNESDAY', 'SIX_PM'),
+    (1, 'THURSDAY', 'NINE_AM'),(1, 'THURSDAY', 'SIX_PM'),
+    (1, 'FRIDAY', 'NINE_AM'),(1, 'FRIDAY', 'SIX_PM'),
+    (3, 'MONDAY', 'NINE_AM'),(3, 'MONDAY', 'SIX_PM'),
+    (3, 'TUESDAY', 'NINE_AM'),(3, 'TUESDAY', 'SIX_PM'),
+    (3, 'WEDNESDAY', 'NINE_AM'),(3, 'WEDNESDAY', 'SIX_PM'),
+    (3, 'THURSDAY', 'NINE_AM'),(3, 'THURSDAY', 'SIX_PM'),
+    (3, 'FRIDAY', 'NINE_AM'),(3, 'FRIDAY', 'SIX_PM'),
+    (4, 'MONDAY', 'NINE_AM'),(4, 'MONDAY', 'SIX_PM'),
+    (4, 'TUESDAY', 'NINE_AM'),(4, 'TUESDAY', 'SIX_PM'),
+    (4, 'WEDNESDAY', 'NINE_AM'),(4, 'WEDNESDAY', 'SIX_PM'),
+    (4, 'THURSDAY', 'NINE_AM'),(4, 'THURSDAY', 'SIX_PM'),
+    (4, 'FRIDAY', 'NINE_AM'),(4, 'FRIDAY', 'SIX_PM');
