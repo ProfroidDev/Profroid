@@ -15,9 +15,6 @@ public interface EmployeeRequestMapper {
 
             @Mapping(target = "id", ignore = true),
 
-            @Mapping(source = "employeeIdentifier", target = "employeeIdentifier"),
-
-
             @Mapping(source = "employeeRequestModel.firstName", target = "firstName"),
             @Mapping(source = "employeeRequestModel.lastName", target = "lastName"),
             @Mapping(source = "employeeRequestModel.userId", target = "userId"),
@@ -28,7 +25,7 @@ public interface EmployeeRequestMapper {
             @Mapping(source = "employeeRequestModel.employeeRole", target = "employeeRole"),
 
     })
-    Employee toEntity(EmployeeRequestModel employeeRequestModel, EmployeeIdentifier employeeIdentifier);
+    Employee toEntity(EmployeeRequestModel employeeRequestModel);
 
 
 }

@@ -2,7 +2,7 @@ package com.profroid.profroidapp.employeesubdomain.dataAccessLayer.employeeDataA
 
 
 import jakarta.persistence.Embeddable;
-import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.NotBlank;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -15,15 +15,15 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class EmployeeAddress {
 
-    @NotNull
+    @NotBlank(message = "Street address cannot be blank")
     private String streetAddress;
-    @NotNull
+    @NotBlank(message = "City cannot be blank")
     private String city;
-    @NotNull
+    @NotBlank(message = "Province cannot be blank")
     private String province;
-    @NotNull
+    @NotBlank(message = "Country cannot be blank")
     private String country;
-    @NotNull
+    @NotBlank(message = "Postal code cannot be blank")
     private String postalCode;
 
 

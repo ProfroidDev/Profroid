@@ -4,6 +4,7 @@ package com.profroid.profroidapp.employeesubdomain.presentationLayer.employeePre
 import com.profroid.profroidapp.employeesubdomain.dataAccessLayer.employeeDataAccessLayer.EmployeeAddress;
 import com.profroid.profroidapp.employeesubdomain.dataAccessLayer.employeeDataAccessLayer.EmployeePhoneNumber;
 import com.profroid.profroidapp.employeesubdomain.dataAccessLayer.employeeDataAccessLayer.EmployeeRole;
+import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
@@ -30,11 +31,14 @@ public class EmployeeRequestModel {
     private String userId;
 
     @NotEmpty(message = "At least one phone number is required.")
+    @Valid
     private List<EmployeePhoneNumber> phoneNumbers;
 
     @NotNull(message = "Employee address is required.")
+    @Valid
     private EmployeeAddress employeeAddress;
 
     @NotNull(message = "Employee role is required.")
+    @Valid
     private EmployeeRole employeeRole;
 }
