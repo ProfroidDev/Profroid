@@ -1,8 +1,6 @@
 import axios from 'axios';
 
-/**
- * Custom API Error class for consistent error handling
- */
+
 export class APIError extends Error {
   statusCode?: number;
   backendMessage?: string;
@@ -20,7 +18,7 @@ export class APIError extends Error {
 }
 
 export function handleAPIError(error: unknown): APIError {
-  // Log the full error to debug
+ 
   console.log('Full error object:', error);
   
   interface AxiosErrorResponse {
