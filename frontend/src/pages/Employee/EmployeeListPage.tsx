@@ -6,6 +6,8 @@ import type { EmployeeSchedule } from "../../features/employee/models/EmployeeSc
 import { getEmployeeSchedule } from "../../features/employee/api/getEmployeeSchedule";
 import Calendar from 'react-calendar';
 import 'react-calendar/dist/Calendar.css';
+import EmployeeAddModal from "../../components/EmployeeAddModal";
+import Toast from "../../shared/components/Toast";
 
 import "./EmployeeListPage.css";
 
@@ -21,6 +23,8 @@ export default function EmployeeListPage(): React.ReactElement {
   const [employeeSchedule, setEmployeeSchedule] = useState<EmployeeSchedule[]>([]);
   // Removed unused selectedDay state
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
+  const [addModalOpen, setAddModalOpen] = useState<boolean>(false);
+  const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' | 'info' } | null>(null);
 
   useEffect(() => {
     async function load() {
@@ -96,6 +100,14 @@ export default function EmployeeListPage(): React.ReactElement {
       <h2 className="employees-title-light">Employees</h2>
 
       <div className="employees-card-light">
+        <button 
+          className="btn-add-employee" 
+          onClick={() => setAddModalOpen(true)}
+          style={{ marginBottom: '20px' }}
+        >
+          + Add New Employee
+        </button>
+
         {loading ? (
           <div className="loading-light">Loading employees...</div>
         ) : (
@@ -259,6 +271,35 @@ export default function EmployeeListPage(): React.ReactElement {
             )}
           </div>
         </div>
+      )}
+
+      <EmployeeAddModal 
+        isOpen={addModalOpen} 
+        onClose={() => setAddModalOpen(false)}
+        onSuccess={() => {
+          setAddModalOpen(false);
+          setToast({ message: 'Employee added successfully!', type: 'success' });
+          // Refresh employee list
+          async function load() {
+            setLoading(true);
+            try {
+              const data = await getEmployees();
+              setEmployees(data);
+            } catch (error) {
+              console.error("Error fetching employees:", error);
+            } finally {
+              setLoading(false);
+            }
+          }
+          load();
+        }}
+      />
+      {toast && (
+        <Toast
+          message={toast.message}
+          type={toast.type}
+          onClose={() => setToast(null)}
+        />
       )}
     </div>
   );
