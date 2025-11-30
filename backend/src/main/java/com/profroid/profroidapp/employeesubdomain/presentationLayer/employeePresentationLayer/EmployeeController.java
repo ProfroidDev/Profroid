@@ -2,7 +2,9 @@ package com.profroid.profroidapp.employeesubdomain.presentationLayer.employeePre
 
 
 import com.profroid.profroidapp.employeesubdomain.businessLayer.employeeBusinessLayer.EmployeeService;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -21,12 +23,18 @@ public class EmployeeController {
 
     @GetMapping()
     public ResponseEntity<List<EmployeeResponseModel>> getAllEmployees() {
-        return ResponseEntity.ok(employeeService.getAllEmployees());
+        return ResponseEntity.ok(this.employeeService.getAllEmployees());
     }
 
     @GetMapping("/{employeeId}")
     public ResponseEntity<EmployeeResponseModel> getEmployeeById(@PathVariable String employeeId) {
-        return ResponseEntity.ok(employeeService.getEmployeeById(employeeId));
+        return ResponseEntity.ok(this.employeeService.getEmployeeById(employeeId));
 
+    }
+
+    @PostMapping()
+    public ResponseEntity<EmployeeResponseModel> addEmployee(@Valid @RequestBody EmployeeRequestModel employeeRequestModel) {
+        EmployeeResponseModel created = this.employeeService.addEmployee(employeeRequestModel);
+        return ResponseEntity.status(HttpStatus.OK).body(created);
     }
 }

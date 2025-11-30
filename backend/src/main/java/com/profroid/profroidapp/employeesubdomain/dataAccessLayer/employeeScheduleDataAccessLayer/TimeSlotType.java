@@ -7,8 +7,7 @@ public enum TimeSlotType {
     ELEVEN_AM("11:00 AM"),
     ONE_PM("1:00 PM"),
     THREE_PM("3:00 PM"),
-    FOUR_PM("4:00 PM"),
-    SIX_PM("6:00 PM");
+    FIVE_PM("5:00 PM");
 
     private final String displayTime; // Field to hold the human-readable time
 

@@ -4,6 +4,7 @@ package com.profroid.profroidapp.employeesubdomain.dataAccessLayer.employeeDataA
 import jakarta.persistence.Embeddable;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
+import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -17,6 +18,6 @@ public class EmployeePhoneNumber {
     @Enumerated(EnumType.STRING)
     private EmployeePhoneType type;
 
-    @NotNull
+    @NotBlank(message = "Enter a valid phone number")
     private String number;
 }

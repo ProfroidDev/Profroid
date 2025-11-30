@@ -9,6 +9,26 @@
   align-items: center;
 }
 
+/* Add Employee Button */
+.btn-add-employee {
+  background: linear-gradient(90deg, #7a0901 60%, #a32c1a 100%);
+  color: #fff;
+  border: none;
+  padding: 11px 22px;
+  border-radius: 10px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  box-shadow: 0 2px 8px rgba(122,9,1,0.08);
+  transition: background 0.2s, box-shadow 0.2s, transform 0.2s;
+}
+
+.btn-add-employee:hover {
+  background: linear-gradient(90deg, #a32c1a 60%, #7a0901 100%);
+  box-shadow: 0 4px 16px rgba(122,9,1,0.12);
+  transform: translateY(-2px) scale(1.04);
+}
+
 /* ===== Title ===== */
 .employees-title-light {
   font-size: 2.6rem;
