@@ -1,0 +1,24 @@
+.add-schedule-modal-backdrop{position:fixed;inset:0;background:rgba(0,0,0,.35);display:flex;align-items:center;justify-content:center;z-index:1000}
+.add-schedule-modal{width:560px;max-width:95vw;max-height:90vh;background:#fff;border-radius:12px;box-shadow:0 8px 30px rgba(0,0,0,.2);overflow:hidden;display:flex;flex-direction:column}
+.header{display:flex;align-items:center;justify-content:space-between;padding:16px 20px;border-bottom:1px solid #eee}
+.header h2{margin:0;font-size:18px}
+.header .close{border:none;background:transparent;font-size:20px;cursor:pointer}
+.content{padding:16px 20px;display:flex;flex-direction:column;gap:14px;overflow-y:auto;max-height:calc(90vh - 140px)}
+.day-block{border:1px solid #eee;border-radius:10px;padding:12px 12px;margin-bottom:8px}
+.day-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
+.field{display:flex;flex-direction:column;gap:6px}
+.field input{padding:10px 12px;border:1px solid #ddd;border-radius:8px;font-size:14px}
+.slots{display:flex;flex-direction:column;gap:10px}
+.slots-header{display:flex;align-items:center;justify-content:space-between}
+.slot{display:flex;gap:10px;align-items:flex-end;margin-bottom:8px}
+.slot label{display:flex;flex-direction:column;gap:6px;flex:1}
+.slot input{padding:10px 12px;border:1px solid #ddd;border-radius:8px;font-size:14px}
+.slot select.hour-select{padding:10px 12px;border:1px solid #ddd;border-radius:8px;font-size:14px;flex:1}
+.slot .remove{border:none;background:#fff;color:#b00020;border:1px solid #f0cdd2;border-radius:8px;padding:8px 12px;cursor:pointer}
+.slot-label{padding:10px 12px;background:#f5f5f5;border-radius:8px;flex:1;font-size:14px}
+.slot-add-controls{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
+.btn-slot-option{background:#1a73e8;border:none;color:#fff;border-radius:8px;padding:8px 12px;cursor:pointer;font-size:13px}
+.btn-slot-option:disabled{background:#ccc;cursor:not-allowed}
+.footer{display:flex;gap:8px;justify-content:flex-end;padding:16px 20px;border-top:1px solid #eee}
+.footer .secondary{background:#fff;border:1px solid #ddd;border-radius:8px;padding:10px 14px;cursor:pointer}
+.footer .primary{background:#1a73e8;border:none;color:#fff;border-radius:8px;padding:10px 14px;cursor:pointer}
