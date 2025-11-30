@@ -499,7 +499,7 @@ export default function ServicesPage(): React.ReactElement {
         <div
           className="modal-overlay"
           role="dialog"
-          aria-modal
+          aria-modal="true"
           onClick={closeDeleteConfirm}
         >
           <div className="modal" onClick={(e) => e.stopPropagation()}>
