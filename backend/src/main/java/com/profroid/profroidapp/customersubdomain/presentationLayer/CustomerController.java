@@ -1,6 +1,7 @@
 package com.profroid.profroidapp.customersubdomain.presentationLayer;
 
 import com.profroid.profroidapp.customersubdomain.businessLayer.CustomerService;
+import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -27,7 +28,7 @@ public class CustomerController {
     }
 
     @PostMapping
-    public ResponseEntity<CustomerResponseModel> createCustomer(@RequestBody CustomerRequestModel requestModel) {
+    public ResponseEntity<CustomerResponseModel> createCustomer( @Valid @RequestBody CustomerRequestModel requestModel) {
         CustomerResponseModel createdCustomer = customerService.createCustomer(requestModel);
         return ResponseEntity.ok(createdCustomer);
     }
