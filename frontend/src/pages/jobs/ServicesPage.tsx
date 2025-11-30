@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { getJobs } from "../../features/jobs/api/getAllJobs";
 import { getJobById } from "../../features/jobs/api/getJobById";
 import { createJob } from "../../features/jobs/api/createJob";
+import { deleteJob } from "../../features/jobs/api/deleteJob";
 import type { JobResponseModel } from "../../features/jobs/models/JobResponseModel";
 import type { JobRequestModel } from "../../features/jobs/models/JobRequestModel";
 import "./ServicesPage.css";
@@ -17,6 +18,13 @@ export default function ServicesPage(): React.ReactElement {
   const [createError, setCreateError] = useState<string>("");
   const [showSuccessNotification, setShowSuccessNotification] =
     useState<boolean>(false);
+  const [showDeleteSuccessNotification, setShowDeleteSuccessNotification] =
+    useState<boolean>(false);
+  const [deleteConfirmModalOpen, setDeleteConfirmModalOpen] =
+    useState<boolean>(false);
+  const [jobToDelete, setJobToDelete] = useState<JobResponseModel | null>(null);
+  const [deleteLoading, setDeleteLoading] = useState<boolean>(false);
+  const [deleteError, setDeleteError] = useState<string>("");
   const [formData, setFormData] = useState<JobRequestModel>({
     jobName: "",
     jobDescription: "",
@@ -84,6 +92,49 @@ export default function ServicesPage(): React.ReactElement {
       active: true,
     });
     setCreateError("");
+  }
+
+  function openDeleteConfirm(jobId: string) {
+    const jobToDelete = jobs.find((j) => j.jobId === jobId) || null;
+    setJobToDelete(jobToDelete);
+    setDeleteConfirmModalOpen(true);
+    setDeleteError("");
+  }
+
+  function closeDeleteConfirm() {
+    setDeleteConfirmModalOpen(false);
+    setJobToDelete(null);
+    setDeleteError("");
+  }
+
+  async function handleDeleteJob() {
+    if (!jobToDelete) {
+      return;
+    }
+
+    setDeleteLoading(true);
+    setDeleteError("");
+
+    try {
+      await deleteJob(jobToDelete.jobId);
+      // Remove the deleted job from the list
+      setJobs((prevJobs) =>
+        prevJobs.filter((job) => job.jobId !== jobToDelete.jobId)
+      );
+      closeDeleteConfirm();
+      // Show success notification
+      setShowDeleteSuccessNotification(true);
+      // Auto-hide after 3 seconds
+      setTimeout(() => {
+        setShowDeleteSuccessNotification(false);
+      }, 3000);
+    } catch (error) {
+      setDeleteError(
+        error instanceof Error ? error.message : "Failed to delete service"
+      );
+    } finally {
+      setDeleteLoading(false);
+    }
   }
 
   function handleFormChange(
@@ -163,25 +214,54 @@ export default function ServicesPage(): React.ReactElement {
       ) : (
         <div className="services-list">
           {jobs.map((j) => (
-            <div key={j.jobId} className="service-card">
-              <div className="service-image" aria-hidden>
-                <span>Image</span>
-              </div>
+            <div key={j.jobId} className="service-card-wrapper">
+              <div className="service-card">
+                <div className="service-image" aria-hidden>
+                  <span>Image</span>
+                </div>
 
-              <div className="service-content">
-                <h3 className="service-title">{j.jobName}</h3>
-                <p className="service-desc">{j.jobDescription}</p>
-              </div>
+                <div className="service-content">
+                  <h3 className="service-title">{j.jobName}</h3>
+                  <p className="service-desc">{j.jobDescription}</p>
+                </div>
 
-              <div className="service-actions">
-                <div className="service-rate">${j.hourlyRate?.toFixed(2)}</div>
-                <button
-                  className="btn-view-light"
-                  onClick={() => void openDetails(j.jobId)}
+                <div className="service-actions">
+                  <div className="service-rate">
+                    ${j.hourlyRate?.toFixed(2)}
+                  </div>
+                  <button
+                    className="btn-view-light"
+                    onClick={() => void openDetails(j.jobId)}
+                  >
+                    View Details
+                  </button>
+                </div>
+              </div>
+              <button
+                className="service-delete-btn"
+                onClick={() => void openDeleteConfirm(j.jobId)}
+                aria-label="Delete service"
+                title="Delete service"
+              >
+                {/* Trash/Delete SVG icon */}
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="20"
+                  height="20"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  aria-hidden="true"
+                  focusable="false"
                 >
-                  View Details
-                </button>
-              </div>
+                  <polyline points="3 6 5 6 21 6" />
+                  <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m5 0V4a2 2 0 0 1 2-2h0a2 2 0 0 1 2 2v2" />
+                  <line x1="10" y1="11" x2="10" y2="17" />
+                  <line x1="14" y1="11" x2="14" y2="17" />
+                </svg>
             </div>
           ))}
         </div>
@@ -226,8 +306,7 @@ export default function ServicesPage(): React.ReactElement {
                   <strong>Type:</strong> {selectedJob.jobType}
                 </p>
                 <p>
-                  <strong>Active:</strong>{" "}
-                  {selectedJob.active ? "Yes" : "No"}
+                  <strong>Active:</strong> {selectedJob.active ? "Yes" : "No"}
                 </p>
               </div>
             )}
@@ -390,6 +469,109 @@ export default function ServicesPage(): React.ReactElement {
             <div className="success-text">
               <h4>Service Added Successfully</h4>
               <p>The Service is now active</p>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {showDeleteSuccessNotification && (
+        <div className="delete-success-notification">
+          <div className="delete-success-content">
+            <div className="delete-success-icon">
+              <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="3.5"
+              >
+                <polyline points="20 6 9 17 4 12"></polyline>
+              </svg>
+            </div>
+            <div className="delete-success-text">
+              <h4>Service Deleted Successfully</h4>
+              <p>The service is no longer active</p>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {deleteConfirmModalOpen && (
+        <div
+          className="modal-overlay"
+          role="dialog"
+          aria-modal="true"
+          onClick={closeDeleteConfirm}
+        >
+          <div className="modal" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header">
+              <h3>Delete Service</h3>
+              <button
+                className="modal-close-light"
+                aria-label="Close"
+                onClick={closeDeleteConfirm}
+                disabled={deleteLoading}
+              >
+                ✕
+              </button>
+            </div>
+
+            {deleteError && <div className="error-message">{deleteError}</div>}
+
+            {jobToDelete && (
+              <>
+                <div className="service-details">
+                  <p>
+                    <strong>Job ID:</strong> {jobToDelete.jobId}
+                  </p>
+                  <p>
+                    <strong>Service Name:</strong> {jobToDelete.jobName}
+                  </p>
+                  <p>
+                    <strong>Description:</strong> {jobToDelete.jobDescription}
+                  </p>
+                  <p>
+                    <strong>Hourly Rate:</strong> $
+                    {jobToDelete.hourlyRate?.toFixed(2)}
+                  </p>
+                  <p>
+                    <strong>Estimated Duration (mins):</strong>{" "}
+                    {jobToDelete.estimatedDurationMinutes}
+                  </p>
+                  <p>
+                    <strong>Type:</strong> {jobToDelete.jobType}
+                  </p>
+                  <p>
+                    <strong>Active:</strong> {jobToDelete.active ? "Yes" : "No"}
+                  </p>
+                </div>
+
+                <div className="service-details" style={{ marginTop: "16px" }}>
+                  <p style={{ color: "#d32f2f", fontWeight: "600" }}>
+                    Are you sure you want to delete this service?
+                  </p>
+                  <p style={{ color: "#666" }}>This action cannot be undone.</p>
+                </div>
+              </>
+            )}
+
+            <div className="form-actions">
+              <button
+                type="button"
+                className="btn-cancel"
+                onClick={closeDeleteConfirm}
+                disabled={deleteLoading}
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                className="btn-create"
+                onClick={() => void handleDeleteJob()}
+                disabled={deleteLoading}
+                style={{ backgroundColor: "#d32f2f" }}
+              >
+                {deleteLoading ? "Deleting..." : "Delete"}
+              </button>
             </div>
           </div>
         </div>
