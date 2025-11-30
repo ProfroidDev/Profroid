@@ -30,7 +30,7 @@ export default function EmployeeAddModal({ isOpen, onClose, onSuccess }: Employe
     country: 'Canada',
     postalCode: '',
     phoneNumbers: [{ number: '', type: 'MOBILE' }],
-    role: 'STAFF',
+    role: roles[0],
   });
 
   const [errors, setErrors] = useState<Record<string, string>>({});

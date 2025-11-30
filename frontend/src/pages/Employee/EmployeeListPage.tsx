@@ -8,6 +8,7 @@ import Calendar from 'react-calendar';
 import 'react-calendar/dist/Calendar.css';
 import EmployeeAddModal from "../../components/EmployeeAddModal";
 import Toast from "../../shared/components/Toast";
+import AddScheduleModal from "../../features/employee/components/AddScheduleModal";
 
 import "./EmployeeListPage.css";
 
@@ -21,6 +22,9 @@ export default function EmployeeListPage(): React.ReactElement {
   const [scheduleModalOpen, setScheduleModalOpen] = useState<boolean>(false);
   const [scheduleLoading, setScheduleLoading] = useState<boolean>(false);
   const [employeeSchedule, setEmployeeSchedule] = useState<EmployeeSchedule[]>([]);
+  const [addScheduleOpen, setAddScheduleOpen] = useState<boolean>(false);
+  const [addScheduleEmployeeId, setAddScheduleEmployeeId] = useState<string | null>(null);
+  const [scheduleEmployeeData, setScheduleEmployeeData] = useState<EmployeeResponseModel | null>(null);
   // Removed unused selectedDay state
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [addModalOpen, setAddModalOpen] = useState<boolean>(false);
@@ -78,18 +82,25 @@ export default function EmployeeListPage(): React.ReactElement {
   async function openSchedule(employee: EmployeeResponseModel) {
     setScheduleModalOpen(true);
     setScheduleLoading(true);
+    setScheduleEmployeeData(employee);
     try {
       const employeeId = (employee.employeeIdentifier as EmployeeResponseModel['employeeIdentifier'] & Record<string, unknown>)?.employeeId;
       if (employeeId) {
         const scheduleData = await getEmployeeSchedule(String(employeeId));
         setEmployeeSchedule(scheduleData);
-        // No need to setSelectedDay
+        if (!scheduleData || scheduleData.length === 0) {
+          setAddScheduleEmployeeId(String(employeeId));
+        } else {
+          setAddScheduleEmployeeId(null);
+        }
       } else {
         setEmployeeSchedule([]);
+        setAddScheduleEmployeeId(null);
       }
     } catch (error) {
       console.error("Error fetching employee schedule:", error);
       setEmployeeSchedule([]);
+      setAddScheduleEmployeeId(null);
     } finally {
       setScheduleLoading(false);
     }
@@ -267,7 +278,12 @@ export default function EmployeeListPage(): React.ReactElement {
               </div>
             )}
             {!scheduleLoading && employeeSchedule.length === 0 && (
-              <div className="loading-light">No schedule found.</div>
+              <div className="modal-content-light">
+                <div className="modal-section">
+                  <h4 className="modal-label">No schedule found.</h4>
+                  <button className="btn-view-light" onClick={() => setAddScheduleOpen(true)}>Add Schedule</button>
+                </div>
+              </div>
             )}
           </div>
         </div>
@@ -299,6 +315,23 @@ export default function EmployeeListPage(): React.ReactElement {
           message={toast.message}
           type={toast.type}
           onClose={() => setToast(null)}
+        />
+      )}
+
+      {addScheduleOpen && addScheduleEmployeeId && scheduleEmployeeData && (
+        <AddScheduleModal
+          employeeId={addScheduleEmployeeId}
+          isTechnician={String((scheduleEmployeeData.employeeRole as unknown as Record<string, string>)?.employeeRoleType || "").toUpperCase() === 'TECHNICIAN'}
+          onClose={() => setAddScheduleOpen(false)}
+          onAdded={async () => {
+            if (addScheduleEmployeeId) {
+              const scheduleData = await getEmployeeSchedule(addScheduleEmployeeId);
+              setEmployeeSchedule(scheduleData);
+              setAddScheduleOpen(false);
+              setAddScheduleEmployeeId(null);
+              setToast({ message: 'Schedule added successfully!', type: 'success' });
+            }
+          }}
         />
       )}
     </div>
