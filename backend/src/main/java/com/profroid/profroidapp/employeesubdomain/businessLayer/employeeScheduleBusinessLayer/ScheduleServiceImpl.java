@@ -203,8 +203,7 @@ public class ScheduleServiceImpl implements ScheduleService {
             case ELEVEN_AM -> 11 * 60;
             case ONE_PM -> 13 * 60;
             case THREE_PM -> 15 * 60;
-            case FOUR_PM -> 16 * 60;
-            case SIX_PM -> 18 * 60;
+            case FIVE_PM -> 17 * 60;
         };
     }
 

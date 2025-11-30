@@ -201,18 +201,18 @@ SELECT 2, day_of_week, time_slot FROM (
 -- The service enforces only one slot per day for these roles.
 -- For non-technicians, seed both start (9 AM) and end (6 PM) markers per day to reflect a full work day visually
 INSERT INTO schedules (employee_fk, day_of_week, time_slot) VALUES
-    (1, 'MONDAY', 'NINE_AM'),(1, 'MONDAY', 'SIX_PM'),
-    (1, 'TUESDAY', 'NINE_AM'),(1, 'TUESDAY', 'SIX_PM'),
-    (1, 'WEDNESDAY', 'NINE_AM'),(1, 'WEDNESDAY', 'SIX_PM'),
-    (1, 'THURSDAY', 'NINE_AM'),(1, 'THURSDAY', 'SIX_PM'),
-    (1, 'FRIDAY', 'NINE_AM'),(1, 'FRIDAY', 'SIX_PM'),
-    (3, 'MONDAY', 'NINE_AM'),(3, 'MONDAY', 'SIX_PM'),
-    (3, 'TUESDAY', 'NINE_AM'),(3, 'TUESDAY', 'SIX_PM'),
-    (3, 'WEDNESDAY', 'NINE_AM'),(3, 'WEDNESDAY', 'SIX_PM'),
-    (3, 'THURSDAY', 'NINE_AM'),(3, 'THURSDAY', 'SIX_PM'),
-    (3, 'FRIDAY', 'NINE_AM'),(3, 'FRIDAY', 'SIX_PM'),
-    (4, 'MONDAY', 'NINE_AM'),(4, 'MONDAY', 'SIX_PM'),
-    (4, 'TUESDAY', 'NINE_AM'),(4, 'TUESDAY', 'SIX_PM'),
-    (4, 'WEDNESDAY', 'NINE_AM'),(4, 'WEDNESDAY', 'SIX_PM'),
-    (4, 'THURSDAY', 'NINE_AM'),(4, 'THURSDAY', 'SIX_PM'),
-    (4, 'FRIDAY', 'NINE_AM'),(4, 'FRIDAY', 'SIX_PM');
+    (1, 'MONDAY', 'NINE_AM'),(1, 'MONDAY', 'FIVE_PM'),
+    (1, 'TUESDAY', 'NINE_AM'),(1, 'TUESDAY', 'FIVE_PM'),
+    (1, 'WEDNESDAY', 'NINE_AM'),(1, 'WEDNESDAY', 'FIVE_PM'),
+    (1, 'THURSDAY', 'NINE_AM'),(1, 'THURSDAY', 'FIVE_PM'),
+    (1, 'FRIDAY', 'NINE_AM'),(1, 'FRIDAY', 'FIVE_PM'),
+    (3, 'MONDAY', 'NINE_AM'),(3, 'MONDAY', 'FIVE_PM'),
+    (3, 'TUESDAY', 'NINE_AM'),(3, 'TUESDAY', 'FIVE_PM'),
+    (3, 'WEDNESDAY', 'NINE_AM'),(3, 'WEDNESDAY', 'FIVE_PM'),
+    (3, 'THURSDAY', 'NINE_AM'),(3, 'THURSDAY', 'FIVE_PM'),
+    (3, 'FRIDAY', 'NINE_AM'),(3, 'FRIDAY', 'FIVE_PM'),
+    (4, 'MONDAY', 'NINE_AM'),(4, 'MONDAY', 'FIVE_PM'),
+    (4, 'TUESDAY', 'NINE_AM'),(4, 'TUESDAY', 'FIVE_PM'),
+    (4, 'WEDNESDAY', 'NINE_AM'),(4, 'WEDNESDAY', 'FIVE_PM'),
+    (4, 'THURSDAY', 'NINE_AM'),(4, 'THURSDAY', 'FIVE_PM'),
+    (4, 'FRIDAY', 'NINE_AM'),(4, 'FRIDAY', 'FIVE_PM');
