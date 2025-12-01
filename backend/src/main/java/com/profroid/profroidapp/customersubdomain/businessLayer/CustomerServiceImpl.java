@@ -53,7 +53,37 @@ public class CustomerServiceImpl implements CustomerService {
 
     @Override
     public CustomerResponseModel updateCustomer(String customerId, CustomerRequestModel requestModel) {
-        return null;
+
+        // 1. Retrieve existing customer
+        Customer existingCustomer = customerRepository
+                .findCustomerByCustomerIdentifier_CustomerId(customerId);
+
+        if (existingCustomer == null) {
+            throw new EntityNotFoundException("Customer not found: " + customerId);
+        }
+
+        // 2. Update simple fields
+        existingCustomer.setFirstName(requestModel.getFirstName());
+        existingCustomer.setLastName(requestModel.getLastName());
+
+        // 3. Update address
+        existingCustomer.getCustomerAddress().setStreetAddress(requestModel.getStreetAddress());
+        existingCustomer.getCustomerAddress().setCity(requestModel.getCity());
+        existingCustomer.getCustomerAddress().setProvince(requestModel.getProvince());
+        existingCustomer.getCustomerAddress().setCountry(requestModel.getCountry());
+        existingCustomer.getCustomerAddress().setPostalCode(requestModel.getPostalCode());
+
+        // 4. Update phone numbers
+        existingCustomer.setPhoneNumbers(requestModel.getPhoneNumbers());
+
+        // 5. Update userId
+        existingCustomer.setUserId(requestModel.getUserId());
+
+        // 6. Save
+        Customer updatedCustomer = customerRepository.save(existingCustomer);
+
+        // 7. Return response
+        return customerResponseMapper.toResponseModel(updatedCustomer);
     }
 
     @Override
