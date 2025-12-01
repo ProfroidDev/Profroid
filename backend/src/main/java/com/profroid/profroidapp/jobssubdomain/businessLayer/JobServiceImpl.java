@@ -52,7 +52,22 @@ public class JobServiceImpl implements JobService {
 
     @Override
     public JobResponseModel updateJob(String jobId, JobRequestModel requestModel) {
-        return null;
+        Job foundJob = jobRepository.findJobByJobIdentifier_JobId(jobId);
+
+        if (foundJob == null) {
+            throw new EntityNotFoundException("Job not found: " + jobId);
+        }
+
+        // Update all job fields
+        foundJob.setJobName(requestModel.getJobName());
+        foundJob.setJobDescription(requestModel.getJobDescription());
+        foundJob.setHourlyRate(requestModel.getHourlyRate());
+        foundJob.setEstimatedDurationMinutes(requestModel.getEstimatedDurationMinutes());
+        foundJob.setJobType(requestModel.getJobType());
+        foundJob.setActive(requestModel.isActive());
+
+        Job updatedJob = jobRepository.save(foundJob);
+        return jobResponseMapper.toResponseModel(updatedJob);
     }
 
     @Override
@@ -63,7 +78,9 @@ public class JobServiceImpl implements JobService {
             throw new EntityNotFoundException("Job not found: " + jobId);
         }
 
-        jobRepository.delete(foundJob);
+        // Soft delete: set active to false instead of deleting
+        foundJob.setActive(false);
+        jobRepository.save(foundJob);
     }
 }
 

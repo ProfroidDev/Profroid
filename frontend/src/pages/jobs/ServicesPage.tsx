@@ -6,6 +6,7 @@ import { deleteJob } from "../../features/jobs/api/deleteJob";
 import type { JobResponseModel } from "../../features/jobs/models/JobResponseModel";
 import type { JobRequestModel } from "../../features/jobs/models/JobRequestModel";
 import "./ServicesPage.css";
+import { updateJob } from "../../features/jobs/api/updateJob";
 
 export default function ServicesPage(): React.ReactElement {
   const [jobs, setJobs] = useState<JobResponseModel[]>([]);
@@ -25,6 +26,20 @@ export default function ServicesPage(): React.ReactElement {
   const [jobToDelete, setJobToDelete] = useState<JobResponseModel | null>(null);
   const [deleteLoading, setDeleteLoading] = useState<boolean>(false);
   const [deleteError, setDeleteError] = useState<string>("");
+  const [updateModalOpen, setUpdateModalOpen] = useState<boolean>(false);
+  const [jobToUpdate, setJobToUpdate] = useState<JobResponseModel | null>(null);
+  const [updateLoading, setUpdateLoading] = useState<boolean>(false);
+  const [updateError, setUpdateError] = useState<string>("");
+  const [showUpdateSuccessNotification, setShowUpdateSuccessNotification] =
+    useState<boolean>(false);
+  const [updateFormData, setUpdateFormData] = useState<JobRequestModel>({
+    jobName: "",
+    jobDescription: "",
+    hourlyRate: 0,
+    estimatedDurationMinutes: 0,
+    jobType: "QUOTATION",
+    active: true,
+  });
   const [formData, setFormData] = useState<JobRequestModel>({
     jobName: "",
     jobDescription: "",
@@ -137,6 +152,107 @@ export default function ServicesPage(): React.ReactElement {
     }
   }
 
+  function openUpdateModal(jobId: string) {
+    const jobToUpdate = jobs.find((j) => j.jobId === jobId) || null;
+    if (jobToUpdate) {
+      setJobToUpdate(jobToUpdate);
+      setUpdateFormData({
+        jobName: jobToUpdate.jobName,
+        jobDescription: jobToUpdate.jobDescription,
+        hourlyRate: jobToUpdate.hourlyRate,
+        estimatedDurationMinutes: jobToUpdate.estimatedDurationMinutes,
+        jobType: jobToUpdate.jobType,
+        active: jobToUpdate.active,
+      });
+      setUpdateModalOpen(true);
+      setUpdateError("");
+    }
+  }
+
+  function closeUpdateModal() {
+    setUpdateModalOpen(false);
+    setJobToUpdate(null);
+    setUpdateFormData({
+      jobName: "",
+      jobDescription: "",
+      hourlyRate: 0,
+      estimatedDurationMinutes: 0,
+      jobType: "QUOTATION",
+      active: true,
+    });
+    setUpdateError("");
+  }
+
+  function handleUpdateFormChange(
+    e: React.ChangeEvent<
+      HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
+    >
+  ) {
+    const { name, value, type } = e.target;
+
+    if (type === "checkbox") {
+      const checked = (e.target as HTMLInputElement).checked;
+      setUpdateFormData((prev) => ({ ...prev, [name]: checked }));
+    } else if (type === "number") {
+      setUpdateFormData((prev) => ({
+        ...prev,
+        [name]: value === "" ? 0 : parseFloat(value) || 0,
+      }));
+    } else {
+      setUpdateFormData((prev) => ({ ...prev, [name]: value }));
+    }
+  }
+
+  async function handleUpdateJob() {
+    // Validate required fields
+    if (!updateFormData.jobName.trim()) {
+      setUpdateError("Job name is required");
+      return;
+    }
+    if (!updateFormData.jobDescription.trim()) {
+      setUpdateError("Job description is required");
+      return;
+    }
+    if (updateFormData.hourlyRate <= 0) {
+      setUpdateError("Hourly rate must be greater than 0");
+      return;
+    }
+    if (updateFormData.estimatedDurationMinutes <= 0) {
+      setUpdateError("Estimated duration must be greater than 0");
+      return;
+    }
+
+    if (!jobToUpdate) {
+      return;
+    }
+
+    setUpdateLoading(true);
+    setUpdateError("");
+
+    try {
+      const updatedJob = await updateJob(jobToUpdate.jobId, updateFormData);
+      // Update the job in the list
+      setJobs((prevJobs) =>
+        prevJobs.map((job) =>
+          job.jobId === updatedJob.jobId ? updatedJob : job
+        )
+      );
+      closeUpdateModal();
+      // Show success notification
+      setShowUpdateSuccessNotification(true);
+      // Auto-hide after 3 seconds
+      setTimeout(() => {
+        setShowUpdateSuccessNotification(false);
+      }, 3000);
+    } catch (error) {
+      setUpdateError(
+        error instanceof Error ? error.message : "Failed to update service"
+      );
+    } finally {
+      setUpdateLoading(false);
+    }
+  }
+
   function handleFormChange(
     e: React.ChangeEvent<
       HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
@@ -234,6 +350,12 @@ export default function ServicesPage(): React.ReactElement {
                     onClick={() => void openDetails(j.jobId)}
                   >
                     View Details
+                  </button>
+                  <button
+                    className="btn-view-light"
+                    onClick={() => void openUpdateModal(j.jobId)}
+                  >
+                    Modify
                   </button>
                 </div>
               </div>
@@ -499,7 +621,7 @@ export default function ServicesPage(): React.ReactElement {
         <div
           className="modal-overlay"
           role="dialog"
-          aria-modal="true"
+          aria-modal
           onClick={closeDeleteConfirm}
         >
           <div className="modal" onClick={(e) => e.stopPropagation()}>
@@ -572,6 +694,167 @@ export default function ServicesPage(): React.ReactElement {
               >
                 {deleteLoading ? "Deleting..." : "Delete"}
               </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {updateModalOpen && (
+        <div
+          className="modal-overlay"
+          role="dialog"
+          aria-modal
+          onClick={closeUpdateModal}
+        >
+          <div className="modal" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header">
+              <h3>Modify Service</h3>
+              <button
+                className="modal-close-light"
+                aria-label="Close"
+                onClick={closeUpdateModal}
+                disabled={updateLoading}
+              >
+                ✕
+              </button>
+            </div>
+
+            {updateError && <div className="error-message">{updateError}</div>}
+
+            <form
+              className="create-job-form"
+              onSubmit={(e) => {
+                e.preventDefault();
+                void handleUpdateJob();
+              }}
+            >
+              <div className="form-group">
+                <label htmlFor="updateJobName">Job Name *</label>
+                <input
+                  id="updateJobName"
+                  type="text"
+                  name="jobName"
+                  value={updateFormData.jobName}
+                  onChange={handleUpdateFormChange}
+                  placeholder="Enter job name"
+                  disabled={updateLoading}
+                />
+              </div>
+
+              <div className="form-group">
+                <label htmlFor="updateJobDescription">Description *</label>
+                <textarea
+                  id="updateJobDescription"
+                  name="jobDescription"
+                  value={updateFormData.jobDescription}
+                  onChange={handleUpdateFormChange}
+                  placeholder="Enter job description"
+                  disabled={updateLoading}
+                  rows={3}
+                />
+              </div>
+
+              <div className="form-row">
+                <div className="form-group">
+                  <label htmlFor="updateHourlyRate">Hourly Rate ($) *</label>
+                  <input
+                    id="updateHourlyRate"
+                    type="number"
+                    name="hourlyRate"
+                    value={updateFormData.hourlyRate || ""}
+                    onChange={handleUpdateFormChange}
+                    placeholder="0.00"
+                    step="0.01"
+                    disabled={updateLoading}
+                  />
+                </div>
+
+                <div className="form-group">
+                  <label htmlFor="updateEstimatedDurationMinutes">
+                    Duration (mins) *
+                  </label>
+                  <input
+                    id="updateEstimatedDurationMinutes"
+                    type="number"
+                    name="estimatedDurationMinutes"
+                    value={updateFormData.estimatedDurationMinutes || ""}
+                    onChange={handleUpdateFormChange}
+                    placeholder="0"
+                    disabled={updateLoading}
+                  />
+                </div>
+              </div>
+
+              <div className="form-row">
+                <div className="form-group">
+                  <label htmlFor="updateJobType">Job Type *</label>
+                  <select
+                    id="updateJobType"
+                    name="jobType"
+                    value={updateFormData.jobType}
+                    onChange={handleUpdateFormChange}
+                    disabled={updateLoading}
+                  >
+                    <option value="QUOTATION">Quotation</option>
+                    <option value="INSTALLATION">Installation</option>
+                    <option value="REPARATION">Reparation</option>
+                    <option value="MAINTENANCE">Maintenance</option>
+                  </select>
+                </div>
+
+                <div className="form-group checkbox-group">
+                  <label htmlFor="updateActive">
+                    <input
+                      id="updateActive"
+                      type="checkbox"
+                      name="active"
+                      checked={updateFormData.active}
+                      onChange={handleUpdateFormChange}
+                      disabled={updateLoading}
+                    />
+                    Active
+                  </label>
+                </div>
+              </div>
+
+              <div className="form-actions">
+                <button
+                  type="button"
+                  className="btn-cancel"
+                  onClick={closeUpdateModal}
+                  disabled={updateLoading}
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="btn-create"
+                  disabled={updateLoading}
+                >
+                  {updateLoading ? "Updating..." : "Update Service"}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {showUpdateSuccessNotification && (
+        <div className="success-notification">
+          <div className="success-content">
+            <div className="success-icon">
+              <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="black"
+                strokeWidth="3.5"
+              >
+                <polyline points="20 6 9 17 4 12"></polyline>
+              </svg>
+            </div>
+            <div className="success-text">
+              <h4>Service Updated Successfully</h4>
+              <p>The service has been modified</p>
             </div>
           </div>
         </div>
