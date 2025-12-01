@@ -32,4 +32,11 @@ public class CustomerController {
         CustomerResponseModel createdCustomer = customerService.createCustomer(requestModel);
         return ResponseEntity.ok(createdCustomer);
     }
+
+    @PutMapping("/{customerId}")
+    public ResponseEntity<CustomerResponseModel> updateCustomer(@PathVariable String customerId,
+                                                                @Valid @RequestBody CustomerRequestModel requestModel) {
+        CustomerResponseModel updatedCustomer = customerService.updateCustomer(customerId, requestModel);
+        return ResponseEntity.ok(updatedCustomer);
+    }
 }
