@@ -33,6 +33,11 @@ public class JobController {
         return ResponseEntity.status(HttpStatus.CREATED).body(jobService.createJob(requestModel));
     }
 
+    @PutMapping("/{jobId}")
+    public ResponseEntity<JobResponseModel> updateJob(@PathVariable String jobId, @Valid @RequestBody JobRequestModel requestModel){
+        return ResponseEntity.ok(jobService.updateJob(jobId, requestModel));
+    }
+
     @DeleteMapping("/{jobId}")
     public ResponseEntity<Void> deleteJob(@PathVariable String jobId){
         jobService.deleteJob(jobId);
