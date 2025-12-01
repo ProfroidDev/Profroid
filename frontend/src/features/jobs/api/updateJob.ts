@@ -7,7 +7,7 @@ export async function updateJob(
   requestModel: JobRequestModel
 ): Promise<JobResponseModel> {
   const response = await axios.put<JobResponseModel>(
-    `jobs/${jobId}`,
+    `/jobs/${jobId}`,
     requestModel
   );
   return response.data;
