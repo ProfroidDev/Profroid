@@ -75,3 +75,25 @@ CREATE TABLE IF NOT EXISTS schedules (
     UNIQUE (employee_fk, day_of_week, time_slot)
     );
 
+CREATE TABLE cellars (
+                         id INT AUTO_INCREMENT PRIMARY KEY,                 -- Internal DB ID
+
+                         cellar_id VARCHAR(36) NOT NULL UNIQUE,             -- Public UUID (CellarIdentifier)
+                         owner_customer_id VARCHAR(36) NOT NULL,            -- CustomerIdentifier
+
+                         name VARCHAR(255) NOT NULL,
+
+                         height DOUBLE,
+                         width DOUBLE,
+                         depth DOUBLE,
+
+                         bottle_capacity INT,
+
+                         has_cooling_system BOOLEAN NOT NULL,
+                         has_humidity_control BOOLEAN NOT NULL,
+                         has_auto_regulation BOOLEAN NOT NULL,
+
+                         cellar_type VARCHAR(50) NOT NULL                 -- Enum stored as string
+);
+
+
