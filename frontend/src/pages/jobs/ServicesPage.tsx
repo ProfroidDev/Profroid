@@ -242,7 +242,7 @@ export default function ServicesPage(): React.ReactElement {
                 onClick={() => void openDeleteConfirm(j.jobId)}
                 aria-label="Delete service"
                 title="Delete service"
-              >
+              ></button>
                 {/* Trash/Delete SVG icon */}
                 <svg
                   xmlns="http://www.w3.org/2000/svg"

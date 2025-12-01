@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { getCustomers } from "../../features/customer/api/getAllCustomers";
 import { getCustomer } from "../../features/customer/api/getCustomerById";
 import { createCustomer } from "../../features/customer/api/createCustomer";
+import { updateCustomer } from "../../features/customer/api/updateCustomer";
 
 import type { CustomerRequestModel } from "../../features/customer/models/CustomerRequestModel";
 import type { PhoneType } from "../../features/customer/models/CustomerPhoneNumber";
@@ -34,6 +35,22 @@ export default function CustomerListPage(): React.ReactElement {
   const [userId, setUserId] = useState("");
   const [createError, setCreateError] = useState<string | null>(null);
 
+  // Edit form
+  const [editModalOpen, setEditModalOpen] = useState(false);
+  const [editLoading, setEditLoading] = useState(false);
+  const [editError, setEditError] = useState<string | null>(null);
+
+  const [editFirstName, setEditFirstName] = useState("");
+  const [editLastName, setEditLastName] = useState("");
+  const [editPhoneType, setEditPhoneType] = useState<PhoneType>("MOBILE");
+  const [editPhoneNumber, setEditPhoneNumber] = useState("");
+  const [editStreetAddress, setEditStreetAddress] = useState("");
+  const [editCity, setEditCity] = useState("");
+  const [editProvince, setEditProvince] = useState("");
+  const [editCountry, setEditCountry] = useState("");
+  const [editPostalCode, setEditPostalCode] = useState("");
+  const [editUserId, setEditUserId] = useState("");
+
   useEffect(() => {
     async function load() {
       setLoading(true);
@@ -58,14 +75,35 @@ export default function CustomerListPage(): React.ReactElement {
     }
   }
 
+  async function openEditFromList(customerId: string) {
+    setEditError(null);
+    setDetailLoading(true);
+    try {
+      const data = await getCustomer(customerId);
+      setSelectedCustomer(data);
+
+      setEditFirstName(data.firstName ?? "");
+      setEditLastName(data.lastName ?? "");
+      setEditPhoneType(data.phoneNumbers?.[0]?.type ?? "MOBILE");
+      setEditPhoneNumber(data.phoneNumbers?.[0]?.number ?? "");
+      setEditStreetAddress(data.streetAddress ?? "");
+      setEditCity(data.city ?? "");
+      setEditProvince(data.province ?? "");
+      setEditCountry(data.country ?? "");
+      setEditPostalCode(data.postalCode ?? "");
+      setEditUserId(data.userId ?? "");
+
+      setEditModalOpen(true);
+    } finally {
+      setDetailLoading(false);
+    }
+  }
+
   function closeDetails() {
     setModalOpen(false);
     setSelectedCustomer(null);
   }
 
-  /* ---------------------------------------------
-     CREATE CUSTOMER HANDLER
-  --------------------------------------------- */
   async function handleCreate(e: React.FormEvent) {
     e.preventDefault();
     setCreateLoading(true);
@@ -109,6 +147,39 @@ export default function CustomerListPage(): React.ReactElement {
     }
   }
 
+  async function handleUpdate(e: React.FormEvent) {
+    e.preventDefault();
+    if (!selectedCustomer) return;
+
+    setEditLoading(true);
+    setEditError(null);
+
+    const req: CustomerRequestModel = {
+      firstName: editFirstName.trim(),
+      lastName: editLastName.trim(),
+      phoneNumbers: editPhoneNumber ? [{ type: editPhoneType, number: editPhoneNumber }] : [],
+      streetAddress: editStreetAddress.trim(),
+      city: editCity.trim(),
+      province: editProvince.trim(),
+      country: editCountry.trim(),
+      postalCode: editPostalCode.trim(),
+      userId: editUserId.trim(),
+    };
+
+    try {
+      const updated = await updateCustomer(selectedCustomer.customerId, req);
+
+      setCustomers((prev) => prev.map((c) => (c.customerId === updated.customerId ? updated : c)));
+      setSelectedCustomer(updated);
+      setEditModalOpen(false);
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    } catch (err) {
+      setEditError("Failed to update customer. Try again.");
+    } finally {
+      setEditLoading(false);
+    }
+  }
+
   return (
     <div className="customers-page-light">
       <h2 className="customers-title-light">Customers</h2>
@@ -138,6 +209,13 @@ export default function CustomerListPage(): React.ReactElement {
                       onClick={() => openDetails(c.customerId)}
                     >
                       View Details
+                    </button>
+                    <button
+                      className="btn-view-light"
+                      onClick={() => openEditFromList(c.customerId)}
+                      style={{ marginLeft: 8 }}
+                    >
+                      Edit
                     </button>
                   </td>
                 </tr>
@@ -341,6 +419,148 @@ export default function CustomerListPage(): React.ReactElement {
                     type="button"
                     className="btn-cancel"
                     onClick={() => setCreateModalOpen(false)}
+                  >
+                    Cancel
+                  </button>
+                </div>
+
+              </form>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ============================
+          EDIT CUSTOMER MODAL
+      ================================ */}
+      {editModalOpen && (
+        <div className="modal-overlay-light">
+          <div className="modal-container-light">
+
+            <div className="modal-header-light">
+              <h3>Edit Customer</h3>
+              <button
+                className="modal-close-light"
+                onClick={() => {
+                  setEditModalOpen(false);
+                  setEditError(null);
+                }}
+              >
+                ✕
+              </button>
+            </div>
+
+            <div className="modal-content-light">
+
+              {editError && <div className="error-message">{editError}</div>}
+
+              <form className="create-customer-form" onSubmit={handleUpdate}>
+
+                <h4 className="form-section-title">Personal Details</h4>
+                <div className="form-row">
+                  <div className="form-group">
+                    <label>First Name</label>
+                    <input
+                      value={editFirstName}
+                      onChange={(e) => setEditFirstName(e.target.value)}
+                      required
+                    />
+                  </div>
+                  <div className="form-group">
+                    <label>Last Name</label>
+                    <input
+                      value={editLastName}
+                      onChange={(e) => setEditLastName(e.target.value)}
+                      required
+                    />
+                  </div>
+                </div>
+
+                <h4 className="form-section-title">Contact Information</h4>
+                <div className="form-row">
+                  <div className="form-group">
+                    <label>Phone Type</label>
+                    <select
+                      value={editPhoneType}
+                      onChange={(e) => setEditPhoneType(e.target.value as PhoneType)}
+                    >
+                      <option value="MOBILE">Mobile</option>
+                      <option value="HOME">Home</option>
+                      <option value="WORK">Work</option>
+                    </select>
+                  </div>
+
+                  <div className="form-group">
+                    <label>Phone Number</label>
+                    <input
+                      value={editPhoneNumber}
+                      onChange={(e) => setEditPhoneNumber(e.target.value)}
+                    />
+                  </div>
+                </div>
+
+                <h4 className="form-section-title">Address</h4>
+
+                <div className="form-group">
+                  <label>Street Address</label>
+                  <input
+                    value={editStreetAddress}
+                    onChange={(e) => setEditStreetAddress(e.target.value)}
+                  />
+                </div>
+
+                <div className="form-row">
+                  <div className="form-group">
+                    <label>City</label>
+                    <input
+                      value={editCity}
+                      onChange={(e) => setEditCity(e.target.value)}
+                    />
+                  </div>
+
+                  <div className="form-group">
+                    <label>Province</label>
+                    <input
+                      value={editProvince}
+                      onChange={(e) => setEditProvince(e.target.value)}
+                    />
+                  </div>
+                </div>
+
+                <div className="form-row">
+                  <div className="form-group">
+                    <label>Country</label>
+                    <input
+                      value={editCountry}
+                      onChange={(e) => setEditCountry(e.target.value)}
+                    />
+                  </div>
+
+                  <div className="form-group">
+                    <label>Postal Code</label>
+                    <input
+                      value={editPostalCode}
+                      onChange={(e) => setEditPostalCode(e.target.value)}
+                    />
+                  </div>
+                </div>
+
+                <div className="form-group">
+                  <label>User ID</label>
+                  <input
+                    value={editUserId}
+                    onChange={(e) => setEditUserId(e.target.value)}
+                  />
+                </div>
+
+                <div className="form-actions">
+                  <button className="btn-create" type="submit" disabled={editLoading}>
+                    {editLoading ? "Saving..." : "Save Changes"}
+                  </button>
+                  <button
+                    type="button"
+                    className="btn-cancel"
+                    onClick={() => setEditModalOpen(false)}
                   >
                     Cancel
                   </button>
