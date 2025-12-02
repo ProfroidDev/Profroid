@@ -34,6 +34,8 @@ export default function EmployeeEditModal({ isOpen, employee, onClose, onSuccess
     phoneNumbers: [{ number: '', type: 'MOBILE' }],
     role: roles[0],
   });
+  // Track original role to enforce allowed transitions on the UI
+  const [originalRole, setOriginalRole] = useState<EmployeeRoleType>('SUPPORT');
 
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState(false);
@@ -66,8 +68,20 @@ export default function EmployeeEditModal({ isOpen, employee, onClose, onSuccess
         phoneNumbers: phones.length > 0 ? phones : [{ number: '', type: 'MOBILE' }],
         role: roleType,
       });
+      setOriginalRole(roleType);
     }
   }, [employee]);
+
+  // Determine allowed role options based on original role
+  const allowedRoles: EmployeeRoleType[] = (() => {
+    const isOriginalTech = originalRole === 'TECHNICIAN';
+    if (isOriginalTech) {
+      // Technician can only remain Technician
+      return ['TECHNICIAN'];
+    }
+    // Non-technicians can switch among ADMIN/SUPPORT/SALES, but cannot become TECHNICIAN
+    return ['ADMIN', 'SUPPORT', 'SALES'];
+  })();
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
@@ -257,12 +271,17 @@ export default function EmployeeEditModal({ isOpen, employee, onClose, onSuccess
                 value={formData.role}
                 onChange={handleInputChange}
               >
-                {roles.map(role => (
+                {allowedRoles.map(role => (
                   <option key={role} value={role}>
                     {role}
                   </option>
                 ))}
               </select>
+              <span className="field-info" style={{ fontSize: '0.85rem', color: '#6b6b6b' }}>
+                {originalRole === 'TECHNICIAN'
+                  ? 'Technician cannot change to ADMIN/SUPPORT/SALES.'
+                  : 'ADMIN/SUPPORT/SALES can switch between each other; cannot become TECHNICIAN.'}
+              </span>
             </div>
           </div>
 

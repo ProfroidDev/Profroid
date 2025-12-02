@@ -115,7 +115,7 @@ public class EmployeeServiceImpl implements EmployeeService {
                         "Invalid role change: TECHNICIAN cannot change to ADMIN/SUPPORT/SALES and vice versa."
                 );
             }
-            // Role changes within non-technician group (ADMIN/SUPPORT/SALES) are allowed even if schedules exist.
+            
         }
 
         existingEmployee.setFirstName(employeeRequestModel.getFirstName());

@@ -153,7 +153,7 @@ export default function AddScheduleModal({ employeeId, isTechnician, onClose, on
     try {
       setSubmitting(true);
       await addEmployeeSchedule(payload);
-      alert('Schedule added successfully');
+      // Success handled by parent via onAdded (which shows toast). Remove intrusive alert.
       onAdded();
       onClose();
     } catch (e: unknown) {

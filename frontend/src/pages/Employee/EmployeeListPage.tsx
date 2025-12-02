@@ -268,7 +268,7 @@ export default function EmployeeListPage(): React.ReactElement {
             )}
             {!scheduleLoading && employeeSchedule.length > 0 && (
               <div className="modal-content-light">
-                <div className="modal-section">
+                <div className="modal-section schedule-calendar-section">
                   <h4 className="modal-label">Select Date</h4>
                   <div className="calendar-center">
                     <Calendar

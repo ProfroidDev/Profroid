@@ -173,12 +173,35 @@
   align-items: center;
   width: 100%;
   margin-bottom: 18px;
+  /* Ensure inner calendar doesn't stick left */
+  padding: 4px 0;
+}
+.schedule-calendar-section {
+  display: grid;
+  grid-template-columns: 140px 1fr;
+  column-gap: 16px;
+  align-items: start;
+  margin-bottom: 12px;
+}
+.schedule-calendar-section .modal-label {
+  grid-column: 1;
+  margin: 8px 0 0 4px;
+  text-align: left;
+}
+.schedule-calendar-section .calendar-center {
+  grid-column: 2;
+  justify-content: flex-start;
+}
+.schedule-calendar-section .react-calendar {
+  margin: 0 auto; /* center within second column */
+  width: auto;
 }
 .react-calendar {
   border: none;
   border-radius: 16px;
   box-shadow: 0 2px 12px rgba(122,9,1,0.07);
   font-family: 'Georgia', serif;
+  margin: 0 auto; /* Explicit centering */
 }
 .react-calendar__tile {
   border-radius: 8px;
