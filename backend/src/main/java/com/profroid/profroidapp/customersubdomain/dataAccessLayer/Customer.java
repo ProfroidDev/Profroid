@@ -17,6 +17,10 @@ public class Customer {
     private Integer id;
 
     @Embedded
+    @AttributeOverride(
+            name = "customerId",
+            column = @Column(name = "customer_id", nullable = false, unique = true)
+    )
     private CustomerIdentifier customerIdentifier;
 
     private String firstName;

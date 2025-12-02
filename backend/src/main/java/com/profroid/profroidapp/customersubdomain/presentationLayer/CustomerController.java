@@ -1,6 +1,10 @@
 package com.profroid.profroidapp.customersubdomain.presentationLayer;
 
+import com.profroid.profroidapp.cellarsubdomain.businessLayer.CellarService;
+import com.profroid.profroidapp.cellarsubdomain.presentationLayer.CellarResponseModel;
 import com.profroid.profroidapp.customersubdomain.businessLayer.CustomerService;
+import com.profroid.profroidapp.customersubdomain.presentationLayer.CustomerRequestModel;
+import com.profroid.profroidapp.customersubdomain.presentationLayer.CustomerResponseModel;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -12,9 +16,11 @@ import java.util.List;
 public class CustomerController {
 
     private final CustomerService customerService;
+    private final CellarService cellarService;
 
-    public CustomerController(CustomerService customerService) {
+    public CustomerController(CustomerService customerService, CellarService cellarService) {
         this.customerService = customerService;
+        this.cellarService = cellarService;
     }
 
     @GetMapping
@@ -31,6 +37,30 @@ public class CustomerController {
     public ResponseEntity<CustomerResponseModel> createCustomer( @Valid @RequestBody CustomerRequestModel requestModel) {
         CustomerResponseModel createdCustomer = customerService.createCustomer(requestModel);
         return ResponseEntity.ok(createdCustomer);
+    }
+
+
+
+    ///Cellars////
+    @GetMapping("/{customerId}/cellars")
+    public ResponseEntity<List<CellarResponseModel>> getAllCellars(
+            @PathVariable String customerId) {
+
+        List<CellarResponseModel> responseModels =
+                cellarService.getAllCellars(customerId);
+
+        return ResponseEntity.ok(responseModels);
+    }
+
+    @GetMapping("/{customerId}/cellars/{cellarId}")
+    public ResponseEntity<CellarResponseModel> getCellarById(
+            @PathVariable String customerId,
+            @PathVariable String cellarId) {
+
+        CellarResponseModel responseModel =
+                cellarService.getCellarById(customerId, cellarId);
+
+        return ResponseEntity.ok(responseModel);
     }
 
     @PutMapping("/{customerId}")

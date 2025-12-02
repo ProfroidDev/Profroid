@@ -216,3 +216,59 @@ INSERT INTO schedules (employee_fk, day_of_week, time_slot) VALUES
     (4, 'WEDNESDAY', 'NINE_AM'),(4, 'WEDNESDAY', 'FIVE_PM'),
     (4, 'THURSDAY', 'NINE_AM'),(4, 'THURSDAY', 'FIVE_PM'),
     (4, 'FRIDAY', 'NINE_AM'),(4, 'FRIDAY', 'FIVE_PM');
+
+INSERT INTO cellars (
+    cellar_id, owner_customer_id, name,
+    height, width, depth, bottle_capacity,
+    has_cooling_system, has_humidity_control, has_auto_regulation,
+    cellar_type
+) VALUES
+      (UUID(), '123e4567-e89b-12d3-a456-426614174000', 'Toronto Basement Cellar',
+       220, 300, 250, 500,
+       TRUE, TRUE, FALSE,
+       'PRIVATE'),
+
+      (UUID(), '223e4567-e89b-12d3-a456-426614174001', 'Vancouver Wine Cabinet',
+       180, 90, 60, 120,
+       TRUE, FALSE, FALSE,
+       'MODULAR'),
+
+      (UUID(), '323e4567-e89b-12d3-a456-426614174002', 'Montreal Aging Cellar',
+       210, 280, 240, 800,
+       TRUE, TRUE, TRUE,
+       'COMMERCIAL'),
+
+      (UUID(), '423e4567-e89b-12d3-a456-426614174003', 'Calgary Showcase Cellar',
+       200, 250, 200, 350,
+       FALSE, FALSE, FALSE,
+       'COMMERCIAL'),
+
+      (UUID(), '523e4567-e89b-12d3-a456-426614174004', 'Halifax Small Cellar',
+       150, 120, 80, 60,
+       TRUE, FALSE, FALSE,
+       'MODULAR'),
+
+      (UUID(), '623e4567-e89b-12d3-a456-426614174005', 'Winnipeg Cooling Cellar',
+       260, 320, 300, 1000,
+       TRUE, TRUE, TRUE,
+       'PROFESSIONAL'),
+
+      (UUID(), '723e4567-e89b-12d3-a456-426614174006', 'Edmonton Wine Wall',
+       190, 180, 35, 90,
+       FALSE, FALSE, FALSE,
+       'PROFESSIONAL'),
+
+      (UUID(), '823e4567-e89b-12d3-a456-426614174007', 'Quebec City Premium Cellar',
+       240, 300, 260, 700,
+       TRUE, TRUE, TRUE,
+       'PROFESSIONAL'),
+
+      (UUID(), '923e4567-e89b-12d3-a456-426614174008', 'Regina Wine Storage',
+       200, 260, 240, 450,
+       TRUE, FALSE, FALSE,
+       'PRIVATE'),
+
+      (UUID(), 'a23e4567-e89b-12d3-a456-426614174009', 'St Johns Coastal Cellar',
+       180, 200, 180, 250,
+       TRUE, TRUE, FALSE,
+       'PRIVATE');
