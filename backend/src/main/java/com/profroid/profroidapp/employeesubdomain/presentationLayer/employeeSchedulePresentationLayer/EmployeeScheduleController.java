@@ -36,4 +36,14 @@ public class EmployeeScheduleController {
         return ResponseEntity.status(HttpStatus.CREATED).body(createdSchedule);
     }
 
+    @PutMapping()
+    public ResponseEntity<List<EmployeeScheduleResponseModel>> updateEmployeeSchedule(
+            @PathVariable String employeeId,
+            @Valid @RequestBody List<EmployeeScheduleRequestModel> scheduleRequests) {
+        List<EmployeeScheduleResponseModel> updatedSchedule = scheduleService.updateEmployeeSchedule(employeeId, scheduleRequests);
+        return ResponseEntity.ok().body(updatedSchedule);
+    }
+
+
+
 }

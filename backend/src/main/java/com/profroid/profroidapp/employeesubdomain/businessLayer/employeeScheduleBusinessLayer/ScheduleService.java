@@ -14,4 +14,5 @@ public interface ScheduleService {
 
     List<EmployeeScheduleResponseModel> addEmployeeSchedule(String employeeId, List<EmployeeScheduleRequestModel> scheduleRequests);
 
+    List<EmployeeScheduleResponseModel> updateEmployeeSchedule(String employeeId, @Valid List<EmployeeScheduleRequestModel> scheduleRequests);
 }
