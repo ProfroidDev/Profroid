@@ -1,6 +1,7 @@
 package com.profroid.profroidapp.utils.handlers;
 
 import com.profroid.profroidapp.utils.exceptions.InvalidIdentifierException;
+import com.profroid.profroidapp.utils.exceptions.InvalidOperationException;
 import com.profroid.profroidapp.utils.exceptions.ResourceAlreadyExistsException;
 import com.profroid.profroidapp.utils.exceptions.ResourceNotFoundException;
 import org.springframework.http.HttpStatus;
@@ -25,6 +26,12 @@ public class GlobalControllerExceptionHandler{
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     @ExceptionHandler(MissingDataException.class)
     public String handleMissingDataException(MissingDataException ex) {
+        return ex.getMessage();
+    }
+
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    @ExceptionHandler(InvalidOperationException.class)
+    public String handleInvalidOperationException(InvalidOperationException ex) {
         return ex.getMessage();
     }
 
