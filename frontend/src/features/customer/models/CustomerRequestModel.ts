@@ -11,4 +11,5 @@ export interface CustomerRequestModel {
   province: string;
   country: string;
   postalCode: string;
+  userId: string;
 }

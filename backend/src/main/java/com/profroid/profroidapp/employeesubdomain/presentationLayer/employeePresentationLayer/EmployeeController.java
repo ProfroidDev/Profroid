@@ -35,6 +35,12 @@ public class EmployeeController {
     @PostMapping()
     public ResponseEntity<EmployeeResponseModel> addEmployee(@Valid @RequestBody EmployeeRequestModel employeeRequestModel) {
         EmployeeResponseModel created = this.employeeService.addEmployee(employeeRequestModel);
-        return ResponseEntity.status(HttpStatus.OK).body(created);
+        return ResponseEntity.status(HttpStatus.CREATED).body(created);
+    }
+
+    @PutMapping("/{employeeId}")
+    public ResponseEntity<EmployeeResponseModel> updateEmployee(@PathVariable String employeeId, @Valid @RequestBody EmployeeRequestModel employeeRequestModel) {
+        EmployeeResponseModel updated = this.employeeService.updateEmployee(employeeId, employeeRequestModel);
+        return ResponseEntity.status(HttpStatus.OK).body(updated);
     }
 }

@@ -7,6 +7,7 @@ import { getEmployeeSchedule } from "../../features/employee/api/getEmployeeSche
 import Calendar from 'react-calendar';
 import 'react-calendar/dist/Calendar.css';
 import EmployeeAddModal from "../../components/EmployeeAddModal";
+import EmployeeEditModal from "../../components/EmployeeEditModal";
 import Toast from "../../shared/components/Toast";
 import AddScheduleModal from "../../features/employee/components/AddScheduleModal";
 
@@ -29,6 +30,10 @@ export default function EmployeeListPage(): React.ReactElement {
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [addModalOpen, setAddModalOpen] = useState<boolean>(false);
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' | 'info' } | null>(null);
+
+  // Edit modal state
+  const [editModalOpen, setEditModalOpen] = useState<boolean>(false);
+  const [editEmployee, setEditEmployee] = useState<EmployeeResponseModel | null>(null);
 
   useEffect(() => {
     async function load() {
@@ -106,6 +111,11 @@ export default function EmployeeListPage(): React.ReactElement {
     }
   }
 
+  function openEditModal(employee: EmployeeResponseModel) {
+    setEditEmployee(employee);
+    setEditModalOpen(true);
+  }
+
   return (
     <div className="employees-page-light">
       <h2 className="employees-title-light">Employees</h2>
@@ -142,6 +152,13 @@ export default function EmployeeListPage(): React.ReactElement {
                       onClick={() => openDetails(e)}
                     >
                       View Details
+                    </button>
+                    <button
+                      className="btn-view-light"
+                      style={{ marginLeft: 8 }}
+                      onClick={() => openEditModal(e)}
+                    >
+                      Edit
                     </button>
                     <button
                       className="btn-view-light"
@@ -251,7 +268,7 @@ export default function EmployeeListPage(): React.ReactElement {
             )}
             {!scheduleLoading && employeeSchedule.length > 0 && (
               <div className="modal-content-light">
-                <div className="modal-section">
+                <div className="modal-section schedule-calendar-section">
                   <h4 className="modal-label">Select Date</h4>
                   <div className="calendar-center">
                     <Calendar
@@ -331,6 +348,33 @@ export default function EmployeeListPage(): React.ReactElement {
               setAddScheduleEmployeeId(null);
               setToast({ message: 'Schedule added successfully!', type: 'success' });
             }
+          }}
+        />
+      )}
+
+      {editModalOpen && editEmployee && (
+        <EmployeeEditModal
+          isOpen={editModalOpen}
+          employee={editEmployee}
+          onClose={() => {
+            setEditModalOpen(false);
+            setEditEmployee(null);
+          }}
+          onSuccess={() => {
+            setToast({ message: 'Employee updated successfully!', type: 'success' });
+            // Refresh employee list
+            async function load() {
+              setLoading(true);
+              try {
+                const data = await getEmployees();
+                setEmployees(data);
+              } catch (error) {
+                console.error("Error fetching employees:", error);
+              } finally {
+                setLoading(false);
+              }
+            }
+            load();
           }}
         />
       )}
