@@ -3,6 +3,7 @@ DROP TABLE IF EXISTS customer_phonenumbers;
 DROP TABLE IF EXISTS jobs;
 DROP TABLE IF EXISTS schedules;
 DROP TABLE IF EXISTS employees;
+DROP TABLE IF EXISTS cellars;
 DROP TABLE IF EXISTS customers;
 
 
