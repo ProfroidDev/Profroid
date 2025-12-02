@@ -3,6 +3,8 @@ package com.profroid.profroidapp.customersubdomain.presentationLayer;
 import com.profroid.profroidapp.cellarsubdomain.businessLayer.CellarService;
 import com.profroid.profroidapp.cellarsubdomain.presentationLayer.CellarResponseModel;
 import com.profroid.profroidapp.customersubdomain.businessLayer.CustomerService;
+import com.profroid.profroidapp.customersubdomain.presentationLayer.CustomerRequestModel;
+import com.profroid.profroidapp.customersubdomain.presentationLayer.CustomerResponseModel;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
