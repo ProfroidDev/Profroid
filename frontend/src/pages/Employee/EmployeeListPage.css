@@ -99,6 +99,8 @@
   box-shadow: 0 2px 8px rgba(122,9,1,0.08);
   margin-bottom: 4px;
   transition: background 0.2s, box-shadow 0.2s, transform 0.2s;
+  white-space: nowrap;
+  min-width: fit-content;
 }
 
 .btn-view-light:hover {

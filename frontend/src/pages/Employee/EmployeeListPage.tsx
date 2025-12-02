@@ -10,6 +10,7 @@ import EmployeeAddModal from "../../components/EmployeeAddModal";
 import EmployeeEditModal from "../../components/EmployeeEditModal";
 import Toast from "../../shared/components/Toast";
 import AddScheduleModal from "../../features/employee/components/AddScheduleModal";
+import UpdateScheduleModal from "../../features/employee/components/UpdateScheduleModal";
 
 import "./EmployeeListPage.css";
 
@@ -35,6 +36,9 @@ export default function EmployeeListPage(): React.ReactElement {
   const [editModalOpen, setEditModalOpen] = useState<boolean>(false);
   const [editEmployee, setEditEmployee] = useState<EmployeeResponseModel | null>(null);
 
+  // Update schedule modal state
+  const [updateScheduleOpen, setUpdateScheduleOpen] = useState<boolean>(false);
+
   useEffect(() => {
     async function load() {
       setLoading(true);
@@ -55,7 +59,6 @@ export default function EmployeeListPage(): React.ReactElement {
     setModalOpen(true);
     setDetailLoading(true);
     try {
-      // Extract ID from the employeeIdentifier value object
       const employeeId = (employee.employeeIdentifier as EmployeeResponseModel['employeeIdentifier'] & Record<string, unknown>)?.employeeId;
       
       if (employeeId) {
@@ -292,6 +295,9 @@ export default function EmployeeListPage(): React.ReactElement {
                     })()}
                   </ul>
                 </div>
+                <div className="modal-section">
+                  <button className="btn-view-light" onClick={() => setUpdateScheduleOpen(true)}>Update Schedule</button>
+                </div>
               </div>
             )}
             {!scheduleLoading && employeeSchedule.length === 0 && (
@@ -375,6 +381,24 @@ export default function EmployeeListPage(): React.ReactElement {
               }
             }
             load();
+          }}
+        />
+      )}
+
+      {updateScheduleOpen && scheduleEmployeeData && employeeSchedule.length > 0 && (
+        <UpdateScheduleModal
+          employeeId={String((scheduleEmployeeData.employeeIdentifier as EmployeeResponseModel['employeeIdentifier'] & Record<string, unknown>)?.employeeId)}
+          isTechnician={String((scheduleEmployeeData.employeeRole as unknown as Record<string, string>)?.employeeRoleType || "").toUpperCase() === 'TECHNICIAN'}
+          existingSchedule={employeeSchedule}
+          onClose={() => setUpdateScheduleOpen(false)}
+          onUpdated={async () => {
+            const employeeId = String((scheduleEmployeeData.employeeIdentifier as EmployeeResponseModel['employeeIdentifier'] & Record<string, unknown>)?.employeeId);
+            if (employeeId) {
+              const scheduleData = await getEmployeeSchedule(employeeId);
+              setEmployeeSchedule(scheduleData);
+              setUpdateScheduleOpen(false);
+              setToast({ message: 'Schedule updated successfully!', type: 'success' });
+            }
           }}
         />
       )}
