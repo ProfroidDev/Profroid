@@ -1,0 +1,246 @@
+package com.profroid.profroidapp.EmployeeTesting.businessLayer.employeeBusinessLayer;
+
+import com.profroid.profroidapp.employeesubdomain.businessLayer.employeeBusinessLayer.EmployeeServiceImpl;
+import com.profroid.profroidapp.employeesubdomain.dataAccessLayer.employeeDataAccessLayer.Employee;
+import com.profroid.profroidapp.employeesubdomain.dataAccessLayer.employeeDataAccessLayer.EmployeeIdentifier;
+import com.profroid.profroidapp.employeesubdomain.dataAccessLayer.employeeDataAccessLayer.EmployeeRepository;
+import com.profroid.profroidapp.employeesubdomain.dataAccessLayer.employeeDataAccessLayer.EmployeeRole;
+import com.profroid.profroidapp.employeesubdomain.dataAccessLayer.employeeDataAccessLayer.EmployeeRoleType;
+import com.profroid.profroidapp.employeesubdomain.dataAccessLayer.employeeScheduleDataAccessLayer.ScheduleRepository;
+import com.profroid.profroidapp.employeesubdomain.mappingLayer.employeeMappers.EmployeeRequestMapper;
+import com.profroid.profroidapp.employeesubdomain.mappingLayer.employeeMappers.EmployeeResponseMapper;
+import com.profroid.profroidapp.employeesubdomain.presentationLayer.employeePresentationLayer.EmployeeRequestModel;
+import com.profroid.profroidapp.employeesubdomain.presentationLayer.employeePresentationLayer.EmployeeResponseModel;
+import com.profroid.profroidapp.utils.exceptions.InvalidIdentifierException;
+import com.profroid.profroidapp.utils.exceptions.InvalidOperationException;
+import com.profroid.profroidapp.utils.exceptions.ResourceAlreadyExistsException;
+import com.profroid.profroidapp.utils.exceptions.ResourceNotFoundException;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.*;
+
+@ExtendWith(MockitoExtension.class)
+public class EmployeeServiceUnitTest {
+
+    @Mock
+    private EmployeeRepository employeeRepository;
+    @Mock private EmployeeRequestMapper employeeRequestMapper;
+    @Mock private EmployeeResponseMapper employeeResponseMapper;
+    @Mock private ScheduleRepository scheduleRepository;
+
+    @InjectMocks
+    private EmployeeServiceImpl employeeService;
+
+    private final String VALID_EMPLOYEE_ID = "00000000-0000-0000-0000-000000000000"; // 36-char UUID
+    private final String INVALID_EMPLOYEE_ID = "invalid-id"; // not 36-char UUID
+    private final String NON_EXISTING_EMPLOYEE_ID = "11111111-1111-1111-1111-111111111111"; // 36-char UUID not found
+
+    private Employee existingEmployee;
+    private EmployeeResponseModel existingEmployeeResponse;
+    private EmployeeRequestModel validRequest;
+
+    @BeforeEach
+    void setup() {
+    existingEmployee = new Employee();
+    existingEmployee.setEmployeeIdentifier(new EmployeeIdentifier(VALID_EMPLOYEE_ID));
+    existingEmployee.setFirstName("John");
+    existingEmployee.setLastName("Doe");
+    existingEmployee.setUserId("johndoe");
+    EmployeeRole role = new EmployeeRole();
+    role.setEmployeeRoleType(EmployeeRoleType.TECHNICIAN);
+    existingEmployee.setEmployeeRole(role);
+
+    existingEmployeeResponse = EmployeeResponseModel.builder()
+        .employeeIdentifier(new EmployeeIdentifier(VALID_EMPLOYEE_ID))
+        .firstName("John")
+        .lastName("Doe")
+        .userId("johndoe")
+        .employeeRole(role)
+        .build();
+
+    validRequest = EmployeeRequestModel.builder()
+        .firstName("John")
+        .lastName("Doe")
+        .userId("johndoe")
+        .employeeRole(role)
+        .build();
+    }
+
+    // [Employee-Service][Unit Test][Positive] Get all employees -> returns list
+    @Test
+    void getAllEmployees_returnsList() {
+    when(employeeRepository.findAll()).thenReturn(Arrays.asList(existingEmployee, existingEmployee));
+    when(employeeResponseMapper.toResponseModelList(any(List.class)))
+        .thenReturn(Arrays.asList(existingEmployeeResponse, existingEmployeeResponse));
+
+    List<EmployeeResponseModel> result = employeeService.getAllEmployees();
+    assertEquals(2, result.size());
+    verify(employeeRepository).findAll();
+    verify(employeeResponseMapper).toResponseModelList(any(List.class));
+    }
+
+    // [Employee-Service][Unit Test][Positive] Get employee by ID (valid) -> returns employee
+    @Test
+    void getEmployeeById_valid_returnsEmployee() {
+    when(employeeRepository.findEmployeeByEmployeeIdentifier_EmployeeId(VALID_EMPLOYEE_ID))
+        .thenReturn(existingEmployee);
+    when(employeeResponseMapper.toResponseModel(any(Employee.class)))
+        .thenReturn(existingEmployeeResponse);
+
+    EmployeeResponseModel response = employeeService.getEmployeeById(VALID_EMPLOYEE_ID);
+    assertEquals(VALID_EMPLOYEE_ID, response.getEmployeeIdentifier().getEmployeeId());
+    verify(employeeRepository).findEmployeeByEmployeeIdentifier_EmployeeId(VALID_EMPLOYEE_ID);
+    }
+
+    // [Employee-Service][Unit Test][Negative] Get employee by ID (invalid) -> throws InvalidIdentifierException
+    @Test
+    void getEmployeeById_invalid_throwsInvalidIdentifier() {
+    assertThrows(InvalidIdentifierException.class,
+        () -> employeeService.getEmployeeById(INVALID_EMPLOYEE_ID));
+    verify(employeeRepository, never()).findEmployeeByEmployeeIdentifier_EmployeeId(anyString());
+    }
+
+    // [Employee-Service][Unit Test][Negative] Get employee by ID (not found) -> throws ResourceNotFoundException
+    @Test
+    void getEmployeeById_notFound_throwsResourceNotFound() {
+    when(employeeRepository.findEmployeeByEmployeeIdentifier_EmployeeId(NON_EXISTING_EMPLOYEE_ID))
+        .thenReturn(null);
+    assertThrows(ResourceNotFoundException.class,
+        () -> employeeService.getEmployeeById(NON_EXISTING_EMPLOYEE_ID));
+    verify(employeeRepository).findEmployeeByEmployeeIdentifier_EmployeeId(NON_EXISTING_EMPLOYEE_ID);
+    }
+
+    // [Employee-Service][Unit Test][Positive] Add employee with unique userId -> succeeds
+    @Test
+    void addEmployee_uniqueUserId_succeeds() {
+    when(employeeRepository.findEmployeeByUserId("johndoe")).thenReturn(null);
+    Employee toEntity = new Employee();
+    toEntity.setEmployeeRole(validRequest.getEmployeeRole());
+    when(employeeRequestMapper.toEntity(validRequest)).thenReturn(toEntity);
+    Employee saved = new Employee();
+    saved.setEmployeeIdentifier(new EmployeeIdentifier(VALID_EMPLOYEE_ID));
+    saved.setEmployeeRole(validRequest.getEmployeeRole());
+    when(employeeRepository.save(any(Employee.class))).thenReturn(saved);
+    when(employeeResponseMapper.toResponseModel(saved)).thenReturn(existingEmployeeResponse);
+
+    EmployeeResponseModel response = employeeService.addEmployee(validRequest);
+    assertEquals(VALID_EMPLOYEE_ID, response.getEmployeeIdentifier().getEmployeeId());
+    verify(employeeRepository).findEmployeeByUserId("johndoe");
+    verify(employeeRequestMapper).toEntity(validRequest);
+    verify(employeeRepository).save(any(Employee.class));
+    verify(employeeResponseMapper).toResponseModel(saved);
+    }
+
+    // [Employee-Service][Unit Test][Negative] Add employee with duplicate userId -> throws ResourceAlreadyExistsException
+    @Test
+    void addEmployee_duplicateUserId_throwsAlreadyExists() {
+    when(employeeRepository.findEmployeeByUserId("johndoe")).thenReturn(existingEmployee);
+    assertThrows(ResourceAlreadyExistsException.class,
+        () -> employeeService.addEmployee(validRequest));
+    verify(employeeRepository).findEmployeeByUserId("johndoe");
+    verify(employeeRepository, never()).save(any());
+    }
+
+    // [Employee-Service][Unit Test][Negative] Update employee with invalid ID -> throws InvalidIdentifierException
+    @Test
+    void updateEmployee_invalidId_throwsInvalidIdentifier() {
+    assertThrows(InvalidIdentifierException.class,
+        () -> employeeService.updateEmployee(INVALID_EMPLOYEE_ID, validRequest));
+    verify(employeeRepository, never()).findEmployeeByEmployeeIdentifier_EmployeeId(anyString());
+    }
+
+    // [Employee-Service][Unit Test][Negative] Update employee with non-existing ID -> throws ResourceNotFoundException
+    @Test
+    void updateEmployee_notFound_throwsResourceNotFound() {
+    when(employeeRepository.findEmployeeByEmployeeIdentifier_EmployeeId(NON_EXISTING_EMPLOYEE_ID))
+        .thenReturn(null);
+    assertThrows(ResourceNotFoundException.class,
+        () -> employeeService.updateEmployee(NON_EXISTING_EMPLOYEE_ID, validRequest));
+    verify(employeeRepository).findEmployeeByEmployeeIdentifier_EmployeeId(NON_EXISTING_EMPLOYEE_ID);
+    }
+
+    // [Employee-Service][Unit Test][Negative] Update employee with duplicate userId on different employee -> throws ResourceAlreadyExistsException
+    @Test
+    void updateEmployee_duplicateUserIdOnDifferentEmployee_throwsAlreadyExists() {
+    when(employeeRepository.findEmployeeByEmployeeIdentifier_EmployeeId(VALID_EMPLOYEE_ID))
+        .thenReturn(existingEmployee);
+    Employee another = new Employee();
+    another.setEmployeeIdentifier(new EmployeeIdentifier("11111111-1111-1111-1111-111111111111"));
+    when(employeeRepository.findEmployeeByUserId("johndoe")).thenReturn(another);
+    assertThrows(ResourceAlreadyExistsException.class,
+        () -> employeeService.updateEmployee(VALID_EMPLOYEE_ID, validRequest));
+    verify(employeeRepository).findEmployeeByEmployeeIdentifier_EmployeeId(VALID_EMPLOYEE_ID);
+    verify(employeeRepository).findEmployeeByUserId("johndoe");
+    verify(employeeRepository, never()).save(any());
+    }
+
+    // [Employee-Service][Unit Test][Negative] Update employee invalid role change (TECHNICIAN <-> non-TECHNICIAN) -> throws InvalidOperationException
+    @Test
+    void updateEmployee_invalidRoleChange_throwsInvalidOperation() {
+    EmployeeRole currentRole = new EmployeeRole();
+    currentRole.setEmployeeRoleType(EmployeeRoleType.TECHNICIAN);
+    existingEmployee.setEmployeeRole(currentRole);
+    when(employeeRepository.findEmployeeByEmployeeIdentifier_EmployeeId(VALID_EMPLOYEE_ID))
+        .thenReturn(existingEmployee);
+
+    EmployeeRole requestedRole = new EmployeeRole();
+    requestedRole.setEmployeeRoleType(EmployeeRoleType.ADMIN);
+    validRequest.setEmployeeRole(requestedRole);
+
+    assertThrows(InvalidOperationException.class,
+        () -> employeeService.updateEmployee(VALID_EMPLOYEE_ID, validRequest));
+    verify(employeeRepository).findEmployeeByEmployeeIdentifier_EmployeeId(VALID_EMPLOYEE_ID);
+    verify(employeeRepository, never()).save(any());
+    }
+
+    // [Employee-Service][Unit Test][Positive] Update employee valid non-tech role change -> succeeds
+    @Test
+    void updateEmployee_validChange_succeeds() {
+    EmployeeRole currentRole = new EmployeeRole();
+    currentRole.setEmployeeRoleType(EmployeeRoleType.SUPPORT);
+    existingEmployee.setEmployeeRole(currentRole);
+    when(employeeRepository.findEmployeeByEmployeeIdentifier_EmployeeId(VALID_EMPLOYEE_ID))
+        .thenReturn(existingEmployee);
+
+    EmployeeRole requestedRole = new EmployeeRole();
+    requestedRole.setEmployeeRoleType(EmployeeRoleType.SALES);
+    EmployeeRequestModel updateRequest = EmployeeRequestModel.builder()
+        .firstName("Jane").lastName("Smith").userId("janesmith")
+        .employeeRole(requestedRole).build();
+
+    when(employeeRepository.findEmployeeByUserId("janesmith")).thenReturn(null);
+
+    Employee updated = new Employee();
+    updated.setEmployeeIdentifier(new EmployeeIdentifier(VALID_EMPLOYEE_ID));
+    updated.setFirstName("Jane");
+    updated.setLastName("Smith");
+    updated.setUserId("janesmith");
+    updated.setEmployeeRole(requestedRole);
+    when(employeeRepository.save(any(Employee.class))).thenReturn(updated);
+
+    EmployeeResponseModel updatedResponse = EmployeeResponseModel.builder()
+        .employeeIdentifier(new EmployeeIdentifier(VALID_EMPLOYEE_ID))
+        .firstName("Jane").lastName("Smith").userId("janesmith")
+        .employeeRole(requestedRole).build();
+    when(employeeResponseMapper.toResponseModel(updated)).thenReturn(updatedResponse);
+
+    EmployeeResponseModel response = employeeService.updateEmployee(VALID_EMPLOYEE_ID, updateRequest);
+    assertEquals("janesmith", response.getUserId());
+    assertEquals(EmployeeRoleType.SALES, response.getEmployeeRole().getEmployeeRoleType());
+    verify(employeeRepository).findEmployeeByEmployeeIdentifier_EmployeeId(VALID_EMPLOYEE_ID);
+    verify(employeeRepository).findEmployeeByUserId("janesmith");
+    verify(employeeRepository).save(any(Employee.class));
+    verify(employeeResponseMapper).toResponseModel(updated);
+    }
+
+}
