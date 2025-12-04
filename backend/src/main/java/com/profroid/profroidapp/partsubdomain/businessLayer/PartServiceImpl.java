@@ -7,7 +7,7 @@ import com.profroid.profroidapp.partsubdomain.mapperLayer.PartRequestMapper;
 import com.profroid.profroidapp.partsubdomain.mapperLayer.PartResponseMapper;
 import com.profroid.profroidapp.partsubdomain.presentationLayer.PartRequestModel;
 import com.profroid.profroidapp.partsubdomain.presentationLayer.PartResponseModel;
-import com.profroid.profroidapp.utils.generators.SkuGenerator;
+import com.profroid.profroidapp.utils.generators.SkuGenerator.SkuGenerator;
 import org.springframework.stereotype.Service;
 
 import java.util.List;

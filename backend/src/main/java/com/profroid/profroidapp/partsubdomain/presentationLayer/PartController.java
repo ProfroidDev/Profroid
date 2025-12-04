@@ -27,7 +27,7 @@ public class PartController {
     @GetMapping("/{partId}")
     public ResponseEntity<PartResponseModel> getPartById(@PathVariable String partId) {
         PartResponseModel responseModel = partService.getPartById(partId);
-        return ResponseEntity.status(HttpStatus.CREATED).body(responseModel);
+        return ResponseEntity.ok(responseModel);
     }
 
     @PostMapping

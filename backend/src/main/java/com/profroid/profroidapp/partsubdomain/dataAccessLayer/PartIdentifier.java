@@ -1,6 +1,5 @@
 package com.profroid.profroidapp.partsubdomain.dataAccessLayer;
 
-import com.profroid.profroidapp.utils.generators.SkuGenerator;
 import jakarta.persistence.Embeddable;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
