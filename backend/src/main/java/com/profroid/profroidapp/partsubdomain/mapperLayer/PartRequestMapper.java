@@ -1,8 +1,5 @@
 package com.profroid.profroidapp.partsubdomain.mapperLayer;
 
-import com.profroid.profroidapp.cellarsubdomain.dataAccessLayer.Cellar;
-import com.profroid.profroidapp.cellarsubdomain.dataAccessLayer.CellarIdentifier;
-import com.profroid.profroidapp.cellarsubdomain.presentationLayer.CellarRequestModel;
 import com.profroid.profroidapp.partsubdomain.dataAccessLayer.Part;
 import com.profroid.profroidapp.partsubdomain.dataAccessLayer.PartIdentifier;
 import com.profroid.profroidapp.partsubdomain.presentationLayer.PartRequestModel;
@@ -16,7 +13,8 @@ public interface PartRequestMapper {
             @Mapping(source = "partIdentifier", target = "partIdentifier"),
 
             @Mapping(source = "requestModel.name", target = "name"),
-            @Mapping(source = "requestModel.available", target = "available")
+            @Mapping(source = "requestModel.available", target = "available"),
+            @Mapping(target = "id", ignore = true)
     })
     Part toEntity(PartRequestModel requestModel, PartIdentifier partIdentifier);
 

@@ -1,6 +1,5 @@
 package com.profroid.profroidapp.partsubdomain.dataAccessLayer;
 
-import com.profroid.profroidapp.cellarsubdomain.dataAccessLayer.CellarIdentifier;
 import jakarta.persistence.*;
 import lombok.Data;
 import lombok.NoArgsConstructor;

@@ -1,6 +1,5 @@
 package com.profroid.profroidapp.partsubdomain.presentationLayer;
 
-import com.profroid.profroidapp.cellarsubdomain.businessLayer.CellarService;
 import com.profroid.profroidapp.partsubdomain.businessLayer.PartService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -11,7 +10,7 @@ import org.springframework.web.bind.annotation.RestController;
 import java.util.List;
 
 @RestController
-@RequestMapping("api/v1/parts")
+@RequestMapping("/api/v1/parts")
 public class PartController {
 
     private final PartService partService;

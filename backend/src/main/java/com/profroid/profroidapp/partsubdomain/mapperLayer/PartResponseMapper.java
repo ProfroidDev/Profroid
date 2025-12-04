@@ -1,7 +1,5 @@
 package com.profroid.profroidapp.partsubdomain.mapperLayer;
 
-import com.profroid.profroidapp.cellarsubdomain.dataAccessLayer.Cellar;
-import com.profroid.profroidapp.cellarsubdomain.presentationLayer.CellarResponseModel;
 import com.profroid.profroidapp.partsubdomain.dataAccessLayer.Part;
 import com.profroid.profroidapp.partsubdomain.presentationLayer.PartResponseModel;
 import org.mapstruct.Mapper;
