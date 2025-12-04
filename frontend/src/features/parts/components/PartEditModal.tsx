@@ -3,6 +3,7 @@ import { updatePart } from "../api/updatePart";
 import type { PartRequestModel } from "../models/PartRequestModel";
 import type { PartResponseModel } from "../models/PartResponseModel";
 import "./PartEditModal.css";
+import { X } from "lucide-react";
 
 interface PartEditModalProps {
   part: PartResponseModel | null;
@@ -72,8 +73,13 @@ export default function PartEditModal({
       <div className="modal-content" onClick={(e) => e.stopPropagation()}>
         <div className="modal-header">
           <h2 className="modal-title">Edit Part</h2>
-          <button className="modal-close" onClick={handleClose} disabled={submitting}>
-            ✕
+          <button
+            className="modal-close"
+            onClick={handleClose}
+            disabled={submitting}
+            aria-label="Close modal"
+          >
+            <X className="h-5 w-5" />
           </button>
         </div>
 
@@ -118,11 +124,7 @@ export default function PartEditModal({
             >
               Cancel
             </button>
-            <button
-              type="submit"
-              className="btn-submit"
-              disabled={submitting}
-            >
+            <button type="submit" className="btn-submit" disabled={submitting}>
               {submitting ? "Updating..." : "Update Part"}
             </button>
           </div>

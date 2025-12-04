@@ -8,6 +8,7 @@ import com.profroid.profroidapp.partsubdomain.mapperLayer.PartResponseMapper;
 import com.profroid.profroidapp.partsubdomain.presentationLayer.PartRequestModel;
 import com.profroid.profroidapp.partsubdomain.presentationLayer.PartResponseModel;
 import com.profroid.profroidapp.utils.generators.SkuGenerator.SkuGenerator;
+import jakarta.persistence.EntityNotFoundException;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -49,6 +50,10 @@ public class PartServiceImpl implements PartService {
     @Override
     public PartResponseModel updatePart(String partId, PartRequestModel partRequestModel) {
         Part existingPart = partRepository.findPartByPartIdentifier_PartId(partId);
+
+        if (existingPart == null) {
+            throw new EntityNotFoundException("Part not found: " + partId);
+        }
 
         existingPart.setName(partRequestModel.getName());
         existingPart.setAvailable(partRequestModel.isAvailable());
