@@ -35,4 +35,12 @@ public class PartController {
         PartResponseModel responseModel = partService.createPart(requestModel);
         return ResponseEntity.status(HttpStatus.CREATED).body(responseModel);
     }
+
+    @PutMapping("/{partId}")
+    public ResponseEntity<PartResponseModel> updatePart(
+            @PathVariable String partId,
+            @Valid @RequestBody PartRequestModel requestModel) {
+        PartResponseModel responseModel = partService.updatePart(partId, requestModel);
+        return ResponseEntity.ok(responseModel);
+    }
 }

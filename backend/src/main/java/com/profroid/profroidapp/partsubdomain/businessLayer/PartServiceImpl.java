@@ -48,7 +48,14 @@ public class PartServiceImpl implements PartService {
 
     @Override
     public PartResponseModel updatePart(String partId, PartRequestModel partRequestModel) {
-        return null;
+        Part existingPart = partRepository.findPartByPartIdentifier_PartId(partId);
+
+        existingPart.setName(partRequestModel.getName());
+        existingPart.setAvailable(partRequestModel.isAvailable());
+
+        Part updatedPart = partRepository.save(existingPart);
+
+        return partResponseMapper.toResponseModel(updatedPart);
     }
 
     @Override
