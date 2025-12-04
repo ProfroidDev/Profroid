@@ -1,11 +1,10 @@
 package com.profroid.profroidapp.partsubdomain.presentationLayer;
 
 import com.profroid.profroidapp.partsubdomain.businessLayer.PartService;
+import jakarta.validation.Valid;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -29,5 +28,11 @@ public class PartController {
     public ResponseEntity<PartResponseModel> getPartById(@PathVariable String partId) {
         PartResponseModel responseModel = partService.getPartById(partId);
         return ResponseEntity.ok(responseModel);
+    }
+
+    @PostMapping
+    public ResponseEntity<PartResponseModel> createPart(@Valid @RequestBody PartRequestModel requestModel) {
+        PartResponseModel responseModel = partService.createPart(requestModel);
+        return ResponseEntity.status(HttpStatus.CREATED).body(responseModel);
     }
 }

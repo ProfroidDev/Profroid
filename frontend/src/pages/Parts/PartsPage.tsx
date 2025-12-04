@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { getAllParts } from "../../features/parts/api/getAllParts";
 import type { PartResponseModel } from "../../features/parts/models/PartResponseModel";
 import PartDetailModal from "../../features/parts/components/PartDetailModal";
+import PartAddModal from "../../features/parts/components/PartAddModal";
 import Toast from "../../shared/components/Toast";
 import "./PartsPage.css";
 
@@ -14,6 +15,7 @@ export default function PartsPage(): React.ReactElement {
   const [searchTerm, setSearchTerm] = useState<string>("");
   const [selectedPart, setSelectedPart] = useState<PartResponseModel | null>(null);
   const [detailModalOpen, setDetailModalOpen] = useState<boolean>(false);
+  const [addModalOpen, setAddModalOpen] = useState<boolean>(false);
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' | 'info' } | null>(null);
 
   useEffect(() => {
@@ -81,9 +83,38 @@ export default function PartsPage(): React.ReactElement {
     setSelectedPart(null);
   };
 
+  const handleOpenAddModal = () => {
+    setAddModalOpen(true);
+  };
+
+  const handleCloseAddModal = () => {
+    setAddModalOpen(false);
+  };
+
+  const handlePartAdded = async () => {
+    setToast({ message: "Part added successfully!", type: "success" });
+    // Reload parts
+    try {
+      const data = await getAllParts();
+      setParts(data);
+      setCurrentPage(1);
+    } catch (error) {
+      console.error("Error reloading parts:", error);
+    }
+  };
+
+  const handleAddError = (message: string) => {
+    setToast({ message, type: "error" });
+  };
+
   return (
     <div className="parts-page-light">
-      <h1 className="parts-title-light">Parts Catalog</h1>
+      <div className="page-header">
+        <h1 className="parts-title-light">Parts Catalog</h1>
+        <button className="btn-add-part" onClick={handleOpenAddModal}>
+          + Add Part
+        </button>
+      </div>
 
       <div className="search-container">
         <input
@@ -174,6 +205,13 @@ export default function PartsPage(): React.ReactElement {
         part={selectedPart}
         isOpen={detailModalOpen}
         onClose={handleCloseModal}
+      />
+
+      <PartAddModal
+        isOpen={addModalOpen}
+        onClose={handleCloseAddModal}
+        onPartAdded={handlePartAdded}
+        onError={handleAddError}
       />
     </div>
   );
