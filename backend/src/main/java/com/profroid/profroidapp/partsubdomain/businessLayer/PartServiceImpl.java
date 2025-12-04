@@ -1,11 +1,13 @@
 package com.profroid.profroidapp.partsubdomain.businessLayer;
 
 import com.profroid.profroidapp.partsubdomain.dataAccessLayer.Part;
+import com.profroid.profroidapp.partsubdomain.dataAccessLayer.PartIdentifier;
 import com.profroid.profroidapp.partsubdomain.dataAccessLayer.PartRepository;
 import com.profroid.profroidapp.partsubdomain.mapperLayer.PartRequestMapper;
 import com.profroid.profroidapp.partsubdomain.mapperLayer.PartResponseMapper;
 import com.profroid.profroidapp.partsubdomain.presentationLayer.PartRequestModel;
 import com.profroid.profroidapp.partsubdomain.presentationLayer.PartResponseModel;
+import com.profroid.profroidapp.utils.generators.SkuGenerator;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -38,7 +40,10 @@ public class PartServiceImpl implements PartService {
 
     @Override
     public PartResponseModel createPart(PartRequestModel partRequestModel) {
-        return null;
+        PartIdentifier partIdentifier = new PartIdentifier(SkuGenerator.generateSku());
+        Part part = partRequestMapper.toEntity(partRequestModel, partIdentifier);
+        Part savedPart = partRepository.save(part);
+        return partResponseMapper.toResponseModel(savedPart);
     }
 
     @Override

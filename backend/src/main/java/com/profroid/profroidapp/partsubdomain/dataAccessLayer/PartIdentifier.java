@@ -12,6 +12,5 @@ public class PartIdentifier {
     private String partId;
 
     public PartIdentifier() {
-        this.partId = SkuGenerator.generateSku();
     }
 }
