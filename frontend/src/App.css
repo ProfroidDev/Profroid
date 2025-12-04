@@ -5,6 +5,14 @@
   padding: 0;
   text-align: left; /* important */
   padding-top: 80px; /* Account for fixed navbar height */
+  overflow-x: hidden;
+}
+
+body, html {
+  overflow-x: hidden;
+  width: 100%;
+  margin: 0;
+  padding: 0;
 }
 
 /* REMOVE DEFAULT VITE STYLES */
