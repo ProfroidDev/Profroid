@@ -56,6 +56,7 @@ public class EmployeeServiceUnitTest {
     existingEmployee.setFirstName("John");
     existingEmployee.setLastName("Doe");
     existingEmployee.setUserId("johndoe");
+    existingEmployee.setIsActive(true);
     EmployeeRole role = new EmployeeRole();
     role.setEmployeeRoleType(EmployeeRoleType.TECHNICIAN);
     existingEmployee.setEmployeeRole(role);
@@ -66,6 +67,7 @@ public class EmployeeServiceUnitTest {
         .lastName("Doe")
         .userId("johndoe")
         .employeeRole(role)
+        .isActive(true)
         .build();
 
     validRequest = EmployeeRequestModel.builder()
@@ -79,13 +81,13 @@ public class EmployeeServiceUnitTest {
     // [Employee-Service][Unit Test][Positive] Get all employees -> returns list
     @Test
     void getAllEmployees_returnsList() {
-    when(employeeRepository.findAll()).thenReturn(Arrays.asList(existingEmployee, existingEmployee));
+    when(employeeRepository.findAllByIsActiveTrue()).thenReturn(Arrays.asList(existingEmployee, existingEmployee));
     when(employeeResponseMapper.toResponseModelList(any(List.class)))
         .thenReturn(Arrays.asList(existingEmployeeResponse, existingEmployeeResponse));
 
     List<EmployeeResponseModel> result = employeeService.getAllEmployees();
     assertEquals(2, result.size());
-    verify(employeeRepository).findAll();
+    verify(employeeRepository).findAllByIsActiveTrue();
     verify(employeeResponseMapper).toResponseModelList(any(List.class));
     }
 
@@ -241,6 +243,112 @@ public class EmployeeServiceUnitTest {
     verify(employeeRepository).findEmployeeByUserId("janesmith");
     verify(employeeRepository).save(any(Employee.class));
     verify(employeeResponseMapper).toResponseModel(updated);
+    }
+
+    // [Employee-Service][Unit Test][Positive] Deactivate employee -> succeeds
+    @Test
+    void deactivateEmployee_valid_succeeds() {
+    when(employeeRepository.findEmployeeByEmployeeIdentifier_EmployeeId(VALID_EMPLOYEE_ID))
+        .thenReturn(existingEmployee);
+    
+    Employee deactivated = new Employee();
+    deactivated.setEmployeeIdentifier(new EmployeeIdentifier(VALID_EMPLOYEE_ID));
+    deactivated.setIsActive(false);
+    when(employeeRepository.save(any(Employee.class))).thenReturn(deactivated);
+    
+    EmployeeResponseModel deactivatedResponse = EmployeeResponseModel.builder()
+        .employeeIdentifier(new EmployeeIdentifier(VALID_EMPLOYEE_ID))
+        .isActive(false)
+        .build();
+    when(employeeResponseMapper.toResponseModel(deactivated)).thenReturn(deactivatedResponse);
+
+    EmployeeResponseModel response = employeeService.deactivateEmployee(VALID_EMPLOYEE_ID);
+    assertFalse(response.getIsActive());
+    verify(employeeRepository).findEmployeeByEmployeeIdentifier_EmployeeId(VALID_EMPLOYEE_ID);
+    verify(employeeRepository).save(any(Employee.class));
+    }
+
+    // [Employee-Service][Unit Test][Negative] Deactivate employee with invalid ID -> throws InvalidIdentifierException
+    @Test
+    void deactivateEmployee_invalidId_throwsInvalidIdentifier() {
+    assertThrows(InvalidIdentifierException.class,
+        () -> employeeService.deactivateEmployee(INVALID_EMPLOYEE_ID));
+    verify(employeeRepository, never()).findEmployeeByEmployeeIdentifier_EmployeeId(anyString());
+    }
+
+    // [Employee-Service][Unit Test][Negative] Deactivate employee not found -> throws ResourceNotFoundException
+    @Test
+    void deactivateEmployee_notFound_throwsResourceNotFound() {
+    when(employeeRepository.findEmployeeByEmployeeIdentifier_EmployeeId(NON_EXISTING_EMPLOYEE_ID))
+        .thenReturn(null);
+    assertThrows(ResourceNotFoundException.class,
+        () -> employeeService.deactivateEmployee(NON_EXISTING_EMPLOYEE_ID));
+    verify(employeeRepository).findEmployeeByEmployeeIdentifier_EmployeeId(NON_EXISTING_EMPLOYEE_ID);
+    }
+
+    // [Employee-Service][Unit Test][Negative] Deactivate already deactivated employee -> throws InvalidOperationException
+    @Test
+    void deactivateEmployee_alreadyDeactivated_throwsInvalidOperation() {
+    existingEmployee.setIsActive(false);
+    when(employeeRepository.findEmployeeByEmployeeIdentifier_EmployeeId(VALID_EMPLOYEE_ID))
+        .thenReturn(existingEmployee);
+    assertThrows(InvalidOperationException.class,
+        () -> employeeService.deactivateEmployee(VALID_EMPLOYEE_ID));
+    verify(employeeRepository).findEmployeeByEmployeeIdentifier_EmployeeId(VALID_EMPLOYEE_ID);
+    verify(employeeRepository, never()).save(any());
+    }
+
+    // [Employee-Service][Unit Test][Positive] Reactivate employee -> succeeds
+    @Test
+    void reactivateEmployee_valid_succeeds() {
+    existingEmployee.setIsActive(false);
+    when(employeeRepository.findEmployeeByEmployeeIdentifier_EmployeeId(VALID_EMPLOYEE_ID))
+        .thenReturn(existingEmployee);
+    
+    Employee reactivated = new Employee();
+    reactivated.setEmployeeIdentifier(new EmployeeIdentifier(VALID_EMPLOYEE_ID));
+    reactivated.setIsActive(true);
+    when(employeeRepository.save(any(Employee.class))).thenReturn(reactivated);
+    
+    EmployeeResponseModel reactivatedResponse = EmployeeResponseModel.builder()
+        .employeeIdentifier(new EmployeeIdentifier(VALID_EMPLOYEE_ID))
+        .isActive(true)
+        .build();
+    when(employeeResponseMapper.toResponseModel(reactivated)).thenReturn(reactivatedResponse);
+
+    EmployeeResponseModel response = employeeService.reactivateEmployee(VALID_EMPLOYEE_ID);
+    assertTrue(response.getIsActive());
+    verify(employeeRepository).findEmployeeByEmployeeIdentifier_EmployeeId(VALID_EMPLOYEE_ID);
+    verify(employeeRepository).save(any(Employee.class));
+    }
+
+    // [Employee-Service][Unit Test][Negative] Reactivate employee with invalid ID -> throws InvalidIdentifierException
+    @Test
+    void reactivateEmployee_invalidId_throwsInvalidIdentifier() {
+    assertThrows(InvalidIdentifierException.class,
+        () -> employeeService.reactivateEmployee(INVALID_EMPLOYEE_ID));
+    verify(employeeRepository, never()).findEmployeeByEmployeeIdentifier_EmployeeId(anyString());
+    }
+
+    // [Employee-Service][Unit Test][Negative] Reactivate employee not found -> throws ResourceNotFoundException
+    @Test
+    void reactivateEmployee_notFound_throwsResourceNotFound() {
+    when(employeeRepository.findEmployeeByEmployeeIdentifier_EmployeeId(NON_EXISTING_EMPLOYEE_ID))
+        .thenReturn(null);
+    assertThrows(ResourceNotFoundException.class,
+        () -> employeeService.reactivateEmployee(NON_EXISTING_EMPLOYEE_ID));
+    verify(employeeRepository).findEmployeeByEmployeeIdentifier_EmployeeId(NON_EXISTING_EMPLOYEE_ID);
+    }
+
+    // [Employee-Service][Unit Test][Negative] Reactivate already active employee -> throws InvalidOperationException
+    @Test
+    void reactivateEmployee_alreadyActive_throwsInvalidOperation() {
+    when(employeeRepository.findEmployeeByEmployeeIdentifier_EmployeeId(VALID_EMPLOYEE_ID))
+        .thenReturn(existingEmployee);
+    assertThrows(InvalidOperationException.class,
+        () -> employeeService.reactivateEmployee(VALID_EMPLOYEE_ID));
+    verify(employeeRepository).findEmployeeByEmployeeIdentifier_EmployeeId(VALID_EMPLOYEE_ID);
+    verify(employeeRepository, never()).save(any());
     }
 
 }
