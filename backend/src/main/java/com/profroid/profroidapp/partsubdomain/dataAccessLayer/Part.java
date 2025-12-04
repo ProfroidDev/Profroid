@@ -19,4 +19,5 @@ public class Part {
     private PartIdentifier partIdentifier;
 
     private String name;
+    private boolean available;
 }

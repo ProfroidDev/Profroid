@@ -101,6 +101,7 @@ CREATE TABLE cellars (
 CREATE TABLE parts (
                        id INT AUTO_INCREMENT PRIMARY KEY,
                        part_id VARCHAR(255) NOT NULL UNIQUE,
-                       name VARCHAR(255) NOT NULL
+                       name VARCHAR(255) NOT NULL,
+                       available BOOLEAN NOT NULL
 );
 

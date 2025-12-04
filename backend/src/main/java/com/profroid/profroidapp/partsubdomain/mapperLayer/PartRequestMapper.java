@@ -16,6 +16,7 @@ public interface PartRequestMapper {
             @Mapping(source = "partIdentifier", target = "partIdentifier"),
 
             @Mapping(source = "requestModel.name", target = "name"),
+            @Mapping(source = "requestModel.available", target = "available")
     })
     Part toEntity(PartRequestModel requestModel, PartIdentifier partIdentifier);
 

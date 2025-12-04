@@ -16,6 +16,7 @@ public interface PartResponseMapper {
             @Mapping(source = "part.partIdentifier.partId", target = "partId"),
 
             @Mapping(source = "part.name", target = "name"),
+            @Mapping(source = "part.available", target = "available")
 
     })
     PartResponseModel toResponseModel(Part part);
