@@ -45,7 +45,6 @@ public class Employee {
     @NotNull
     private String userId;
 
-    @NotNull
     private Boolean isActive = true;
 
 
