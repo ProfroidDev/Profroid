@@ -3,11 +3,12 @@ import { BrowserRouter, Routes, Route, Link } from "react-router-dom";
 import "./App.css";
 
 import CustomerListPage from "./pages/Customer/CustomerListPage";
-import ServicesPage from "./pages/jobs/ServicesPage";
+import ServicesPage from "./pages/Jobs/ServicesPage";
 import Navigation from "./shared/components/Navigation";
 import Footer from "./shared/components/Footer";
 import EmployeeSchedulePage from "./pages/Employee/EmployeeSchedulePage";
 import EmployeeListPage from "./pages/Employee/EmployeeListPage";
+import PartsPage from "./pages/Parts/PartsPage";
 
 function Home(): React.ReactElement {
   return (
@@ -31,6 +32,7 @@ function App(): React.ReactElement {
 
       <Routes>
         <Route path="/" element={<Home />} />
+        <Route path="/parts" element={<PartsPage />} />
         <Route path="/customers" element={<CustomerListPage />} />
         <Route path="/services" element={<ServicesPage />} />
         <Route path="/employees" element={<EmployeeListPage />} />

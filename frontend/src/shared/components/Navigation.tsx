@@ -17,7 +17,7 @@ export default function Navigation(): React.ReactElement {
 
         {/* Desktop Menu */}
         <div className="nav-links">
-          <a href="/products">Products</a>
+          <a href="/parts">Parts</a>
           <a href="/services">Services</a>
           <a href="/customers">Customers</a>
           <a href="/employees">Employees</a>
@@ -44,7 +44,7 @@ export default function Navigation(): React.ReactElement {
       {/* Mobile Menu */}
       {open && (
         <div className="nav-mobile-menu">
-          <a href="/products">Products</a>
+          <a href="/parts">Parts</a>
           <a href="/services">Services</a>
           <a href="/customers">Customers</a>
           <a href="/employees">Employees</a>
