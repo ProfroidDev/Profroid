@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { createPart } from "../api/createPart";
 import type { PartRequestModel } from "../models/PartRequestModel";
 import "./PartAddModal.css";
+import { X } from "lucide-react";
 
 interface PartAddModalProps {
   isOpen: boolean;
@@ -68,8 +69,8 @@ export default function PartAddModal({
       <div className="modal-content" onClick={(e) => e.stopPropagation()}>
         <div className="modal-header">
           <h2 className="modal-title">Add New Part</h2>
-          <button className="modal-close" onClick={handleClose} disabled={submitting}>
-            ✕
+          <button className="modal-close" onClick={handleClose} disabled={submitting} aria-label="Close modal">
+            <X className="h-5 w-5" />
           </button>
         </div>
 
