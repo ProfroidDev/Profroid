@@ -27,4 +27,6 @@ public class EmployeeResponseModel {
     private EmployeeAddress employeeAddress;
 
     private EmployeeRole employeeRole;
+
+    private Boolean isActive;
 }

@@ -43,4 +43,16 @@ public class EmployeeController {
         EmployeeResponseModel updated = this.employeeService.updateEmployee(employeeId, employeeRequestModel);
         return ResponseEntity.status(HttpStatus.OK).body(updated);
     }
+
+    @DeleteMapping("/{employeeId}/deactivate")
+    public ResponseEntity<EmployeeResponseModel> deactivateEmployee(@PathVariable String employeeId) {
+        EmployeeResponseModel deactivated = this.employeeService.deactivateEmployee(employeeId);
+        return ResponseEntity.status(HttpStatus.OK).body(deactivated);
+    }
+
+    @PatchMapping("/{employeeId}/reactivate")
+    public ResponseEntity<EmployeeResponseModel> reactivateEmployee(@PathVariable String employeeId) {
+        EmployeeResponseModel reactivated = this.employeeService.reactivateEmployee(employeeId);
+        return ResponseEntity.status(HttpStatus.OK).body(reactivated);
+    }
 }

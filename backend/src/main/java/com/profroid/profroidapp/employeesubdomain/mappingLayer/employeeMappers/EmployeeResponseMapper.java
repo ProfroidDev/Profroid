@@ -24,6 +24,7 @@ public interface EmployeeResponseMapper {
             @Mapping(source = "employee.phoneNumbers", target = "phoneNumbers"),
             @Mapping(source = "employee.employeeAddress", target = "employeeAddress"),
             @Mapping(source = "employee.employeeRole", target = "employeeRole"),
+            @Mapping(source = "employee.isActive", target = "isActive"),
     })
     EmployeeResponseModel toResponseModel(Employee employee);
 

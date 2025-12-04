@@ -39,7 +39,7 @@ public class EmployeeServiceImpl implements EmployeeService {
 
     @Override
     public List<EmployeeResponseModel> getAllEmployees() {
-        List<Employee> employees = employeeRepository.findAll();
+        List<Employee> employees = employeeRepository.findAllByIsActiveTrue();
         return employeeResponseMapper.toResponseModelList(employees);
     }
 
@@ -127,5 +127,47 @@ public class EmployeeServiceImpl implements EmployeeService {
 
         Employee updatedEmployee = employeeRepository.save(existingEmployee);
         return employeeResponseMapper.toResponseModel(updatedEmployee);
+    }
+
+    @Override
+    public EmployeeResponseModel deactivateEmployee(String employeeId) {
+        if (employeeId == null || employeeId.trim().length() != 36) {
+            throw new InvalidIdentifierException("Employee ID must be a 36-character UUID string.");
+        }
+
+        Employee employee = employeeRepository.findEmployeeByEmployeeIdentifier_EmployeeId(employeeId);
+
+        if (employee == null) {
+            throw new ResourceNotFoundException("Employee " + employeeId + " not found.");
+        }
+
+        if (!employee.getIsActive()) {
+            throw new InvalidOperationException("Employee " + employeeId + " is already deactivated.");
+        }
+
+        employee.setIsActive(false);
+        Employee deactivatedEmployee = employeeRepository.save(employee);
+        return employeeResponseMapper.toResponseModel(deactivatedEmployee);
+    }
+
+    @Override
+    public EmployeeResponseModel reactivateEmployee(String employeeId) {
+        if (employeeId == null || employeeId.trim().length() != 36) {
+            throw new InvalidIdentifierException("Employee ID must be a 36-character UUID string.");
+        }
+
+        Employee employee = employeeRepository.findEmployeeByEmployeeIdentifier_EmployeeId(employeeId);
+
+        if (employee == null) {
+            throw new ResourceNotFoundException("Employee " + employeeId + " not found.");
+        }
+
+        if (employee.getIsActive()) {
+            throw new InvalidOperationException("Employee " + employeeId + " is already active.");
+        }
+
+        employee.setIsActive(true);
+        Employee reactivatedEmployee = employeeRepository.save(employee);
+        return employeeResponseMapper.toResponseModel(reactivatedEmployee);
     }
 }

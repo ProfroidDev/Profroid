@@ -18,4 +18,8 @@ public interface EmployeeService {
     EmployeeResponseModel addEmployee(EmployeeRequestModel employeeRequestModel);
 
     EmployeeResponseModel updateEmployee(String employeeId, @Valid EmployeeRequestModel employeeRequestModel);
+
+    EmployeeResponseModel deactivateEmployee(String employeeId);
+
+    EmployeeResponseModel reactivateEmployee(String employeeId);
 }
