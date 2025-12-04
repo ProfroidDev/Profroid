@@ -5,6 +5,7 @@ DROP TABLE IF EXISTS schedules;
 DROP TABLE IF EXISTS employees;
 DROP TABLE IF EXISTS cellars;
 DROP TABLE IF EXISTS customers;
+DROP TABLE IF EXISTS parts;
 
 
 create table if not exists customers
@@ -97,4 +98,9 @@ CREATE TABLE cellars (
                          cellar_type VARCHAR(50) NOT NULL                 -- Enum stored as string
 );
 
+CREATE TABLE parts (
+                       id INT AUTO_INCREMENT PRIMARY KEY,
+                       part_id VARCHAR(255) NOT NULL UNIQUE,
+                       name VARCHAR(255) NOT NULL
+);
 

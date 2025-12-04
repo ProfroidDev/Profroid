@@ -16,9 +16,9 @@ export default function Footer() {
 
         <div className="footer-section">
           <h4>Quick Links</h4>
-          <a href="#products">Products</a>
+          <a href="/parts">Parts</a>
           <a href="#about">About</a>
-          <a href="#services">Services</a>
+          <a href="/services">Services</a>
           <a href="#contact">Contact</a>
         </div>
 
