@@ -13,4 +13,5 @@ export interface EmployeeResponseModel {
   phoneNumbers: EmployeePhoneNumber[];
   employeeAddress: EmployeeAddress;
   employeeRole: EmployeeRole;
+  isActive: boolean;
 }

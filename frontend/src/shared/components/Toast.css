@@ -29,6 +29,11 @@
   color: white;
 }
 
+.toast-warning {
+  background-color: #f59e0b;
+  color: white;
+}
+
 .toast-icon {
   font-size: 20px;
   font-weight: bold;
