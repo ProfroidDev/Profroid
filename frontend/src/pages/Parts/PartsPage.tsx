@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { getAllParts } from "../../features/parts/api/getAllParts";
 import type { PartResponseModel } from "../../features/parts/models/PartResponseModel";
+import PartDetailModal from "../../features/parts/components/PartDetailModal";
 import Toast from "../../shared/components/Toast";
 import "./PartsPage.css";
 
@@ -11,6 +12,8 @@ export default function PartsPage(): React.ReactElement {
   const [loading, setLoading] = useState<boolean>(false);
   const [currentPage, setCurrentPage] = useState<number>(1);
   const [searchTerm, setSearchTerm] = useState<string>("");
+  const [selectedPart, setSelectedPart] = useState<PartResponseModel | null>(null);
+  const [detailModalOpen, setDetailModalOpen] = useState<boolean>(false);
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' | 'info' } | null>(null);
 
   useEffect(() => {
@@ -68,6 +71,16 @@ export default function PartsPage(): React.ReactElement {
     setCurrentPage(1);
   };
 
+  const handleViewDetails = (part: PartResponseModel) => {
+    setSelectedPart(part);
+    setDetailModalOpen(true);
+  };
+
+  const handleCloseModal = () => {
+    setDetailModalOpen(false);
+    setSelectedPart(null);
+  };
+
   return (
     <div className="parts-page-light">
       <h1 className="parts-title-light">Parts Catalog</h1>
@@ -108,7 +121,7 @@ export default function PartsPage(): React.ReactElement {
                     <span className="part-value">{part.partId}</span>
                   </p>
                 </div>
-                <button className="btn-view-part">View Details</button>
+                <button className="btn-view-part" onClick={() => handleViewDetails(part)}>View Details</button>
               </div>
             </div>
           ))}
@@ -156,6 +169,12 @@ export default function PartsPage(): React.ReactElement {
           onClose={() => setToast(null)}
         />
       )}
+
+      <PartDetailModal
+        part={selectedPart}
+        isOpen={detailModalOpen}
+        onClose={handleCloseModal}
+      />
     </div>
   );
 }
