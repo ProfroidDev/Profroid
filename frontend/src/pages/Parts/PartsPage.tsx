@@ -3,6 +3,7 @@ import { getAllParts } from "../../features/parts/api/getAllParts";
 import type { PartResponseModel } from "../../features/parts/models/PartResponseModel";
 import PartDetailModal from "../../features/parts/components/PartDetailModal";
 import PartAddModal from "../../features/parts/components/PartAddModal";
+import PartEditModal from "../../features/parts/components/PartEditModal";
 import Toast from "../../shared/components/Toast";
 import "./PartsPage.css";
 
@@ -15,6 +16,7 @@ export default function PartsPage(): React.ReactElement {
   const [searchTerm, setSearchTerm] = useState<string>("");
   const [selectedPart, setSelectedPart] = useState<PartResponseModel | null>(null);
   const [detailModalOpen, setDetailModalOpen] = useState<boolean>(false);
+  const [editModalOpen, setEditModalOpen] = useState<boolean>(false);
   const [addModalOpen, setAddModalOpen] = useState<boolean>(false);
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' | 'info' } | null>(null);
 
@@ -107,6 +109,32 @@ export default function PartsPage(): React.ReactElement {
     setToast({ message, type: "error" });
   };
 
+  const handleOpenEditModal = (part: PartResponseModel) => {
+    setSelectedPart(part);
+    setDetailModalOpen(false);
+    setEditModalOpen(true);
+  };
+
+  const handleCloseEditModal = () => {
+    setEditModalOpen(false);
+  };
+
+  const handlePartUpdated = async () => {
+    setToast({ message: "Part updated successfully!", type: "success" });
+    // Reload parts
+    try {
+      const data = await getAllParts();
+      setParts(data);
+      setCurrentPage(1);
+    } catch (error) {
+      console.error("Error reloading parts:", error);
+    }
+  };
+
+  const handleEditError = (message: string) => {
+    setToast({ message, type: "error" });
+  };
+
   return (
     <div className="parts-page-light">
       <div className="page-header">
@@ -152,7 +180,10 @@ export default function PartsPage(): React.ReactElement {
                     <span className="part-value">{part.partId}</span>
                   </p>
                 </div>
-                <button className="btn-view-part" onClick={() => handleViewDetails(part)}>View Details</button>
+                <div className="part-card-buttons">
+                  <button className="btn-view-part" onClick={() => handleViewDetails(part)}>View Details</button>
+                  <button className="btn-edit-part" onClick={() => handleOpenEditModal(part)}>Edit</button>
+                </div>
               </div>
             </div>
           ))}
@@ -205,6 +236,14 @@ export default function PartsPage(): React.ReactElement {
         part={selectedPart}
         isOpen={detailModalOpen}
         onClose={handleCloseModal}
+      />
+
+      <PartEditModal
+        part={selectedPart}
+        isOpen={editModalOpen}
+        onClose={handleCloseEditModal}
+        onPartUpdated={handlePartUpdated}
+        onError={handleEditError}
       />
 
       <PartAddModal
