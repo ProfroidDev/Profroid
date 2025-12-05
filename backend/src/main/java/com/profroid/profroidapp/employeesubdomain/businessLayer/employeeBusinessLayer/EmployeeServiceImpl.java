@@ -46,7 +46,7 @@ public class EmployeeServiceImpl implements EmployeeService {
 
     @Override
     public List<EmployeeResponseModel> getAllEmployees() {
-        List<Employee> employees = employeeRepository.findAllByIsActiveTrue();
+        List<Employee> employees = employeeRepository.findAll();
         return employeeResponseMapper.toResponseModelList(employees);
     }
 
