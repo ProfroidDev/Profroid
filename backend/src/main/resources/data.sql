@@ -84,7 +84,7 @@ VALUES
 
 INSERT INTO employees (
     employee_id, first_name, last_name, user_id, employee_role_type,
-    street_address, city, province, country, postal_code
+    street_address, city, province, country, postal_code, is_active
 ) VALUES (
              'c41b8f1c-7f5d-4f0e-8f2e-4b7d1e8c0b2d', -- Unique UUID
              'Alice',
@@ -95,13 +95,14 @@ INSERT INTO employees (
              'Toronto',
              'Ontario',
              'Canada',
-             'M5V 2T3'
+             'M5V 2T3',
+             true
          );
 
 -- Employee 2: TECHNICIAN
 INSERT INTO employees (
     employee_id, first_name, last_name, user_id, employee_role_type,
-    street_address, city, province, country, postal_code
+    street_address, city, province, country, postal_code, is_active
 ) VALUES (
              'a9e6d3f2-1c0a-4b5c-9d8e-7a6f5e4d3c2b', -- Unique UUID
              'Bob',
@@ -112,13 +113,14 @@ INSERT INTO employees (
              'Montreal',
              'Quebec',
              'Canada',
-             'H3B 2S2'
+             'H3B 2S2',
+             true
          );
 
 -- Employee 3: SUPPORT
 INSERT INTO employees (
     employee_id, first_name, last_name, user_id, employee_role_type,
-    street_address, city, province, country, postal_code
+    street_address, city, province, country, postal_code, is_active
 ) VALUES (
              '3f2c1b4a-9e7d-5c6b-1d0e-2a4f6b8c0d1e', -- Unique UUID
              'Carol',
@@ -129,13 +131,14 @@ INSERT INTO employees (
              'Vancouver',
              'British Columbia',
              'Canada',
-             'V6B 1P1'
+             'V6B 1P1',
+             true
          );
 
 -- Employee 4: SALES
 INSERT INTO employees (
     employee_id, first_name, last_name, user_id, employee_role_type,
-    street_address, city, province, country, postal_code
+    street_address, city, province, country, postal_code, is_active
 ) VALUES (
              '1e8c0b2d-4b7d-1e8c-0b2d-4b7d1e8c0b2d', -- Unique UUID
              'David',
@@ -146,7 +149,8 @@ INSERT INTO employees (
              'Calgary',
              'Alberta',
              'Canada',
-             'T2G 0B8'
+             'T2G 0B8',
+             true
          );
 
 -- ---------------------------------

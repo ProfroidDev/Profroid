@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from "react";
 import { getEmployees } from "../../features/employee/api/getAllEmployees";
 import { getEmployee } from "../../features/employee/api/getEmployeeById";
+import { deactivateEmployee } from "../../features/employee/api/deactivateEmployee";
+import { reactivateEmployee } from "../../features/employee/api/reactivateEmployee";
 import type { EmployeeResponseModel } from "../../features/employee/models/EmployeeResponseModel";
 import type { EmployeeSchedule } from "../../features/employee/models/EmployeeSchedule";
 import { getEmployeeSchedule } from "../../features/employee/api/getEmployeeSchedule";
@@ -8,6 +10,7 @@ import Calendar from 'react-calendar';
 import 'react-calendar/dist/Calendar.css';
 import EmployeeAddModal from "../../components/EmployeeAddModal";
 import EmployeeEditModal from "../../components/EmployeeEditModal";
+import ConfirmationModal from "../../components/ConfirmationModal";
 import Toast from "../../shared/components/Toast";
 import AddScheduleModal from "../../features/employee/components/AddScheduleModal";
 import UpdateScheduleModal from "../../features/employee/components/UpdateScheduleModal";
@@ -30,7 +33,7 @@ export default function EmployeeListPage(): React.ReactElement {
   // Removed unused selectedDay state
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [addModalOpen, setAddModalOpen] = useState<boolean>(false);
-  const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' | 'info' } | null>(null);
+  const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' | 'info' | 'warning' } | null>(null);
 
   // Edit modal state
   const [editModalOpen, setEditModalOpen] = useState<boolean>(false);
@@ -38,6 +41,20 @@ export default function EmployeeListPage(): React.ReactElement {
 
   // Update schedule modal state
   const [updateScheduleOpen, setUpdateScheduleOpen] = useState<boolean>(false);
+  
+  // Deactivate/Reactivate state
+  const [deactivateLoading, setDeactivateLoading] = useState<boolean>(false);
+  
+  // Confirmation modal state
+  const [confirmationModal, setConfirmationModal] = useState<{
+    isOpen: boolean;
+    type: 'deactivate' | 'reactivate' | null;
+    employee: EmployeeResponseModel | null;
+  }>({
+    isOpen: false,
+    type: null,
+    employee: null,
+  });
 
   useEffect(() => {
     async function load() {
@@ -119,6 +136,72 @@ export default function EmployeeListPage(): React.ReactElement {
     setEditModalOpen(true);
   }
 
+  async function handleDeactivateEmployee(employee: EmployeeResponseModel) {
+    setConfirmationModal({
+      isOpen: true,
+      type: 'deactivate',
+      employee,
+    });
+  }
+
+  async function confirmDeactivate() {
+    if (!confirmationModal.employee) return;
+
+    setDeactivateLoading(true);
+    try {
+      const employeeId = (confirmationModal.employee.employeeIdentifier as EmployeeResponseModel['employeeIdentifier'] & Record<string, unknown>)?.employeeId;
+      if (employeeId) {
+        const updatedEmployee = await deactivateEmployee(String(employeeId));
+        setToast({ message: `${confirmationModal.employee.firstName} ${confirmationModal.employee.lastName} has been deactivated. You can reactivate them at any time.`, type: 'warning' });
+        // Update the employee in the list to show deactivated state
+        setEmployees(employees.map(e => 
+          (e.employeeIdentifier as EmployeeResponseModel['employeeIdentifier'] & Record<string, unknown>)?.employeeId === employeeId 
+            ? updatedEmployee 
+            : e
+        ));
+      }
+    } catch (error) {
+      console.error("Error deactivating employee:", error);
+      setToast({ message: 'Failed to deactivate employee', type: 'error' });
+    } finally {
+      setDeactivateLoading(false);
+      setConfirmationModal({ isOpen: false, type: null, employee: null });
+    }
+  }
+
+  async function handleReactivateEmployee(employee: EmployeeResponseModel) {
+    setConfirmationModal({
+      isOpen: true,
+      type: 'reactivate',
+      employee,
+    });
+  }
+
+  async function confirmReactivate() {
+    if (!confirmationModal.employee) return;
+
+    setDeactivateLoading(true);
+    try {
+      const employeeId = (confirmationModal.employee.employeeIdentifier as EmployeeResponseModel['employeeIdentifier'] & Record<string, unknown>)?.employeeId;
+      if (employeeId) {
+        const updatedEmployee = await reactivateEmployee(String(employeeId));
+        setToast({ message: `${confirmationModal.employee.firstName} ${confirmationModal.employee.lastName} has been reactivated successfully!`, type: 'success' });
+        // Update the employee in the list to show reactivated state
+        setEmployees(employees.map(e => 
+          (e.employeeIdentifier as EmployeeResponseModel['employeeIdentifier'] & Record<string, unknown>)?.employeeId === employeeId 
+            ? updatedEmployee 
+            : e
+        ));
+      }
+    } catch (error) {
+      console.error("Error reactivating employee:", error);
+      setToast({ message: 'Failed to reactivate employee', type: 'error' });
+    } finally {
+      setDeactivateLoading(false);
+      setConfirmationModal({ isOpen: false, type: null, employee: null });
+    }
+  }
+
   return (
     <div className="employees-page-light">
       <h2 className="employees-title-light">Employees</h2>
@@ -146,30 +229,53 @@ export default function EmployeeListPage(): React.ReactElement {
 
             <tbody>
               {employees.map((e, idx) => (
-                <tr key={idx}>
-                  <td>{e.lastName}</td>
-                  <td>{e.firstName}</td>
+                <tr key={idx} style={{ opacity: e.isActive ? 1 : 0.5 }}>
+                  <td style={{ filter: e.isActive ? 'none' : 'blur(2px)' }}>{e.lastName}</td>
+                  <td style={{ filter: e.isActive ? 'none' : 'blur(2px)' }}>{e.firstName}</td>
                   <td>
                     <button
                       className="btn-view-light"
                       onClick={() => openDetails(e)}
+                      disabled={!e.isActive}
+                      style={{ filter: e.isActive ? 'none' : 'blur(2px)' }}
                     >
                       View Details
                     </button>
                     <button
                       className="btn-view-light"
-                      style={{ marginLeft: 8 }}
+                      style={{ marginLeft: 8, filter: e.isActive ? 'none' : 'blur(2px)' }}
                       onClick={() => openEditModal(e)}
+                      disabled={!e.isActive}
                     >
                       Edit
                     </button>
                     <button
                       className="btn-view-light"
-                      style={{ marginLeft: 8 }}
+                      style={{ marginLeft: 8, filter: e.isActive ? 'none' : 'blur(2px)' }}
                       onClick={() => openSchedule(e)}
+                      disabled={!e.isActive}
                     >
                       View Schedule
                     </button>
+                    {e.isActive ? (
+                      <button
+                        className="btn-view-light"
+                        style={{ marginLeft: 8, backgroundColor: '#ff6b6b', color: 'white' }}
+                        onClick={() => handleDeactivateEmployee(e)}
+                        disabled={deactivateLoading}
+                      >
+                        Deactivate
+                      </button>
+                    ) : (
+                      <button
+                        className="btn-view-light"
+                        style={{ marginLeft: 8, backgroundColor: '#51cf66', color: 'white' }}
+                        onClick={() => handleReactivateEmployee(e)}
+                        disabled={deactivateLoading}
+                      >
+                        Reactivate
+                      </button>
+                    )}
                   </td>
                 </tr>
               ))}
@@ -269,7 +375,19 @@ export default function EmployeeListPage(): React.ReactElement {
             {scheduleLoading && (
               <div className="loading-light">Loading schedule...</div>
             )}
-            {!scheduleLoading && employeeSchedule.length > 0 && (
+            
+            {!scheduleLoading && !scheduleEmployeeData?.isActive && (
+              <div className="modal-content-light">
+                <div className="modal-section">
+                  <h4 className="modal-label" style={{ color: '#ff6b6b' }}>Employee Inactive</h4>
+                  <p className="modal-value">
+                    This employee is currently deactivated. You cannot add or modify their schedule until they are reactivated.
+                  </p>
+                </div>
+              </div>
+            )}
+            
+            {!scheduleLoading && scheduleEmployeeData?.isActive && employeeSchedule.length > 0 && (
               <div className="modal-content-light">
                 <div className="modal-section schedule-calendar-section">
                   <h4 className="modal-label">Select Date</h4>
@@ -300,7 +418,7 @@ export default function EmployeeListPage(): React.ReactElement {
                 </div>
               </div>
             )}
-            {!scheduleLoading && employeeSchedule.length === 0 && (
+            {!scheduleLoading && scheduleEmployeeData?.isActive && employeeSchedule.length === 0 && (
               <div className="modal-content-light">
                 <div className="modal-section">
                   <h4 className="modal-label">No schedule found.</h4>
@@ -402,6 +520,22 @@ export default function EmployeeListPage(): React.ReactElement {
           }}
         />
       )}
+
+      <ConfirmationModal
+        isOpen={confirmationModal.isOpen}
+        title={confirmationModal.type === 'deactivate' ? 'Deactivate Employee' : 'Reactivate Employee'}
+        message={
+          confirmationModal.type === 'deactivate'
+            ? `Are you sure you want to deactivate ${confirmationModal.employee?.firstName} ${confirmationModal.employee?.lastName}? They will be marked as inactive but can be reactivated at any time.`
+            : `Are you sure you want to reactivate ${confirmationModal.employee?.firstName} ${confirmationModal.employee?.lastName}? They will be marked as active again.`
+        }
+        confirmText={confirmationModal.type === 'deactivate' ? 'Deactivate' : 'Reactivate'}
+        cancelText="Cancel"
+        isDanger={confirmationModal.type === 'deactivate'}
+        isLoading={deactivateLoading}
+        onConfirm={confirmationModal.type === 'deactivate' ? confirmDeactivate : confirmReactivate}
+        onCancel={() => setConfirmationModal({ isOpen: false, type: null, employee: null })}
+      />
     </div>
   );
 }

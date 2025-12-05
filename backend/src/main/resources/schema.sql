@@ -55,7 +55,8 @@ CREATE TABLE IF NOT EXISTS employees (
                            city VARCHAR(255) NOT NULL,
                            province VARCHAR(255) NOT NULL,
                            country VARCHAR(255) NOT NULL,
-                           postal_code VARCHAR(10) NOT NULL
+                           postal_code VARCHAR(10) NOT NULL,
+                           is_active BOOLEAN NOT NULL DEFAULT true
 );
 
 

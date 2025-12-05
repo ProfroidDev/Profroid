@@ -50,6 +50,8 @@ dependencies {
 
     // Test dependencies
     testImplementation "org.springframework.boot:spring-boot-starter-test"
+    // For WebTestClient in integration tests
+    testImplementation "org.springframework.boot:spring-boot-starter-webflux"
     testRuntimeOnly "org.junit.platform:junit-platform-launcher"
 
     // Test annotation processors
@@ -57,18 +59,46 @@ dependencies {
     testAnnotationProcessor "org.projectlombok:lombok:${lombokVersion}"
 }
 
-tasks.named('test') {
-    useJUnitPlatform()
-}
-
 jacoco {
     toolVersion = "0.8.12"
 }
 
+tasks.named('test') {
+    useJUnitPlatform()
+    testLogging {
+        events "passed", "skipped", "failed"
+    }
+}
+
 tasks.jacocoTestReport {
-    dependsOn tasks.test
+    dependsOn test
+
+    afterEvaluate {
+        classDirectories.setFrom(files(classDirectories.files.collect {
+            fileTree(dir: it, exclude: [
+                    "**/utils/**",
+                    "**/config/**",
+                    "**/mappingLayer/**",
+                    "**/ProfroidappApplication.class"
+            ])
+        }))
+    }
+
     reports {
         xml.required = true
         html.required = true
     }
 }
+
+tasks.jacocoTestCoverageVerification {
+    violationRules {
+        rule {
+            limit {
+                minimum = 0.0
+            }
+        }
+    }
+}
+
+test.finalizedBy jacocoTestReport
+check.dependsOn jacocoTestCoverageVerification

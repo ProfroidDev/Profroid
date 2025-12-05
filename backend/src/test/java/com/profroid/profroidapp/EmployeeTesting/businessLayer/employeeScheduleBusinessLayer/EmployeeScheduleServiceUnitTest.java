@@ -1,0 +1,523 @@
+package com.profroid.profroidapp.EmployeeTesting.businessLayer.employeeScheduleBusinessLayer;
+
+import com.profroid.profroidapp.employeesubdomain.businessLayer.employeeScheduleBusinessLayer.ScheduleServiceImpl;
+import com.profroid.profroidapp.employeesubdomain.dataAccessLayer.employeeDataAccessLayer.*;
+import com.profroid.profroidapp.employeesubdomain.dataAccessLayer.employeeScheduleDataAccessLayer.*;
+import com.profroid.profroidapp.employeesubdomain.mappingLayer.employeeScheduleMappers.EmployeeScheduleRequestMapper;
+import com.profroid.profroidapp.employeesubdomain.mappingLayer.employeeScheduleMappers.EmployeeScheduleResponseMapper;
+import com.profroid.profroidapp.employeesubdomain.presentationLayer.employeeSchedulePresentationLayer.EmployeeScheduleRequestModel;
+import com.profroid.profroidapp.employeesubdomain.presentationLayer.employeeSchedulePresentationLayer.EmployeeScheduleResponseModel;
+import com.profroid.profroidapp.utils.exceptions.InvalidIdentifierException;
+import com.profroid.profroidapp.utils.exceptions.MissingDataException;
+import com.profroid.profroidapp.utils.exceptions.ResourceAlreadyExistsException;
+import com.profroid.profroidapp.utils.exceptions.ResourceNotFoundException;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.verify;
+
+@ExtendWith(MockitoExtension.class)
+public class EmployeeScheduleServiceUnitTest {
+
+    private final String VALID_EMPLOYEE_ID = "00000000-0000-0000-0000-000000000000";
+    private final String INVALID_EMPLOYEE_ID = "invalid-id";
+    private final String NON_EXISTING_EMPLOYEE_ID = "11111111-1111-1111-1111-111111111111";
+
+    @Mock
+    private ScheduleRepository scheduleRepository;
+    @Mock private EmployeeRepository employeeRepository;
+    @Mock private EmployeeScheduleResponseMapper responseMapper;
+    @Mock private EmployeeScheduleRequestMapper requestMapper;
+
+    @InjectMocks
+    private ScheduleServiceImpl scheduleService;
+
+    private Employee technician;
+    private Employee nonTechnician;
+
+    @BeforeEach
+    void setup() {
+        technician = new Employee();
+        technician.setEmployeeIdentifier(new EmployeeIdentifier(VALID_EMPLOYEE_ID));
+        EmployeeRole techRole = new EmployeeRole();
+        techRole.setEmployeeRoleType(EmployeeRoleType.TECHNICIAN);
+        technician.setEmployeeRole(techRole);
+
+        nonTechnician = new Employee();
+        nonTechnician.setEmployeeIdentifier(new EmployeeIdentifier(VALID_EMPLOYEE_ID));
+        EmployeeRole supportRole = new EmployeeRole();
+        supportRole.setEmployeeRoleType(EmployeeRoleType.SUPPORT);
+        nonTechnician.setEmployeeRole(supportRole);
+    }
+
+    // ===== getEmployeeSchedule =====
+    // Positive: valid id and existing employee returns grouped responses
+    @Test
+    void whenGetSchedule_withValidId_thenReturnResponses() {
+        when(employeeRepository.findEmployeeByEmployeeIdentifier_EmployeeId(VALID_EMPLOYEE_ID))
+                .thenReturn(technician);
+        // existing schedules
+        Schedule s1 = new Schedule();
+        DayOfWeek d1 = new DayOfWeek(); d1.setDayOfWeek(DayOfWeekType.MONDAY); s1.setDayOfWeek(d1);
+        TimeSlot ts1 = new TimeSlot(); ts1.setTimeslot(TimeSlotType.NINE_AM); s1.setTimeSlot(ts1);
+        Schedule s2 = new Schedule();
+        DayOfWeek d2 = new DayOfWeek(); d2.setDayOfWeek(DayOfWeekType.MONDAY); s2.setDayOfWeek(d2);
+        TimeSlot ts2 = new TimeSlot(); ts2.setTimeslot(TimeSlotType.ELEVEN_AM); s2.setTimeSlot(ts2);
+        when(scheduleRepository.findAllByEmployee_EmployeeIdentifier_EmployeeId(VALID_EMPLOYEE_ID))
+                .thenReturn(Arrays.asList(s1, s2));
+
+        List<EmployeeScheduleResponseModel> result = scheduleService.getEmployeeSchedule(VALID_EMPLOYEE_ID);
+        assertNotNull(result);
+        assertFalse(result.isEmpty());
+        assertEquals(DayOfWeekType.MONDAY, result.get(0).getDayOfWeek());
+        assertEquals(2, result.get(0).getTimeSlots().size());
+
+        verify(employeeRepository).findEmployeeByEmployeeIdentifier_EmployeeId(VALID_EMPLOYEE_ID);
+        verify(scheduleRepository).findAllByEmployee_EmployeeIdentifier_EmployeeId(VALID_EMPLOYEE_ID);
+    }
+
+    // Negative: invalid id format
+    @Test
+    void whenGetSchedule_withInvalidId_thenThrowInvalidIdentifier() {
+        assertThrows(InvalidIdentifierException.class,
+                () -> scheduleService.getEmployeeSchedule(INVALID_EMPLOYEE_ID));
+        verify(employeeRepository, never()).findEmployeeByEmployeeIdentifier_EmployeeId(anyString());
+    }
+
+    // Negative: employee not found
+    @Test
+    void whenGetSchedule_withNonExistingEmployee_thenThrowNotFound() {
+        when(employeeRepository.findEmployeeByEmployeeIdentifier_EmployeeId(NON_EXISTING_EMPLOYEE_ID))
+                .thenReturn(null);
+        assertThrows(ResourceNotFoundException.class,
+                () -> scheduleService.getEmployeeSchedule(NON_EXISTING_EMPLOYEE_ID));
+        verify(employeeRepository).findEmployeeByEmployeeIdentifier_EmployeeId(NON_EXISTING_EMPLOYEE_ID);
+    }
+
+    // ===== addEmployeeSchedule =====
+    // Negative: invalid id
+    @Test
+    void whenAddSchedule_withInvalidId_thenThrowInvalidIdentifier() {
+        assertThrows(InvalidIdentifierException.class,
+                () -> scheduleService.addEmployeeSchedule(INVALID_EMPLOYEE_ID, Collections.emptyList()));
+    }
+
+    // Negative: employee not found
+    @Test
+    void whenAddSchedule_withNonExistingEmployee_thenThrowNotFound() {
+        when(employeeRepository.findEmployeeByEmployeeIdentifier_EmployeeId(NON_EXISTING_EMPLOYEE_ID))
+                .thenReturn(null);
+        assertThrows(ResourceNotFoundException.class,
+                () -> scheduleService.addEmployeeSchedule(NON_EXISTING_EMPLOYEE_ID, Collections.emptyList()));
+    }
+
+    // Negative: existing schedules found -> cannot add
+    @Test
+    void whenAddSchedule_withExistingSchedules_thenThrowAlreadyExists() {
+        when(employeeRepository.findEmployeeByEmployeeIdentifier_EmployeeId(VALID_EMPLOYEE_ID))
+                .thenReturn(technician);
+        when(scheduleRepository.findAllByEmployee_EmployeeIdentifier_EmployeeId(VALID_EMPLOYEE_ID))
+                .thenReturn(Collections.singletonList(new Schedule()));
+        List<EmployeeScheduleRequestModel> reqs = minimalFiveDaysTechRequests();
+        assertThrows(ResourceAlreadyExistsException.class,
+                () -> scheduleService.addEmployeeSchedule(VALID_EMPLOYEE_ID, reqs));
+    }
+
+    // Negative: missing requests
+    @Test
+    void whenAddSchedule_withEmptyRequests_thenThrowMissingData() {
+        when(employeeRepository.findEmployeeByEmployeeIdentifier_EmployeeId(VALID_EMPLOYEE_ID))
+                .thenReturn(technician);
+        when(scheduleRepository.findAllByEmployee_EmployeeIdentifier_EmployeeId(VALID_EMPLOYEE_ID))
+                .thenReturn(Collections.emptyList());
+        assertThrows(MissingDataException.class,
+                () -> scheduleService.addEmployeeSchedule(VALID_EMPLOYEE_ID, Collections.emptyList()));
+    }
+
+    // Negative: not all 5 days provided
+    @Test
+    void whenAddSchedule_missingDays_thenThrowMissingData() {
+        when(employeeRepository.findEmployeeByEmployeeIdentifier_EmployeeId(VALID_EMPLOYEE_ID))
+                .thenReturn(technician);
+        when(scheduleRepository.findAllByEmployee_EmployeeIdentifier_EmployeeId(VALID_EMPLOYEE_ID))
+                .thenReturn(Collections.emptyList());
+        List<EmployeeScheduleRequestModel> reqs = Arrays.asList(
+                requestForDay(DayOfWeekType.MONDAY, TimeSlotType.NINE_AM, TimeSlotType.ELEVEN_AM)
+        );
+        assertThrows(MissingDataException.class,
+                () -> scheduleService.addEmployeeSchedule(VALID_EMPLOYEE_ID, reqs));
+    }
+
+    // Positive: technician valid requests within rules saves and returns
+    @Test
+    void whenAddSchedule_technicianValid_thenSaveAndReturn() {
+        when(employeeRepository.findEmployeeByEmployeeIdentifier_EmployeeId(VALID_EMPLOYEE_ID))
+                .thenReturn(technician);
+        when(scheduleRepository.findAllByEmployee_EmployeeIdentifier_EmployeeId(VALID_EMPLOYEE_ID))
+                .thenReturn(Collections.emptyList());
+
+        List<EmployeeScheduleRequestModel> reqs = minimalFiveDaysTechRequests();
+
+
+                when(requestMapper.toEntityList(any(EmployeeScheduleRequestModel.class)))
+                                .thenAnswer(invocation -> {
+                                        EmployeeScheduleRequestModel req = invocation.getArgument(0);
+                                        List<Schedule> schedules = new ArrayList<>();
+                                        if (req.getTimeSlots() != null) {
+                                                for (TimeSlotType slotType : req.getTimeSlots()) {
+                                                        Schedule s = new Schedule();
+                                                        DayOfWeek d = new DayOfWeek();
+                                                        d.setDayOfWeek(req.getDayOfWeek());
+                                                        s.setDayOfWeek(d);
+                                                        TimeSlot ts = new TimeSlot();
+                                                        ts.setTimeslot(slotType);
+                                                        s.setTimeSlot(ts);
+                                                        schedules.add(s);
+                                                }
+                                        }
+                                        return schedules;
+                                });
+        when(scheduleRepository.saveAll(any(List.class))).thenReturn(Collections.emptyList());
+
+        // Stub final response via getEmployeeSchedule flow
+        when(scheduleRepository.findAllByEmployee_EmployeeIdentifier_EmployeeId(VALID_EMPLOYEE_ID))
+                .thenReturn(Collections.emptyList());
+
+        List<EmployeeScheduleResponseModel> result = scheduleService.addEmployeeSchedule(VALID_EMPLOYEE_ID, reqs);
+        assertNotNull(result);
+        verify(scheduleRepository).saveAll(any(List.class));
+    }
+
+    // Negative: non-technician must have exactly 2 time slots and start at 9AM, <=8h per day, <=40h week
+    @Test
+    void whenAddSchedule_nonTechnicianViolatesRules_thenThrowMissingData() {
+        when(employeeRepository.findEmployeeByEmployeeIdentifier_EmployeeId(VALID_EMPLOYEE_ID))
+                .thenReturn(nonTechnician);
+        when(scheduleRepository.findAllByEmployee_EmployeeIdentifier_EmployeeId(VALID_EMPLOYEE_ID))
+                .thenReturn(Collections.emptyList());
+
+        // Provide five days but with 3 time slots on Monday
+        List<EmployeeScheduleRequestModel> reqs = new ArrayList<>();
+        reqs.add(requestForDay(DayOfWeekType.MONDAY, TimeSlotType.NINE_AM, TimeSlotType.ELEVEN_AM, TimeSlotType.ONE_PM));
+        reqs.add(requestForDay(DayOfWeekType.TUESDAY, TimeSlotType.NINE_AM, TimeSlotType.FIVE_PM));
+        reqs.add(requestForDay(DayOfWeekType.WEDNESDAY, TimeSlotType.NINE_AM, TimeSlotType.FIVE_PM));
+        reqs.add(requestForDay(DayOfWeekType.THURSDAY, TimeSlotType.NINE_AM, TimeSlotType.FIVE_PM));
+        reqs.add(requestForDay(DayOfWeekType.FRIDAY, TimeSlotType.NINE_AM, TimeSlotType.FIVE_PM));
+
+        assertThrows(MissingDataException.class,
+                () -> scheduleService.addEmployeeSchedule(VALID_EMPLOYEE_ID, reqs));
+    }
+
+    // Negative: add - request contains a null timeslot entry
+    @Test
+    void whenAddSchedule_withNullTimeSlot_thenThrowMissingData() {
+        when(employeeRepository.findEmployeeByEmployeeIdentifier_EmployeeId(VALID_EMPLOYEE_ID))
+                .thenReturn(technician);
+        when(scheduleRepository.findAllByEmployee_EmployeeIdentifier_EmployeeId(VALID_EMPLOYEE_ID))
+                .thenReturn(Collections.emptyList());
+
+        List<EmployeeScheduleRequestModel> reqs = minimalFiveDaysTechRequests();
+        // Inject a null slot on Monday
+        reqs.set(0, requestForDay(DayOfWeekType.MONDAY, TimeSlotType.NINE_AM, null));
+
+        assertThrows(MissingDataException.class,
+                () -> scheduleService.addEmployeeSchedule(VALID_EMPLOYEE_ID, reqs));
+    }
+
+    // Negative: add - technician slots closer than 2 hours
+    @Test
+    void whenAddSchedule_technicianTooCloseSlots_thenThrowMissingData() {
+        when(employeeRepository.findEmployeeByEmployeeIdentifier_EmployeeId(VALID_EMPLOYEE_ID))
+                .thenReturn(technician);
+        when(scheduleRepository.findAllByEmployee_EmployeeIdentifier_EmployeeId(VALID_EMPLOYEE_ID))
+                .thenReturn(Collections.emptyList());
+
+        List<EmployeeScheduleRequestModel> reqs = new ArrayList<>();
+        reqs.add(requestForDay(DayOfWeekType.MONDAY, TimeSlotType.NINE_AM, TimeSlotType.ELEVEN_AM));
+        // Tuesday: duplicate ELEVEN_AM to create 0-minute gap (<120)
+        reqs.add(requestForDay(DayOfWeekType.TUESDAY, TimeSlotType.ELEVEN_AM, TimeSlotType.ELEVEN_AM));
+        reqs.add(requestForDay(DayOfWeekType.WEDNESDAY, TimeSlotType.NINE_AM, TimeSlotType.ELEVEN_AM));
+        reqs.add(requestForDay(DayOfWeekType.THURSDAY, TimeSlotType.NINE_AM, TimeSlotType.ELEVEN_AM));
+        reqs.add(requestForDay(DayOfWeekType.FRIDAY, TimeSlotType.NINE_AM, TimeSlotType.ELEVEN_AM));
+
+        assertThrows(MissingDataException.class,
+                () -> scheduleService.addEmployeeSchedule(VALID_EMPLOYEE_ID, reqs));
+    }
+
+    // Negative: add - technician day has more than 4 slots
+    @Test
+    void whenAddSchedule_technicianTooManySlots_thenThrowMissingData() {
+        when(employeeRepository.findEmployeeByEmployeeIdentifier_EmployeeId(VALID_EMPLOYEE_ID))
+                .thenReturn(technician);
+        when(scheduleRepository.findAllByEmployee_EmployeeIdentifier_EmployeeId(VALID_EMPLOYEE_ID))
+                .thenReturn(Collections.emptyList());
+
+        List<EmployeeScheduleRequestModel> reqs = new ArrayList<>();
+        reqs.add(requestForDay(DayOfWeekType.MONDAY, TimeSlotType.NINE_AM, TimeSlotType.ELEVEN_AM, TimeSlotType.ONE_PM, TimeSlotType.THREE_PM, TimeSlotType.FIVE_PM));
+        reqs.add(requestForDay(DayOfWeekType.TUESDAY, TimeSlotType.NINE_AM, TimeSlotType.ELEVEN_AM));
+        reqs.add(requestForDay(DayOfWeekType.WEDNESDAY, TimeSlotType.NINE_AM, TimeSlotType.ELEVEN_AM));
+        reqs.add(requestForDay(DayOfWeekType.THURSDAY, TimeSlotType.NINE_AM, TimeSlotType.ELEVEN_AM));
+        reqs.add(requestForDay(DayOfWeekType.FRIDAY, TimeSlotType.NINE_AM, TimeSlotType.ELEVEN_AM));
+
+        assertThrows(MissingDataException.class,
+                () -> scheduleService.addEmployeeSchedule(VALID_EMPLOYEE_ID, reqs));
+    }
+
+    // Negative: add - weekly hours exceed 40 for non-technician
+    @Test
+    void whenAddSchedule_nonTechnicianWeeklyOver40_thenThrowMissingData() {
+        when(employeeRepository.findEmployeeByEmployeeIdentifier_EmployeeId(VALID_EMPLOYEE_ID))
+                .thenReturn(nonTechnician);
+        when(scheduleRepository.findAllByEmployee_EmployeeIdentifier_EmployeeId(VALID_EMPLOYEE_ID))
+                .thenReturn(Collections.emptyList());
+
+        // 5 days of 9am-5pm -> 8h/day = 40h, bump Friday to 5pm -> 1pm to make under/over mix (but non-tech needs 2 slots; use 9-5 for four days and 9-5 + invalid third slot to trigger earlier rule)
+        List<EmployeeScheduleRequestModel> reqs = new ArrayList<>();
+        reqs.add(requestForDay(DayOfWeekType.MONDAY, TimeSlotType.NINE_AM, TimeSlotType.FIVE_PM));
+        reqs.add(requestForDay(DayOfWeekType.TUESDAY, TimeSlotType.NINE_AM, TimeSlotType.FIVE_PM));
+        reqs.add(requestForDay(DayOfWeekType.WEDNESDAY, TimeSlotType.NINE_AM, TimeSlotType.FIVE_PM));
+        reqs.add(requestForDay(DayOfWeekType.THURSDAY, TimeSlotType.NINE_AM, TimeSlotType.FIVE_PM));
+        // Make Friday 9am-5pm plus 1pm to fail exact-2 rule first
+        reqs.add(requestForDay(DayOfWeekType.FRIDAY, TimeSlotType.NINE_AM, TimeSlotType.FIVE_PM, TimeSlotType.ONE_PM));
+
+        assertThrows(MissingDataException.class,
+                () -> scheduleService.addEmployeeSchedule(VALID_EMPLOYEE_ID, reqs));
+    }
+
+    // Negative: add - mapper produces entity with null dayOfWeek or timeSlot
+    @Test
+    void whenAddSchedule_entityMappingNulls_thenThrowMissingData() {
+        when(employeeRepository.findEmployeeByEmployeeIdentifier_EmployeeId(VALID_EMPLOYEE_ID))
+                .thenReturn(technician);
+        when(scheduleRepository.findAllByEmployee_EmployeeIdentifier_EmployeeId(VALID_EMPLOYEE_ID))
+                .thenReturn(Collections.emptyList());
+
+        List<EmployeeScheduleRequestModel> reqs = minimalFiveDaysTechRequests();
+
+        when(requestMapper.toEntityList(any(EmployeeScheduleRequestModel.class)))
+                .thenAnswer(inv -> {
+                    // Return one schedule with null dayOfWeek to hit entity validation
+                    Schedule s = new Schedule();
+                    s.setDayOfWeek(null);
+                    TimeSlot ts = new TimeSlot(); ts.setTimeslot(TimeSlotType.NINE_AM); s.setTimeSlot(ts);
+                    return Collections.singletonList(s);
+                });
+
+        assertThrows(MissingDataException.class,
+                () -> scheduleService.addEmployeeSchedule(VALID_EMPLOYEE_ID, reqs));
+    }
+
+    // Positive: add - non-technician valid 5 days (9-5) executes weekly hours path and saves
+    @Test
+    void whenAddSchedule_nonTechnicianValid_thenSaveAndReturn() {
+        when(employeeRepository.findEmployeeByEmployeeIdentifier_EmployeeId(VALID_EMPLOYEE_ID))
+                .thenReturn(nonTechnician);
+        when(scheduleRepository.findAllByEmployee_EmployeeIdentifier_EmployeeId(VALID_EMPLOYEE_ID))
+                .thenReturn(Collections.emptyList());
+
+        List<EmployeeScheduleRequestModel> reqs = new ArrayList<>();
+        reqs.add(requestForDay(DayOfWeekType.MONDAY, TimeSlotType.NINE_AM, TimeSlotType.FIVE_PM));
+        reqs.add(requestForDay(DayOfWeekType.TUESDAY, TimeSlotType.NINE_AM, TimeSlotType.FIVE_PM));
+        reqs.add(requestForDay(DayOfWeekType.WEDNESDAY, TimeSlotType.NINE_AM, TimeSlotType.FIVE_PM));
+        reqs.add(requestForDay(DayOfWeekType.THURSDAY, TimeSlotType.NINE_AM, TimeSlotType.FIVE_PM));
+        reqs.add(requestForDay(DayOfWeekType.FRIDAY, TimeSlotType.NINE_AM, TimeSlotType.FIVE_PM));
+
+        // Mapper returns valid entities
+        when(requestMapper.toEntityList(any(EmployeeScheduleRequestModel.class)))
+                .thenAnswer(invocation -> {
+                    EmployeeScheduleRequestModel req = invocation.getArgument(0);
+                    List<Schedule> schedules = new ArrayList<>();
+                    for (TimeSlotType slotType : req.getTimeSlots()) {
+                        Schedule s = new Schedule();
+                        DayOfWeek d = new DayOfWeek(); d.setDayOfWeek(req.getDayOfWeek()); s.setDayOfWeek(d);
+                        TimeSlot ts = new TimeSlot(); ts.setTimeslot(slotType); s.setTimeSlot(ts);
+                        schedules.add(s);
+                    }
+                    return schedules;
+                });
+        when(scheduleRepository.saveAll(any(List.class))).thenReturn(Collections.emptyList());
+        // getEmployeeSchedule read
+        when(scheduleRepository.findAllByEmployee_EmployeeIdentifier_EmployeeId(VALID_EMPLOYEE_ID))
+                .thenReturn(Collections.emptyList());
+
+        List<EmployeeScheduleResponseModel> result = scheduleService.addEmployeeSchedule(VALID_EMPLOYEE_ID, reqs);
+        assertNotNull(result);
+        verify(scheduleRepository).saveAll(any(List.class));
+    }
+
+    // ===== updateEmployeeSchedule =====
+    // Negative: invalid id
+    @Test
+    void whenUpdateSchedule_withInvalidId_thenThrowInvalidIdentifier() {
+        assertThrows(InvalidIdentifierException.class,
+                () -> scheduleService.updateEmployeeSchedule(INVALID_EMPLOYEE_ID, Collections.emptyList()));
+    }
+
+    // Negative: employee not found
+    @Test
+    void whenUpdateSchedule_withNonExistingEmployee_thenThrowNotFound() {
+        when(employeeRepository.findEmployeeByEmployeeIdentifier_EmployeeId(NON_EXISTING_EMPLOYEE_ID))
+                .thenReturn(null);
+        assertThrows(ResourceNotFoundException.class,
+                () -> scheduleService.updateEmployeeSchedule(NON_EXISTING_EMPLOYEE_ID, Collections.emptyList()));
+    }
+
+    // Negative: no existing schedules to update
+    @Test
+    void whenUpdateSchedule_withoutExisting_thenThrowNotFound() {
+        when(employeeRepository.findEmployeeByEmployeeIdentifier_EmployeeId(VALID_EMPLOYEE_ID))
+                .thenReturn(technician);
+        when(scheduleRepository.findAllByEmployee_EmployeeIdentifier_EmployeeId(VALID_EMPLOYEE_ID))
+                .thenReturn(Collections.emptyList());
+        assertThrows(ResourceNotFoundException.class,
+                () -> scheduleService.updateEmployeeSchedule(VALID_EMPLOYEE_ID, minimalFiveDaysTechRequests()));
+    }
+
+    // Positive: valid update deletes and saves
+    @Test
+    void whenUpdateSchedule_valid_thenDeleteAndSave() {
+        when(employeeRepository.findEmployeeByEmployeeIdentifier_EmployeeId(VALID_EMPLOYEE_ID))
+                .thenReturn(technician);
+        // First call (pre-check) returns existing schedules; second call (post-update read) returns empty
+        when(scheduleRepository.findAllByEmployee_EmployeeIdentifier_EmployeeId(VALID_EMPLOYEE_ID))
+                .thenReturn(Collections.singletonList(new Schedule()), Collections.emptyList());
+
+        List<EmployeeScheduleRequestModel> reqs = minimalFiveDaysTechRequests();
+                when(requestMapper.toEntityList(any(EmployeeScheduleRequestModel.class)))
+                                .thenAnswer(invocation -> {
+                                        EmployeeScheduleRequestModel req = invocation.getArgument(0);
+                                        List<Schedule> schedules = new ArrayList<>();
+                                        if (req.getTimeSlots() != null) {
+                                                for (TimeSlotType slotType : req.getTimeSlots()) {
+                                                        Schedule s = new Schedule();
+                                                        DayOfWeek d = new DayOfWeek();
+                                                        d.setDayOfWeek(req.getDayOfWeek());
+                                                        s.setDayOfWeek(d);
+                                                        TimeSlot ts = new TimeSlot();
+                                                        ts.setTimeslot(slotType);
+                                                        s.setTimeSlot(ts);
+                                                        schedules.add(s);
+                                                }
+                                        }
+                                        return schedules;
+                                });
+
+        // saveAll
+        when(scheduleRepository.saveAll(any(List.class))).thenReturn(Collections.emptyList());
+
+        List<EmployeeScheduleResponseModel> result = scheduleService.updateEmployeeSchedule(VALID_EMPLOYEE_ID, reqs);
+        assertNotNull(result);
+        verify(scheduleRepository).deleteAll(any(List.class));
+        verify(scheduleRepository).saveAll(any(List.class));
+    }
+
+    // Negative: update - mapper produces entity with null timeSlot
+    @Test
+    void whenUpdateSchedule_entityMappingNulls_thenThrowMissingData() {
+        when(employeeRepository.findEmployeeByEmployeeIdentifier_EmployeeId(VALID_EMPLOYEE_ID))
+                .thenReturn(technician);
+        when(scheduleRepository.findAllByEmployee_EmployeeIdentifier_EmployeeId(VALID_EMPLOYEE_ID))
+                .thenReturn(Collections.singletonList(new Schedule()));
+
+        List<EmployeeScheduleRequestModel> reqs = minimalFiveDaysTechRequests();
+
+        when(requestMapper.toEntityList(any(EmployeeScheduleRequestModel.class)))
+                .thenAnswer(inv -> {
+                    Schedule s = new Schedule();
+                    DayOfWeek d = new DayOfWeek(); d.setDayOfWeek(DayOfWeekType.MONDAY); s.setDayOfWeek(d);
+                    s.setTimeSlot(null);
+                    return Collections.singletonList(s);
+                });
+
+        assertThrows(MissingDataException.class,
+                () -> scheduleService.updateEmployeeSchedule(VALID_EMPLOYEE_ID, reqs));
+    }
+
+    // Negative: update - non-technician day exceeds 8 hours
+    @Test
+    void whenUpdateSchedule_nonTechnicianDailyOver8_thenThrowMissingData() {
+        when(employeeRepository.findEmployeeByEmployeeIdentifier_EmployeeId(VALID_EMPLOYEE_ID))
+                .thenReturn(nonTechnician);
+        when(scheduleRepository.findAllByEmployee_EmployeeIdentifier_EmployeeId(VALID_EMPLOYEE_ID))
+                .thenReturn(Collections.singletonList(new Schedule()));
+
+        List<EmployeeScheduleRequestModel> reqs = new ArrayList<>();
+        // 9am to 5pm is 8h, exceed by using 9am to 5pm and pretend sorted still 9 & 5; instead use 9 & FIVE_PM and change another day to 9 & FIVE_PM to still 5 days
+        reqs.add(requestForDay(DayOfWeekType.MONDAY, TimeSlotType.NINE_AM, TimeSlotType.FIVE_PM));
+        reqs.add(requestForDay(DayOfWeekType.TUESDAY, TimeSlotType.NINE_AM, TimeSlotType.FIVE_PM));
+        reqs.add(requestForDay(DayOfWeekType.WEDNESDAY, TimeSlotType.NINE_AM, TimeSlotType.FIVE_PM));
+        reqs.add(requestForDay(DayOfWeekType.THURSDAY, TimeSlotType.NINE_AM, TimeSlotType.FIVE_PM));
+        // Friday: invalid three slots to trigger rule path; but we need 2-slot path overflow: use NINE_AM and THREE_PM (6h) won't exceed; use NINE_AM and FIVE_PM is 8h already. To exceed daily 8h is impossible with given slots; instead trigger start not 9AM rule.
+        reqs.add(requestForDay(DayOfWeekType.FRIDAY, TimeSlotType.ELEVEN_AM, TimeSlotType.FIVE_PM));
+
+        assertThrows(MissingDataException.class,
+                () -> scheduleService.updateEmployeeSchedule(VALID_EMPLOYEE_ID, reqs));
+    }
+
+        // Positive: update - non-technician valid 5 days (9-5) executes weekly hours path and saves
+        @Test
+        void whenUpdateSchedule_nonTechnicianValid_thenDeleteAndSave() {
+                when(employeeRepository.findEmployeeByEmployeeIdentifier_EmployeeId(VALID_EMPLOYEE_ID))
+                                .thenReturn(nonTechnician);
+                when(scheduleRepository.findAllByEmployee_EmployeeIdentifier_EmployeeId(VALID_EMPLOYEE_ID))
+                                .thenReturn(Collections.singletonList(new Schedule()), Collections.emptyList());
+
+                List<EmployeeScheduleRequestModel> reqs = new ArrayList<>();
+                reqs.add(requestForDay(DayOfWeekType.MONDAY, TimeSlotType.NINE_AM, TimeSlotType.FIVE_PM));
+                reqs.add(requestForDay(DayOfWeekType.TUESDAY, TimeSlotType.NINE_AM, TimeSlotType.FIVE_PM));
+                reqs.add(requestForDay(DayOfWeekType.WEDNESDAY, TimeSlotType.NINE_AM, TimeSlotType.FIVE_PM));
+                reqs.add(requestForDay(DayOfWeekType.THURSDAY, TimeSlotType.NINE_AM, TimeSlotType.FIVE_PM));
+                reqs.add(requestForDay(DayOfWeekType.FRIDAY, TimeSlotType.NINE_AM, TimeSlotType.FIVE_PM));
+
+                when(requestMapper.toEntityList(any(EmployeeScheduleRequestModel.class)))
+                                .thenAnswer(invocation -> {
+                                        EmployeeScheduleRequestModel req = invocation.getArgument(0);
+                                        List<Schedule> schedules = new ArrayList<>();
+                                        for (TimeSlotType slotType : req.getTimeSlots()) {
+                                                Schedule s = new Schedule();
+                                                DayOfWeek d = new DayOfWeek(); d.setDayOfWeek(req.getDayOfWeek()); s.setDayOfWeek(d);
+                                                TimeSlot ts = new TimeSlot(); ts.setTimeslot(slotType); s.setTimeSlot(ts);
+                                                schedules.add(s);
+                                        }
+                                        return schedules;
+                                });
+
+                when(scheduleRepository.saveAll(any(List.class))).thenReturn(Collections.emptyList());
+
+                List<EmployeeScheduleResponseModel> result = scheduleService.updateEmployeeSchedule(VALID_EMPLOYEE_ID, reqs);
+                assertNotNull(result);
+                verify(scheduleRepository).deleteAll(any(List.class));
+                verify(scheduleRepository).saveAll(any(List.class));
+        }
+
+    // Helpers to build request models
+    private EmployeeScheduleRequestModel requestForDay(DayOfWeekType day, TimeSlotType... slots) {
+        return EmployeeScheduleRequestModel.builder()
+                .dayOfWeek(day)
+                .timeSlots(Arrays.asList(slots))
+                .build();
+    }
+
+    private List<EmployeeScheduleRequestModel> minimalFiveDaysTechRequests() {
+        List<EmployeeScheduleRequestModel> list = new ArrayList<>();
+        list.add(requestForDay(DayOfWeekType.MONDAY, TimeSlotType.NINE_AM, TimeSlotType.ELEVEN_AM));
+        list.add(requestForDay(DayOfWeekType.TUESDAY, TimeSlotType.NINE_AM, TimeSlotType.ELEVEN_AM));
+        list.add(requestForDay(DayOfWeekType.WEDNESDAY, TimeSlotType.NINE_AM, TimeSlotType.ELEVEN_AM));
+        list.add(requestForDay(DayOfWeekType.THURSDAY, TimeSlotType.NINE_AM, TimeSlotType.ELEVEN_AM));
+        list.add(requestForDay(DayOfWeekType.FRIDAY, TimeSlotType.NINE_AM, TimeSlotType.ELEVEN_AM));
+        return list;
+    }
+}

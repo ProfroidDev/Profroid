@@ -8,6 +8,8 @@ import com.profroid.profroidapp.employeesubdomain.mappingLayer.employeeScheduleM
 import com.profroid.profroidapp.employeesubdomain.presentationLayer.employeeSchedulePresentationLayer.EmployeeScheduleRequestModel;
 import com.profroid.profroidapp.employeesubdomain.presentationLayer.employeeSchedulePresentationLayer.EmployeeScheduleResponseModel;
 import com.profroid.profroidapp.utils.exceptions.InvalidIdentifierException;
+import com.profroid.profroidapp.utils.exceptions.InvalidIdentifierException;
+import com.profroid.profroidapp.utils.exceptions.InvalidOperationException;
 import com.profroid.profroidapp.utils.exceptions.MissingDataException;
 import com.profroid.profroidapp.utils.exceptions.ResourceAlreadyExistsException;
 import com.profroid.profroidapp.utils.exceptions.ResourceNotFoundException;
@@ -82,6 +84,10 @@ public class ScheduleServiceImpl implements ScheduleService {
         Employee employee = employeeRepository.findEmployeeByEmployeeIdentifier_EmployeeId(employeeId);
         if (employee == null) {
             throw new ResourceNotFoundException("Employee " + employeeId + " not found.");
+        }
+
+        if (Boolean.FALSE.equals(employee.getIsActive())) {
+            throw new InvalidOperationException("Cannot add schedule for deactivated employee " + employeeId + ".");
         }
 
         List<Schedule> existingSchedules = scheduleRepository.findAllByEmployee_EmployeeIdentifier_EmployeeId(employeeId);
@@ -208,6 +214,10 @@ public class ScheduleServiceImpl implements ScheduleService {
         Employee employee = employeeRepository.findEmployeeByEmployeeIdentifier_EmployeeId(employeeId);
         if (employee == null) {
             throw new ResourceNotFoundException("Employee " + employeeId + " not found.");
+        }
+
+        if (Boolean.FALSE.equals(employee.getIsActive())) {
+            throw new InvalidOperationException("Cannot update schedule for deactivated employee " + employeeId + ".");
         }
 
         List<Schedule> existingSchedules = scheduleRepository.findAllByEmployee_EmployeeIdentifier_EmployeeId(employeeId);

@@ -3,7 +3,7 @@ import './Toast.css';
 
 interface ToastProps {
   message: string;
-  type?: 'success' | 'error' | 'info';
+  type?: 'success' | 'error' | 'info' | 'warning';
   duration?: number;
   onClose: () => void;
 }
@@ -23,6 +23,7 @@ export default function Toast({ message, type = 'success', duration = 3000, onCl
         {type === 'success' && '✓'}
         {type === 'error' && '✕'}
         {type === 'info' && 'ℹ'}
+        {type === 'warning' && '⚠'}
       </div>
       <div className="toast-message">{message}</div>
       <button className="toast-close" onClick={onClose}>
