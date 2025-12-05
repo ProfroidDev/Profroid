@@ -85,6 +85,10 @@
   border-bottom: none;
 }
 
+.employees-table-light tr.row-deactivated td {
+  background: #ffcccc;
+}
+
 
 /* ===== Buttons ===== */
 .btn-view-light {

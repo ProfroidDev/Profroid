@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { getMyAppointments } from "../../features/appointment/api/getMyAppointments";
 import type { AppointmentResponseModel } from "../../features/appointment/models/AppointmentResponseModel";
 import Toast from "../../shared/components/Toast";
-import { Calendar, MapPin, Clock, User, Wrench, DollarSign, AlertCircle } from "lucide-react";
+import { MapPin, Clock, User, Wrench, DollarSign, AlertCircle } from "lucide-react";
 import "./MyAppointmentsPage.css";
 
 // Default test customer ID from backend
@@ -13,6 +13,7 @@ export default function MyAppointmentsPage(): React.ReactElement {
   const [loading, setLoading] = useState<boolean>(false);
   const [selectedAppointment, setSelectedAppointment] = useState<AppointmentResponseModel | null>(null);
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' | 'info' | 'warning' } | null>(null);
+  const [error, setError] = useState<string | null>(null);
   
   // For testing: allow switching customer ID
   const [customerId, setCustomerId] = useState<string>(DEFAULT_CUSTOMER_ID);
@@ -26,10 +27,22 @@ export default function MyAppointmentsPage(): React.ReactElement {
   const fetchAppointments = async () => {
     try {
       setLoading(true);
+      setError(null);
       const data = await getMyAppointments(customerId);
       setAppointments(data);
     } catch (error: unknown) {
       console.error("Error fetching appointments:", error);
+      
+      // Check if it's a 404 or permission error
+      if (error instanceof Error && 'response' in error) {
+        const axiosError = error as { response?: { status: number; data?: { message: string } } };
+        if (axiosError.response?.status === 404) {
+          setError(axiosError.response?.data?.message || "Customer not found or you don't have permission to view these appointments");
+          setAppointments([]);
+          return;
+        }
+      }
+      
       setToast({
         message: "Failed to fetch appointments",
         type: "error"
@@ -104,9 +117,13 @@ export default function MyAppointmentsPage(): React.ReactElement {
           <div className="spinner"></div>
           <p>Loading your appointments...</p>
         </div>
+      ) : error ? (
+        <div className="error-state">
+          <h3>Access Denied</h3>
+          <p>{error}</p>
+        </div>
       ) : appointments.length === 0 ? (
         <div className="empty-state">
-          <Calendar size={64} strokeWidth={1.5} />
           <h3>No Appointments Found</h3>
           <p>You don't have any scheduled appointments yet.</p>
         </div>

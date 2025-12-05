@@ -142,18 +142,42 @@
   align-items: center;
   gap: 16px;
   padding: 60px 20px;
-  color: #5a6c7d;
+  color: #7a6f5d;
   text-align: center;
-}
-
-.empty-state svg {
-  color: #a8b8c8;
 }
 
 .empty-state h3 {
   font-size: 1.5rem;
-  color: #1e3a5f;
+  color: #5a2a27;
   margin: 0;
+}
+
+.error-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  padding: 60px 20px;
+  color: #7a6f5d;
+  text-align: center;
+  background: #fdf7f6;
+  border: 2px solid #e67e77;
+  border-radius: 12px;
+  max-width: 500px;
+  margin: 20px auto;
+}
+
+.error-state h3 {
+  font-size: 1.5rem;
+  color: #7a0901;
+  margin: 0;
+  font-weight: 700;
+}
+
+.error-state p {
+  color: #5a2a27;
+  font-size: 1rem;
+  line-height: 1.6;
 }
 
 /* ===============================

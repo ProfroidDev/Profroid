@@ -229,21 +229,20 @@ export default function EmployeeListPage(): React.ReactElement {
 
             <tbody>
               {employees.map((e, idx) => (
-                <tr key={idx} style={{ opacity: e.isActive ? 1 : 0.5 }}>
-                  <td style={{ filter: e.isActive ? 'none' : 'blur(2px)' }}>{e.lastName}</td>
-                  <td style={{ filter: e.isActive ? 'none' : 'blur(2px)' }}>{e.firstName}</td>
+                <tr key={idx} className={!e.isActive ? 'row-deactivated' : ''}>
+                  <td>{e.lastName}</td>
+                  <td>{e.firstName}</td>
                   <td>
                     <button
                       className="btn-view-light"
                       onClick={() => openDetails(e)}
                       disabled={!e.isActive}
-                      style={{ filter: e.isActive ? 'none' : 'blur(2px)' }}
                     >
                       View Details
                     </button>
                     <button
                       className="btn-view-light"
-                      style={{ marginLeft: 8, filter: e.isActive ? 'none' : 'blur(2px)' }}
+                      style={{ marginLeft: 8 }}
                       onClick={() => openEditModal(e)}
                       disabled={!e.isActive}
                     >
@@ -251,7 +250,7 @@ export default function EmployeeListPage(): React.ReactElement {
                     </button>
                     <button
                       className="btn-view-light"
-                      style={{ marginLeft: 8, filter: e.isActive ? 'none' : 'blur(2px)' }}
+                      style={{ marginLeft: 8 }}
                       onClick={() => openSchedule(e)}
                       disabled={!e.isActive}
                     >

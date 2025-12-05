@@ -13,6 +13,7 @@ export default function MyJobsPage(): React.ReactElement {
   const [loading, setLoading] = useState<boolean>(false);
   const [selectedJob, setSelectedJob] = useState<AppointmentResponseModel | null>(null);
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' | 'info' | 'warning' } | null>(null);
+  const [error, setError] = useState<string | null>(null);
   
   // For testing: allow switching technician ID
   const [technicianId, setTechnicianId] = useState<string>(DEFAULT_TECHNICIAN_ID);
@@ -26,10 +27,23 @@ export default function MyJobsPage(): React.ReactElement {
   const fetchJobs = async () => {
     try {
       setLoading(true);
+      setError(null);
       const data = await getMyJobs(technicianId);
       setJobs(data);
     } catch (error: unknown) {
       console.error("Error fetching jobs:", error);
+      
+      // Check if it's a 404 or permission error (deactivated technician)
+      if (error instanceof Error && 'response' in error) {
+        const axiosError = error as { response?: { status: number; data?: { message: string } } };
+        if (axiosError.response?.status === 404) {
+          const errorMsg = axiosError.response?.data?.message || "Technician not found or you don't have permission to view these jobs";
+          setError(errorMsg);
+          setJobs([]);
+          return;
+        }
+      }
+      
       setToast({
         message: "Failed to fetch jobs",
         type: "error"
@@ -104,9 +118,13 @@ export default function MyJobsPage(): React.ReactElement {
           <div className="spinner"></div>
           <p>Loading your jobs...</p>
         </div>
+      ) : error ? (
+        <div className="error-state">
+          <h3>Access Denied</h3>
+          <p>{error}</p>
+        </div>
       ) : jobs.length === 0 ? (
         <div className="empty-state">
-          <Wrench size={64} strokeWidth={1.5} />
           <h3>No Jobs Assigned</h3>
           <p>You don't have any jobs scheduled at the moment.</p>
         </div>
