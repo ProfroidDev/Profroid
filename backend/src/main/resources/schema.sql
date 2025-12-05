@@ -1,3 +1,4 @@
+DROP TABLE IF EXISTS appointments;
 DROP TABLE IF EXISTS employee_phonenumbers;
 DROP TABLE IF EXISTS customer_phonenumbers;
 DROP TABLE IF EXISTS jobs;
@@ -104,5 +105,31 @@ CREATE TABLE parts (
                        part_id VARCHAR(255) NOT NULL UNIQUE,
                        name VARCHAR(255) NOT NULL,
                        available BOOLEAN NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS appointments (
+                                            id INT PRIMARY KEY AUTO_INCREMENT,
+                                            appointment_id VARCHAR(36) NOT NULL UNIQUE,           -- AppointmentIdentifier UUID
+                                            customer_id INT NOT NULL,                             -- Foreign key to customers(id)
+                                            technician_id INT NOT NULL,                           -- Foreign key to employees(id)
+                                            job_id INT NOT NULL,                                  -- Foreign key to jobs(id)
+                                            cellar_id INT NOT NULL,                               -- Foreign key to cellars(id)
+                                            schedule_id INT,                                      -- Foreign key to schedules(id)
+                                            appointment_date DATETIME NOT NULL,                   -- When the appointment is scheduled
+                                            description VARCHAR(500),                             -- Work description
+                                            street_address VARCHAR(255),                          -- AppointmentAddress - street
+                                            city VARCHAR(255),                                    -- AppointmentAddress - city
+                                            province VARCHAR(255),                                -- AppointmentAddress - province
+                                            country VARCHAR(255),                                 -- AppointmentAddress - country
+                                            postal_code VARCHAR(10),                              -- AppointmentAddress - postal code
+                                            appointment_status_type VARCHAR(50) NOT NULL,         -- SCHEDULED, COMPLETED, CANCELLED
+                                            is_active BOOLEAN NOT NULL DEFAULT true,
+                                            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                                            updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+                                            FOREIGN KEY (customer_id) REFERENCES customers(id) ON DELETE CASCADE,
+                                            FOREIGN KEY (technician_id) REFERENCES employees(id) ON DELETE CASCADE,
+                                            FOREIGN KEY (job_id) REFERENCES jobs(id) ON DELETE CASCADE,
+                                            FOREIGN KEY (cellar_id) REFERENCES cellars(id) ON DELETE CASCADE,
+                                            FOREIGN KEY (schedule_id) REFERENCES schedules(id) ON DELETE CASCADE
 );
 

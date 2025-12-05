@@ -277,6 +277,91 @@ INSERT INTO cellars (
        TRUE, TRUE, FALSE,
        'PRIVATE');
 
+-- ====================================================================
+-- TEST APPOINTMENTS DATA
+-- ====================================================================
+-- IMPORTANT: Use these UUIDs in Postman headers for testing:
+-- 
+-- Customer IDs (use in X-Customer-Id header):
+--   - Customer 1 (John Doe):    123e4567-e89b-12d3-a456-426614174000
+--   - Customer 2 (Jane Smith):  223e4567-e89b-12d3-a456-426614174001
+--   - Customer 3 (Alice Brown): 323e4567-e89b-12d3-a456-426614174002
+--
+-- Technician IDs (use in X-Employee-Id header):
+--   - Bob Williams (TECHNICIAN): a9e6d3f2-1c0a-4b5c-9d8e-7a6f5e4d3c2b
+--
+-- Test Scenario:
+-- Appointment 1: Customer 1 + Technician 1 (Bob) = John's appointment with Bob
+-- Appointment 2: Customer 2 + Technician 1 (Bob) = Jane's appointment with Bob
+-- Appointment 3: Customer 3 + Technician 1 (Bob) = Alice's appointment with Bob
+--
+-- This allows testing:
+-- - GET /api/v1/appointments/my-appointments with Customer 1: returns only 1 appointment
+-- - GET /api/v1/appointments/my-appointments with Customer 2: returns only 1 appointment
+-- - GET /api/v1/appointments/my-jobs with Technician 1: returns 3 appointments
+-- - GET /api/v1/appointments/{id} with appropriate role: validates ownership
+-- ====================================================================
+
+-- Appointment 1: John (Customer 1) with Bob (Technician 1) on Monday
+INSERT INTO appointments (
+    appointment_id, customer_id, technician_id, job_id, cellar_id, schedule_id,
+    appointment_date, description,
+    street_address, city, province, country, postal_code,
+    appointment_status_type, is_active
+) VALUES (
+    'a1e2b3c4-d5f6-47a8-9b0c-1d2e3f4a5b6c', -- UUID for testing
+    1, -- Customer: John Doe (id from customers table)
+    2, -- Technician: Bob Williams (id from employees table)
+    1, -- Job: Free Quotation (id from jobs table)
+    1, -- Cellar: Toronto Basement Cellar (id from cellars table)
+    1, -- Schedule: Bob's first schedule slot
+    CURDATE() + INTERVAL 7 DAY + INTERVAL 9 HOUR, -- Next Monday at 9 AM
+    'Initial consultation for new wine cellar installation',
+    '123 Main St', 'Toronto', 'Ontario', 'Canada', 'M5V 1K4',
+    'SCHEDULED',
+    true
+);
+
+-- Appointment 2: Jane (Customer 2) with Bob (Technician 1) on Wednesday
+INSERT INTO appointments (
+    appointment_id, customer_id, technician_id, job_id, cellar_id, schedule_id,
+    appointment_date, description,
+    street_address, city, province, country, postal_code,
+    appointment_status_type, is_active
+) VALUES (
+    'b2f3a4c5-e6d7-48b9-8c1d-2e3f4a5b6c7d', -- UUID for testing
+    2, -- Customer: Jane Smith (id from customers table)
+    2, -- Technician: Bob Williams (id from employees table)
+    3, -- Job: Repair Service (id from jobs table)
+    2, -- Cellar: Vancouver Wine Cabinet (id from cellars table)
+    2, -- Schedule: Bob's second schedule slot
+    CURDATE() + INTERVAL 9 DAY + INTERVAL 13 HOUR, -- Next Wednesday at 1 PM
+    'Repair humidity control system - not maintaining proper levels',
+    '456 Elm St', 'Vancouver', 'British Columbia', 'Canada', 'V6B 3H7',
+    'SCHEDULED',
+    true
+);
+
+-- Appointment 3: Alice (Customer 3) with Bob (Technician 1) on Friday
+INSERT INTO appointments (
+    appointment_id, customer_id, technician_id, job_id, cellar_id, schedule_id,
+    appointment_date, description,
+    street_address, city, province, country, postal_code,
+    appointment_status_type, is_active
+) VALUES (
+    'c3a4b5d6-f7e8-49ca-9d2e-3f4a5b6c7d8e', -- UUID for testing
+    3, -- Customer: Alice Brown (id from customers table)
+    2, -- Technician: Bob Williams (id from employees table)
+    4, -- Job: Annual Maintenance (id from jobs table)
+    3, -- Cellar: Montreal Aging Cellar (id from cellars table)
+    3, -- Schedule: Bob's third schedule slot
+    CURDATE() + INTERVAL 11 DAY + INTERVAL 9 HOUR, -- Next Friday at 9 AM
+    'Annual system maintenance and performance optimization',
+    '789 Oak St', 'Montreal', 'Quebec', 'Canada', 'H3B 2Y5',
+    'SCHEDULED',
+    true
+);
+
 --- Parts --------------------------------
 INSERT INTO parts (part_id, name, available) VALUES
                                       ('PC-00001','115V Heating strip',true),
