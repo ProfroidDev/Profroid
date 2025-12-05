@@ -46,10 +46,9 @@ public class AppointmentServiceImpl implements AppointmentService {
             throw new ResourceNotFoundException("Customer " + customerId + " not found.");
         }
 
-        // Get all appointments for this customer
+
         List<Appointment> appointments = appointmentRepository.findAllByCustomer(customer);
-        
-        // Validate all appointments have valid related entities (in case some were deleted)
+
         return appointmentResponseMapper.toResponseModelList(
             validateAppointmentEntities(appointments)
         );
@@ -62,6 +61,11 @@ public class AppointmentServiceImpl implements AppointmentService {
         
         if (technician == null) {
             throw new ResourceNotFoundException("Technician " + technicianId + " not found.");
+        }
+        
+        // Prevent deactivated technicians from accessing appointments
+        if (!technician.getIsActive()) {
+            throw new ResourceNotFoundException("Technician " + technicianId + " is deactivated and cannot access appointments.");
         }
 
         // Get all appointments for this technician
@@ -94,7 +98,17 @@ public class AppointmentServiceImpl implements AppointmentService {
             }
         } else if ("TECHNICIAN".equals(userRole)) {
             Employee technician = employeeRepository.findEmployeeByEmployeeIdentifier_EmployeeId(userId);
-            if (technician == null || !technician.getId().equals(appointment.getTechnician().getId())) {
+            
+            if (technician == null) {
+                throw new ResourceNotFoundException("Technician not found.");
+            }
+            
+            // Prevent deactivated technicians from accessing appointments
+            if (!technician.getIsActive()) {
+                throw new ResourceNotFoundException("You are deactivated and cannot access appointments.");
+            }
+            
+            if (!technician.getId().equals(appointment.getTechnician().getId())) {
                 throw new ResourceNotFoundException("You don't have permission to view this appointment.");
             }
         }
@@ -102,11 +116,7 @@ public class AppointmentServiceImpl implements AppointmentService {
         return appointmentResponseMapper.toResponseModel(appointment);
     }
 
-    /**
-     * Validates that an appointment has all required entities (customer, technician, job, cellar, schedule).
-     * Throws ResourceNotFoundException if any entity is null (indicating it was deleted).
-     * This prevents null pointer exceptions when mapping the appointment to response model.
-     */
+
     private void validateAppointmentEntityIntegrity(Appointment appointment) {
         if (appointment.getCustomer() == null) {
             throw new ResourceNotFoundException(
