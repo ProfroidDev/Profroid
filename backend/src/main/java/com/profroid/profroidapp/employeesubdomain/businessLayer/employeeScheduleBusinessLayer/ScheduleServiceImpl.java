@@ -232,11 +232,26 @@ public class ScheduleServiceImpl implements ScheduleService {
             throw new ResourceNotFoundException("Employee " + employeeId + " does not have an existing schedule to update.");
         }
 
-        // Check for existing scheduled appointments
+        // Check for existing scheduled appointments and verify they won't be removed
         List<Appointment> scheduledAppointments = appointmentRepository.findScheduledAppointmentsByTechnicianAndSchedules(employee, existingSchedules);
         if (!scheduledAppointments.isEmpty()) {
-            throw new InvalidOperationException("Cannot update entire schedule: Employee has " + scheduledAppointments.size() + 
-                " existing scheduled appointment(s). Use PATCH to update specific days instead.");
+            // Build map of new time slots per day
+            Map<DayOfWeekType, Set<TimeSlotType>> newScheduleMap = new HashMap<>();
+            for (EmployeeScheduleRequestModel request : scheduleRequests) {
+                newScheduleMap.put(request.getDayOfWeek(), new HashSet<>(request.getTimeSlots()));
+            }
+            
+            // Check each appointment to ensure its time slot is still available
+            for (Appointment appointment : scheduledAppointments) {
+                TimeSlotType appointmentSlot = getTimeSlotFromAppointment(appointment);
+                DayOfWeekType appointmentDay = getDayOfWeekFromDate(appointment.getAppointmentDate());
+                
+                Set<TimeSlotType> newSlotsForDay = newScheduleMap.get(appointmentDay);
+                if (newSlotsForDay == null || !newSlotsForDay.contains(appointmentSlot)) {
+                    throw new InvalidOperationException("Cannot update schedule: Employee has an existing appointment on " + 
+                        appointmentDay + " at a time slot that would be removed. Use PATCH to update specific days instead.");
+                }
+            }
         }
 
         if (scheduleRequests == null || scheduleRequests.isEmpty()) {
@@ -327,9 +342,22 @@ public class ScheduleServiceImpl implements ScheduleService {
             throw new MissingDataException("Employee cannot exceed 40 hours in a 5-day week. Requested: " + totalHours + " hours.");
         }
 
+        // Collect all appointments BEFORE detaching
+        List<Appointment> allAppointments = new ArrayList<>();
+        for (Schedule existingSchedule : existingSchedules) {
+            allAppointments.addAll(appointmentRepository.findAllByTechnicianAndSchedule(employee, existingSchedule));
+        }
+
+        // Detach all appointments from existing schedules before deletion
+        for (Appointment appointment : allAppointments) {
+            appointment.setSchedule(null);
+            appointmentRepository.save(appointment);
+        }
+
         // Delete existing schedules
         scheduleRepository.deleteAll(existingSchedules);
 
+        // Create new schedules
         List<Schedule> schedulesToSave = new ArrayList<>();
         for (EmployeeScheduleRequestModel request : scheduleRequests) {
             List<Schedule> daySchedules = requestMapper.toEntityList(request);
@@ -346,8 +374,35 @@ public class ScheduleServiceImpl implements ScheduleService {
                 schedulesToSave.add(schedule);
             }
         }
+        
+        List<Schedule> savedSchedules = scheduleRepository.saveAll(schedulesToSave);
 
-        scheduleRepository.saveAll(schedulesToSave);
+        // Reattach appointments to matching new schedules
+        for (Appointment appointment : allAppointments) {
+            // Find matching schedule by day and time slot
+            DayOfWeekType appointmentDay;
+            try {
+                appointmentDay = getDayOfWeekFromDate(appointment.getAppointmentDate());
+            } catch (InvalidOperationException e) {
+                // Skip weekend appointments
+                continue;
+            }
+            
+            TimeSlotType appointmentSlot = getTimeSlotFromAppointment(appointment);
+            
+            Schedule matchingSchedule = savedSchedules.stream()
+                .filter(s -> s.getDayOfWeek() != null && s.getDayOfWeek().getDayOfWeek() != null)
+                .filter(s -> s.getDayOfWeek().getDayOfWeek().equals(appointmentDay))
+                .filter(s -> s.getTimeSlot() != null && s.getTimeSlot().getTimeslot() != null)
+                .filter(s -> s.getTimeSlot().getTimeslot().equals(appointmentSlot))
+                .findFirst()
+                .orElse(null);
+            
+            if (matchingSchedule != null) {
+                appointment.setSchedule(matchingSchedule);
+                appointmentRepository.save(appointment);
+            }
+        }
 
         return getEmployeeSchedule(employeeId);
     }
@@ -459,9 +514,13 @@ public class ScheduleServiceImpl implements ScheduleService {
             .filter(a -> a.getAppointmentDate().isAfter(startOfDay) && a.getAppointmentDate().isBefore(endOfDay))
             .collect(Collectors.toList());
 
-        // If any appointment exists on that date, reject the patch
-        if (!affectedAppointments.isEmpty()) {
-            throw new InvalidOperationException("Cannot edit schedule; there is an appointment on this date.");
+        // Check if any appointment's time slot is being removed from the new schedule
+        Set<TimeSlotType> newTimeSlots = new HashSet<>(scheduleRequest.getTimeSlots());
+        for (Appointment appointment : affectedAppointments) {
+            TimeSlotType appointmentSlot = getTimeSlotFromAppointment(appointment);
+            if (!newTimeSlots.contains(appointmentSlot)) {
+                throw new InvalidOperationException("Cannot edit schedule; there is an appointment on this date at a time slot you are removing.");
+            }
         }
         // Do not alter weekly schedules; just echo back the requested slots
         EmployeeScheduleResponseModel response = new EmployeeScheduleResponseModel();

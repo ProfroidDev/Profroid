@@ -53,10 +53,6 @@ public class Appointment {
     @JoinColumn(name = "cellar_id")
     private Cellar cellar;
 
-    // SCHEDULE VALIDATION:
-    // - appointmentDate MUST match a Schedule entry for this technician
-    // - Schedule contains dayOfWeek + timeSlot availability for the technician
-    // - Service layer validates appointmentDate falls within an available schedule slot
     @ManyToOne
     @JoinColumn(name = "schedule_id")
     private Schedule schedule;

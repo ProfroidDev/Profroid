@@ -16,7 +16,4 @@ public interface EmployeeRepository extends JpaRepository<Employee, Integer> {
 
     List<Employee> findAllByIsActiveTrue();
 
-    // Find only TECHNICIAN employees who are active (for appointment booking)
-    @Query("SELECT e FROM Employee e WHERE e.isActive = true AND e.employeeRole.employeeRoleType = 'TECHNICIAN'")
-    List<Employee> findAllActiveTechnicians();
 }

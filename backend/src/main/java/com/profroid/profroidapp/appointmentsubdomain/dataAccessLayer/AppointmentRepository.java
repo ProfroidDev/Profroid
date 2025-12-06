@@ -30,7 +30,7 @@ public interface AppointmentRepository extends JpaRepository<Appointment, Intege
     // Find appointments by technician and schedule
     List<Appointment> findAllByTechnicianAndSchedule(Employee technician, Schedule schedule);
     
-    // Find scheduled appointments for a technician on a specific day (by day of week)
+    
     @Query("SELECT a FROM Appointment a WHERE a.technician = :technician " +
            "AND a.schedule IN :schedules " +
            "AND a.appointmentStatus.appointmentStatusType = com.profroid.profroidapp.appointmentsubdomain.dataAccessLayer.AppointmentStatusType.SCHEDULED")

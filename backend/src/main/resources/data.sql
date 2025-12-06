@@ -314,8 +314,8 @@ INSERT INTO appointments (
     2, -- Technician: Bob Williams (id from employees table)
     1, -- Job: Free Quotation (id from jobs table)
     1, -- Cellar: Toronto Basement Cellar (id from cellars table)
-    1, -- Schedule: Bob's first schedule slot
-    CURDATE() + INTERVAL 7 DAY + INTERVAL 9 HOUR, -- Next Monday at 9 AM
+    1, -- Schedule: Bob's first schedule slot (Monday, NINE_AM)
+    '2025-12-08 09:00:00', -- Monday, December 8, 2025 at 9 AM
     'Initial consultation for new wine cellar installation',
     '123 Main St', 'Toronto', 'Ontario', 'Canada', 'M5V 1K4',
     'SCHEDULED',
@@ -334,8 +334,8 @@ INSERT INTO appointments (
     2, -- Technician: Bob Williams (id from employees table)
     3, -- Job: Repair Service (id from jobs table)
     2, -- Cellar: Vancouver Wine Cabinet (id from cellars table)
-    2, -- Schedule: Bob's second schedule slot
-    CURDATE() + INTERVAL 9 DAY + INTERVAL 13 HOUR, -- Next Wednesday at 1 PM
+    2, -- Schedule: Bob's second schedule slot (Wednesday, ELEVEN_AM)
+    '2025-12-10 11:00:00', -- Wednesday, December 10, 2025 at 11 AM
     'Repair humidity control system - not maintaining proper levels',
     '456 Elm St', 'Vancouver', 'British Columbia', 'Canada', 'V6B 3H7',
     'SCHEDULED',
@@ -354,8 +354,8 @@ INSERT INTO appointments (
     2, -- Technician: Bob Williams (id from employees table)
     4, -- Job: Annual Maintenance (id from jobs table)
     3, -- Cellar: Montreal Aging Cellar (id from cellars table)
-    3, -- Schedule: Bob's third schedule slot
-    CURDATE() + INTERVAL 11 DAY + INTERVAL 9 HOUR, -- Next Friday at 9 AM
+    3, -- Schedule: Bob's third schedule slot (Friday, NINE_AM)
+    '2025-12-12 09:00:00', -- Friday, December 12, 2025 at 9 AM
     'Annual system maintenance and performance optimization',
     '789 Oak St', 'Montreal', 'Quebec', 'Canada', 'H3B 2Y5',
     'SCHEDULED',
