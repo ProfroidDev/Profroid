@@ -75,8 +75,9 @@ CREATE TABLE IF NOT EXISTS schedules (
                                          employee_fk INT NOT NULL,
                                          day_of_week VARCHAR(20) NOT NULL,
     time_slot VARCHAR(20) NOT NULL,
+    specific_date DATE,
     FOREIGN KEY (employee_fk) REFERENCES employees(id) ON DELETE CASCADE,
-    UNIQUE (employee_fk, day_of_week, time_slot)
+    UNIQUE (employee_fk, day_of_week, time_slot, specific_date)
     );
 
 CREATE TABLE cellars (

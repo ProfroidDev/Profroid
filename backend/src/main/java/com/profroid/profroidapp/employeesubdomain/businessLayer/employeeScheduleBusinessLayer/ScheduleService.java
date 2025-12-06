@@ -12,6 +12,8 @@ import java.util.List;
 public interface ScheduleService {
 
     List<EmployeeScheduleResponseModel> getEmployeeSchedule(String employeeId);
+    
+    List<EmployeeScheduleResponseModel> getEmployeeScheduleForDate(String employeeId, String date);
 
     List<EmployeeScheduleResponseModel> addEmployeeSchedule(String employeeId, List<EmployeeScheduleRequestModel> scheduleRequests);
 

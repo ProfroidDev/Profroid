@@ -19,6 +19,7 @@ import com.profroid.profroidapp.utils.exceptions.ResourceAlreadyExistsException;
 import com.profroid.profroidapp.utils.exceptions.ResourceNotFoundException;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -55,7 +56,9 @@ public class ScheduleServiceImpl implements ScheduleService {
 
         List<Schedule> schedules = scheduleRepository.findAllByEmployee_EmployeeIdentifier_EmployeeId(employeeId);
 
+        // Filter to only include weekly template schedules (where specific_date is null)
         Map<DayOfWeekType, List<Schedule>> schedulesByDay = schedules.stream()
+                .filter(s -> s.getSpecificDate() == null)  // Only weekly templates
                 .collect(Collectors.groupingBy(s -> s.getDayOfWeek().getDayOfWeek()));
 
 
@@ -79,6 +82,73 @@ public class ScheduleServiceImpl implements ScheduleService {
                 .collect(Collectors.toList());
 
         return groupedResponses;
+    }
+
+    @Override
+    public List<EmployeeScheduleResponseModel> getEmployeeScheduleForDate(String employeeId, String date) {
+        if (employeeId == null || employeeId.trim().length() != 36) {
+            throw new InvalidIdentifierException("Employee ID must be a 36-character UUID string.");
+        }
+
+        Employee employee = employeeRepository.findEmployeeByEmployeeIdentifier_EmployeeId(employeeId);
+        if (employee == null) {
+            throw new ResourceNotFoundException("Employee " + employeeId + " not found.");
+        }
+
+        // Parse date
+        LocalDateTime targetDate;
+        try {
+            targetDate = LocalDateTime.parse(date + "T00:00:00");
+        } catch (Exception e) {
+            throw new InvalidOperationException("Invalid date format. Expected format: YYYY-MM-DD (e.g., 2025-12-05)");
+        }
+        
+        LocalDate specificDate = targetDate.toLocalDate();
+        DayOfWeekType dayOfWeek = getDayOfWeekFromDate(targetDate);
+
+        // Get date-specific schedules
+        List<Schedule> dateSpecificSchedules = scheduleRepository.findAllByEmployee_EmployeeIdentifier_EmployeeIdAndSpecificDate(employeeId, specificDate);
+        
+        // If date-specific schedules exist, return them
+        if (!dateSpecificSchedules.isEmpty()) {
+            List<String> sortedTimeSlots = dateSpecificSchedules.stream()
+                .filter(s -> s.getTimeSlot() != null && s.getTimeSlot().getTimeslot() != null)
+                .map(s -> s.getTimeSlot().getTimeslot())
+                .sorted(Comparator.comparing(TimeSlotType::ordinal))
+                .map(TimeSlotType::getDisplayTime)
+                .collect(Collectors.toList());
+            
+            EmployeeScheduleResponseModel response = new EmployeeScheduleResponseModel();
+            response.setEmployeeId(employeeId);
+            response.setDayOfWeek(dayOfWeek);
+            response.setTimeSlots(sortedTimeSlots);
+            return List.of(response);
+        }
+        
+        // Otherwise, return weekly template schedules for that day
+        List<Schedule> allSchedules = scheduleRepository.findAllByEmployee_EmployeeIdentifier_EmployeeId(employeeId);
+        List<Schedule> weeklySchedules = allSchedules.stream()
+            .filter(s -> s.getSpecificDate() == null)
+            .filter(s -> s.getDayOfWeek() != null && s.getDayOfWeek().getDayOfWeek() != null)
+            .filter(s -> s.getDayOfWeek().getDayOfWeek().equals(dayOfWeek))
+            .collect(Collectors.toList());
+        
+        if (weeklySchedules.isEmpty()) {
+            return List.of();
+        }
+        
+        List<String> sortedTimeSlots = weeklySchedules.stream()
+            .filter(s -> s.getTimeSlot() != null && s.getTimeSlot().getTimeslot() != null)
+            .map(s -> s.getTimeSlot().getTimeslot())
+            .sorted(Comparator.comparing(TimeSlotType::ordinal))
+            .map(TimeSlotType::getDisplayTime)
+            .collect(Collectors.toList());
+        
+        EmployeeScheduleResponseModel response = new EmployeeScheduleResponseModel();
+        response.setEmployeeId(employeeId);
+        response.setDayOfWeek(dayOfWeek);
+        response.setTimeSlots(sortedTimeSlots);
+        return List.of(response);
     }
 
     @Override
@@ -342,20 +412,29 @@ public class ScheduleServiceImpl implements ScheduleService {
             throw new MissingDataException("Employee cannot exceed 40 hours in a 5-day week. Requested: " + totalHours + " hours.");
         }
 
-        // Collect all appointments BEFORE detaching
+        // Separate weekly template schedules from date-specific schedules
+        List<Schedule> weeklySchedules = existingSchedules.stream()
+            .filter(s -> s.getSpecificDate() == null)
+            .collect(Collectors.toList());
+        
+        List<Schedule> dateSpecificSchedules = existingSchedules.stream()
+            .filter(s -> s.getSpecificDate() != null)
+            .collect(Collectors.toList());
+
+        // Collect all appointments BEFORE detaching (only from weekly schedules)
         List<Appointment> allAppointments = new ArrayList<>();
-        for (Schedule existingSchedule : existingSchedules) {
+        for (Schedule existingSchedule : weeklySchedules) {
             allAppointments.addAll(appointmentRepository.findAllByTechnicianAndSchedule(employee, existingSchedule));
         }
 
-        // Detach all appointments from existing schedules before deletion
+        // Detach all appointments from existing weekly schedules before deletion
         for (Appointment appointment : allAppointments) {
             appointment.setSchedule(null);
             appointmentRepository.save(appointment);
         }
 
-        // Delete existing schedules
-        scheduleRepository.deleteAll(existingSchedules);
+        // Delete only weekly template schedules (preserve date-specific schedules)
+        scheduleRepository.deleteAll(weeklySchedules);
 
         // Create new schedules
         List<Schedule> schedulesToSave = new ArrayList<>();
@@ -522,7 +601,39 @@ public class ScheduleServiceImpl implements ScheduleService {
                 throw new InvalidOperationException("Cannot edit schedule; there is an appointment on this date at a time slot you are removing.");
             }
         }
-        // Do not alter weekly schedules; just echo back the requested slots
+
+        // Delete existing date-specific schedules for this date
+        LocalDate specificDate = targetDate.toLocalDate();
+        List<Schedule> existingDateSpecificSchedules = allSchedules.stream()
+            .filter(s -> s.getSpecificDate() != null && s.getSpecificDate().equals(specificDate))
+            .collect(Collectors.toList());
+        
+        if (!existingDateSpecificSchedules.isEmpty()) {
+            scheduleRepository.deleteAll(existingDateSpecificSchedules);
+        }
+
+        // Create new date-specific schedules
+        List<Schedule> newSchedules = scheduleRequest.getTimeSlots().stream()
+            .map(timeSlot -> {
+                Schedule newSchedule = new Schedule();
+                newSchedule.setEmployee(employee);
+                
+                DayOfWeek dayOfWeekObj = new DayOfWeek();
+                dayOfWeekObj.setDayOfWeek(dayOfWeek);
+                newSchedule.setDayOfWeek(dayOfWeekObj);
+                
+                TimeSlot timeSlotObj = new TimeSlot();
+                timeSlotObj.setTimeslot(timeSlot);
+                newSchedule.setTimeSlot(timeSlotObj);
+                
+                newSchedule.setSpecificDate(specificDate);
+                return newSchedule;
+            })
+            .collect(Collectors.toList());
+        
+        scheduleRepository.saveAll(newSchedules);
+
+        // Return response
         EmployeeScheduleResponseModel response = new EmployeeScheduleResponseModel();
         response.setEmployeeId(employeeId);
         response.setDayOfWeek(dayOfWeek);
@@ -549,7 +660,7 @@ public class ScheduleServiceImpl implements ScheduleService {
             case 13 -> TimeSlotType.ONE_PM;
             case 15 -> TimeSlotType.THREE_PM;
             case 17 -> TimeSlotType.FIVE_PM;
-            default -> TimeSlotType.NINE_AM; // default fallback
+            default -> TimeSlotType.NINE_AM;
         };
     }
 

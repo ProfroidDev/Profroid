@@ -24,8 +24,15 @@ public class EmployeeScheduleController {
     }
 
     @GetMapping()
-    public ResponseEntity <List<EmployeeScheduleResponseModel>> getEmployeeSchedule(@PathVariable String employeeId) {
-        List<EmployeeScheduleResponseModel> scheduleDtoList = scheduleService.getEmployeeSchedule(employeeId);
+    public ResponseEntity <List<EmployeeScheduleResponseModel>> getEmployeeSchedule(
+            @PathVariable String employeeId,
+            @RequestParam(required = false) String date) {
+        List<EmployeeScheduleResponseModel> scheduleDtoList;
+        if (date != null && !date.trim().isEmpty()) {
+            scheduleDtoList = scheduleService.getEmployeeScheduleForDate(employeeId, date);
+        } else {
+            scheduleDtoList = scheduleService.getEmployeeSchedule(employeeId);
+        }
         return ResponseEntity.ok().body(scheduleDtoList);
     }
 
