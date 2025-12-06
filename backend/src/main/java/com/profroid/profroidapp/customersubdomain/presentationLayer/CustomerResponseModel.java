@@ -1,5 +1,6 @@
 package com.profroid.profroidapp.customersubdomain.presentationLayer;
 
+import com.profroid.profroidapp.customersubdomain.dataAccessLayer.CustomerIdentifier;
 import com.profroid.profroidapp.customersubdomain.dataAccessLayer.CustomerPhoneNumber;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -13,7 +14,7 @@ import java.util.List;
 @AllArgsConstructor
 @NoArgsConstructor
 public class CustomerResponseModel {
-    String customerId;
+    CustomerIdentifier customerId;
     String firstName;
     String lastName;
     List<CustomerPhoneNumber> phoneNumbers;
@@ -24,4 +25,5 @@ public class CustomerResponseModel {
     String country;
     String postalCode;
     String userId;
+    Boolean isActive;
 }

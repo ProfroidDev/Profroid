@@ -11,7 +11,7 @@ import java.util.List;
 @Mapper(componentModel = "spring")
 public interface CustomerResponseMapper {
     @Mappings({
-            @Mapping(source = "customer.customerIdentifier.customerId", target = "customerId"),
+            @Mapping(source = "customer.customerIdentifier", target = "customerId"),
             @Mapping(source = "customer.firstName", target = "firstName"),
             @Mapping(source = "customer.lastName", target = "lastName"),
 
@@ -22,6 +22,7 @@ public interface CustomerResponseMapper {
             @Mapping(source = "customer.customerAddress.country", target = "country"),
             @Mapping(source = "customer.customerAddress.postalCode", target = "postalCode"),
             @Mapping(source = "customer.userId", target = "userId"),
+            @Mapping(source = "customer.isActive", target = "isActive")
     })
     CustomerResponseModel toResponseModel(Customer customer);
 

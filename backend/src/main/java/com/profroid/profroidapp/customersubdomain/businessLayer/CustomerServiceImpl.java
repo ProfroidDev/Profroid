@@ -7,7 +7,10 @@ import com.profroid.profroidapp.customersubdomain.mappingLayer.CustomerRequestMa
 import com.profroid.profroidapp.customersubdomain.mappingLayer.CustomerResponseMapper;
 import com.profroid.profroidapp.customersubdomain.presentationLayer.CustomerRequestModel;
 import com.profroid.profroidapp.customersubdomain.presentationLayer.CustomerResponseModel;
-import jakarta.persistence.EntityNotFoundException;
+import com.profroid.profroidapp.utils.exceptions.InvalidIdentifierException;
+import com.profroid.profroidapp.utils.exceptions.ResourceAlreadyExistsException;
+import com.profroid.profroidapp.utils.exceptions.ResourceNotFoundException;
+import com.profroid.profroidapp.utils.exceptions.InvalidOperationException;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -19,7 +22,9 @@ public class CustomerServiceImpl implements CustomerService {
     private final CustomerRequestMapper customerRequestMapper;
     private final CustomerResponseMapper customerResponseMapper;
 
-    public CustomerServiceImpl(CustomerRepository customerRepository, CustomerRequestMapper customerRequestMapper, CustomerResponseMapper customerResponseMapper) {
+    public CustomerServiceImpl(CustomerRepository customerRepository,
+                               CustomerRequestMapper customerRequestMapper,
+                               CustomerResponseMapper customerResponseMapper) {
         this.customerRepository = customerRepository;
         this.customerRequestMapper = customerRequestMapper;
         this.customerResponseMapper = customerResponseMapper;
@@ -32,62 +37,112 @@ public class CustomerServiceImpl implements CustomerService {
         return customerResponseMapper.toResponseModelList(customers);
     }
 
+
     @Override
     public CustomerResponseModel getCustomerById(String customerId) {
-        Customer foundCustomer = customerRepository.findCustomerByCustomerIdentifier_CustomerId(customerId);
+
+        if (customerId == null || customerId.trim().length() != 36) {
+            throw new InvalidIdentifierException("Customer ID must be a 36-character UUID string.");
+        }
+
+        Customer foundCustomer =
+                customerRepository.findCustomerByCustomerIdentifier_CustomerId(customerId);
 
         if (foundCustomer == null) {
-            throw new EntityNotFoundException("Customer not found: " + customerId);
+            throw new ResourceNotFoundException("Customer " + customerId + " not found.");
         }
 
         return customerResponseMapper.toResponseModel(foundCustomer);
     }
 
+
     @Override
     public CustomerResponseModel createCustomer(CustomerRequestModel requestModel) {
+
+        // Enforce unique userId
+        if (customerRepository.findCustomerByUserId(requestModel.getUserId()) != null) {
+            throw new ResourceAlreadyExistsException(
+                    "Cannot create customer: A customer already exists with user ID '" +
+                            requestModel.getUserId() + "'."
+            );
+        }
+
         CustomerIdentifier customerIdentifier = new CustomerIdentifier();
         Customer customer = customerRequestMapper.toEntity(requestModel, customerIdentifier);
+
+        customer.setIsActive(true);
+
         Customer savedCustomer = customerRepository.save(customer);
         return customerResponseMapper.toResponseModel(savedCustomer);
     }
 
+
     @Override
     public CustomerResponseModel updateCustomer(String customerId, CustomerRequestModel requestModel) {
 
-        // 1. Retrieve existing customer
-        Customer existingCustomer = customerRepository
-                .findCustomerByCustomerIdentifier_CustomerId(customerId);
-
-        if (existingCustomer == null) {
-            throw new EntityNotFoundException("Customer not found: " + customerId);
+        if (customerId == null || customerId.trim().length() != 36) {
+            throw new InvalidIdentifierException("Customer ID must be a 36-character UUID string.");
         }
 
-        // 2. Update simple fields
+        Customer existingCustomer =
+                customerRepository.findCustomerByCustomerIdentifier_CustomerId(customerId);
+
+        if (existingCustomer == null) {
+            throw new ResourceNotFoundException("Customer " + customerId + " not found.");
+        }
+
+        // Enforce unique userId (allow if it belongs to same customer)
+        String newUserId = requestModel.getUserId();
+        Customer userIdOwner = customerRepository.findCustomerByUserId(newUserId);
+
+        if (userIdOwner != null &&
+                !userIdOwner.getCustomerIdentifier().getCustomerId().equals(customerId)) {
+            throw new ResourceAlreadyExistsException(
+                    "Cannot update customer: A customer already exists with user ID '" + newUserId + "'."
+            );
+        }
+
+        // Update simple fields
         existingCustomer.setFirstName(requestModel.getFirstName());
         existingCustomer.setLastName(requestModel.getLastName());
 
-        // 3. Update address
+        // Update address fields
         existingCustomer.getCustomerAddress().setStreetAddress(requestModel.getStreetAddress());
         existingCustomer.getCustomerAddress().setCity(requestModel.getCity());
         existingCustomer.getCustomerAddress().setProvince(requestModel.getProvince());
         existingCustomer.getCustomerAddress().setCountry(requestModel.getCountry());
         existingCustomer.getCustomerAddress().setPostalCode(requestModel.getPostalCode());
 
-        // 4. Update phone numbers
+        // Update phone numbers
         existingCustomer.setPhoneNumbers(requestModel.getPhoneNumbers());
 
-        // 5. Update userId
+        // Update userId
         existingCustomer.setUserId(requestModel.getUserId());
 
-        // 6. Save
         Customer updatedCustomer = customerRepository.save(existingCustomer);
-
-        // 7. Return response
         return customerResponseMapper.toResponseModel(updatedCustomer);
     }
+
 
     @Override
     public void deleteCustomer(String customerId) {
 
+        if (customerId == null || customerId.trim().length() != 36) {
+            throw new InvalidIdentifierException("Customer ID must be a 36-character UUID string.");
+        }
+
+        Customer customer =
+                customerRepository.findCustomerByCustomerIdentifier_CustomerId(customerId);
+
+        if (customer == null) {
+            throw new ResourceNotFoundException("Customer " + customerId + " not found.");
+        }
+
+        if (!customer.getIsActive()) {
+            throw new InvalidOperationException("Customer " + customerId + " is already deactivated.");
+        }
+
+        customer.setIsActive(false);
+        customerRepository.save(customer);
     }
 }

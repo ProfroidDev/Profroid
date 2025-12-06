@@ -9,6 +9,10 @@ import com.profroid.profroidapp.cellarsubdomain.presentationLayer.CellarRequestM
 import com.profroid.profroidapp.cellarsubdomain.presentationLayer.CellarResponseModel;
 import com.profroid.profroidapp.customersubdomain.dataAccessLayer.Customer;
 import com.profroid.profroidapp.customersubdomain.dataAccessLayer.CustomerRepository;
+import com.profroid.profroidapp.utils.exceptions.InvalidIdentifierException;
+import com.profroid.profroidapp.utils.exceptions.InvalidOperationException;
+import com.profroid.profroidapp.utils.exceptions.ResourceNotFoundException;
+import org.springframework.data.crossstore.ChangeSetPersister;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.stereotype.Service;
 
@@ -40,34 +44,73 @@ public class CellarServiceImpl implements CellarService {
 
     @Override
     public CellarResponseModel getCellarById(String cellarId) {
-        Cellar cellar = cellarRepository
-                .findCellarByCellarIdentifier_CellarId(cellarId);
+
+        if (cellarId == null || cellarId.trim().length() != 36) {
+            throw new InvalidIdentifierException("Cellar ID must be a 36-character UUID string.");
+        }
+
+        Cellar cellar = cellarRepository.findCellarByCellarIdentifier_CellarId(cellarId);
+
+        if (cellar == null) {
+            throw new ResourceNotFoundException("Cellar " + cellarId + " not found.");
+        }
+
         return cellarResponseMapper.toResponseModel(cellar);
     }
 
     @Override
     public List<CellarResponseModel> getAllCellars(String ownerCustomerId) {
 
-        // 1. Validate that the customer exists
-        Customer ownerCustomer = customerRepository
-                .findCustomerByCustomerIdentifier_CustomerId(ownerCustomerId);
+        if (ownerCustomerId == null || ownerCustomerId.trim().length() != 36) {
+            throw new InvalidIdentifierException("Customer ID must be a 36-character UUID string.");
+        }
 
-        // 2. Fetch cellars belonging to this customer
-        List<Cellar> cellars = cellarRepository
-                .findByOwnerCustomerIdentifier(ownerCustomer.getCustomerIdentifier());
+        Customer customer =
+                customerRepository.findCustomerByCustomerIdentifier_CustomerId(ownerCustomerId);
 
-        // 3. Map to response models
+        if (customer == null) {
+            throw new ResourceNotFoundException("Customer " + ownerCustomerId + " not found.");
+        }
+
+        List<Cellar> cellars =
+                cellarRepository.findByOwnerCustomerIdentifier(customer.getCustomerIdentifier());
+
         return cellarResponseMapper.toResponseModelList(cellars);
     }
 
     @Override
     public CellarResponseModel getCellarById(String ownerCustomerId, String cellarId) {
 
-        Customer ownerCustomer = customerRepository
-                .findCustomerByCustomerIdentifier_CustomerId(ownerCustomerId);
+        if (ownerCustomerId == null || ownerCustomerId.trim().length() != 36) {
+            throw new InvalidIdentifierException("Customer ID must be a 36-character UUID string.");
+        }
 
-        Cellar cellar = cellarRepository
-                .findCellarByCellarIdentifier_CellarId(cellarId);
+        if (cellarId == null || cellarId.trim().length() != 36) {
+            throw new InvalidIdentifierException("Cellar ID must be a 36-character UUID string.");
+        }
+
+        Customer customer =
+                customerRepository.findCustomerByCustomerIdentifier_CustomerId(ownerCustomerId);
+
+        if (customer == null) {
+            throw new ResourceNotFoundException("Customer " + ownerCustomerId + " not found.");
+        }
+
+        Cellar cellar =
+                cellarRepository.findCellarByCellarIdentifier_CellarId(cellarId);
+
+        if (cellar == null) {
+            throw new ResourceNotFoundException("Cellar " + cellarId + " not found.");
+        }
+
+        // ownership check
+        if (!cellar.getOwnerCustomer().getCustomerIdentifier().getCustomerId()
+                .equals(ownerCustomerId)) {
+
+            throw new InvalidOperationException(
+                    "Cellar " + cellarId + " does not belong to customer " + ownerCustomerId + "."
+            );
+        }
 
         return cellarResponseMapper.toResponseModel(cellar);
     }

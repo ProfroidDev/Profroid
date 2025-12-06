@@ -20,7 +20,8 @@ create table if not exists customers
     province VARCHAR(50),
     country VARCHAR(50),
     postal_code VARCHAR(9),
-    user_id VARCHAR(36)
+    user_id VARCHAR(36),
+    is_active BOOLEAN NOT NULL DEFAULT true
     );
 
 CREATE TABLE IF NOT EXISTS customer_phonenumbers (
