@@ -75,7 +75,9 @@ export default function UpdateDayScheduleModal({
 
   // Pre-populate with existing schedule
   useEffect(() => {
+    console.log('Modal received currentSchedule:', currentSchedule);
     if (!currentSchedule || !currentSchedule.timeSlots || currentSchedule.timeSlots.length === 0) {
+      console.log('No currentSchedule or timeSlots, skipping pre-population');
       return;
     }
 
@@ -99,6 +101,7 @@ export default function UpdateDayScheduleModal({
       const enumSlots = currentSchedule.timeSlots
         .map(toTimeSlotEnum)
         .filter((s): s is TimeSlotType => s !== null);
+      console.log('Setting tech slots:', enumSlots);
       setTechSlots(enumSlots);
     }
   }, [currentSchedule, isTechnician]);
@@ -179,9 +182,15 @@ export default function UpdateDayScheduleModal({
 
     try {
       setSubmitting(true);
+      console.log('Sending PATCH request:', payload);
+      console.log('Current schedule before PATCH:', currentSchedule);
       await patchDateSchedule(payload);
+      console.log('PATCH successful');
       onUpdated();
-      onClose();
+      // Give parent time to close modal, or close after timeout
+      setTimeout(() => {
+        onClose();
+      }, 500);
     } catch (e: unknown) {
       let message = 'Failed to update schedule for this day';
       

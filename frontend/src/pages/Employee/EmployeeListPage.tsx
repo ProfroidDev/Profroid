@@ -6,6 +6,7 @@ import { reactivateEmployee } from "../../features/employee/api/reactivateEmploy
 import type { EmployeeResponseModel } from "../../features/employee/models/EmployeeResponseModel";
 import type { EmployeeSchedule } from "../../features/employee/models/EmployeeSchedule";
 import { getEmployeeSchedule } from "../../features/employee/api/getEmployeeSchedule";
+import { getEmployeeScheduleForDate } from "../../features/employee/api/getEmployeeScheduleForDate";
 import Calendar from 'react-calendar';
 import 'react-calendar/dist/Calendar.css';
 import EmployeeAddModal from "../../components/EmployeeAddModal";
@@ -33,6 +34,41 @@ export default function EmployeeListPage(): React.ReactElement {
   const [scheduleEmployeeData, setScheduleEmployeeData] = useState<EmployeeResponseModel | null>(null);
   // Removed unused selectedDay state
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
+  const [selectedDateSchedule, setSelectedDateSchedule] = useState<any>(null);
+
+  // Fetch schedule for selected date - check for date-specific schedules
+  useEffect(() => {
+    async function fetchDateSchedule() {
+      if (selectedDate && scheduleEmployeeData) {
+        const employeeId = String((scheduleEmployeeData.employeeIdentifier as EmployeeResponseModel['employeeIdentifier'] & Record<string, unknown>)?.employeeId);
+        if (employeeId) {
+          try {
+            const formattedDate = selectedDate.toISOString().split('T')[0];
+            const dateSchedule = await getEmployeeScheduleForDate(employeeId, formattedDate);
+            if (dateSchedule && dateSchedule.length > 0) {
+              setSelectedDateSchedule(dateSchedule[0]);
+            } else {
+              setSelectedDateSchedule(null);
+            }
+          } catch (error) {
+            console.error('Error fetching date schedule:', error);
+            // Fall back to weekly template on error
+            const dayOfWeek = selectedDate.toLocaleDateString('en-US', { weekday: 'long' }).toUpperCase();
+            const weeklySchedule = employeeSchedule.find(s => s.dayOfWeek.toUpperCase() === dayOfWeek);
+            setSelectedDateSchedule(weeklySchedule || null);
+          }
+        }
+      } else if (selectedDate && employeeSchedule.length > 0) {
+        // Fall back to weekly template if no employee data
+        const dayOfWeek = selectedDate.toLocaleDateString('en-US', { weekday: 'long' }).toUpperCase();
+        const weeklySchedule = employeeSchedule.find(s => s.dayOfWeek.toUpperCase() === dayOfWeek);
+        setSelectedDateSchedule(weeklySchedule || null);
+      } else {
+        setSelectedDateSchedule(null);
+      }
+    }
+    fetchDateSchedule();
+  }, [selectedDate, scheduleEmployeeData, employeeSchedule]);
   const [addModalOpen, setAddModalOpen] = useState<boolean>(false);
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' | 'info' | 'warning' } | null>(null);
 
@@ -406,11 +442,21 @@ export default function EmployeeListPage(): React.ReactElement {
                   <ul className="modal-list">
                     {(() => {
                       if (!selectedDate) return <li className="modal-list-item">Select a date</li>;
-                      // Get the day of week for the selected date
-                      const dayOfWeek = selectedDate.toLocaleDateString('en-US', { weekday: 'long' }).toUpperCase();
-                      const sched = employeeSchedule.find(s => s.dayOfWeek.toUpperCase() === dayOfWeek);
-                      if (!sched || !sched.timeSlots.length) return <li className="modal-list-item">No schedule for this date</li>;
-                      return sched.timeSlots.map((slot, i) => (
+                      
+                      // Use selectedDateSchedule which includes date-specific overrides
+                      const sched = selectedDateSchedule;
+                      if (!sched || !sched.timeSlots || sched.timeSlots.length === 0) {
+                        // Fallback: show weekly template while loading
+                        const dayOfWeek = selectedDate.toLocaleDateString('en-US', { weekday: 'long' }).toUpperCase();
+                        const weeklySchedule = employeeSchedule.find(s => s.dayOfWeek.toUpperCase() === dayOfWeek);
+                        if (weeklySchedule && weeklySchedule.timeSlots && weeklySchedule.timeSlots.length > 0) {
+                          return weeklySchedule.timeSlots.map((slot: string, i: number) => (
+                            <li key={i} className="modal-list-item">{slot}</li>
+                          ));
+                        }
+                        return <li className="modal-list-item">No schedule for this date</li>;
+                      }
+                      return sched.timeSlots.map((slot: string, i: number) => (
                         <li key={i} className="modal-list-item">{slot}</li>
                       ));
                     })()}
@@ -543,15 +589,25 @@ export default function EmployeeListPage(): React.ReactElement {
           isTechnician={String((scheduleEmployeeData.employeeRole as unknown as Record<string, string>)?.employeeRoleType || "").toUpperCase() === 'TECHNICIAN'}
           selectedDate={selectedDate}
           currentSchedule={(() => {
+            // Use selectedDateSchedule if available, otherwise fall back to weekly template
+            if (selectedDateSchedule) return selectedDateSchedule;
             const dayOfWeek = selectedDate.toLocaleDateString('en-US', { weekday: 'long' }).toUpperCase();
             return employeeSchedule.find(s => s.dayOfWeek.toUpperCase() === dayOfWeek) || null;
           })()}
           onClose={() => setUpdateDayScheduleOpen(false)}
           onUpdated={async () => {
+            // After PATCH succeeds, refresh the date-specific schedule
             const employeeId = String((scheduleEmployeeData.employeeIdentifier as EmployeeResponseModel['employeeIdentifier'] & Record<string, unknown>)?.employeeId);
-            if (employeeId) {
-              const scheduleData = await getEmployeeSchedule(employeeId);
-              setEmployeeSchedule(scheduleData);
+            if (employeeId && selectedDate) {
+              try {
+                const formattedDate = selectedDate.toISOString().split('T')[0];
+                const dateSchedule = await getEmployeeScheduleForDate(employeeId, formattedDate);
+                if (dateSchedule && dateSchedule.length > 0) {
+                  setSelectedDateSchedule(dateSchedule[0]);
+                }
+              } catch (error) {
+                console.error('Error refreshing date schedule:', error);
+              }
               setUpdateDayScheduleOpen(false);
               setToast({ message: `Schedule updated for ${selectedDate.toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' })}!`, type: 'success' });
             }
