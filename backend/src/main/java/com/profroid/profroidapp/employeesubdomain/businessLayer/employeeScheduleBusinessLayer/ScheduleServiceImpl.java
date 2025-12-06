@@ -304,7 +304,14 @@ public class ScheduleServiceImpl implements ScheduleService {
 
         // Check for existing scheduled appointments and verify they won't be removed
         List<Appointment> scheduledAppointments = appointmentRepository.findScheduledAppointmentsByTechnicianAndSchedules(employee, existingSchedules);
-        if (!scheduledAppointments.isEmpty()) {
+        
+        // Also check for ALL SCHEDULED appointments on this technician (for date-specific appointments)
+        List<Appointment> allScheduledAppointments = appointmentRepository.findAllByTechnician(employee).stream()
+            .filter(a -> a.getAppointmentStatus() != null && 
+                    a.getAppointmentStatus().getAppointmentStatusType() == AppointmentStatusType.SCHEDULED)
+            .toList();
+        
+        if (!allScheduledAppointments.isEmpty()) {
             // Build map of new time slots per day
             Map<DayOfWeekType, Set<TimeSlotType>> newScheduleMap = new HashMap<>();
             for (EmployeeScheduleRequestModel request : scheduleRequests) {
@@ -312,14 +319,15 @@ public class ScheduleServiceImpl implements ScheduleService {
             }
             
             // Check each appointment to ensure its time slot is still available
-            for (Appointment appointment : scheduledAppointments) {
+            for (Appointment appointment : allScheduledAppointments) {
                 TimeSlotType appointmentSlot = getTimeSlotFromAppointment(appointment);
                 DayOfWeekType appointmentDay = getDayOfWeekFromDate(appointment.getAppointmentDate());
                 
                 Set<TimeSlotType> newSlotsForDay = newScheduleMap.get(appointmentDay);
                 if (newSlotsForDay == null || !newSlotsForDay.contains(appointmentSlot)) {
                     throw new InvalidOperationException("Cannot update schedule: Employee has an existing appointment on " + 
-                        appointmentDay + " at a time slot that would be removed. Use PATCH to update specific days instead.");
+                        appointmentDay + " at " + appointmentSlot.getDisplayTime() + " that would be removed by this schedule update. " +
+                        "Please cancel or reschedule the appointment first.");
                 }
             }
         }

@@ -318,7 +318,7 @@ INSERT INTO appointments (
     '2025-12-08 09:00:00', -- Monday, December 8, 2025 at 9 AM
     'Initial consultation for new wine cellar installation',
     '123 Main St', 'Toronto', 'Ontario', 'Canada', 'M5V 1K4',
-    'SCHEDULED',
+    'COMPLETED',
     true
 );
 

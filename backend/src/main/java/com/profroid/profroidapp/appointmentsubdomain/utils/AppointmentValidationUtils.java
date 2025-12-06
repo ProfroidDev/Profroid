@@ -208,31 +208,22 @@ public class AppointmentValidationUtils {
             return;
         }
         
-        // Check if any quotation is COMPLETED - if yes, allow the service
-        boolean hasCompletedQuotation = quotations.stream()
-            .anyMatch(apt -> apt.getAppointmentStatus().getAppointmentStatusType() == AppointmentStatusType.COMPLETED);
-        
-        if (hasCompletedQuotation) {
-            return; // Quotation completed, allow service
-        }
-        
         // Check for SCHEDULED quotations ON THE SAME DAY ONLY
         List<Appointment> scheduledQuotationsOnSameDay = quotations.stream()
             .filter(apt -> apt.getAppointmentStatus().getAppointmentStatusType() == AppointmentStatusType.SCHEDULED)
             .filter(apt -> apt.getAppointmentDate().toLocalDate().equals(serviceDate))
             .toList();
-        
+
         if (!scheduledQuotationsOnSameDay.isEmpty()) {
-            // Check if service is scheduled AFTER any of the scheduled quotations on the same day
+            // Block if the service is after any scheduled quotation on that same day
             for (Appointment scheduledQuotation : scheduledQuotationsOnSameDay) {
                 LocalDateTime quotationDateTime = scheduledQuotation.getAppointmentDate();
-                
-                // If service is AFTER the quotation on the same day, block it
+
                 if (appointmentDateTime.isAfter(quotationDateTime)) {
                     throw new InvalidOperationException(
-                        "Cannot schedule " + jobType + " service at " + appointmentDateTime.toLocalTime() + 
+                        "Cannot schedule " + jobType + " service at " + appointmentDateTime.toLocalTime() +
                         " on " + serviceDate + ". " +
-                        "There is a SCHEDULED quotation at " + quotationDateTime.toLocalTime() + 
+                        "There is a SCHEDULED quotation at " + quotationDateTime.toLocalTime() +
                         " on the same day that must be completed first. " +
                         "You can either: 1) Complete the quotation first, or 2) Schedule the service before the quotation time. " +
                         "Address: " + address.getStreetAddress() + ", " + address.getCity()
@@ -240,8 +231,16 @@ public class AppointmentValidationUtils {
                 }
             }
         }
-        
-        // If we reach here: either no quotation on same day, or service is before quotation time - allow it
+
+        // If no blocking scheduled quotations on the same day, allow service when a quotation is already completed
+        boolean hasCompletedQuotation = quotations.stream()
+            .anyMatch(apt -> apt.getAppointmentStatus().getAppointmentStatusType() == AppointmentStatusType.COMPLETED);
+
+        if (hasCompletedQuotation) {
+            return; // Quotation completed, allow service
+        }
+
+        // Otherwise, proceed (no quotation or only future-time scheduled quotation on that day)
     }
 
     /**
