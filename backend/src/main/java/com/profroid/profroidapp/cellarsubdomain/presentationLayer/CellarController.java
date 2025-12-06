@@ -31,7 +31,6 @@ public class CellarController {
     }
 
     @PostMapping
-    @ResponseStatus(HttpStatus.CREATED)
     public ResponseEntity<CellarResponseModel> createCellar(@Valid @RequestBody CellarRequestModel cellarRequestModel) {
         String ownerCustomerId = cellarRequestModel.getOwnerCustomerId().getCustomerId();
         CellarResponseModel responseModel = cellarService.createCellar(ownerCustomerId, cellarRequestModel);
