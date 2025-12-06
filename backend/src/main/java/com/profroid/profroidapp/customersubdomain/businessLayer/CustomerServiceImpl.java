@@ -30,18 +30,14 @@ public class CustomerServiceImpl implements CustomerService {
         this.customerResponseMapper = customerResponseMapper;
     }
 
-    // ---------------------------------------------------------------------------
-    // GET ALL CUSTOMERS
-    // ---------------------------------------------------------------------------
+
     @Override
     public List<CustomerResponseModel> getAllCustomers() {
         List<Customer> customers = customerRepository.findAll();
         return customerResponseMapper.toResponseModelList(customers);
     }
 
-    // ---------------------------------------------------------------------------
-    // GET BY ID
-    // ---------------------------------------------------------------------------
+
     @Override
     public CustomerResponseModel getCustomerById(String customerId) {
 
@@ -59,9 +55,7 @@ public class CustomerServiceImpl implements CustomerService {
         return customerResponseMapper.toResponseModel(foundCustomer);
     }
 
-    // ---------------------------------------------------------------------------
-    // CREATE CUSTOMER
-    // ---------------------------------------------------------------------------
+
     @Override
     public CustomerResponseModel createCustomer(CustomerRequestModel requestModel) {
 
@@ -80,9 +74,7 @@ public class CustomerServiceImpl implements CustomerService {
         return customerResponseMapper.toResponseModel(savedCustomer);
     }
 
-    // ---------------------------------------------------------------------------
-    // UPDATE CUSTOMER
-    // ---------------------------------------------------------------------------
+
     @Override
     public CustomerResponseModel updateCustomer(String customerId, CustomerRequestModel requestModel) {
 
@@ -129,9 +121,7 @@ public class CustomerServiceImpl implements CustomerService {
         return customerResponseMapper.toResponseModel(updatedCustomer);
     }
 
-    // ---------------------------------------------------------------------------
-    // SOFT DELETE (DEACTIVATE)
-    // ---------------------------------------------------------------------------
+
     @Override
     public void deleteCustomer(String customerId) {
 
