@@ -34,7 +34,7 @@ export default function EmployeeListPage(): React.ReactElement {
   const [scheduleEmployeeData, setScheduleEmployeeData] = useState<EmployeeResponseModel | null>(null);
   // Removed unused selectedDay state
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
-  const [selectedDateSchedule, setSelectedDateSchedule] = useState<any>(null);
+  const [selectedDateSchedule, setSelectedDateSchedule] = useState<EmployeeSchedule | null>(null);
 
   // Fetch schedule for selected date - check for date-specific schedules
   useEffect(() => {
@@ -328,7 +328,7 @@ export default function EmployeeListPage(): React.ReactElement {
           <div className="modal-container-light">
             <div className="modal-header-light">
               <h3>Employee Details</h3>
-              <button className="modal-close-light" onClick={closeDetails}>
+              <button className="modal-close-light" onClick={closeModal}>
                 &#10005;
               </button>
             </div>
