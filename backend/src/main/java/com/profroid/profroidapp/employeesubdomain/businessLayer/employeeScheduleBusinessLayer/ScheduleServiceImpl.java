@@ -1,5 +1,9 @@
 package com.profroid.profroidapp.employeesubdomain.businessLayer.employeeScheduleBusinessLayer;
 
+import com.profroid.profroidapp.appointmentsubdomain.dataAccessLayer.Appointment;
+import com.profroid.profroidapp.appointmentsubdomain.dataAccessLayer.AppointmentRepository;
+import com.profroid.profroidapp.appointmentsubdomain.dataAccessLayer.AppointmentStatus;
+import com.profroid.profroidapp.appointmentsubdomain.dataAccessLayer.AppointmentStatusType;
 import com.profroid.profroidapp.employeesubdomain.dataAccessLayer.employeeDataAccessLayer.Employee;
 import com.profroid.profroidapp.employeesubdomain.dataAccessLayer.employeeDataAccessLayer.EmployeeRepository;
 import com.profroid.profroidapp.employeesubdomain.dataAccessLayer.employeeScheduleDataAccessLayer.*;
@@ -15,6 +19,7 @@ import com.profroid.profroidapp.utils.exceptions.ResourceAlreadyExistsException;
 import com.profroid.profroidapp.utils.exceptions.ResourceNotFoundException;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -25,12 +30,14 @@ public class ScheduleServiceImpl implements ScheduleService {
     private final EmployeeRepository employeeRepository;
     private final EmployeeScheduleResponseMapper responseMapper;
     private final EmployeeScheduleRequestMapper requestMapper;
+    private final AppointmentRepository appointmentRepository;
 
-    public ScheduleServiceImpl(ScheduleRepository scheduleRepository, EmployeeRepository employeeRepository, EmployeeScheduleResponseMapper responseMapper, EmployeeScheduleRequestMapper requestMapper) {
+    public ScheduleServiceImpl(ScheduleRepository scheduleRepository, EmployeeRepository employeeRepository, EmployeeScheduleResponseMapper responseMapper, EmployeeScheduleRequestMapper requestMapper, AppointmentRepository appointmentRepository) {
         this.scheduleRepository = scheduleRepository;
         this.employeeRepository = employeeRepository;
         this.responseMapper = responseMapper;
         this.requestMapper = requestMapper;
+        this.appointmentRepository = appointmentRepository;
     }
 
     @Override
@@ -225,6 +232,13 @@ public class ScheduleServiceImpl implements ScheduleService {
             throw new ResourceNotFoundException("Employee " + employeeId + " does not have an existing schedule to update.");
         }
 
+        // Check for existing scheduled appointments
+        List<Appointment> scheduledAppointments = appointmentRepository.findScheduledAppointmentsByTechnicianAndSchedules(employee, existingSchedules);
+        if (!scheduledAppointments.isEmpty()) {
+            throw new InvalidOperationException("Cannot update entire schedule: Employee has " + scheduledAppointments.size() + 
+                " existing scheduled appointment(s). Use PATCH to update specific days instead.");
+        }
+
         if (scheduleRequests == null || scheduleRequests.isEmpty()) {
             throw new MissingDataException("Schedule requests cannot be null or empty.");
         }
@@ -345,6 +359,172 @@ public class ScheduleServiceImpl implements ScheduleService {
             case ONE_PM -> 13 * 60;
             case THREE_PM -> 15 * 60;
             case FIVE_PM -> 17 * 60;
+        };
+    }
+
+    @Override
+    public EmployeeScheduleResponseModel patchDateSchedule(String employeeId, String date, EmployeeScheduleRequestModel scheduleRequest) {
+        
+        if (employeeId == null || employeeId.trim().length() != 36) {
+            throw new InvalidIdentifierException("Employee ID must be a 36-character UUID string.");
+        }
+
+        Employee employee = employeeRepository.findEmployeeByEmployeeIdentifier_EmployeeId(employeeId);
+        if (employee == null) {
+            throw new ResourceNotFoundException("Employee " + employeeId + " not found.");
+        }
+
+        if (Boolean.FALSE.equals(employee.getIsActive())) {
+            throw new InvalidOperationException("Cannot update schedule for deactivated employee " + employeeId + ".");
+        }
+
+        
+        LocalDateTime targetDate;
+        try {
+            targetDate = LocalDateTime.parse(date + "T00:00:00");
+        } catch (Exception e) {
+            throw new InvalidOperationException("Invalid date format. Expected format: YYYY-MM-DD (e.g., 2025-12-05)");
+        }
+
+        // Extract day of week from date
+        DayOfWeekType dayOfWeek = getDayOfWeekFromDate(targetDate);
+        
+        // Validate day of week matches
+        if (!dayOfWeek.equals(scheduleRequest.getDayOfWeek())) {
+            throw new InvalidOperationException("Day of week for date " + date + " (" + dayOfWeek + ") must match day in request body (" + scheduleRequest.getDayOfWeek() + ").");
+        }
+
+        List<Schedule> allSchedules = scheduleRepository.findAllByEmployee_EmployeeIdentifier_EmployeeId(employeeId);
+        if (allSchedules == null || allSchedules.isEmpty()) {
+            throw new ResourceNotFoundException("Employee " + employeeId + " does not have an existing schedule.");
+        }
+
+        // Get existing schedules for this day
+        List<Schedule> daySchedules = allSchedules.stream()
+            .filter(s -> s.getDayOfWeek() != null && s.getDayOfWeek().getDayOfWeek() != null)
+            .filter(s -> s.getDayOfWeek().getDayOfWeek().equals(dayOfWeek))
+            .collect(Collectors.toList());
+
+        // Validate input
+        if (scheduleRequest.getTimeSlots() == null || scheduleRequest.getTimeSlots().isEmpty()) {
+            throw new MissingDataException("Day " + dayOfWeek + " must have at least one time slot.");
+        }
+
+        for (TimeSlotType timeSlot : scheduleRequest.getTimeSlots()) {
+            if (timeSlot == null) {
+                throw new MissingDataException("Time slot cannot be null for day " + dayOfWeek);
+            }
+        }
+
+        boolean isTechnician = employee.getEmployeeRole() != null &&
+            employee.getEmployeeRole().getEmployeeRoleType() == com.profroid.profroidapp.employeesubdomain.dataAccessLayer.employeeDataAccessLayer.EmployeeRoleType.TECHNICIAN;
+
+        // Validate time slots for role
+        if (!isTechnician) {
+            if (scheduleRequest.getTimeSlots().size() != 2) {
+                throw new MissingDataException("Non-technician employees must provide exactly 2 time slots per day: start and end times.");
+            }
+            List<TimeSlotType> sorted = scheduleRequest.getTimeSlots().stream().sorted(Comparator.comparingInt(this::toMinutes)).toList();
+            if (sorted.get(0) != TimeSlotType.NINE_AM) {
+                throw new MissingDataException("Non-technician employees must start at NINE_AM (9:00 AM).");
+            }
+            int startMinutes = toMinutes(sorted.get(0));
+            int endMinutes = toMinutes(sorted.get(1));
+            int dailyHours = (endMinutes - startMinutes) / 60;
+            if (dailyHours > 8) {
+                throw new MissingDataException("Non-technician employees cannot work more than 8 hours per day. Hours: " + dailyHours);
+            }
+        } else {
+            List<Integer> minutes = scheduleRequest.getTimeSlots().stream()
+                    .map(this::toMinutes)
+                    .sorted()
+                    .toList();
+            for (int i = 1; i < minutes.size(); i++) {
+                if (minutes.get(i) - minutes.get(i - 1) < 120) {
+                    throw new MissingDataException("Technician time slots must be at least 2 hours apart.");
+                }
+            }
+            if (scheduleRequest.getTimeSlots().size() > 4) {
+                throw new MissingDataException("Technician cannot exceed 8 hours in a single day (max 4 slots of 2h each).");
+            }
+        }
+
+        // Check for appointments on the specific date and removed time slots
+        List<Appointment> affectedAppointments = appointmentRepository.findScheduledAppointmentsByTechnicianAndSchedules(employee, daySchedules);
+        
+        // Filter appointments to only those on the specific target date
+        LocalDateTime startOfDay = targetDate.withHour(0).withMinute(0).withSecond(0).withNano(0);
+        LocalDateTime endOfDay = targetDate.plusDays(1).withHour(0).withMinute(0).withSecond(0).withNano(0);
+        affectedAppointments = affectedAppointments.stream()
+            .filter(a -> a.getAppointmentDate().isAfter(startOfDay) && a.getAppointmentDate().isBefore(endOfDay))
+            .collect(Collectors.toList());
+
+        // If any appointment exists on that date, reject the patch
+        if (!affectedAppointments.isEmpty()) {
+            throw new InvalidOperationException("Cannot edit schedule; there is an appointment on this date.");
+        }
+        // Do not alter weekly schedules; just echo back the requested slots
+        EmployeeScheduleResponseModel response = new EmployeeScheduleResponseModel();
+        response.setEmployeeId(employeeId);
+        response.setDayOfWeek(dayOfWeek);
+        List<String> sortedTimeSlots = scheduleRequest.getTimeSlots().stream()
+            .sorted(Comparator.comparing(TimeSlotType::ordinal))
+            .map(TimeSlotType::getDisplayTime)
+            .collect(Collectors.toList());
+        response.setTimeSlots(sortedTimeSlots);
+        return response;
+    }
+
+    private TimeSlotType getTimeSlotFromAppointment(Appointment appointment) {
+        if (appointment.getSchedule() != null && appointment.getSchedule().getTimeSlot() != null) {
+            return appointment.getSchedule().getTimeSlot().getTimeslot();
+        }
+        
+        
+        LocalDateTime date = appointment.getAppointmentDate();
+        int hour = date.getHour();
+        
+        return switch (hour) {
+            case 9 -> TimeSlotType.NINE_AM;
+            case 11 -> TimeSlotType.ELEVEN_AM;
+            case 13 -> TimeSlotType.ONE_PM;
+            case 15 -> TimeSlotType.THREE_PM;
+            case 17 -> TimeSlotType.FIVE_PM;
+            default -> TimeSlotType.NINE_AM; // default fallback
+        };
+    }
+
+    private TimeSlotType findEarlierAvailableSlot(TimeSlotType currentSlot, Set<TimeSlotType> availableSlots) {
+        int currentMinutes = toMinutes(currentSlot);
+        
+        // Look for earlier slots
+        return availableSlots.stream()
+            .filter(slot -> toMinutes(slot) < currentMinutes)
+            .max(Comparator.comparingInt(this::toMinutes))
+            .orElse(null);
+    }
+
+    private LocalDateTime adjustAppointmentTime(LocalDateTime originalDate, TimeSlotType newSlot) {
+        int newHour = switch (newSlot) {
+            case NINE_AM -> 9;
+            case ELEVEN_AM -> 11;
+            case ONE_PM -> 13;
+            case THREE_PM -> 15;
+            case FIVE_PM -> 17;
+        };
+        
+        return originalDate.withHour(newHour).withMinute(0).withSecond(0).withNano(0);
+    }
+
+    private DayOfWeekType getDayOfWeekFromDate(LocalDateTime date) {
+        java.time.DayOfWeek dayOfWeek = date.getDayOfWeek();
+        return switch (dayOfWeek) {
+            case MONDAY -> DayOfWeekType.MONDAY;
+            case TUESDAY -> DayOfWeekType.TUESDAY;
+            case WEDNESDAY -> DayOfWeekType.WEDNESDAY;
+            case THURSDAY -> DayOfWeekType.THURSDAY;
+            case FRIDAY -> DayOfWeekType.FRIDAY;
+            case SATURDAY, SUNDAY -> throw new InvalidOperationException("Cannot schedule for weekends. Only Monday-Friday are supported.");
         };
     }
 
