@@ -1,9 +1,11 @@
 import React, { useEffect, useState } from "react";
 import { getAllParts } from "../../features/parts/api/getAllParts";
+import { deletePart } from "../../features/parts/api/deletePart";
 import type { PartResponseModel } from "../../features/parts/models/PartResponseModel";
 import PartDetailModal from "../../features/parts/components/PartDetailModal";
 import PartAddModal from "../../features/parts/components/PartAddModal";
 import PartEditModal from "../../features/parts/components/PartEditModal";
+import ConfirmationModal from "../../components/ConfirmationModal";
 import Toast from "../../shared/components/Toast";
 import "./PartsPage.css";
 
@@ -18,6 +20,10 @@ export default function PartsPage(): React.ReactElement {
   const [detailModalOpen, setDetailModalOpen] = useState<boolean>(false);
   const [editModalOpen, setEditModalOpen] = useState<boolean>(false);
   const [addModalOpen, setAddModalOpen] = useState<boolean>(false);
+  const [deleteModalOpen, setDeleteModalOpen] = useState<boolean>(false);
+  const [deleteTarget, setDeleteTarget] = useState<PartResponseModel | null>(null);
+  const [deleteLoading, setDeleteLoading] = useState<boolean>(false);
+  const [deleteError, setDeleteError] = useState<string | null>(null);
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' | 'info' } | null>(null);
 
   useEffect(() => {
@@ -135,6 +141,37 @@ export default function PartsPage(): React.ReactElement {
     setToast({ message, type: "error" });
   };
 
+  const handleOpenDeleteConfirm = (part: PartResponseModel) => {
+    setDeleteTarget(part);
+    setDeleteError(null);
+    setDeleteModalOpen(true);
+  };
+
+  const handleCloseDeleteConfirm = () => {
+    setDeleteModalOpen(false);
+    setDeleteTarget(null);
+    setDeleteError(null);
+  };
+
+  const handleDeleteConfirm = async () => {
+    if (!deleteTarget) return;
+
+    setDeleteLoading(true);
+    setDeleteError(null);
+
+    try {
+      await deletePart(deleteTarget.partId);
+      setParts((prev) => prev.filter((p) => p.partId !== deleteTarget.partId));
+      setToast({ message: "Part deleted successfully!", type: "success" });
+      handleCloseDeleteConfirm();
+    } catch (error) {
+      console.error("Error deleting part:", error);
+      setDeleteError("Failed to delete part. Please try again.");
+    } finally {
+      setDeleteLoading(false);
+    }
+  };
+
   return (
     <div className="parts-page-light">
       <div className="page-header">
@@ -183,6 +220,7 @@ export default function PartsPage(): React.ReactElement {
                 <div className="part-card-buttons">
                   <button className="btn-view-part" onClick={() => handleViewDetails(part)}>View Details</button>
                   <button className="btn-edit-part" onClick={() => handleOpenEditModal(part)}>Edit</button>
+                  <button className="btn-delete-part" onClick={() => handleOpenDeleteConfirm(part)}>Delete</button>
                 </div>
               </div>
             </div>
@@ -231,6 +269,21 @@ export default function PartsPage(): React.ReactElement {
           onClose={() => setToast(null)}
         />
       )}
+
+      <ConfirmationModal
+        isOpen={deleteModalOpen}
+        title="Delete Part"
+        message={
+          deleteError ??
+          `Are you sure you want to delete "${deleteTarget?.name}"? This action cannot be undone.`
+        }
+        confirmText="Delete"
+        cancelText="Cancel"
+        isDanger
+        isLoading={deleteLoading}
+        onConfirm={handleDeleteConfirm}
+        onCancel={handleCloseDeleteConfirm}
+      />
 
       <PartDetailModal
         part={selectedPart}

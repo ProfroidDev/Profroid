@@ -71,5 +71,6 @@ public class PartServiceImpl implements PartService {
             throw new EntityNotFoundException("Part not found: " + partId);
         }
         existingPart.setAvailable(false);
+        partRepository.save(existingPart);
     }
 }
