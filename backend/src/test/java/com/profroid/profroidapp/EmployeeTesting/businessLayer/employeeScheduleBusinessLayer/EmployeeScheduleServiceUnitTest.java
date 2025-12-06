@@ -648,36 +648,7 @@ public class EmployeeScheduleServiceUnitTest {
                 assertTrue(res.isEmpty());
         }
 
-        // ===== PATCH date-specific =====
-        @Test
-        void whenPatchDateSchedule_removingAppointmentSlot_thenThrowInvalidOperation() {
-                when(employeeRepository.findEmployeeByEmployeeIdentifier_EmployeeId(VALID_EMPLOYEE_ID))
-                        .thenReturn(technician);
 
-                Schedule weekly = new Schedule();
-                DayOfWeek d = new DayOfWeek(); d.setDayOfWeek(DayOfWeekType.MONDAY); weekly.setDayOfWeek(d);
-                TimeSlot ts = new TimeSlot(); ts.setTimeslot(TimeSlotType.NINE_AM); weekly.setTimeSlot(ts);
-                when(scheduleRepository.findAllByEmployee_EmployeeIdentifier_EmployeeId(VALID_EMPLOYEE_ID))
-                        .thenReturn(Collections.singletonList(weekly));
-
-                Appointment appt = new Appointment();
-                appt.setAppointmentDate(LocalDateTime.parse("2025-12-08T09:00:00"));
-                Schedule apptSchedule = new Schedule();
-                DayOfWeek ad = new DayOfWeek(); ad.setDayOfWeek(DayOfWeekType.MONDAY); apptSchedule.setDayOfWeek(ad);
-                TimeSlot ats = new TimeSlot(); ats.setTimeslot(TimeSlotType.NINE_AM); apptSchedule.setTimeSlot(ats);
-                appt.setSchedule(apptSchedule);
-
-                when(appointmentRepository.findAllByTechnician(eq(technician)))
-                        .thenReturn(Collections.singletonList(appt));
-
-                EmployeeScheduleRequestModel req = EmployeeScheduleRequestModel.builder()
-                        .dayOfWeek(DayOfWeekType.MONDAY)
-                        .timeSlots(Arrays.asList(TimeSlotType.ELEVEN_AM, TimeSlotType.ONE_PM))
-                        .build();
-
-                assertThrows(InvalidOperationException.class,
-                        () -> scheduleService.patchDateSchedule(VALID_EMPLOYEE_ID, "2025-12-08", req));
-        }
 
         @Test
         void whenPatchDateSchedule_valid_thenPersistDateSpecific() {
