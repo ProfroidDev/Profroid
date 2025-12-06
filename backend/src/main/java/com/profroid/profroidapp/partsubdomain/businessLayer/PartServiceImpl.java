@@ -65,6 +65,11 @@ public class PartServiceImpl implements PartService {
 
     @Override
     public void deletePart(String partId) {
+        Part existingPart = partRepository.findPartByPartIdentifier_PartId(partId);
 
+        if (existingPart == null) {
+            throw new EntityNotFoundException("Part not found: " + partId);
+        }
+        existingPart.setAvailable(false);
     }
 }
