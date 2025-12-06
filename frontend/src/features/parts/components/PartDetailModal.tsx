@@ -23,7 +23,7 @@ export default function PartDetailModal({
         <div className="modal-header">
           <h2 className="modal-title">{part.name}</h2>
           <button className="modal-close" onClick={onClose}>
-            ✕
+            &#10005;
           </button>
         </div>
 

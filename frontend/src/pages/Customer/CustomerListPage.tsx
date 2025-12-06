@@ -233,7 +233,7 @@ export default function CustomerListPage(): React.ReactElement {
           <div className="modal-container-light">
             <div className="modal-header-light">
               <h3>Customer Details</h3>
-              <button className="modal-close-light" onClick={closeDetails}>✕</button>
+              <button className="modal-close-light" onClick={closeDetails}>&#10005;</button>
             </div>
 
             {detailLoading ? (
@@ -304,7 +304,7 @@ export default function CustomerListPage(): React.ReactElement {
                   setCreateError(null);
                 }}
               >
-                ✕
+                &#10005;
               </button>
             </div>
 
@@ -446,7 +446,7 @@ export default function CustomerListPage(): React.ReactElement {
                   setEditError(null);
                 }}
               >
-                ✕
+                &#10005;
               </button>
             </div>
 

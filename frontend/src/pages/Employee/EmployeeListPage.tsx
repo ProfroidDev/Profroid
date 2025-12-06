@@ -328,8 +328,8 @@ export default function EmployeeListPage(): React.ReactElement {
           <div className="modal-container-light">
             <div className="modal-header-light">
               <h3>Employee Details</h3>
-              <button className="modal-close-light" onClick={closeModal}>
-                ✕
+              <button className="modal-close-light" onClick={closeDetails}>
+                &#10005;
               </button>
             </div>
 
@@ -408,7 +408,7 @@ export default function EmployeeListPage(): React.ReactElement {
             <div className="modal-header-light">
               <h3>Employee Schedule</h3>
               <button className="modal-close-light" onClick={closeModal}>
-                ✕
+                &#10005;
               </button>
             </div>
             {scheduleLoading && (

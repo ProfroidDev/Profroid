@@ -211,7 +211,7 @@ export default function EmployeeEditModal({ isOpen, employee, onClose, onSuccess
         <div className="modal-header-light">
           <h3>Edit Employee</h3>
           <button className="modal-close-light" onClick={onClose}>
-            ✕
+            &#10005;
           </button>
         </div>
 

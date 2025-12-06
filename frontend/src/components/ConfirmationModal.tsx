@@ -36,7 +36,7 @@ export default function ConfirmationModal({
             onClick={onCancel}
             disabled={isLoading}
           >
-            ✕
+            &#10005;
           </button>
         </div>
 

@@ -20,14 +20,14 @@ export default function Toast({ message, type = 'success', duration = 3000, onCl
   return (
     <div className={`toast toast-${type}`}>
       <div className="toast-icon">
-        {type === 'success' && '✓'}
-        {type === 'error' && '✕'}
-        {type === 'info' && 'ℹ'}
-        {type === 'warning' && '⚠'}
+        {type === 'success' && '&#10003;'}
+        {type === 'error' && '&#10005;'}
+        {type === 'info' && '&#8505;'}
+        {type === 'warning' && '&#9888;'}
       </div>
       <div className="toast-message">{message}</div>
       <button className="toast-close" onClick={onClose}>
-        ✕
+        &#10005;
       </button>
     </div>
   );
