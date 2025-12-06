@@ -22,9 +22,14 @@ public class AppointmentRequestModel {
     // 1. Frontend fetches technician list (by name)
     // 2. When technician selected, fetch their Schedule records (available days/times from Schedule table)
     // 3. Customer picks appointmentDate from technician's available schedule slots
-    // 4. Customer info comes from X-Customer-Id header - no need in request body
-    // 5. Service validates: appointmentDate matches Schedule entry AND technician has TECHNICIAN role
+    // 4. Customer info comes from X-Customer-Id header when customer books themselves
+    // 5. When technician creates appointment, they provide customerId in request body
+    // 6. Service validates: appointmentDate matches Schedule entry AND technician has TECHNICIAN role
 
+    // CUSTOMER IDENTIFICATION (when technician creates appointment for a customer)
+    private String customerId;  // Optional - used when technician books for customer (UUID format)
+    
+    // TECHNICIAN IDENTIFICATION
     @NotBlank(message = "Technician first name is required.")
     private String technicianFirstName;
 

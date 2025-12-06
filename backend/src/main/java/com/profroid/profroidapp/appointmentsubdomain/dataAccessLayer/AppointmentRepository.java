@@ -8,6 +8,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
@@ -38,4 +39,50 @@ public interface AppointmentRepository extends JpaRepository<Appointment, Intege
         @Param("technician") Employee technician, 
         @Param("schedules") List<Schedule> schedules
     );
+    
+    // Find appointments by address, date and status (for duplicate checking)
+    @Query("SELECT a FROM Appointment a WHERE " +
+           "a.appointmentAddress.streetAddress = :streetAddress AND " +
+           "a.appointmentAddress.city = :city AND " +
+           "a.appointmentAddress.province = :province AND " +
+           "a.appointmentAddress.postalCode = :postalCode AND " +
+           "DATE(a.appointmentDate) = :date AND " +
+           "a.appointmentStatus.appointmentStatusType IN :statuses")
+    List<Appointment> findByAddressAndDateAndStatusIn(
+        @Param("streetAddress") String streetAddress,
+        @Param("city") String city,
+        @Param("province") String province,
+        @Param("postalCode") String postalCode,
+        @Param("date") LocalDate date,
+        @Param("statuses") List<AppointmentStatusType> statuses
+    );
+    
+    // Find appointments by technician, date and time slot (SCHEDULED or COMPLETED block the slot)
+    @Query("SELECT a FROM Appointment a WHERE " +
+           "a.technician = :technician AND " +
+           "DATE(a.appointmentDate) = :date AND " +
+           "a.appointmentStatus.appointmentStatusType IN " +
+           "(com.profroid.profroidapp.appointmentsubdomain.dataAccessLayer.AppointmentStatusType.SCHEDULED, " +
+           "com.profroid.profroidapp.appointmentsubdomain.dataAccessLayer.AppointmentStatusType.COMPLETED)")
+    List<Appointment> findByTechnicianAndDateAndScheduled(
+        @Param("technician") Employee technician,
+        @Param("date") LocalDate date
+    );
+    
+    // Find quotation appointments by customer and address
+    @Query("SELECT a FROM Appointment a WHERE " +
+           "a.customer = :customer AND " +
+           "a.job.jobType = com.profroid.profroidapp.jobssubdomain.dataAccessLayer.JobType.QUOTATION AND " +
+           "a.appointmentAddress.streetAddress = :streetAddress AND " +
+           "a.appointmentAddress.city = :city AND " +
+           "a.appointmentAddress.province = :province AND " +
+           "a.appointmentAddress.postalCode = :postalCode")
+    List<Appointment> findQuotationsByCustomerAndAddress(
+        @Param("customer") Customer customer,
+        @Param("streetAddress") String streetAddress,
+        @Param("city") String city,
+        @Param("province") String province,
+        @Param("postalCode") String postalCode
+    );
 }
+

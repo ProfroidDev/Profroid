@@ -9,6 +9,7 @@ import java.util.List;
 @Service
 public interface AppointmentService {
 
+    AppointmentResponseModel addAppointment(AppointmentRequestModel requestModel, String userId, String userRole);
     
     List<AppointmentResponseModel> getCustomerAppointments(String customerId);
 

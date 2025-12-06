@@ -11,6 +11,7 @@ import java.util.List;
 public interface AppointmentResponseMapper {
 
     @Mapping(source = "appointment.appointmentIdentifier.appointmentId", target = "appointmentId")
+    @Mapping(source = "appointment.customer.customerIdentifier.customerId", target = "customerId")
     @Mapping(source = "appointment.customer.firstName", target = "customerFirstName")
     @Mapping(source = "appointment.customer.lastName", target = "customerLastName")
     @Mapping(source = "appointment.customer.phoneNumbers", target = "customerPhoneNumbers")
