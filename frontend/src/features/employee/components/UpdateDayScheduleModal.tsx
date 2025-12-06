@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import './AddScheduleModal.css'; // Reuse same styles
-import { updateEmployeeSchedule } from '../../employee/api/updateEmployeeSchedule';
-import type { UpdateEmployeeScheduleRequest } from '../../employee/api/updateEmployeeSchedule';
+import { patchDateSchedule } from '../../employee/api/patchDateSchedule';
+import type { PatchDateScheduleRequest } from '../../employee/api/patchDateSchedule';
 import type { DayOfWeekType, TimeSlotType } from '../../employee/models/EmployeeScheduleRequestModel';
 import type { EmployeeSchedule } from '../../employee/models/EmployeeSchedule';
 
@@ -10,7 +10,6 @@ type Props = {
   isTechnician: boolean;
   selectedDate: Date;
   currentSchedule: EmployeeSchedule | null; // Current schedule for this day
-  allSchedules: EmployeeSchedule[]; // All weekly schedules
   onClose: () => void;
   onUpdated: () => void;
   onError?: (message: string) => void;
@@ -62,7 +61,6 @@ export default function UpdateDayScheduleModal({
   isTechnician, 
   selectedDate, 
   currentSchedule,
-  allSchedules,
   onClose, 
   onUpdated, 
   onError 
@@ -70,6 +68,7 @@ export default function UpdateDayScheduleModal({
   const [submitting, setSubmitting] = useState(false);
   
   const dayOfWeek = selectedDate.toLocaleDateString('en-US', { weekday: 'long' }).toUpperCase() as DayOfWeekType;
+  const formattedDate = selectedDate.toISOString().split('T')[0]; // YYYY-MM-DD
   
   const [nonTechSlot, setNonTechSlot] = useState<NonTechSlot>({ start: '09:00', end: '' });
   const [techSlots, setTechSlots] = useState<TechSlot[]>([]);
@@ -166,34 +165,18 @@ export default function UpdateDayScheduleModal({
       timeSlots = [...techSlots].sort((a, b) => toMinutes(a) - toMinutes(b));
     }
 
-    // Build full weekly schedule with only this day modified
-    const weeklyRequests = ['MONDAY', 'TUESDAY', 'WEDNESDAY', 'THURSDAY', 'FRIDAY'].map(day => {
-      if (day === dayOfWeek) {
-        // Use the new time slots for the selected day
-        return { dayOfWeek: day as DayOfWeekType, timeSlots };
-      } else {
-        // Keep existing schedule for other days
-        const existingDaySchedule = allSchedules.find(s => s.dayOfWeek.toUpperCase() === day);
-        if (existingDaySchedule && existingDaySchedule.timeSlots) {
-          const existingSlots = existingDaySchedule.timeSlots
-            .map(toTimeSlotEnum)
-            .filter((s): s is TimeSlotType => s !== null);
-          return { dayOfWeek: day as DayOfWeekType, timeSlots: existingSlots };
-        } else {
-          // Fallback to default slots if no existing schedule
-          return { dayOfWeek: day as DayOfWeekType, timeSlots: isTechnician ? [] : ['NINE_AM' as TimeSlotType, 'FIVE_PM' as TimeSlotType] };
-        }
-      }
-    });
-
-    const payload: UpdateEmployeeScheduleRequest = {
+    const payload: PatchDateScheduleRequest = {
       employeeId,
-      scheduleRequests: weeklyRequests,
+      date: formattedDate,
+      scheduleRequest: {
+        dayOfWeek,
+        timeSlots,
+      },
     };
 
     try {
       setSubmitting(true);
-      await updateEmployeeSchedule(payload);
+      await patchDateSchedule(payload);
       onUpdated();
       onClose();
     } catch (e: unknown) {

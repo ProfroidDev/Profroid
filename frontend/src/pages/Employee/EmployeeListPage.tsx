@@ -544,7 +544,6 @@ export default function EmployeeListPage(): React.ReactElement {
             const dayOfWeek = selectedDate.toLocaleDateString('en-US', { weekday: 'long' }).toUpperCase();
             return employeeSchedule.find(s => s.dayOfWeek.toUpperCase() === dayOfWeek) || null;
           })()}
-          allSchedules={employeeSchedule}
           onClose={() => setUpdateDayScheduleOpen(false)}
           onUpdated={async () => {
             const employeeId = String((scheduleEmployeeData.employeeIdentifier as EmployeeResponseModel['employeeIdentifier'] & Record<string, unknown>)?.employeeId);
@@ -552,7 +551,7 @@ export default function EmployeeListPage(): React.ReactElement {
               const scheduleData = await getEmployeeSchedule(employeeId);
               setEmployeeSchedule(scheduleData);
               setUpdateDayScheduleOpen(false);
-              setToast({ message: `Schedule updated for ${selectedDate.toLocaleDateString('en-US', { weekday: 'long' })}!`, type: 'success' });
+              setToast({ message: `Schedule updated for ${selectedDate.toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' })}!`, type: 'success' });
             }
           }}
           onError={(message: string) => {
