@@ -1,5 +1,9 @@
 package com.profroid.profroidapp.employeesubdomain.businessLayer.employeeBusinessLayer;
 
+import com.profroid.profroidapp.appointmentsubdomain.dataAccessLayer.Appointment;
+import com.profroid.profroidapp.appointmentsubdomain.dataAccessLayer.AppointmentRepository;
+import com.profroid.profroidapp.appointmentsubdomain.dataAccessLayer.AppointmentStatus;
+import com.profroid.profroidapp.appointmentsubdomain.dataAccessLayer.AppointmentStatusType;
 import com.profroid.profroidapp.employeesubdomain.dataAccessLayer.employeeDataAccessLayer.Employee;
 import com.profroid.profroidapp.employeesubdomain.dataAccessLayer.employeeDataAccessLayer.EmployeeIdentifier;
 import com.profroid.profroidapp.employeesubdomain.dataAccessLayer.employeeDataAccessLayer.EmployeeRepository;
@@ -26,20 +30,23 @@ public class EmployeeServiceImpl implements EmployeeService {
     private final EmployeeRequestMapper employeeRequestMapper;
     private final EmployeeResponseMapper employeeResponseMapper;
     private final ScheduleRepository scheduleRepository;
+    private final AppointmentRepository appointmentRepository;
 
     public EmployeeServiceImpl(EmployeeRepository employeeRepository,
                                EmployeeRequestMapper employeeRequestMapper,
                                EmployeeResponseMapper employeeResponseMapper,
-                               ScheduleRepository scheduleRepository) {
+                               ScheduleRepository scheduleRepository,
+                               AppointmentRepository appointmentRepository) {
         this.employeeRepository = employeeRepository;
         this.employeeRequestMapper = employeeRequestMapper;
         this.employeeResponseMapper = employeeResponseMapper;
         this.scheduleRepository = scheduleRepository;
+        this.appointmentRepository = appointmentRepository;
     }
 
     @Override
     public List<EmployeeResponseModel> getAllEmployees() {
-        List<Employee> employees = employeeRepository.findAllByIsActiveTrue();
+        List<Employee> employees = employeeRepository.findAll();
         return employeeResponseMapper.toResponseModelList(employees);
     }
 
@@ -145,8 +152,23 @@ public class EmployeeServiceImpl implements EmployeeService {
             throw new InvalidOperationException("Employee " + employeeId + " is already deactivated.");
         }
 
+        // Deactivate employee
         employee.setIsActive(false);
         Employee deactivatedEmployee = employeeRepository.save(employee);
+
+        // Cancel all appointments for this technician
+        List<Appointment> technicianAppointments = appointmentRepository.findAllByTechnician(deactivatedEmployee);
+        for (Appointment appointment : technicianAppointments) {
+            // Only cancel SCHEDULED appointments (not already completed or cancelled)
+            if (appointment.getAppointmentStatus() != null &&
+                appointment.getAppointmentStatus().getAppointmentStatusType() == AppointmentStatusType.SCHEDULED) {
+                AppointmentStatus cancelledStatus = new AppointmentStatus();
+                cancelledStatus.setAppointmentStatusType(AppointmentStatusType.CANCELLED);
+                appointment.setAppointmentStatus(cancelledStatus);
+                appointmentRepository.save(appointment);
+            }
+        }
+
         return employeeResponseMapper.toResponseModel(deactivatedEmployee);
     }
 
@@ -167,6 +189,20 @@ public class EmployeeServiceImpl implements EmployeeService {
         }
 
         employee.setIsActive(true);
+        
+        // Auto-revert cancelled appointments back to SCHEDULED when technician is reactivated
+        List<Appointment> technicianAppointments = appointmentRepository.findAllByTechnician(employee);
+        for (Appointment appointment : technicianAppointments) {
+            if (appointment.getAppointmentStatus() != null && 
+                appointment.getAppointmentStatus().getAppointmentStatusType() == AppointmentStatusType.CANCELLED) {
+                // Revert cancelled appointments back to SCHEDULED
+                AppointmentStatus revertedStatus = new AppointmentStatus();
+                revertedStatus.setAppointmentStatusType(AppointmentStatusType.SCHEDULED);
+                appointment.setAppointmentStatus(revertedStatus);
+                appointmentRepository.save(appointment);
+            }
+        }
+        
         Employee reactivatedEmployee = employeeRepository.save(employee);
         return employeeResponseMapper.toResponseModel(reactivatedEmployee);
     }

@@ -9,6 +9,8 @@ import Footer from "./shared/components/Footer";
 import EmployeeSchedulePage from "./pages/Employee/EmployeeSchedulePage";
 import EmployeeListPage from "./pages/Employee/EmployeeListPage";
 import PartsPage from "./pages/Parts/PartsPage";
+import MyAppointmentsPage from "./pages/Appointment/MyAppointmentsPage";
+import MyJobsPage from "./pages/Appointment/MyJobsPage";
 
 function Home(): React.ReactElement {
   return (
@@ -40,6 +42,8 @@ function App(): React.ReactElement {
           path="/employees/schedule"
           element={<EmployeeSchedulePage />}
         />
+        <Route path="/my-appointments" element={<MyAppointmentsPage />} />
+        <Route path="/my-jobs" element={<MyJobsPage />} />
       </Routes>
 
       <Footer />

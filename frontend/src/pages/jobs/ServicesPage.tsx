@@ -399,7 +399,7 @@ export default function ServicesPage(): React.ReactElement {
                 aria-label="Close"
                 onClick={closeModal}
               >
-                ✕
+                &#10005;
               </button>
             </div>
 
@@ -451,7 +451,7 @@ export default function ServicesPage(): React.ReactElement {
                 onClick={closeCreateModal}
                 disabled={createLoading}
               >
-                ✕
+                &#10005;
               </button>
             </div>
 
@@ -633,7 +633,7 @@ export default function ServicesPage(): React.ReactElement {
                 onClick={closeDeleteConfirm}
                 disabled={deleteLoading}
               >
-                ✕
+                &#10005;
               </button>
             </div>
 
@@ -715,7 +715,7 @@ export default function ServicesPage(): React.ReactElement {
                 onClick={closeUpdateModal}
                 disabled={updateLoading}
               >
-                ✕
+                &#10005;
               </button>
             </div>
 

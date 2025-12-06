@@ -159,7 +159,7 @@ export default function EmployeeAddModal({ isOpen, onClose, onSuccess }: Employe
         <div className="modal-header-light">
           <h3>Add New Employee</h3>
           <button className="modal-close-light" onClick={onClose}>
-            ✕
+            &#10005;
           </button>
         </div>
 

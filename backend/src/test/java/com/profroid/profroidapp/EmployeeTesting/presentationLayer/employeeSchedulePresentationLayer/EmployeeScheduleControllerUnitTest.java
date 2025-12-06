@@ -41,6 +41,7 @@ public class EmployeeScheduleControllerUnitTest {
     private EmployeeScheduleRequestModel req2;
     private EmployeeScheduleResponseModel res1;
     private EmployeeScheduleResponseModel res2;
+    private EmployeeScheduleResponseModel dateRes;
 
     @BeforeEach
     void setup() {
@@ -49,6 +50,7 @@ public class EmployeeScheduleControllerUnitTest {
 
     res1 = EmployeeScheduleResponseModel.builder().build();
     res2 = EmployeeScheduleResponseModel.builder().build();
+    dateRes = EmployeeScheduleResponseModel.builder().build();
     }
 
     // ===== GET SCHEDULE =====
@@ -58,7 +60,7 @@ public class EmployeeScheduleControllerUnitTest {
     when(scheduleService.getEmployeeSchedule(VALID_EMPLOYEE_ID))
         .thenReturn(Arrays.asList(res1, res2));
 
-    ResponseEntity<List<EmployeeScheduleResponseModel>> response = employeeScheduleController.getEmployeeSchedule(VALID_EMPLOYEE_ID);
+    ResponseEntity<List<EmployeeScheduleResponseModel>> response = employeeScheduleController.getEmployeeSchedule(VALID_EMPLOYEE_ID, null);
 
     assertNotNull(response);
     assertEquals(HttpStatus.OK, response.getStatusCode());
@@ -74,7 +76,7 @@ public class EmployeeScheduleControllerUnitTest {
         .thenThrow(new InvalidIdentifierException("Employee ID invalid"));
 
     assertThrows(InvalidIdentifierException.class,
-        () -> employeeScheduleController.getEmployeeSchedule(INVALID_EMPLOYEE_ID));
+        () -> employeeScheduleController.getEmployeeSchedule(INVALID_EMPLOYEE_ID, null));
     verify(scheduleService, times(1)).getEmployeeSchedule(INVALID_EMPLOYEE_ID);
     }
 
@@ -85,8 +87,23 @@ public class EmployeeScheduleControllerUnitTest {
         .thenThrow(new ResourceNotFoundException("Employee not found"));
 
     assertThrows(ResourceNotFoundException.class,
-        () -> employeeScheduleController.getEmployeeSchedule(NON_EXISTING_EMPLOYEE_ID));
+        () -> employeeScheduleController.getEmployeeSchedule(NON_EXISTING_EMPLOYEE_ID, null));
     verify(scheduleService, times(1)).getEmployeeSchedule(NON_EXISTING_EMPLOYEE_ID);
+    }
+
+    // [Employee-Schedule][Unit Test][Positive] Get schedule for specific date -> delegates to date service
+    @Test
+    void whenGetEmployeeSchedule_withDate_thenDelegateToDateService() {
+        when(scheduleService.getEmployeeScheduleForDate(VALID_EMPLOYEE_ID, "2025-12-08"))
+            .thenReturn(Arrays.asList(dateRes));
+
+        ResponseEntity<List<EmployeeScheduleResponseModel>> response = employeeScheduleController.getEmployeeSchedule(VALID_EMPLOYEE_ID, "2025-12-08");
+
+        assertNotNull(response);
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        assertEquals(1, response.getBody().size());
+        verify(scheduleService, times(1)).getEmployeeScheduleForDate(VALID_EMPLOYEE_ID, "2025-12-08");
+        verify(scheduleService, never()).getEmployeeSchedule(anyString());
     }
 
     // ===== ADD SCHEDULE =====
@@ -143,6 +160,30 @@ public class EmployeeScheduleControllerUnitTest {
     assertThrows(ResourceNotFoundException.class,
         () -> employeeScheduleController.updateEmployeeSchedule(NON_EXISTING_EMPLOYEE_ID, requests));
     verify(scheduleService, times(1)).updateEmployeeSchedule(eq(NON_EXISTING_EMPLOYEE_ID), any(List.class));
+    }
+
+    // ===== PATCH DATE =====
+    @Test
+    void whenPatchDateSchedule_withValidRequest_thenReturnOk() {
+        when(scheduleService.patchDateSchedule(eq(VALID_EMPLOYEE_ID), eq("2025-12-08"), any(EmployeeScheduleRequestModel.class)))
+            .thenReturn(res1);
+
+        ResponseEntity<EmployeeScheduleResponseModel> response = employeeScheduleController.patchDateSchedule(
+            VALID_EMPLOYEE_ID, "2025-12-08", req1);
+
+        assertNotNull(response);
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        verify(scheduleService).patchDateSchedule(eq(VALID_EMPLOYEE_ID), eq("2025-12-08"), any(EmployeeScheduleRequestModel.class));
+    }
+
+    @Test
+    void whenPatchDateSchedule_serviceThrows_thenPropagate() {
+        when(scheduleService.patchDateSchedule(eq(INVALID_EMPLOYEE_ID), eq("2025-12-08"), any(EmployeeScheduleRequestModel.class)))
+            .thenThrow(new InvalidIdentifierException("invalid"));
+
+        assertThrows(InvalidIdentifierException.class,
+            () -> employeeScheduleController.patchDateSchedule(INVALID_EMPLOYEE_ID, "2025-12-08", req1));
+        verify(scheduleService).patchDateSchedule(eq(INVALID_EMPLOYEE_ID), eq("2025-12-08"), any(EmployeeScheduleRequestModel.class));
     }
     
 }

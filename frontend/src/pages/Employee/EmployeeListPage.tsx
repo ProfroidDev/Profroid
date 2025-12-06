@@ -6,6 +6,7 @@ import { reactivateEmployee } from "../../features/employee/api/reactivateEmploy
 import type { EmployeeResponseModel } from "../../features/employee/models/EmployeeResponseModel";
 import type { EmployeeSchedule } from "../../features/employee/models/EmployeeSchedule";
 import { getEmployeeSchedule } from "../../features/employee/api/getEmployeeSchedule";
+import { getEmployeeScheduleForDate } from "../../features/employee/api/getEmployeeScheduleForDate";
 import Calendar from 'react-calendar';
 import 'react-calendar/dist/Calendar.css';
 import EmployeeAddModal from "../../components/EmployeeAddModal";
@@ -14,6 +15,7 @@ import ConfirmationModal from "../../components/ConfirmationModal";
 import Toast from "../../shared/components/Toast";
 import AddScheduleModal from "../../features/employee/components/AddScheduleModal";
 import UpdateScheduleModal from "../../features/employee/components/UpdateScheduleModal";
+import UpdateDayScheduleModal from "../../features/employee/components/UpdateDayScheduleModal";
 
 import "./EmployeeListPage.css";
 
@@ -32,6 +34,41 @@ export default function EmployeeListPage(): React.ReactElement {
   const [scheduleEmployeeData, setScheduleEmployeeData] = useState<EmployeeResponseModel | null>(null);
   // Removed unused selectedDay state
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
+  const [selectedDateSchedule, setSelectedDateSchedule] = useState<EmployeeSchedule | null>(null);
+
+  // Fetch schedule for selected date - check for date-specific schedules
+  useEffect(() => {
+    async function fetchDateSchedule() {
+      if (selectedDate && scheduleEmployeeData) {
+        const employeeId = String((scheduleEmployeeData.employeeIdentifier as EmployeeResponseModel['employeeIdentifier'] & Record<string, unknown>)?.employeeId);
+        if (employeeId) {
+          try {
+            const formattedDate = selectedDate.toISOString().split('T')[0];
+            const dateSchedule = await getEmployeeScheduleForDate(employeeId, formattedDate);
+            if (dateSchedule && dateSchedule.length > 0) {
+              setSelectedDateSchedule(dateSchedule[0]);
+            } else {
+              setSelectedDateSchedule(null);
+            }
+          } catch (error) {
+            console.error('Error fetching date schedule:', error);
+            // Fall back to weekly template on error
+            const dayOfWeek = selectedDate.toLocaleDateString('en-US', { weekday: 'long' }).toUpperCase();
+            const weeklySchedule = employeeSchedule.find(s => s.dayOfWeek.toUpperCase() === dayOfWeek);
+            setSelectedDateSchedule(weeklySchedule || null);
+          }
+        }
+      } else if (selectedDate && employeeSchedule.length > 0) {
+        // Fall back to weekly template if no employee data
+        const dayOfWeek = selectedDate.toLocaleDateString('en-US', { weekday: 'long' }).toUpperCase();
+        const weeklySchedule = employeeSchedule.find(s => s.dayOfWeek.toUpperCase() === dayOfWeek);
+        setSelectedDateSchedule(weeklySchedule || null);
+      } else {
+        setSelectedDateSchedule(null);
+      }
+    }
+    fetchDateSchedule();
+  }, [selectedDate, scheduleEmployeeData, employeeSchedule]);
   const [addModalOpen, setAddModalOpen] = useState<boolean>(false);
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' | 'info' | 'warning' } | null>(null);
 
@@ -41,6 +78,9 @@ export default function EmployeeListPage(): React.ReactElement {
 
   // Update schedule modal state
   const [updateScheduleOpen, setUpdateScheduleOpen] = useState<boolean>(false);
+  
+  // Update day schedule modal state
+  const [updateDayScheduleOpen, setUpdateDayScheduleOpen] = useState<boolean>(false);
   
   // Deactivate/Reactivate state
   const [deactivateLoading, setDeactivateLoading] = useState<boolean>(false);
@@ -229,21 +269,20 @@ export default function EmployeeListPage(): React.ReactElement {
 
             <tbody>
               {employees.map((e, idx) => (
-                <tr key={idx} style={{ opacity: e.isActive ? 1 : 0.5 }}>
-                  <td style={{ filter: e.isActive ? 'none' : 'blur(2px)' }}>{e.lastName}</td>
-                  <td style={{ filter: e.isActive ? 'none' : 'blur(2px)' }}>{e.firstName}</td>
+                <tr key={idx} className={!e.isActive ? 'row-deactivated' : ''}>
+                  <td>{e.lastName}</td>
+                  <td>{e.firstName}</td>
                   <td>
                     <button
                       className="btn-view-light"
                       onClick={() => openDetails(e)}
                       disabled={!e.isActive}
-                      style={{ filter: e.isActive ? 'none' : 'blur(2px)' }}
                     >
                       View Details
                     </button>
                     <button
                       className="btn-view-light"
-                      style={{ marginLeft: 8, filter: e.isActive ? 'none' : 'blur(2px)' }}
+                      style={{ marginLeft: 8 }}
                       onClick={() => openEditModal(e)}
                       disabled={!e.isActive}
                     >
@@ -251,7 +290,7 @@ export default function EmployeeListPage(): React.ReactElement {
                     </button>
                     <button
                       className="btn-view-light"
-                      style={{ marginLeft: 8, filter: e.isActive ? 'none' : 'blur(2px)' }}
+                      style={{ marginLeft: 8 }}
                       onClick={() => openSchedule(e)}
                       disabled={!e.isActive}
                     >
@@ -290,7 +329,7 @@ export default function EmployeeListPage(): React.ReactElement {
             <div className="modal-header-light">
               <h3>Employee Details</h3>
               <button className="modal-close-light" onClick={closeModal}>
-                ✕
+                &#10005;
               </button>
             </div>
 
@@ -369,7 +408,7 @@ export default function EmployeeListPage(): React.ReactElement {
             <div className="modal-header-light">
               <h3>Employee Schedule</h3>
               <button className="modal-close-light" onClick={closeModal}>
-                ✕
+                &#10005;
               </button>
             </div>
             {scheduleLoading && (
@@ -403,18 +442,35 @@ export default function EmployeeListPage(): React.ReactElement {
                   <ul className="modal-list">
                     {(() => {
                       if (!selectedDate) return <li className="modal-list-item">Select a date</li>;
-                      // Get the day of week for the selected date
-                      const dayOfWeek = selectedDate.toLocaleDateString('en-US', { weekday: 'long' }).toUpperCase();
-                      const sched = employeeSchedule.find(s => s.dayOfWeek.toUpperCase() === dayOfWeek);
-                      if (!sched || !sched.timeSlots.length) return <li className="modal-list-item">No schedule for this date</li>;
-                      return sched.timeSlots.map((slot, i) => (
+                      
+                      // Use selectedDateSchedule which includes date-specific overrides
+                      const sched = selectedDateSchedule;
+                      if (!sched || !sched.timeSlots || sched.timeSlots.length === 0) {
+                        // Fallback: show weekly template while loading
+                        const dayOfWeek = selectedDate.toLocaleDateString('en-US', { weekday: 'long' }).toUpperCase();
+                        const weeklySchedule = employeeSchedule.find(s => s.dayOfWeek.toUpperCase() === dayOfWeek);
+                        if (weeklySchedule && weeklySchedule.timeSlots && weeklySchedule.timeSlots.length > 0) {
+                          return weeklySchedule.timeSlots.map((slot: string, i: number) => (
+                            <li key={i} className="modal-list-item">{slot}</li>
+                          ));
+                        }
+                        return <li className="modal-list-item">No schedule for this date</li>;
+                      }
+                      return sched.timeSlots.map((slot: string, i: number) => (
                         <li key={i} className="modal-list-item">{slot}</li>
                       ));
                     })()}
                   </ul>
                 </div>
-                <div className="modal-section">
-                  <button className="btn-view-light" onClick={() => setUpdateScheduleOpen(true)}>Update Schedule</button>
+                <div className="modal-section" style={{ display: 'flex', gap: '8px', justifyContent: 'flex-start' }}>
+                  <button 
+                    className="btn-view-light" 
+                    onClick={() => setUpdateDayScheduleOpen(true)}
+                    disabled={!selectedDate}
+                  >
+                    Update This Day
+                  </button>
+                  <button className="btn-view-light" onClick={() => setUpdateScheduleOpen(true)}>Update Full Week</button>
                 </div>
               </div>
             )}
@@ -473,6 +529,9 @@ export default function EmployeeListPage(): React.ReactElement {
               setToast({ message: 'Schedule added successfully!', type: 'success' });
             }
           }}
+          onError={(message: string) => {
+            setToast({ message, type: 'error' });
+          }}
         />
       )}
 
@@ -517,6 +576,44 @@ export default function EmployeeListPage(): React.ReactElement {
               setUpdateScheduleOpen(false);
               setToast({ message: 'Schedule updated successfully!', type: 'success' });
             }
+          }}
+          onError={(message: string) => {
+            setToast({ message, type: 'error' });
+          }}
+        />
+      )}
+
+      {updateDayScheduleOpen && scheduleEmployeeData && employeeSchedule.length > 0 && selectedDate && (
+        <UpdateDayScheduleModal
+          employeeId={String((scheduleEmployeeData.employeeIdentifier as EmployeeResponseModel['employeeIdentifier'] & Record<string, unknown>)?.employeeId)}
+          isTechnician={String((scheduleEmployeeData.employeeRole as unknown as Record<string, string>)?.employeeRoleType || "").toUpperCase() === 'TECHNICIAN'}
+          selectedDate={selectedDate}
+          currentSchedule={(() => {
+            // Use selectedDateSchedule if available, otherwise fall back to weekly template
+            if (selectedDateSchedule) return selectedDateSchedule;
+            const dayOfWeek = selectedDate.toLocaleDateString('en-US', { weekday: 'long' }).toUpperCase();
+            return employeeSchedule.find(s => s.dayOfWeek.toUpperCase() === dayOfWeek) || null;
+          })()}
+          onClose={() => setUpdateDayScheduleOpen(false)}
+          onUpdated={async () => {
+            // After PATCH succeeds, refresh the date-specific schedule
+            const employeeId = String((scheduleEmployeeData.employeeIdentifier as EmployeeResponseModel['employeeIdentifier'] & Record<string, unknown>)?.employeeId);
+            if (employeeId && selectedDate) {
+              try {
+                const formattedDate = selectedDate.toISOString().split('T')[0];
+                const dateSchedule = await getEmployeeScheduleForDate(employeeId, formattedDate);
+                if (dateSchedule && dateSchedule.length > 0) {
+                  setSelectedDateSchedule(dateSchedule[0]);
+                }
+              } catch (error) {
+                console.error('Error refreshing date schedule:', error);
+              }
+              setUpdateDayScheduleOpen(false);
+              setToast({ message: `Schedule updated for ${selectedDate.toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' })}!`, type: 'success' });
+            }
+          }}
+          onError={(message: string) => {
+            setToast({ message, type: 'error' });
           }}
         />
       )}

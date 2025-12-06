@@ -6,6 +6,8 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.time.LocalDate;
+
 
 @Entity
 @Table(name = "schedules")
@@ -29,5 +31,8 @@ public class Schedule {
     @Embedded
     @AttributeOverride(name = "timeslot", column = @Column(name = "time_slot"))
     private TimeSlot timeSlot;
+
+    @Column(name = "specific_date")
+    private LocalDate specificDate;
 
 }

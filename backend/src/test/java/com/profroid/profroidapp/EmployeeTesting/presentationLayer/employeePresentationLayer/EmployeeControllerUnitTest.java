@@ -6,6 +6,7 @@ import com.profroid.profroidapp.employeesubdomain.presentationLayer.employeePres
 import com.profroid.profroidapp.employeesubdomain.presentationLayer.employeePresentationLayer.EmployeeRequestModel;
 import com.profroid.profroidapp.employeesubdomain.presentationLayer.employeePresentationLayer.EmployeeResponseModel;
 import com.profroid.profroidapp.utils.exceptions.InvalidIdentifierException;
+import com.profroid.profroidapp.utils.exceptions.InvalidOperationException;
 import com.profroid.profroidapp.utils.exceptions.ResourceNotFoundException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -336,6 +337,88 @@ public class EmployeeControllerUnitTest {
         assertNotNull(response.getBody());
         assertEquals(EmployeeRoleType.ADMIN, response.getBody().getEmployeeRole().getEmployeeRoleType());
         verify(employeeService, times(1)).updateEmployee(eq(VALID_EMPLOYEE_ID), any(EmployeeRequestModel.class));
+    }
+
+    // ===== DEACTIVATE EMPLOYEE TESTS =====
+
+    // [Employee-Service][Unit Test][Positive] Deactivate employee with valid ID -> returns deactivated employee
+    @Test
+    void whenDeactivateEmployee_withValidId_thenReturnDeactivatedEmployee() {
+        // Arrange
+        EmployeeResponseModel deactivatedResponse = EmployeeResponseModel.builder()
+                .employeeIdentifier(new EmployeeIdentifier(VALID_EMPLOYEE_ID))
+                .firstName("John")
+                .lastName("Doe")
+                .userId("johndoe")
+                .phoneNumbers(validEmployeeRequest.getPhoneNumbers())
+                .employeeAddress(validEmployeeRequest.getEmployeeAddress())
+                .employeeRole(validEmployeeRequest.getEmployeeRole())
+                .isActive(false)
+                .build();
+
+        when(employeeService.deactivateEmployee(VALID_EMPLOYEE_ID)).thenReturn(deactivatedResponse);
+
+        // Act
+        ResponseEntity<EmployeeResponseModel> response = employeeController.deactivateEmployee(VALID_EMPLOYEE_ID);
+
+        // Assert
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        assertNotNull(response.getBody());
+        assertFalse(response.getBody().getIsActive());
+        verify(employeeService, times(1)).deactivateEmployee(VALID_EMPLOYEE_ID);
+    }
+
+    // [Employee-Service][Unit Test][Negative] Deactivate employee with invalid ID -> throws InvalidIdentifierException
+    @Test
+    void whenDeactivateEmployee_withInvalidId_thenThrowInvalidIdentifierException() {
+        // Arrange
+        when(employeeService.deactivateEmployee(INVALID_EMPLOYEE_ID))
+                .thenThrow(new InvalidIdentifierException("Employee id=" + INVALID_EMPLOYEE_ID + " is invalid"));
+
+        // Act & Assert
+        assertThrows(InvalidIdentifierException.class, () -> employeeController.deactivateEmployee(INVALID_EMPLOYEE_ID));
+        verify(employeeService, times(1)).deactivateEmployee(INVALID_EMPLOYEE_ID);
+    }
+
+    // ===== REACTIVATE EMPLOYEE TESTS =====
+
+    // [Employee-Service][Unit Test][Positive] Reactivate employee with valid ID -> returns active employee
+    @Test
+    void whenReactivateEmployee_withValidId_thenReturnReactivatedEmployee() {
+        // Arrange
+        EmployeeResponseModel reactivatedResponse = EmployeeResponseModel.builder()
+                .employeeIdentifier(new EmployeeIdentifier(VALID_EMPLOYEE_ID))
+                .firstName("John")
+                .lastName("Doe")
+                .userId("johndoe")
+                .phoneNumbers(validEmployeeRequest.getPhoneNumbers())
+                .employeeAddress(validEmployeeRequest.getEmployeeAddress())
+                .employeeRole(validEmployeeRequest.getEmployeeRole())
+                .isActive(true)
+                .build();
+
+        when(employeeService.reactivateEmployee(VALID_EMPLOYEE_ID)).thenReturn(reactivatedResponse);
+
+        // Act
+        ResponseEntity<EmployeeResponseModel> response = employeeController.reactivateEmployee(VALID_EMPLOYEE_ID);
+
+        // Assert
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        assertNotNull(response.getBody());
+        assertTrue(response.getBody().getIsActive());
+        verify(employeeService, times(1)).reactivateEmployee(VALID_EMPLOYEE_ID);
+    }
+
+    // [Employee-Service][Unit Test][Negative] Reactivate employee that is already active -> throws InvalidOperationException
+    @Test
+    void whenReactivateEmployee_alreadyActive_thenThrowInvalidOperationException() {
+        // Arrange
+        when(employeeService.reactivateEmployee(VALID_EMPLOYEE_ID))
+                .thenThrow(new InvalidOperationException("Employee " + VALID_EMPLOYEE_ID + " is already active."));
+
+        // Act & Assert
+        assertThrows(InvalidOperationException.class, () -> employeeController.reactivateEmployee(VALID_EMPLOYEE_ID));
+        verify(employeeService, times(1)).reactivateEmployee(VALID_EMPLOYEE_ID);
     }
 }
 

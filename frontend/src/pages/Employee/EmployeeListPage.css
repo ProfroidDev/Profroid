@@ -85,15 +85,19 @@
   border-bottom: none;
 }
 
+.employees-table-light tr.row-deactivated td {
+  background: #ffcccc;
+}
+
 
 /* ===== Buttons ===== */
 .btn-view-light {
   background: linear-gradient(90deg, #7a0901 60%, #a32c1a 100%);
   color: #fff;
   border: none;
-  padding: 9px 22px;
-  border-radius: 10px;
-  font-size: 1rem;
+  padding: 8px 16px;
+  border-radius: 8px;
+  font-size: 0.95rem;
   font-weight: 600;
   cursor: pointer;
   box-shadow: 0 2px 8px rgba(122,9,1,0.08);

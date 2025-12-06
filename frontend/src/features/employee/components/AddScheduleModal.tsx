@@ -9,6 +9,7 @@ type Props = {
   isTechnician: boolean;
   onClose: () => void;
   onAdded: () => void; // refresh callback
+  onError?: (message: string) => void; // Optional error callback for toast
 };
 
 type NonTechSlot = { start: string; end: string };
@@ -51,7 +52,7 @@ function toMinutes(slot: TimeSlotType): number {
   }
 }
 
-export default function AddScheduleModal({ employeeId, isTechnician, onClose, onAdded }: Props) {
+export default function AddScheduleModal({ employeeId, isTechnician, onClose, onAdded, onError }: Props) {
   const [submitting, setSubmitting] = useState(false);
   
   // Non-tech: one slot per day with start/end times
@@ -119,7 +120,9 @@ export default function AddScheduleModal({ employeeId, isTechnician, onClose, on
   async function submit() {
     const err = validate();
     if (err) {
-      alert(err);
+      if (onError) {
+        onError(err);
+      }
       return;
     }
 
@@ -162,7 +165,9 @@ export default function AddScheduleModal({ employeeId, isTechnician, onClose, on
         const resp = (e as { response?: { data?: { message?: string } } }).response;
         message = resp?.data?.message || message;
       }
-      alert(message);
+      if (onError) {
+        onError(message);
+      }
     } finally {
       setSubmitting(false);
     }

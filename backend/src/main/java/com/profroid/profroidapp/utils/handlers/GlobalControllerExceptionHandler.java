@@ -66,9 +66,9 @@ public class GlobalControllerExceptionHandler{
     }
 
 
-    @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
-    @ExceptionHandler(Exception.class)
-    public String handleGeneralException(Exception ex) {
-        return "An unexpected error occurred. Please try again or contact support.";
-    }
+//    @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
+//    @ExceptionHandler(Exception.class)
+//    public String handleGeneralException(Exception ex) {
+//        return "An unexpected error occurred. Please try again or contact support.";
+//    }
 }
