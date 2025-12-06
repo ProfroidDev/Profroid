@@ -3,6 +3,7 @@ package com.profroid.profroidapp.EmployeeTesting.businessLayer.employeeScheduleB
 import com.profroid.profroidapp.employeesubdomain.businessLayer.employeeScheduleBusinessLayer.ScheduleServiceImpl;
 import com.profroid.profroidapp.employeesubdomain.dataAccessLayer.employeeDataAccessLayer.*;
 import com.profroid.profroidapp.employeesubdomain.dataAccessLayer.employeeScheduleDataAccessLayer.*;
+import com.profroid.profroidapp.appointmentsubdomain.dataAccessLayer.AppointmentRepository;
 import com.profroid.profroidapp.employeesubdomain.mappingLayer.employeeScheduleMappers.EmployeeScheduleRequestMapper;
 import com.profroid.profroidapp.employeesubdomain.mappingLayer.employeeScheduleMappers.EmployeeScheduleResponseMapper;
 import com.profroid.profroidapp.employeesubdomain.presentationLayer.employeeSchedulePresentationLayer.EmployeeScheduleRequestModel;
@@ -11,17 +12,27 @@ import com.profroid.profroidapp.utils.exceptions.InvalidIdentifierException;
 import com.profroid.profroidapp.utils.exceptions.MissingDataException;
 import com.profroid.profroidapp.utils.exceptions.ResourceAlreadyExistsException;
 import com.profroid.profroidapp.utils.exceptions.ResourceNotFoundException;
+import com.profroid.profroidapp.utils.exceptions.InvalidOperationException;
+import com.profroid.profroidapp.appointmentsubdomain.dataAccessLayer.Appointment;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.mockito.quality.Strictness;
+import org.mockito.junit.jupiter.MockitoSettings;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.lang.reflect.Method;
+import java.lang.reflect.InvocationTargetException;
+import java.util.HashSet;
+import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
@@ -30,6 +41,7 @@ import static org.mockito.Mockito.*;
 import static org.mockito.Mockito.verify;
 
 @ExtendWith(MockitoExtension.class)
+@MockitoSettings(strictness = Strictness.LENIENT)
 public class EmployeeScheduleServiceUnitTest {
 
     private final String VALID_EMPLOYEE_ID = "00000000-0000-0000-0000-000000000000";
@@ -41,6 +53,7 @@ public class EmployeeScheduleServiceUnitTest {
     @Mock private EmployeeRepository employeeRepository;
     @Mock private EmployeeScheduleResponseMapper responseMapper;
     @Mock private EmployeeScheduleRequestMapper requestMapper;
+        @Mock private AppointmentRepository appointmentRepository;
 
     @InjectMocks
     private ScheduleServiceImpl scheduleService;
@@ -61,6 +74,10 @@ public class EmployeeScheduleServiceUnitTest {
         EmployeeRole supportRole = new EmployeeRole();
         supportRole.setEmployeeRoleType(EmployeeRoleType.SUPPORT);
         nonTechnician.setEmployeeRole(supportRole);
+
+                // default: no appointments
+                when(appointmentRepository.findScheduledAppointmentsByTechnicianAndSchedules(any(), anyList())).thenReturn(Collections.emptyList());
+                when(appointmentRepository.findAllByTechnicianAndSchedule(any(), any())).thenReturn(Collections.emptyList());
     }
 
     // ===== getEmployeeSchedule =====
@@ -467,6 +484,50 @@ public class EmployeeScheduleServiceUnitTest {
                 () -> scheduleService.updateEmployeeSchedule(VALID_EMPLOYEE_ID, reqs));
     }
 
+    @Test
+    void whenUpdateSchedule_withExistingAppointmentRemovingSlot_thenThrowInvalidOperation() {
+        when(employeeRepository.findEmployeeByEmployeeIdentifier_EmployeeId(VALID_EMPLOYEE_ID))
+                .thenReturn(technician);
+
+        Schedule existing = new Schedule();
+        DayOfWeek d = new DayOfWeek(); d.setDayOfWeek(DayOfWeekType.MONDAY); existing.setDayOfWeek(d);
+        TimeSlot ts = new TimeSlot(); ts.setTimeslot(TimeSlotType.NINE_AM); existing.setTimeSlot(ts);
+        when(scheduleRepository.findAllByEmployee_EmployeeIdentifier_EmployeeId(VALID_EMPLOYEE_ID))
+                .thenReturn(Collections.singletonList(existing));
+
+        Appointment appt = new Appointment();
+        appt.setAppointmentDate(LocalDateTime.parse("2025-12-08T09:00:00"));
+        Schedule apptSchedule = new Schedule();
+        DayOfWeek ad = new DayOfWeek(); ad.setDayOfWeek(DayOfWeekType.MONDAY); apptSchedule.setDayOfWeek(ad);
+        TimeSlot ats = new TimeSlot(); ats.setTimeslot(TimeSlotType.NINE_AM); apptSchedule.setTimeSlot(ats);
+        appt.setSchedule(apptSchedule);
+
+        when(appointmentRepository.findScheduledAppointmentsByTechnicianAndSchedules(eq(technician), anyList()))
+                .thenReturn(Collections.singletonList(appt));
+
+        List<EmployeeScheduleRequestModel> reqs = minimalFiveDaysTechRequests();
+        // remove Monday 9AM to trigger conflict
+        reqs.set(0, requestForDay(DayOfWeekType.MONDAY, TimeSlotType.ELEVEN_AM));
+
+        assertThrows(InvalidOperationException.class,
+                () -> scheduleService.updateEmployeeSchedule(VALID_EMPLOYEE_ID, reqs));
+    }
+
+    @Test
+    void whenUpdateSchedule_missingDays_thenThrowMissingData() {
+        when(employeeRepository.findEmployeeByEmployeeIdentifier_EmployeeId(VALID_EMPLOYEE_ID))
+                .thenReturn(technician);
+        when(scheduleRepository.findAllByEmployee_EmployeeIdentifier_EmployeeId(VALID_EMPLOYEE_ID))
+                .thenReturn(Collections.singletonList(new Schedule()));
+
+        List<EmployeeScheduleRequestModel> reqs = Arrays.asList(
+                requestForDay(DayOfWeekType.MONDAY, TimeSlotType.NINE_AM)
+        );
+
+        assertThrows(MissingDataException.class,
+                () -> scheduleService.updateEmployeeSchedule(VALID_EMPLOYEE_ID, reqs));
+    }
+
         // Positive: update - non-technician valid 5 days (9-5) executes weekly hours path and saves
         @Test
         void whenUpdateSchedule_nonTechnicianValid_thenDeleteAndSave() {
@@ -520,4 +581,292 @@ public class EmployeeScheduleServiceUnitTest {
         list.add(requestForDay(DayOfWeekType.FRIDAY, TimeSlotType.NINE_AM, TimeSlotType.ELEVEN_AM));
         return list;
     }
+
+        // ===== date-specific GET =====
+        @Test
+        void whenGetScheduleForDate_withOverride_thenReturnDateSpecific() {
+                when(employeeRepository.findEmployeeByEmployeeIdentifier_EmployeeId(VALID_EMPLOYEE_ID))
+                        .thenReturn(technician);
+
+                Schedule override = new Schedule();
+                DayOfWeek d = new DayOfWeek(); d.setDayOfWeek(DayOfWeekType.TUESDAY); override.setDayOfWeek(d);
+                TimeSlot ts = new TimeSlot(); ts.setTimeslot(TimeSlotType.NINE_AM); override.setTimeSlot(ts);
+                override.setSpecificDate(LocalDate.parse("2025-12-09"));
+
+                when(scheduleRepository.findAllByEmployee_EmployeeIdentifier_EmployeeIdAndSpecificDate(VALID_EMPLOYEE_ID, LocalDate.parse("2025-12-09")))
+                        .thenReturn(Collections.singletonList(override));
+
+                List<EmployeeScheduleResponseModel> res = scheduleService.getEmployeeScheduleForDate(VALID_EMPLOYEE_ID, "2025-12-09");
+                assertEquals(1, res.size());
+                assertEquals(DayOfWeekType.TUESDAY, res.get(0).getDayOfWeek());
+                assertEquals(1, res.get(0).getTimeSlots().size());
+                assertEquals("9:00 AM", res.get(0).getTimeSlots().get(0));
+        }
+
+        @Test
+        void whenGetScheduleForDate_withoutOverride_thenFallbackWeekly() {
+                when(employeeRepository.findEmployeeByEmployeeIdentifier_EmployeeId(VALID_EMPLOYEE_ID))
+                        .thenReturn(technician);
+
+                when(scheduleRepository.findAllByEmployee_EmployeeIdentifier_EmployeeIdAndSpecificDate(eq(VALID_EMPLOYEE_ID), any(LocalDate.class)))
+                        .thenReturn(Collections.emptyList());
+
+                Schedule weekly = new Schedule();
+                DayOfWeek d = new DayOfWeek(); d.setDayOfWeek(DayOfWeekType.MONDAY); weekly.setDayOfWeek(d);
+                TimeSlot ts = new TimeSlot(); ts.setTimeslot(TimeSlotType.ELEVEN_AM); weekly.setTimeSlot(ts);
+                weekly.setSpecificDate(null);
+
+                when(scheduleRepository.findAllByEmployee_EmployeeIdentifier_EmployeeId(VALID_EMPLOYEE_ID))
+                        .thenReturn(Collections.singletonList(weekly));
+
+                List<EmployeeScheduleResponseModel> res = scheduleService.getEmployeeScheduleForDate(VALID_EMPLOYEE_ID, "2025-12-08");
+                assertEquals(1, res.size());
+                assertEquals(DayOfWeekType.MONDAY, res.get(0).getDayOfWeek());
+                assertEquals("11:00 AM", res.get(0).getTimeSlots().get(0));
+        }
+
+        @Test
+        void whenGetScheduleForDate_withInvalidDate_thenThrowInvalidOperation() {
+                when(employeeRepository.findEmployeeByEmployeeIdentifier_EmployeeId(VALID_EMPLOYEE_ID))
+                        .thenReturn(technician);
+
+                assertThrows(InvalidOperationException.class,
+                        () -> scheduleService.getEmployeeScheduleForDate(VALID_EMPLOYEE_ID, "2025/12/08"));
+        }
+
+        @Test
+        void whenGetScheduleForDate_withoutWeeklyOrOverride_thenReturnEmpty() {
+                when(employeeRepository.findEmployeeByEmployeeIdentifier_EmployeeId(VALID_EMPLOYEE_ID))
+                        .thenReturn(technician);
+
+                when(scheduleRepository.findAllByEmployee_EmployeeIdentifier_EmployeeIdAndSpecificDate(eq(VALID_EMPLOYEE_ID), any(LocalDate.class)))
+                        .thenReturn(Collections.emptyList());
+                when(scheduleRepository.findAllByEmployee_EmployeeIdentifier_EmployeeId(VALID_EMPLOYEE_ID))
+                        .thenReturn(Collections.emptyList());
+
+                List<EmployeeScheduleResponseModel> res = scheduleService.getEmployeeScheduleForDate(VALID_EMPLOYEE_ID, "2025-12-08");
+                assertTrue(res.isEmpty());
+        }
+
+        // ===== PATCH date-specific =====
+        @Test
+        void whenPatchDateSchedule_removingAppointmentSlot_thenThrowInvalidOperation() {
+                when(employeeRepository.findEmployeeByEmployeeIdentifier_EmployeeId(VALID_EMPLOYEE_ID))
+                        .thenReturn(technician);
+
+                Schedule weekly = new Schedule();
+                DayOfWeek d = new DayOfWeek(); d.setDayOfWeek(DayOfWeekType.MONDAY); weekly.setDayOfWeek(d);
+                TimeSlot ts = new TimeSlot(); ts.setTimeslot(TimeSlotType.NINE_AM); weekly.setTimeSlot(ts);
+                when(scheduleRepository.findAllByEmployee_EmployeeIdentifier_EmployeeId(VALID_EMPLOYEE_ID))
+                        .thenReturn(Collections.singletonList(weekly));
+
+                Appointment appt = new Appointment();
+                appt.setAppointmentDate(LocalDateTime.parse("2025-12-08T09:00:00"));
+                Schedule apptSchedule = new Schedule();
+                DayOfWeek ad = new DayOfWeek(); ad.setDayOfWeek(DayOfWeekType.MONDAY); apptSchedule.setDayOfWeek(ad);
+                TimeSlot ats = new TimeSlot(); ats.setTimeslot(TimeSlotType.NINE_AM); apptSchedule.setTimeSlot(ats);
+                appt.setSchedule(apptSchedule);
+
+                when(appointmentRepository.findScheduledAppointmentsByTechnicianAndSchedules(eq(technician), anyList()))
+                        .thenReturn(Collections.singletonList(appt));
+
+                EmployeeScheduleRequestModel req = EmployeeScheduleRequestModel.builder()
+                        .dayOfWeek(DayOfWeekType.MONDAY)
+                        .timeSlots(Arrays.asList(TimeSlotType.ELEVEN_AM, TimeSlotType.ONE_PM))
+                        .build();
+
+                assertThrows(InvalidOperationException.class,
+                        () -> scheduleService.patchDateSchedule(VALID_EMPLOYEE_ID, "2025-12-08", req));
+        }
+
+        @Test
+        void whenPatchDateSchedule_valid_thenPersistDateSpecific() {
+                when(employeeRepository.findEmployeeByEmployeeIdentifier_EmployeeId(VALID_EMPLOYEE_ID))
+                        .thenReturn(technician);
+
+                Schedule weekly = new Schedule();
+                DayOfWeek d = new DayOfWeek(); d.setDayOfWeek(DayOfWeekType.MONDAY); weekly.setDayOfWeek(d);
+                TimeSlot ts = new TimeSlot(); ts.setTimeslot(TimeSlotType.NINE_AM); weekly.setTimeSlot(ts);
+                when(scheduleRepository.findAllByEmployee_EmployeeIdentifier_EmployeeId(VALID_EMPLOYEE_ID))
+                        .thenReturn(Collections.singletonList(weekly));
+
+                when(appointmentRepository.findScheduledAppointmentsByTechnicianAndSchedules(eq(technician), anyList()))
+                        .thenReturn(Collections.emptyList());
+
+                EmployeeScheduleRequestModel req = EmployeeScheduleRequestModel.builder()
+                        .dayOfWeek(DayOfWeekType.MONDAY)
+                        .timeSlots(Arrays.asList(TimeSlotType.NINE_AM, TimeSlotType.THREE_PM))
+                        .build();
+
+                scheduleService.patchDateSchedule(VALID_EMPLOYEE_ID, "2025-12-08", req);
+
+                verify(scheduleRepository).saveAll(any(List.class));
+        }
+
+        @Test
+        void whenPatchDateSchedule_nonTechnicianNotTwoSlots_thenThrowMissingData() {
+                when(employeeRepository.findEmployeeByEmployeeIdentifier_EmployeeId(VALID_EMPLOYEE_ID))
+                        .thenReturn(nonTechnician);
+
+                Schedule weekly = new Schedule();
+                DayOfWeek d = new DayOfWeek(); d.setDayOfWeek(DayOfWeekType.MONDAY); weekly.setDayOfWeek(d);
+                TimeSlot ts = new TimeSlot(); ts.setTimeslot(TimeSlotType.NINE_AM); weekly.setTimeSlot(ts);
+                when(scheduleRepository.findAllByEmployee_EmployeeIdentifier_EmployeeId(VALID_EMPLOYEE_ID))
+                        .thenReturn(Collections.singletonList(weekly));
+
+                EmployeeScheduleRequestModel req = EmployeeScheduleRequestModel.builder()
+                        .dayOfWeek(DayOfWeekType.MONDAY)
+                        .timeSlots(Arrays.asList(TimeSlotType.NINE_AM))
+                        .build();
+
+                assertThrows(MissingDataException.class,
+                        () -> scheduleService.patchDateSchedule(VALID_EMPLOYEE_ID, "2025-12-08", req));
+        }
+
+        @Test
+        void whenPatchDateSchedule_nonTechnicianNotStartingAtNine_thenThrowMissingData() {
+                when(employeeRepository.findEmployeeByEmployeeIdentifier_EmployeeId(VALID_EMPLOYEE_ID))
+                        .thenReturn(nonTechnician);
+
+                Schedule weekly = new Schedule();
+                DayOfWeek d = new DayOfWeek(); d.setDayOfWeek(DayOfWeekType.MONDAY); weekly.setDayOfWeek(d);
+                TimeSlot ts = new TimeSlot(); ts.setTimeslot(TimeSlotType.NINE_AM); weekly.setTimeSlot(ts);
+                when(scheduleRepository.findAllByEmployee_EmployeeIdentifier_EmployeeId(VALID_EMPLOYEE_ID))
+                        .thenReturn(Collections.singletonList(weekly));
+
+                EmployeeScheduleRequestModel req = EmployeeScheduleRequestModel.builder()
+                        .dayOfWeek(DayOfWeekType.MONDAY)
+                        .timeSlots(Arrays.asList(TimeSlotType.ELEVEN_AM, TimeSlotType.FIVE_PM))
+                        .build();
+
+                assertThrows(MissingDataException.class,
+                        () -> scheduleService.patchDateSchedule(VALID_EMPLOYEE_ID, "2025-12-08", req));
+        }
+
+        @Test
+        void whenPatchDateSchedule_technicianSlotsTooClose_thenThrowMissingData() {
+                when(employeeRepository.findEmployeeByEmployeeIdentifier_EmployeeId(VALID_EMPLOYEE_ID))
+                        .thenReturn(technician);
+
+                Schedule weekly = new Schedule();
+                DayOfWeek d = new DayOfWeek(); d.setDayOfWeek(DayOfWeekType.MONDAY); weekly.setDayOfWeek(d);
+                TimeSlot ts = new TimeSlot(); ts.setTimeslot(TimeSlotType.NINE_AM); weekly.setTimeSlot(ts);
+                when(scheduleRepository.findAllByEmployee_EmployeeIdentifier_EmployeeId(VALID_EMPLOYEE_ID))
+                        .thenReturn(Collections.singletonList(weekly));
+
+                EmployeeScheduleRequestModel req = EmployeeScheduleRequestModel.builder()
+                        .dayOfWeek(DayOfWeekType.MONDAY)
+                        .timeSlots(Arrays.asList(TimeSlotType.NINE_AM, TimeSlotType.NINE_AM))
+                        .build();
+
+                assertThrows(MissingDataException.class,
+                        () -> scheduleService.patchDateSchedule(VALID_EMPLOYEE_ID, "2025-12-08", req));
+        }
+
+        @Test
+        void whenPatchDateSchedule_technicianTooManySlots_thenThrowMissingData() {
+                when(employeeRepository.findEmployeeByEmployeeIdentifier_EmployeeId(VALID_EMPLOYEE_ID))
+                        .thenReturn(technician);
+
+                Schedule weekly = new Schedule();
+                DayOfWeek d = new DayOfWeek(); d.setDayOfWeek(DayOfWeekType.MONDAY); weekly.setDayOfWeek(d);
+                TimeSlot ts = new TimeSlot(); ts.setTimeslot(TimeSlotType.NINE_AM); weekly.setTimeSlot(ts);
+                when(scheduleRepository.findAllByEmployee_EmployeeIdentifier_EmployeeId(VALID_EMPLOYEE_ID))
+                        .thenReturn(Collections.singletonList(weekly));
+
+                EmployeeScheduleRequestModel req = EmployeeScheduleRequestModel.builder()
+                        .dayOfWeek(DayOfWeekType.MONDAY)
+                        .timeSlots(Arrays.asList(TimeSlotType.NINE_AM, TimeSlotType.ELEVEN_AM, TimeSlotType.ONE_PM, TimeSlotType.THREE_PM, TimeSlotType.FIVE_PM))
+                        .build();
+
+                assertThrows(MissingDataException.class,
+                        () -> scheduleService.patchDateSchedule(VALID_EMPLOYEE_ID, "2025-12-08", req));
+        }
+
+        @Test
+        void whenPatchDateSchedule_withDateMismatch_thenThrowInvalidOperation() {
+                when(employeeRepository.findEmployeeByEmployeeIdentifier_EmployeeId(VALID_EMPLOYEE_ID))
+                        .thenReturn(technician);
+                when(scheduleRepository.findAllByEmployee_EmployeeIdentifier_EmployeeId(VALID_EMPLOYEE_ID))
+                        .thenReturn(Collections.singletonList(new Schedule()));
+
+                EmployeeScheduleRequestModel req = EmployeeScheduleRequestModel.builder()
+                        .dayOfWeek(DayOfWeekType.TUESDAY)
+                        .timeSlots(Arrays.asList(TimeSlotType.NINE_AM, TimeSlotType.ELEVEN_AM))
+                        .build();
+
+                assertThrows(InvalidOperationException.class,
+                        () -> scheduleService.patchDateSchedule(VALID_EMPLOYEE_ID, "2025-12-08", req));
+        }
+
+        @Test
+        void whenPatchDateSchedule_withBadDateFormat_thenThrowInvalidOperation() {
+                when(employeeRepository.findEmployeeByEmployeeIdentifier_EmployeeId(VALID_EMPLOYEE_ID))
+                        .thenReturn(technician);
+
+                EmployeeScheduleRequestModel req = EmployeeScheduleRequestModel.builder()
+                        .dayOfWeek(DayOfWeekType.MONDAY)
+                        .timeSlots(Arrays.asList(TimeSlotType.NINE_AM, TimeSlotType.ELEVEN_AM))
+                        .build();
+
+                assertThrows(InvalidOperationException.class,
+                        () -> scheduleService.patchDateSchedule(VALID_EMPLOYEE_ID, "12-08-2025", req));
+        }
+
+        // ===== helper coverage =====
+        @Test
+        void whenGetTimeSlotFromAppointment_withoutSchedule_usesHourMapping() throws Exception {
+                Appointment appointment = new Appointment();
+                appointment.setAppointmentDate(LocalDateTime.parse("2025-12-08T13:00:00"));
+
+                Method method = ScheduleServiceImpl.class.getDeclaredMethod("getTimeSlotFromAppointment", Appointment.class);
+                method.setAccessible(true);
+
+                TimeSlotType slot = (TimeSlotType) method.invoke(scheduleService, appointment);
+                assertEquals(TimeSlotType.ONE_PM, slot);
+        }
+
+        @Test
+        void whenFindEarlierAvailableSlot_withEarlierOptions_returnsClosestEarlier() throws Exception {
+                Method method = ScheduleServiceImpl.class.getDeclaredMethod("findEarlierAvailableSlot", TimeSlotType.class, Set.class);
+                method.setAccessible(true);
+
+                Set<TimeSlotType> available = new HashSet<>(Arrays.asList(TimeSlotType.NINE_AM, TimeSlotType.ELEVEN_AM, TimeSlotType.THREE_PM));
+
+                TimeSlotType result = (TimeSlotType) method.invoke(scheduleService, TimeSlotType.THREE_PM, available);
+                assertEquals(TimeSlotType.ELEVEN_AM, result);
+        }
+
+        @Test
+        void whenFindEarlierAvailableSlot_withoutEarlierOption_returnsNull() throws Exception {
+                Method method = ScheduleServiceImpl.class.getDeclaredMethod("findEarlierAvailableSlot", TimeSlotType.class, Set.class);
+                method.setAccessible(true);
+
+                Set<TimeSlotType> available = new HashSet<>(Collections.singletonList(TimeSlotType.FIVE_PM));
+
+                TimeSlotType result = (TimeSlotType) method.invoke(scheduleService, TimeSlotType.FIVE_PM, available);
+                assertNull(result);
+        }
+
+        @Test
+        void whenAdjustAppointmentTime_setsNewHour() throws Exception {
+                Method method = ScheduleServiceImpl.class.getDeclaredMethod("adjustAppointmentTime", LocalDateTime.class, TimeSlotType.class);
+                method.setAccessible(true);
+
+                LocalDateTime original = LocalDateTime.parse("2025-12-08T09:30:00");
+                LocalDateTime adjusted = (LocalDateTime) method.invoke(scheduleService, original, TimeSlotType.THREE_PM);
+
+                assertEquals(15, adjusted.getHour());
+                assertEquals(0, adjusted.getMinute());
+        }
+
+        @Test
+        void whenGetDayOfWeekFromDate_weekend_thenThrowInvalidOperation() throws Exception {
+                Method method = ScheduleServiceImpl.class.getDeclaredMethod("getDayOfWeekFromDate", LocalDateTime.class);
+                method.setAccessible(true);
+
+                InvocationTargetException ex = assertThrows(InvocationTargetException.class,
+                        () -> method.invoke(scheduleService, LocalDateTime.parse("2025-12-06T09:00:00")));
+                assertTrue(ex.getCause() instanceof InvalidOperationException);
+        }
 }

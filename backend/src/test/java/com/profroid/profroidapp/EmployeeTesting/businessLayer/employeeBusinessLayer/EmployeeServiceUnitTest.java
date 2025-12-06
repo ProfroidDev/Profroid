@@ -11,6 +11,7 @@ import com.profroid.profroidapp.employeesubdomain.mappingLayer.employeeMappers.E
 import com.profroid.profroidapp.employeesubdomain.mappingLayer.employeeMappers.EmployeeResponseMapper;
 import com.profroid.profroidapp.employeesubdomain.presentationLayer.employeePresentationLayer.EmployeeRequestModel;
 import com.profroid.profroidapp.employeesubdomain.presentationLayer.employeePresentationLayer.EmployeeResponseModel;
+import com.profroid.profroidapp.appointmentsubdomain.dataAccessLayer.AppointmentRepository;
 import com.profroid.profroidapp.utils.exceptions.InvalidIdentifierException;
 import com.profroid.profroidapp.utils.exceptions.InvalidOperationException;
 import com.profroid.profroidapp.utils.exceptions.ResourceAlreadyExistsException;
@@ -37,6 +38,7 @@ public class EmployeeServiceUnitTest {
     @Mock private EmployeeRequestMapper employeeRequestMapper;
     @Mock private EmployeeResponseMapper employeeResponseMapper;
     @Mock private ScheduleRepository scheduleRepository;
+    @Mock private AppointmentRepository appointmentRepository;
 
     @InjectMocks
     private EmployeeServiceImpl employeeService;
@@ -81,13 +83,13 @@ public class EmployeeServiceUnitTest {
     // [Employee-Service][Unit Test][Positive] Get all employees -> returns list
     @Test
     void getAllEmployees_returnsList() {
-    when(employeeRepository.findAllByIsActiveTrue()).thenReturn(Arrays.asList(existingEmployee, existingEmployee));
+    when(employeeRepository.findAll()).thenReturn(Arrays.asList(existingEmployee, existingEmployee));
     when(employeeResponseMapper.toResponseModelList(any(List.class)))
         .thenReturn(Arrays.asList(existingEmployeeResponse, existingEmployeeResponse));
 
     List<EmployeeResponseModel> result = employeeService.getAllEmployees();
     assertEquals(2, result.size());
-    verify(employeeRepository).findAllByIsActiveTrue();
+    verify(employeeRepository).findAll();
     verify(employeeResponseMapper).toResponseModelList(any(List.class));
     }
 
@@ -250,6 +252,7 @@ public class EmployeeServiceUnitTest {
     void deactivateEmployee_valid_succeeds() {
     when(employeeRepository.findEmployeeByEmployeeIdentifier_EmployeeId(VALID_EMPLOYEE_ID))
         .thenReturn(existingEmployee);
+    when(appointmentRepository.findAllByTechnician(any(Employee.class))).thenReturn(Collections.emptyList());
     
     Employee deactivated = new Employee();
     deactivated.setEmployeeIdentifier(new EmployeeIdentifier(VALID_EMPLOYEE_ID));
@@ -304,6 +307,7 @@ public class EmployeeServiceUnitTest {
     existingEmployee.setIsActive(false);
     when(employeeRepository.findEmployeeByEmployeeIdentifier_EmployeeId(VALID_EMPLOYEE_ID))
         .thenReturn(existingEmployee);
+    when(appointmentRepository.findAllByTechnician(any(Employee.class))).thenReturn(Collections.emptyList());
     
     Employee reactivated = new Employee();
     reactivated.setEmployeeIdentifier(new EmployeeIdentifier(VALID_EMPLOYEE_ID));
