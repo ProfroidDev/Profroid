@@ -584,12 +584,15 @@ public class ScheduleServiceImpl implements ScheduleService {
         }
 
         // Check for appointments on the specific date and removed time slots
-        List<Appointment> affectedAppointments = appointmentRepository.findScheduledAppointmentsByTechnicianAndSchedules(employee, daySchedules);
-        
-        // Filter appointments to only those on the specific target date
         LocalDateTime startOfDay = targetDate.withHour(0).withMinute(0).withSecond(0).withNano(0);
         LocalDateTime endOfDay = targetDate.plusDays(1).withHour(0).withMinute(0).withSecond(0).withNano(0);
-        affectedAppointments = affectedAppointments.stream()
+        
+        // Get all appointments for the technician and filter by date and scheduled status
+        List<Appointment> allTechAppointments = appointmentRepository.findAllByTechnician(employee);
+        
+        List<Appointment> affectedAppointments = allTechAppointments.stream()
+            .filter(a -> a.getAppointmentStatus() != null && 
+                    a.getAppointmentStatus().getAppointmentStatusType() == AppointmentStatusType.SCHEDULED)
             .filter(a -> a.getAppointmentDate().isAfter(startOfDay) && a.getAppointmentDate().isBefore(endOfDay))
             .collect(Collectors.toList());
 

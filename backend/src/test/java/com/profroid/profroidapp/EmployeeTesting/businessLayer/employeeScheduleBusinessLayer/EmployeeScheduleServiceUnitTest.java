@@ -667,7 +667,7 @@ public class EmployeeScheduleServiceUnitTest {
                 TimeSlot ats = new TimeSlot(); ats.setTimeslot(TimeSlotType.NINE_AM); apptSchedule.setTimeSlot(ats);
                 appt.setSchedule(apptSchedule);
 
-                when(appointmentRepository.findScheduledAppointmentsByTechnicianAndSchedules(eq(technician), anyList()))
+                when(appointmentRepository.findAllByTechnician(eq(technician)))
                         .thenReturn(Collections.singletonList(appt));
 
                 EmployeeScheduleRequestModel req = EmployeeScheduleRequestModel.builder()
@@ -690,7 +690,7 @@ public class EmployeeScheduleServiceUnitTest {
                 when(scheduleRepository.findAllByEmployee_EmployeeIdentifier_EmployeeId(VALID_EMPLOYEE_ID))
                         .thenReturn(Collections.singletonList(weekly));
 
-                when(appointmentRepository.findScheduledAppointmentsByTechnicianAndSchedules(eq(technician), anyList()))
+                when(appointmentRepository.findAllByTechnician(eq(technician)))
                         .thenReturn(Collections.emptyList());
 
                 EmployeeScheduleRequestModel req = EmployeeScheduleRequestModel.builder()
