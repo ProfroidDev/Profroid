@@ -112,7 +112,8 @@ export default function UpdateDayScheduleModal({
   }
 
   function removeTechSlot(idx: number) {
-    setTechSlots(prev => prev.filter((_, i) => i !== idx));
+    const newSlots = techSlots.filter((_, i) => i !== idx);
+    setTechSlots(newSlots);
   }
 
   function validate(): string | null {
@@ -152,7 +153,9 @@ export default function UpdateDayScheduleModal({
   async function submit() {
     const err = validate();
     if (err) {
-      alert(err);
+      if (onError) {
+        onError(err);
+      }
       return;
     }
 
@@ -198,6 +201,14 @@ export default function UpdateDayScheduleModal({
                      message;
           }
         }
+      }
+      
+      // Restore slots from current schedule after backend rejection
+      if (currentSchedule?.timeSlots && isTechnician) {
+        const enumSlots = currentSchedule.timeSlots
+          .map(toTimeSlotEnum)
+          .filter((s): s is TimeSlotType => s !== null);
+        setTechSlots(enumSlots);
       }
       
       if (onError) {
@@ -251,56 +262,110 @@ export default function UpdateDayScheduleModal({
               </div>
             ) : (
               <>
-                {[...techSlots]
-                  .sort((a, b) => toMinutes(a) - toMinutes(b))
-                  .map((slot, idx) => {
-                    const originalIdx = techSlots.indexOf(slot);
+                <div style={{ marginBottom: '16px' }}>
+                  {AVAILABLE_SLOTS.map(slot => {
+                    const isSelected = techSlots.includes(slot);
+                    
                     return (
-                      <div className="slot" key={`${slot}-${idx}`}>
-                        <span>{SLOT_LABELS[slot]}</span>
-                        <button 
-                          className="remove" 
-                          onClick={() => removeTechSlot(originalIdx)}
-                        >
-                          Remove
-                        </button>
-                      </div>
+                      <button
+                        key={slot}
+                        type="button"
+                        onClick={() => {
+                          if (isSelected) {
+                            // Try to remove, but will auto re-add if it has an appointment
+                            const idx = techSlots.indexOf(slot);
+                            removeTechSlot(idx);
+                          } else {
+                            addTechSlot(slot);
+                          }
+                        }}
+                        style={{
+                          display: 'inline-block',
+                          margin: '4px',
+                          padding: '10px 16px',
+                          backgroundColor: isSelected ? '#7a0901' : '#fff',
+                          color: isSelected ? '#fff' : '#7a0901',
+                          border: `2px solid ${isSelected ? '#7a0901' : '#e4e2df'}`,
+                          borderRadius: '8px',
+                          cursor: 'pointer',
+                          fontWeight: 600,
+                          fontSize: '0.95rem',
+                          transition: 'all 0.2s',
+                        }}
+                        onMouseEnter={(e) => {
+                          if (!isSelected) {
+                            e.currentTarget.style.backgroundColor = '#f8f4f2';
+                            e.currentTarget.style.borderColor = '#7a0901';
+                          }
+                        }}
+                        onMouseLeave={(e) => {
+                          if (!isSelected) {
+                            e.currentTarget.style.backgroundColor = '#fff';
+                            e.currentTarget.style.borderColor = '#e4e2df';
+                          }
+                        }}
+                      >
+                        {SLOT_LABELS[slot]}
+                      </button>
                     );
                   })}
-                
-                <div className="add-slot-section">
-                  <label>
-                    <span>Add Time Slot</span>
-                    <select 
-                      className="hour-select"
-                      onChange={(e) => {
-                        const val = e.target.value as TimeSlotType;
-                        if (val && !techSlots.includes(val)) {
-                          addTechSlot(val);
-                        }
-                        e.target.value = '';
-                      }}
-                    >
-                      <option value="">Select slot</option>
-                      {AVAILABLE_SLOTS.map(s => (
-                        <option 
-                          key={s} 
-                          value={s}
-                          disabled={techSlots.includes(s)}
-                        >
-                          {SLOT_LABELS[s]}
-                        </option>
-                      ))}
-                    </select>
-                  </label>
                 </div>
               </>
             )}
           </div>
         </div>
         <div className="footer">
-          <button className="secondary" onClick={onClose}>Cancel</button>
-          <button className="primary" onClick={submit} disabled={submitting}>
+          <button 
+            className="secondary" 
+            onClick={onClose}
+            style={{
+              background: 'linear-gradient(90deg, #d4d3d1 0%, #e4e2df 100%)',
+              color: '#333',
+              fontWeight: 600,
+              fontSize: '1rem',
+              padding: '12px 30px',
+              border: 'none',
+              borderRadius: '8px',
+              cursor: 'pointer',
+              transition: 'all 0.3s',
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.background = 'linear-gradient(90deg, #c4c3c1 0%, #d4d2cf 100%)';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.background = 'linear-gradient(90deg, #d4d3d1 0%, #e4e2df 100%)';
+            }}
+          >
+            Cancel
+          </button>
+          <button 
+            className="primary" 
+            onClick={submit} 
+            disabled={submitting}
+            style={{
+              background: submitting 
+                ? 'linear-gradient(90deg, #888 60%, #999 100%)'
+                : 'linear-gradient(90deg, #7a0901 60%, #a32c1a 100%)',
+              color: '#fff',
+              fontWeight: 600,
+              fontSize: '1rem',
+              padding: '12px 30px',
+              border: 'none',
+              borderRadius: '8px',
+              cursor: submitting ? 'not-allowed' : 'pointer',
+              transition: 'all 0.3s',
+            }}
+            onMouseEnter={(e) => {
+              if (!submitting) {
+                e.currentTarget.style.background = 'linear-gradient(90deg, #5a0701 60%, #831f0f 100%)';
+              }
+            }}
+            onMouseLeave={(e) => {
+              if (!submitting) {
+                e.currentTarget.style.background = 'linear-gradient(90deg, #7a0901 60%, #a32c1a 100%)';
+              }
+            }}
+          >
             {submitting ? 'Updating...' : 'Update This Day'}
           </button>
         </div>

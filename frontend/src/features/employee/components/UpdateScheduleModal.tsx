@@ -199,7 +199,9 @@ export default function UpdateScheduleModal({ employeeId, isTechnician, existing
   async function submit() {
     const err = validate();
     if (err) {
-      alert(err);
+      if (onError) {
+        onError(err);
+      }
       return;
     }
 

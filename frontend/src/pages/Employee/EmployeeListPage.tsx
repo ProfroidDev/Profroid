@@ -416,12 +416,11 @@ export default function EmployeeListPage(): React.ReactElement {
                     })()}
                   </ul>
                 </div>
-                <div className="modal-section">
+                <div className="modal-section" style={{ display: 'flex', gap: '8px', justifyContent: 'flex-start' }}>
                   <button 
                     className="btn-view-light" 
                     onClick={() => setUpdateDayScheduleOpen(true)}
                     disabled={!selectedDate}
-                    style={{ marginRight: 8 }}
                   >
                     Update This Day
                   </button>
@@ -483,6 +482,9 @@ export default function EmployeeListPage(): React.ReactElement {
               setAddScheduleEmployeeId(null);
               setToast({ message: 'Schedule added successfully!', type: 'success' });
             }
+          }}
+          onError={(message: string) => {
+            setToast({ message, type: 'error' });
           }}
         />
       )}
