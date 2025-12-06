@@ -11,6 +11,7 @@ type Props = {
   existingSchedule: EmployeeSchedule[]; // Pre-populate from this
   onClose: () => void;
   onUpdated: () => void;
+  onError?: (message: string) => void; // Optional error callback for parent to show toast
 };
 
 type NonTechSlot = { start: string; end: string };
@@ -74,7 +75,7 @@ function toMinutes(slot: TimeSlotType): number {
   }
 }
 
-export default function UpdateScheduleModal({ employeeId, isTechnician, existingSchedule, onClose, onUpdated }: Props) {
+export default function UpdateScheduleModal({ employeeId, isTechnician, existingSchedule, onClose, onUpdated, onError }: Props) {
   const [submitting, setSubmitting] = useState(false);
   
   const [nonTechSlots, setNonTechSlots] = useState<Record<DayOfWeekType, NonTechSlot>>(() => ({
@@ -230,11 +231,36 @@ export default function UpdateScheduleModal({ employeeId, isTechnician, existing
       onClose();
     } catch (e: unknown) {
       let message = 'Failed to update schedule';
+      
+      // Log full error for debugging
+      console.error('Schedule update error:', e);
+      
       if (typeof e === 'object' && e && 'response' in e) {
-        const resp = (e as { response?: { data?: { message?: string } } }).response;
-        message = resp?.data?.message || message;
+        const resp = (e as { response?: { data?: unknown } }).response;
+        console.log('Response data:', resp?.data);
+        
+        // Backend returns plain string or JSON object
+        if (resp?.data) {
+          if (typeof resp.data === 'string') {
+            // Plain string response (from GlobalControllerExceptionHandler)
+            message = resp.data;
+          } else if (typeof resp.data === 'object') {
+            // JSON object response
+            const data = resp.data as Record<string, unknown>;
+            message = (data.message as string) || 
+                     (data.error as string) || 
+                     (data.details as string) ||
+                     message;
+          }
+        }
       }
-      alert(message);
+      
+      // Use toast callback if provided, otherwise fallback to alert
+      if (onError) {
+        onError(message);
+      } else {
+        alert(message);
+      }
     } finally {
       setSubmitting(false);
     }

@@ -14,6 +14,7 @@ import ConfirmationModal from "../../components/ConfirmationModal";
 import Toast from "../../shared/components/Toast";
 import AddScheduleModal from "../../features/employee/components/AddScheduleModal";
 import UpdateScheduleModal from "../../features/employee/components/UpdateScheduleModal";
+import UpdateDayScheduleModal from "../../features/employee/components/UpdateDayScheduleModal";
 
 import "./EmployeeListPage.css";
 
@@ -41,6 +42,9 @@ export default function EmployeeListPage(): React.ReactElement {
 
   // Update schedule modal state
   const [updateScheduleOpen, setUpdateScheduleOpen] = useState<boolean>(false);
+  
+  // Update day schedule modal state
+  const [updateDayScheduleOpen, setUpdateDayScheduleOpen] = useState<boolean>(false);
   
   // Deactivate/Reactivate state
   const [deactivateLoading, setDeactivateLoading] = useState<boolean>(false);
@@ -413,7 +417,15 @@ export default function EmployeeListPage(): React.ReactElement {
                   </ul>
                 </div>
                 <div className="modal-section">
-                  <button className="btn-view-light" onClick={() => setUpdateScheduleOpen(true)}>Update Schedule</button>
+                  <button 
+                    className="btn-view-light" 
+                    onClick={() => setUpdateDayScheduleOpen(true)}
+                    disabled={!selectedDate}
+                    style={{ marginRight: 8 }}
+                  >
+                    Update This Day
+                  </button>
+                  <button className="btn-view-light" onClick={() => setUpdateScheduleOpen(true)}>Update Full Week</button>
                 </div>
               </div>
             )}
@@ -516,6 +528,35 @@ export default function EmployeeListPage(): React.ReactElement {
               setUpdateScheduleOpen(false);
               setToast({ message: 'Schedule updated successfully!', type: 'success' });
             }
+          }}
+          onError={(message: string) => {
+            setToast({ message, type: 'error' });
+          }}
+        />
+      )}
+
+      {updateDayScheduleOpen && scheduleEmployeeData && employeeSchedule.length > 0 && selectedDate && (
+        <UpdateDayScheduleModal
+          employeeId={String((scheduleEmployeeData.employeeIdentifier as EmployeeResponseModel['employeeIdentifier'] & Record<string, unknown>)?.employeeId)}
+          isTechnician={String((scheduleEmployeeData.employeeRole as unknown as Record<string, string>)?.employeeRoleType || "").toUpperCase() === 'TECHNICIAN'}
+          selectedDate={selectedDate}
+          currentSchedule={(() => {
+            const dayOfWeek = selectedDate.toLocaleDateString('en-US', { weekday: 'long' }).toUpperCase();
+            return employeeSchedule.find(s => s.dayOfWeek.toUpperCase() === dayOfWeek) || null;
+          })()}
+          allSchedules={employeeSchedule}
+          onClose={() => setUpdateDayScheduleOpen(false)}
+          onUpdated={async () => {
+            const employeeId = String((scheduleEmployeeData.employeeIdentifier as EmployeeResponseModel['employeeIdentifier'] & Record<string, unknown>)?.employeeId);
+            if (employeeId) {
+              const scheduleData = await getEmployeeSchedule(employeeId);
+              setEmployeeSchedule(scheduleData);
+              setUpdateDayScheduleOpen(false);
+              setToast({ message: `Schedule updated for ${selectedDate.toLocaleDateString('en-US', { weekday: 'long' })}!`, type: 'success' });
+            }
+          }}
+          onError={(message: string) => {
+            setToast({ message, type: 'error' });
           }}
         />
       )}
