@@ -24,5 +24,4 @@ public class CustomerRequestModel {
     String country;
     String postalCode;
     String userId;
-    Boolean isActive;
 }

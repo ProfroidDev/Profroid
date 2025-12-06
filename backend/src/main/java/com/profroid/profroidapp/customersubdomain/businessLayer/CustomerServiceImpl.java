@@ -70,6 +70,8 @@ public class CustomerServiceImpl implements CustomerService {
         CustomerIdentifier customerIdentifier = new CustomerIdentifier();
         Customer customer = customerRequestMapper.toEntity(requestModel, customerIdentifier);
 
+        customer.setIsActive(true);
+
         Customer savedCustomer = customerRepository.save(customer);
         return customerResponseMapper.toResponseModel(savedCustomer);
     }

@@ -2,6 +2,7 @@ package com.profroid.profroidapp.customersubdomain.dataAccessLayer;
 
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
+import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import java.util.List;
@@ -10,6 +11,7 @@ import java.util.List;
 @Table(name = "customers")
 @Data
 @NoArgsConstructor
+@AllArgsConstructor
 public class Customer {
 
     @Id
@@ -36,15 +38,4 @@ public class Customer {
     private String userId;
 
     private Boolean isActive;
-
-    public Customer(@NotNull String firstName, @NotNull String lastName,
-                    @NotNull List<CustomerPhoneNumber> phoneNumbersList, @NotNull CustomerAddress customerAddress, String userId, boolean isActive) {
-        this.customerIdentifier = new CustomerIdentifier();
-        this.firstName = firstName;
-        this.lastName = lastName;
-        this.phoneNumbers = phoneNumbersList;
-        this.userId = userId;
-        this.customerAddress = customerAddress;
-        this.isActive = isActive;
-    }
 }
