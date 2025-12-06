@@ -70,4 +70,10 @@ public class CustomerController {
         CustomerResponseModel updatedCustomer = customerService.updateCustomer(customerId, requestModel);
         return ResponseEntity.ok(updatedCustomer);
     }
+
+    @DeleteMapping("/{customerId}")
+    public ResponseEntity<Void> deleteCustomer(@PathVariable String customerId) {
+        customerService.deleteCustomer(customerId);
+        return ResponseEntity.noContent().build();
+    }
 }

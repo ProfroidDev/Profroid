@@ -25,7 +25,8 @@ public interface CustomerRequestMapper {
 
             // Mapping Phone Numbers if needed
             @Mapping(source = "customerRequestModel.phoneNumbers", target = "phoneNumbers"),
-            @Mapping(source = "customerRequestModel.userId", target = "userId")
+            @Mapping(source = "customerRequestModel.userId", target = "userId"),
+            @Mapping(source = "customerRequestModel.isActive", target = "isActive")
     })
     Customer toEntity(CustomerRequestModel customerRequestModel, CustomerIdentifier customerIdentifier);
 }

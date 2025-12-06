@@ -22,6 +22,7 @@ public interface CustomerResponseMapper {
             @Mapping(source = "customer.customerAddress.country", target = "country"),
             @Mapping(source = "customer.customerAddress.postalCode", target = "postalCode"),
             @Mapping(source = "customer.userId", target = "userId"),
+            @Mapping(source = "customer.isActive", target = "isActive")
     })
     CustomerResponseModel toResponseModel(Customer customer);
 

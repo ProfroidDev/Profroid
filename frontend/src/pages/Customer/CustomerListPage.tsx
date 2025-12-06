@@ -3,6 +3,8 @@ import { getCustomers } from "../../features/customer/api/getAllCustomers";
 import { getCustomer } from "../../features/customer/api/getCustomerById";
 import { createCustomer } from "../../features/customer/api/createCustomer";
 import { updateCustomer } from "../../features/customer/api/updateCustomer";
+import { deleteCustomer } from "../../features/customer/api/deleteCustomer";
+import ConfirmationModal from "../../components/ConfirmationModal";
 
 import type { CustomerRequestModel } from "../../features/customer/models/CustomerRequestModel";
 import type { PhoneType } from "../../features/customer/models/CustomerPhoneNumber";
@@ -50,6 +52,13 @@ export default function CustomerListPage(): React.ReactElement {
   const [editCountry, setEditCountry] = useState("");
   const [editPostalCode, setEditPostalCode] = useState("");
   const [editUserId, setEditUserId] = useState("");
+
+  // Delete confirmation
+  const [deleteModalOpen, setDeleteModalOpen] = useState(false);
+  const [deleteTarget, setDeleteTarget] =
+    useState<CustomerResponseModel | null>(null);
+  const [deleteLoading, setDeleteLoading] = useState(false);
+  const [deleteError, setDeleteError] = useState<string | null>(null);
 
   useEffect(() => {
     async function load() {
@@ -102,6 +111,18 @@ export default function CustomerListPage(): React.ReactElement {
   function closeDetails() {
     setModalOpen(false);
     setSelectedCustomer(null);
+  }
+
+  function openDelete(customer: CustomerResponseModel) {
+    setDeleteTarget(customer);
+    setDeleteError(null);
+    setDeleteModalOpen(true);
+  }
+
+  function closeDelete() {
+    setDeleteModalOpen(false);
+    setDeleteTarget(null);
+    setDeleteError(null);
   }
 
   async function handleCreate(e: React.FormEvent) {
@@ -180,6 +201,32 @@ export default function CustomerListPage(): React.ReactElement {
     }
   }
 
+  async function handleDeleteConfirm() {
+    if (!deleteTarget) return;
+
+    setDeleteLoading(true);
+    setDeleteError(null);
+
+    try {
+      await deleteCustomer(deleteTarget.customerId);
+      setCustomers((prev) =>
+        prev.filter((c) => c.customerId !== deleteTarget.customerId)
+      );
+
+      if (selectedCustomer?.customerId === deleteTarget.customerId) {
+        setSelectedCustomer(null);
+        setModalOpen(false);
+        setEditModalOpen(false);
+      }
+
+      closeDelete();
+    } catch {
+      setDeleteError("Failed to delete customer. Please try again.");
+    } finally {
+      setDeleteLoading(false);
+    }
+  }
+
   return (
     <div className="customers-page-light">
       <h2 className="customers-title-light">Customers</h2>
@@ -195,14 +242,16 @@ export default function CustomerListPage(): React.ReactElement {
           <table className="customers-table-light">
             <thead>
               <tr>
-                <th>Customer ID</th>
+                <th>Customer</th>
                 <th>Actions</th>
               </tr>
             </thead>
             <tbody>
               {customers.map((c) => (
                 <tr key={c.customerId}>
-                  <td>{c.customerId}</td>
+                  <td>
+                    {c.firstName} {c.lastName}
+                  </td>
                   <td>
                     <button
                       className="btn-view-light"
@@ -217,6 +266,13 @@ export default function CustomerListPage(): React.ReactElement {
                     >
                       Edit
                     </button>
+                    <button
+                      className="btn-view-light"
+                      onClick={() => openDelete(c)}
+                      style={{ marginLeft: 8 }}
+                    >
+                      Delete
+                    </button>
                   </td>
                 </tr>
               ))}
@@ -224,6 +280,25 @@ export default function CustomerListPage(): React.ReactElement {
           </table>
         )}
       </div>
+
+        <ConfirmationModal
+          isOpen={deleteModalOpen}
+          title="Delete Customer"
+          message={
+            deleteError ??
+            `Are you sure you want to delete ${
+              deleteTarget
+                ? `${deleteTarget.firstName} ${deleteTarget.lastName}`.trim()
+                : "this customer"
+            }? This action cannot be undone.`
+          }
+          confirmText="Delete"
+          cancelText="Cancel"
+          isDanger
+          isLoading={deleteLoading}
+          onConfirm={handleDeleteConfirm}
+          onCancel={closeDelete}
+        />
 
       {/* ============================
           DETAILS MODAL

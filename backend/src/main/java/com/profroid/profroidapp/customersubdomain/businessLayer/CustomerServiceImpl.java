@@ -88,6 +88,9 @@ public class CustomerServiceImpl implements CustomerService {
 
     @Override
     public void deleteCustomer(String customerId) {
+        Customer customer = customerRepository.findCustomerByCustomerIdentifier_CustomerId(customerId);
 
+        customer.setIsActive(false);
+        customerRepository.save(customer);
     }
 }

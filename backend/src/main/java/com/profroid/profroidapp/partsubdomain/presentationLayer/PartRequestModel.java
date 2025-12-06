@@ -5,5 +5,5 @@ import lombok.Data;
 @Data
 public class PartRequestModel {
     private String name;
-    private boolean available;
+    private Boolean available;
 }

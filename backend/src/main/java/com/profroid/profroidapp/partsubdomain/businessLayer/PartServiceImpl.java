@@ -56,7 +56,7 @@ public class PartServiceImpl implements PartService {
         }
 
         existingPart.setName(partRequestModel.getName());
-        existingPart.setAvailable(partRequestModel.isAvailable());
+        existingPart.setAvailable(partRequestModel.getAvailable());
 
         Part updatedPart = partRepository.save(existingPart);
 

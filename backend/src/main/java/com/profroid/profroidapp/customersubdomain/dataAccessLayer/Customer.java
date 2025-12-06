@@ -35,13 +35,16 @@ public class Customer {
 
     private String userId;
 
+    private Boolean isActive;
+
     public Customer(@NotNull String firstName, @NotNull String lastName,
-                    @NotNull List<CustomerPhoneNumber> phoneNumbersList, @NotNull CustomerAddress customerAddress, String userId) {
+                    @NotNull List<CustomerPhoneNumber> phoneNumbersList, @NotNull CustomerAddress customerAddress, String userId, boolean isActive) {
         this.customerIdentifier = new CustomerIdentifier();
         this.firstName = firstName;
         this.lastName = lastName;
         this.phoneNumbers = phoneNumbersList;
         this.userId = userId;
         this.customerAddress = customerAddress;
+        this.isActive = isActive;
     }
 }

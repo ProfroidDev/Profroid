@@ -8,5 +8,5 @@ import lombok.Data;
 public class PartResponseModel {
     private String partId;
     private String name;
-    private boolean available;
+    private Boolean available;
 }
