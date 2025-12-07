@@ -221,12 +221,17 @@ public class AppointmentValidationUtils {
         LocalTime appointmentTime = appointmentDateTime.toLocalTime();
         int appointmentHour = appointmentTime.getHour();
         
-        // Validate that appointment is at a valid time slot (technician availability: 9, 11, 13, 15, 17)
-        if (appointmentHour != 9 && appointmentHour != 11 && appointmentHour != 13 && 
-            appointmentHour != 15 && appointmentHour != 17) {
+        // Validate that appointment is at a valid time slot (technician availability: 9, 11, 13, 15)
+        if (appointmentHour != 9 && appointmentHour != 11 && appointmentHour != 13 && appointmentHour != 15) {
             throw new InvalidOperationException(
-                "Appointments can only be scheduled at 9:00 AM, 11:00 AM, 1:00 PM, 3:00 PM, or 5:00 PM. " +
+                "Appointments can only be scheduled at 9:00 AM, 11:00 AM, 1:00 PM, or 3:00 PM. " +
                 "Requested time: " + appointmentHour + ":00"
+            );
+        }
+        // Block 5 PM slot explicitly
+        if (appointmentHour == 17) {
+            throw new InvalidOperationException(
+                "Technicians cannot be scheduled for appointments at 5:00 PM. Please choose an earlier time."
             );
         }
         
