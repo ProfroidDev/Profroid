@@ -313,6 +313,14 @@ public class AppointmentServiceImpl implements AppointmentService {
             Appointment appointment = appointmentOptional.get();
             validateAppointmentEntityIntegrity(appointment);
 
+            // Block update if appointment is completed or cancelled
+            if (appointment.getAppointmentStatus() != null) {
+                AppointmentStatusType status = appointment.getAppointmentStatus().getAppointmentStatusType();
+                if (status == AppointmentStatusType.COMPLETED || status == AppointmentStatusType.CANCELLED) {
+                    throw new InvalidOperationException("Cannot update a completed or cancelled appointment.");
+                }
+            }
+
             // Permission check (same as POST)
             Customer customer;
             Employee technician = appointment.getTechnician();
@@ -366,7 +374,8 @@ public class AppointmentServiceImpl implements AppointmentService {
             validationUtils.validateServiceTypeRestrictions(job.getJobType(), effectiveRole);
             validationUtils.validateQuotationCompleted(job.getJobType(), appointmentRequest, customer, appointmentDateTime);
             validationUtils.validateDuplicateQuotation(job.getJobType(), appointmentRequest, appointmentDateTime.toLocalDate(), customer);
-            validationUtils.validateDuplicateServiceAddressAndDay(job.getJobType(), appointmentRequest, appointmentDateTime.toLocalDate());
+            // Prevent duplicate service for same address/day/technician except for the current appointment
+            validationUtils.validateDuplicateServiceAddressAndDayExcludeCurrent(job.getJobType(), appointmentRequest, appointmentDateTime.toLocalDate(), appointment.getAppointmentIdentifier().getAppointmentId());
             validationUtils.validateTimeSlotAvailability(technician, appointmentDateTime, job);
 
             // Update appointment fields (technician cannot be changed)

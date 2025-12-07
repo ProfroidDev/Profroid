@@ -478,6 +478,41 @@ public class AppointmentValidationUtils {
             );
         };
     }
+        /**
+         * Duplicate service validation for update: excludes current appointment from check
+         */
+        public void validateDuplicateServiceAddressAndDayExcludeCurrent(
+                JobType jobType,
+                AppointmentRequestModel requestModel,
+                LocalDate appointmentDate,
+                String currentAppointmentId) {
+            if (jobType == JobType.QUOTATION) {
+                return; // handled by quotation logic
+            }
+            AppointmentAddress address = requestModel.getAppointmentAddress();
+            List<AppointmentStatusType> blockingStatuses = Arrays.asList(
+                AppointmentStatusType.SCHEDULED,
+                AppointmentStatusType.COMPLETED
+            );
+            List<Appointment> existingServices = appointmentRepository.findByAddressAndDateAndStatusIn(
+                address.getStreetAddress(),
+                address.getCity(),
+                address.getProvince(),
+                address.getPostalCode(),
+                appointmentDate,
+                blockingStatuses
+            );
+            boolean serviceExists = existingServices.stream()
+                .anyMatch(a -> a.getJob() != null
+                    && a.getJob().getJobType() != JobType.QUOTATION
+                    && !a.getAppointmentIdentifier().getAppointmentId().equals(currentAppointmentId));
+            if (serviceExists) {
+                throw new InvalidOperationException(
+                    "A service appointment already exists for this address on " + appointmentDate +
+                    ". Only one service per address per day is allowed. Please choose a different date or cancel the existing service."
+                );
+            }
+        }
 
     public void validateDuplicateServiceAddressAndDay(
             JobType jobType,
