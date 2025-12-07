@@ -164,7 +164,7 @@ public class CellarServiceImpl implements CellarService {
         }
 
         // 5. Verify ownership
-        if (!foundCellar.getOwnerCustomerIdentifier().getCustomerId().equals(ownerCustomerId)) {
+        if (!foundCellar.getOwnerCustomer().getCustomerIdentifier().getCustomerId().equals(ownerCustomerId)) {
             throw new InvalidOperationException(
                     "Cellar " + cellarId + " does not belong to customer " + ownerCustomerId + "."
             );
