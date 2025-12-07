@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from "react";
-import { Loader2, CalendarClock, MapPin, ClipboardList, Users } from "lucide-react";
+import { Loader2, CalendarClock, ClipboardList, Users } from "lucide-react";
 import "./AddAppointmentModal.css";
 import { createAppointment } from "../api/createAppointment";
 import type { AppointmentRequestModel } from "../models/AppointmentRequestModel";
@@ -783,15 +783,12 @@ export default function AddAppointmentModal({
             <div className="grid two">
               <label className="field">
                 <span>Street Address</span>
-                <div className="input-with-icon">
-                  <MapPin size={16} />
-                  <input
-                    type="text"
-                    value={address.streetAddress}
-                    onChange={(e) => setAddress({ ...address, streetAddress: e.target.value })}
-                    required
-                  />
-                </div>
+                <input
+                  type="text"
+                  value={address.streetAddress}
+                  onChange={(e) => setAddress({ ...address, streetAddress: e.target.value })}
+                  required
+                />
               </label>
               <label className="field">
                 <span>City</span>
