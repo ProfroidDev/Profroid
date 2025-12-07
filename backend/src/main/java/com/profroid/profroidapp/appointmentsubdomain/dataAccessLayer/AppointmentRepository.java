@@ -84,5 +84,22 @@ public interface AppointmentRepository extends JpaRepository<Appointment, Intege
         @Param("province") String province,
         @Param("postalCode") String postalCode
     );
+    
+    // Find quotation appointments by address only (regardless of customer)
+    // Used to enforce max 1 quotation per address per day rule
+    @Query("SELECT a FROM Appointment a WHERE " +
+           "a.job.jobType = com.profroid.profroidapp.jobssubdomain.dataAccessLayer.JobType.QUOTATION AND " +
+           "a.appointmentAddress.streetAddress = :streetAddress AND " +
+           "a.appointmentAddress.city = :city AND " +
+           "a.appointmentAddress.province = :province AND " +
+           "a.appointmentAddress.postalCode = :postalCode AND " +
+           "DATE(a.appointmentDate) = :date")
+    List<Appointment> findQuotationsByAddressAndDate(
+        @Param("streetAddress") String streetAddress,
+        @Param("city") String city,
+        @Param("province") String province,
+        @Param("postalCode") String postalCode,
+        @Param("date") LocalDate date
+    );
 }
 

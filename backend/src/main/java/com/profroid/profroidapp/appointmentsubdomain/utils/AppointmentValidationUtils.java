@@ -123,6 +123,7 @@ public class AppointmentValidationUtils {
 
     /**
      * Validates that only ONE QUOTATION is allowed per address per day.
+     * This applies regardless of customer - no two quotations at same address on same day.
      * Other services can coexist at different time slots.
      */
     public void validateDuplicateQuotation(
@@ -138,33 +139,34 @@ public class AppointmentValidationUtils {
         
         AppointmentAddress address = requestModel.getAppointmentAddress();
         
-        // Find existing quotations at same address on same day (SCHEDULED or COMPLETED status)
+        // Find existing quotations at same address on same day (regardless of customer)
+        // Only SCHEDULED or COMPLETED quotations block new quotations
+        List<Appointment> quotationsOnSameDay = appointmentRepository.findQuotationsByAddressAndDate(
+            address.getStreetAddress(),
+            address.getCity(),
+            address.getProvince(),
+            address.getPostalCode(),
+            appointmentDate
+        );
+        
+        // Filter by status - only SCHEDULED or COMPLETED block new quotations
         List<AppointmentStatusType> blockingStatuses = Arrays.asList(
             AppointmentStatusType.SCHEDULED, 
             AppointmentStatusType.COMPLETED
         );
         
-        List<Appointment> existingQuotations = appointmentRepository.findQuotationsByCustomerAndAddress(
-            customer,
-            address.getStreetAddress(),
-            address.getCity(),
-            address.getProvince(),
-            address.getPostalCode()
-        );
-        
-        // Filter by date and status
-        List<Appointment> quotationsOnSameDay = existingQuotations.stream()
-            .filter(apt -> apt.getAppointmentDate().toLocalDate().equals(appointmentDate))
+        List<Appointment> blockingQuotations = quotationsOnSameDay.stream()
             .filter(apt -> blockingStatuses.contains(apt.getAppointmentStatus().getAppointmentStatusType()))
             .toList();
         
-        if (!quotationsOnSameDay.isEmpty()) {
-            Appointment blocking = quotationsOnSameDay.get(0);
+        if (!blockingQuotations.isEmpty()) {
+            Appointment blocking = blockingQuotations.get(0);
             
             throw new InvalidOperationException(
                 "A quotation already exists for this address on " + appointmentDate + 
                 " at " + blocking.getAppointmentDate().toLocalTime() + 
-                ". Status: " + blocking.getAppointmentStatus().getAppointmentStatusType() + ". " +
+                " (Customer: " + blocking.getCustomer().getCustomerIdentifier().getCustomerId() + "). " +
+                "Status: " + blocking.getAppointmentStatus().getAppointmentStatusType() + ". " +
                 "Only one quotation per address per day is allowed. " +
                 "Please choose a different date or cancel the existing quotation."
             );
