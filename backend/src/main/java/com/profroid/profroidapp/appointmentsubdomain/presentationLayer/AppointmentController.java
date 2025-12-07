@@ -131,4 +131,56 @@ public class AppointmentController {
         AppointmentResponseModel createdAppointment = appointmentService.addAppointment(appointmentRequest, userId, effectiveRole);
         return ResponseEntity.status(HttpStatus.CREATED).body(createdAppointment);
     }
+
+        @PutMapping("/{appointmentId}")
+        public ResponseEntity<AppointmentResponseModel> updateAppointment(
+                @PathVariable String appointmentId,
+                @Valid @RequestBody AppointmentRequestModel appointmentRequest,
+                @RequestHeader(value = "X-Customer-Id", required = false) String customerId,
+                @RequestHeader(value = "X-Employee-Id", required = false) String employeeId,
+                @RequestHeader(value = "X-User-Role", required = false) String userRole) {
+            String userId;
+            String effectiveRole;
+            if (customerId != null && !customerId.isEmpty()) {
+                userId = customerId;
+                effectiveRole = "CUSTOMER";
+            } else if (employeeId != null && !employeeId.isEmpty()) {
+                userId = employeeId;
+                effectiveRole = (userRole != null && !userRole.isEmpty()) ? userRole : "TECHNICIAN";
+            } else if (userRole != null && !userRole.isEmpty()) {
+                userId = "CUSTOMER".equals(userRole) ? DEFAULT_TEST_CUSTOMER_ID : DEFAULT_TEST_TECHNICIAN_ID;
+                effectiveRole = userRole;
+            } else {
+                userId = DEFAULT_TEST_CUSTOMER_ID;
+                effectiveRole = "CUSTOMER";
+            }
+            AppointmentResponseModel updatedAppointment = appointmentService.updateAppointment(appointmentId, appointmentRequest, userId, effectiveRole);
+            return ResponseEntity.ok(updatedAppointment);
+        }
+
+        @PatchMapping("/{appointmentId}/status")
+        public ResponseEntity<AppointmentResponseModel> patchAppointmentStatus(
+                @PathVariable String appointmentId,
+                @Valid @RequestBody AppointmentStatusChangeRequestModel statusRequest,
+                @RequestHeader(value = "X-Customer-Id", required = false) String customerId,
+                @RequestHeader(value = "X-Employee-Id", required = false) String employeeId,
+                @RequestHeader(value = "X-User-Role", required = false) String userRole) {
+            String userId;
+            String effectiveRole;
+            if (customerId != null && !customerId.isEmpty()) {
+                userId = customerId;
+                effectiveRole = "CUSTOMER";
+            } else if (employeeId != null && !employeeId.isEmpty()) {
+                userId = employeeId;
+                effectiveRole = (userRole != null && !userRole.isEmpty()) ? userRole : "TECHNICIAN";
+            } else if (userRole != null && !userRole.isEmpty()) {
+                userId = "CUSTOMER".equals(userRole) ? DEFAULT_TEST_CUSTOMER_ID : DEFAULT_TEST_TECHNICIAN_ID;
+                effectiveRole = userRole;
+            } else {
+                userId = DEFAULT_TEST_CUSTOMER_ID;
+                effectiveRole = "CUSTOMER";
+            }
+            AppointmentResponseModel patchedAppointment = appointmentService.patchAppointmentStatus(appointmentId, statusRequest, userId, effectiveRole);
+            return ResponseEntity.ok(patchedAppointment);
+        }
 }

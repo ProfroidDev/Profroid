@@ -5,6 +5,7 @@ import com.profroid.profroidapp.appointmentsubdomain.mappingLayer.AppointmentReq
 import com.profroid.profroidapp.appointmentsubdomain.mappingLayer.AppointmentResponseMapper;
 import com.profroid.profroidapp.appointmentsubdomain.presentationLayer.AppointmentRequestModel;
 import com.profroid.profroidapp.appointmentsubdomain.presentationLayer.AppointmentResponseModel;
+import com.profroid.profroidapp.appointmentsubdomain.presentationLayer.AppointmentStatusChangeRequestModel;
 import com.profroid.profroidapp.appointmentsubdomain.utils.AppointmentValidationUtils;
 import com.profroid.profroidapp.cellarsubdomain.dataAccessLayer.Cellar;
 import com.profroid.profroidapp.cellarsubdomain.dataAccessLayer.CellarRepository;
@@ -302,4 +303,133 @@ public class AppointmentServiceImpl implements AppointmentService {
             })
             .toList();
     }
+
+        @Override
+        public AppointmentResponseModel updateAppointment(String appointmentId, AppointmentRequestModel appointmentRequest, String userId, String effectiveRole) {
+            Optional<Appointment> appointmentOptional = appointmentRepository.findAppointmentByAppointmentIdentifier_AppointmentId(appointmentId);
+            if (appointmentOptional.isEmpty()) {
+                throw new ResourceNotFoundException("Appointment " + appointmentId + " not found.");
+            }
+            Appointment appointment = appointmentOptional.get();
+            validateAppointmentEntityIntegrity(appointment);
+
+            // Permission check (same as POST)
+            Customer customer;
+            Employee technician = appointment.getTechnician();
+
+            if ("CUSTOMER".equals(effectiveRole)) {
+                customer = customerRepository.findCustomerByCustomerIdentifier_CustomerId(userId);
+                if (customer == null || !customer.getId().equals(appointment.getCustomer().getId())) {
+                    throw new ResourceNotFoundException("You don't have permission to update this appointment.");
+                }
+            } else {
+                if (appointmentRequest.getCustomerId() == null || appointmentRequest.getCustomerId().isEmpty()) {
+                    throw new InvalidOperationException("When technician updates an appointment, customer ID must be provided in the request body.");
+                }
+                customer = customerRepository.findCustomerByCustomerIdentifier_CustomerId(appointmentRequest.getCustomerId());
+                if (customer == null) {
+                    throw new ResourceNotFoundException("Customer not found with ID: " + appointmentRequest.getCustomerId());
+                }
+                // Prevent technician change
+                if (!appointment.getTechnician().getId().equals(technician.getId())) {
+                    throw new InvalidOperationException("Technician cannot be changed in an update.");
+                }
+            }
+
+            // Find job by name
+            Job job = jobRepository.findJobByJobName(appointmentRequest.getJobName());
+            if (job == null) {
+                throw new ResourceNotFoundException("Job not found: " + appointmentRequest.getJobName());
+            }
+            if (!job.isActive()) {
+                throw new InvalidOperationException("Job " + appointmentRequest.getJobName() + " is not active.");
+            }
+
+            // Find cellar by name
+            Cellar cellar = cellarRepository.findCellarByName(appointmentRequest.getCellarName());
+            if (cellar == null) {
+                throw new ResourceNotFoundException("Cellar not found: " + appointmentRequest.getCellarName());
+            }
+
+            // Validate rules (same as POST)
+            LocalDateTime now = LocalDateTime.now();
+            LocalDateTime appointmentDateTime = appointmentRequest.getAppointmentDate();
+            if (appointmentDateTime.isBefore(now)) {
+                throw new InvalidOperationException("Cannot book an appointment in the past. Appointment time: " + appointmentDateTime + ", Current time: " + now);
+            }
+            if (appointmentDateTime.getDayOfWeek() == java.time.DayOfWeek.SATURDAY || appointmentDateTime.getDayOfWeek() == java.time.DayOfWeek.SUNDAY) {
+                throw new InvalidOperationException("Appointments cannot be scheduled on weekends (Saturday or Sunday). Please choose a weekday. Requested date: " + appointmentDateTime.toLocalDate() + " (" + appointmentDateTime.getDayOfWeek() + ")");
+            }
+            validationUtils.validateBookingDeadline(appointmentDateTime, now);
+            validationUtils.validateCellarOwnership(cellar, customer);
+            validationUtils.validateTechnicianSchedule(technician, appointmentDateTime);
+            validationUtils.validateServiceTypeRestrictions(job.getJobType(), effectiveRole);
+            validationUtils.validateQuotationCompleted(job.getJobType(), appointmentRequest, customer, appointmentDateTime);
+            validationUtils.validateDuplicateQuotation(job.getJobType(), appointmentRequest, appointmentDateTime.toLocalDate(), customer);
+            validationUtils.validateDuplicateServiceAddressAndDay(job.getJobType(), appointmentRequest, appointmentDateTime.toLocalDate());
+            validationUtils.validateTimeSlotAvailability(technician, appointmentDateTime, job);
+
+            // Update appointment fields (technician cannot be changed)
+            appointment.setCustomer(customer);
+            appointment.setJob(job);
+            appointment.setCellar(cellar);
+            appointment.setAppointmentDate(appointmentDateTime);
+            appointment.setDescription(appointmentRequest.getDescription());
+            appointment.setAppointmentAddress(appointmentRequest.getAppointmentAddress());
+            // Do not change status or technician here
+
+            Appointment updatedAppointment = appointmentRepository.save(appointment);
+            return appointmentResponseMapper.toResponseModel(updatedAppointment);
+        }
+
+    
+        @Override
+        public AppointmentResponseModel patchAppointmentStatus(String appointmentId, AppointmentStatusChangeRequestModel statusRequest, String userId, String effectiveRole) {
+            Optional<Appointment> appointmentOptional = appointmentRepository.findAppointmentByAppointmentIdentifier_AppointmentId(appointmentId);
+            if (appointmentOptional.isEmpty()) {
+                throw new ResourceNotFoundException("Appointment " + appointmentId + " not found.");
+            }
+            Appointment appointment = appointmentOptional.get();
+            validateAppointmentEntityIntegrity(appointment);
+
+            AppointmentStatusType newStatusType = AppointmentStatusType.valueOf(statusRequest.getStatus());
+            AppointmentStatusType currentStatusType = appointment.getAppointmentStatus().getAppointmentStatusType();
+
+            if ("CUSTOMER".equals(effectiveRole)) {
+                Customer customer = customerRepository.findCustomerByCustomerIdentifier_CustomerId(userId);
+                if (customer == null || !customer.getId().equals(appointment.getCustomer().getId())) {
+                    throw new ResourceNotFoundException("You don't have permission to update this appointment status.");
+                }
+                // Customer can only switch to CANCELLED, and cannot change status once cancelled
+                if (currentStatusType == AppointmentStatusType.CANCELLED) {
+                    throw new InvalidOperationException("Cannot change status of a cancelled appointment.");
+                }
+                if (newStatusType != AppointmentStatusType.CANCELLED) {
+                    throw new InvalidOperationException("Customer can only cancel their own appointment.");
+                }
+            } else if ("TECHNICIAN".equals(effectiveRole)) {
+                Employee technician = employeeRepository.findEmployeeByEmployeeIdentifier_EmployeeId(userId);
+                if (technician == null || !technician.getId().equals(appointment.getTechnician().getId())) {
+                    throw new ResourceNotFoundException("You don't have permission to update this appointment status.");
+                }
+                // Technicians cannot change status of a cancelled appointment
+                if (currentStatusType == AppointmentStatusType.CANCELLED) {
+                    throw new InvalidOperationException("Cannot change status of a cancelled appointment.");
+                }
+            } else {
+                throw new InvalidOperationException("Only customers or technicians can change appointment status.");
+            }
+
+            AppointmentStatus newStatus = new AppointmentStatus();
+            newStatus.setAppointmentStatusType(newStatusType);
+            appointment.setAppointmentStatus(newStatus);
+
+            // If status is CANCELLED, free up the slot (remove schedule association)
+            if (newStatusType == AppointmentStatusType.CANCELLED) {
+                appointment.setSchedule(null);
+            }
+
+            Appointment updatedAppointment = appointmentRepository.save(appointment);
+            return appointmentResponseMapper.toResponseModel(updatedAppointment);
+        }
 }
