@@ -37,9 +37,10 @@ public class CellarController {
         return ResponseEntity.status(HttpStatus.CREATED).body(responseModel);
     }
 
-    @PutMapping("/{cellarId}")
+      @PutMapping("/{cellarId}")
     public ResponseEntity<CellarResponseModel> updateCellar(@PathVariable String cellarId, @Valid @RequestBody CellarRequestModel cellarRequestModel) {
-        CellarResponseModel responseModel = cellarService.updateCellar(cellarId, cellarRequestModel);
+        String ownerCustomerId = cellarRequestModel.getOwnerCustomerId().getCustomerId();
+        CellarResponseModel responseModel = cellarService.updateCellar(ownerCustomerId, cellarId, cellarRequestModel);
         return ResponseEntity.ok(responseModel);
     }
 
