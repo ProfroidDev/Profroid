@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { getMyAppointments } from "../../features/appointment/api/getMyAppointments";
 import type { AppointmentResponseModel } from "../../features/appointment/models/AppointmentResponseModel";
+import AddAppointmentModal from "../../features/appointment/components/AddAppointmentModal";
 import Toast from "../../shared/components/Toast";
 import { MapPin, Clock, User, Wrench, DollarSign, AlertCircle } from "lucide-react";
 import "./MyAppointmentsPage.css";
@@ -14,6 +15,7 @@ export default function MyAppointmentsPage(): React.ReactElement {
   const [selectedAppointment, setSelectedAppointment] = useState<AppointmentResponseModel | null>(null);
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' | 'info' | 'warning' } | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [showAddModal, setShowAddModal] = useState<boolean>(false);
   
   // For testing: allow switching customer ID
   const [customerId, setCustomerId] = useState<string>(DEFAULT_CUSTOMER_ID);
@@ -52,6 +54,12 @@ export default function MyAppointmentsPage(): React.ReactElement {
     }
   };
 
+  const handleCreated = () => {
+    setShowAddModal(false);
+    fetchAppointments();
+    setToast({ message: "Appointment created", type: "success" });
+  };
+
   const formatDate = (dateString: string): string => {
     const date = new Date(dateString);
     return date.toLocaleDateString("en-US", {
@@ -85,6 +93,11 @@ export default function MyAppointmentsPage(): React.ReactElement {
           <p className="user-name-display">Welcome, {appointments[0].customerFirstName} {appointments[0].customerLastName}</p>
         )}
         <p className="appointments-subtitle">View and manage your scheduled service appointments</p>
+        <div className="header-actions">
+          <button className="btn-primary" onClick={() => setShowAddModal(true)}>
+            Book Appointment
+          </button>
+        </div>
         
         {/* Test ID Switcher */}
         <div className="test-switcher">
@@ -261,6 +274,15 @@ export default function MyAppointmentsPage(): React.ReactElement {
           message={toast.message}
           type={toast.type}
           onClose={() => setToast(null)}
+        />
+      )}
+
+      {showAddModal && (
+        <AddAppointmentModal
+          mode="customer"
+          customerId={customerId}
+          onClose={() => setShowAddModal(false)}
+          onCreated={handleCreated}
         />
       )}
     </div>
