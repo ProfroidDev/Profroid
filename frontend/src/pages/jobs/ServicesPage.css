@@ -45,6 +45,14 @@
   max-width: 850px;
 }
 
+.service-card-wrapper.service-inactive {
+  opacity: 0.6;
+}
+
+.service-card-wrapper.service-inactive .service-card {
+  background-color: #f5f5f5;
+}
+
 .service-card {
   display: flex;
   flex-direction: row;
@@ -119,6 +127,13 @@
 .service-rate {
   color: #333;
   font-weight: 600;
+}
+
+.inactive-badge {
+  color: #ff6b6b;
+  font-size: 0.85em;
+  font-weight: normal;
+  font-style: italic;
 }
 
 /* Modal */

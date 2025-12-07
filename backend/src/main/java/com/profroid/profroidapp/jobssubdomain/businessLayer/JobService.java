@@ -10,5 +10,6 @@ public interface JobService {
     JobResponseModel getJobById(String jobId);
     JobResponseModel createJob(JobRequestModel requestModel);
     JobResponseModel updateJob(String jobId, JobRequestModel requestModel);
-    void deleteJob(String jobId);
+    JobResponseModel deactivateJob(String jobId);
+    JobResponseModel reactivateJob(String jobId);
 }
