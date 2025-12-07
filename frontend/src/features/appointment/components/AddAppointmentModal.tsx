@@ -102,19 +102,24 @@ const SLOT_TO_LABEL: Record<TimeSlotType, string> = {
 
 function getRequiredSlots(job?: JobResponseModel): number {
   if (!job) return 1;
-  if (job.jobType === "INSTALLATION") return 4;
-  if (job.jobType === "QUOTATION") return 1;
-  // MAINTENANCE/REPARATION default to 2 slots (60-90 mins)
-  return 2;
+  
+  // Calculate slots based on estimated duration from job response
+  // Each slot is 2 hours (120 minutes)
+  const MINUTES_PER_SLOT = 120;
+  const duration = job.estimatedDurationMinutes || 120;
+  const requiredSlots = Math.ceil(duration / MINUTES_PER_SLOT);
+  
+  // Cap at maximum available slots (5 slots from 9 AM to 5 PM)
+  return Math.min(requiredSlots, 5);
 }
 
 function slotAllowedForJob(job: JobResponseModel | undefined, slot: TimeSlotType): boolean {
   if (!job) return true;
-  if (job.jobType === "INSTALLATION" && !["NINE_AM", "ELEVEN_AM", "ONE_PM"].includes(slot)) {
-    return false;
-  }
+  
   const required = getRequiredSlots(job);
   const startIdx = SLOT_ORDER.indexOf(slot);
+  
+  // Check if there are enough consecutive slots available for this job duration
   return startIdx + required <= SLOT_ORDER.length;
 }
 
