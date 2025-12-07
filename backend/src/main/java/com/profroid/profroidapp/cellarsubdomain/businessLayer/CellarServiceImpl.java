@@ -154,7 +154,7 @@ public class CellarServiceImpl implements CellarService {
         // 3. Check if customer exists
         Customer customer = customerRepository.findCustomerByCustomerIdentifier_CustomerId(ownerCustomerId);
         if (customer == null) {
-            throw new EntityNotFoundException("Customer " + ownerCustomerId + " not found.");
+            throw new ResourceNotFoundException("Customer " + ownerCustomerId + " not found.");
         }
 
         // 4. Find the cellar
@@ -164,7 +164,7 @@ public class CellarServiceImpl implements CellarService {
         }
 
         // 5. Verify ownership
-        if (!foundCellar.getOwnerCustomer().getCustomerIdentifier().getCustomerId().equals(ownerCustomerId)) {
+        if (!foundCellar.getOwnerCustomerIdentifier().getCustomerId().equals(ownerCustomerId)) {
             throw new InvalidOperationException(
                     "Cellar " + cellarId + " does not belong to customer " + ownerCustomerId + "."
             );
