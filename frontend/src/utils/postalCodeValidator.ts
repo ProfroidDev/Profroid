@@ -2,7 +2,7 @@
 // Format: Province -> { City -> Postal Code Pattern }
 export const postalCodeRules: Record<string, Record<string, RegExp>> = {
   "Ontario": {
-    "Toronto": /^M[A-Z]\s?\d[A-Z]\d$/i,
+    "Toronto": /^M\d[A-Z]\s?\d[A-Z]\d$/i,
     "Ottawa": /^K[0-2][A-Z]\s?\d[A-Z]\d$/i,
     "Hamilton": /^L[89][A-Z]\s?\d[A-Z]\d$/i,
     "London": /^N[5-6][A-Z]\s?\d[A-Z]\d$/i,
