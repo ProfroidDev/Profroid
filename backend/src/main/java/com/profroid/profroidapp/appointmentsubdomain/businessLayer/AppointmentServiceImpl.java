@@ -71,20 +71,14 @@ public class AppointmentServiceImpl implements AppointmentService {
     public AppointmentResponseModel addAppointment(AppointmentRequestModel requestModel, String userId, String userRole) {
         LocalDateTime now = LocalDateTime.now();
         LocalDateTime appointmentDateTime = requestModel.getAppointmentDate();
-        
-        // ========================================
-        // 1. TIME VALIDATION - Cannot book past times
-        // ========================================
+
         if (appointmentDateTime.isBefore(now)) {
             throw new InvalidOperationException(
                 "Cannot book an appointment in the past. Appointment time: " + appointmentDateTime + 
                 ", Current time: " + now
             );
         }
-        
-        // ========================================
-        // 1.5 WEEKEND VALIDATION - No appointments on weekends
-        // ========================================
+
         if (appointmentDateTime.getDayOfWeek() == java.time.DayOfWeek.SATURDAY || 
             appointmentDateTime.getDayOfWeek() == java.time.DayOfWeek.SUNDAY) {
             throw new InvalidOperationException(
@@ -93,15 +87,9 @@ public class AppointmentServiceImpl implements AppointmentService {
                 " (" + appointmentDateTime.getDayOfWeek() + ")"
             );
         }
-        
-        // ========================================
-        // 2. BOOKING DEADLINE VALIDATION
-        // ========================================
+
         validationUtils.validateBookingDeadline(appointmentDateTime, now);
-        
-        // ========================================
-        // 3. FETCH AND VALIDATE ENTITIES
-        // ========================================
+
         Customer customer;
         Employee technician;
         
@@ -170,40 +158,15 @@ public class AppointmentServiceImpl implements AppointmentService {
         if (cellar == null) {
             throw new ResourceNotFoundException("Cellar not found: " + requestModel.getCellarName());
         }
-        
-        // ========================================
-        // 3.2 VALIDATE CELLAR OWNERSHIP
-        // ========================================
         validationUtils.validateCellarOwnership(cellar, customer);
-        
-        // ========================================
-        // 3.5 VALIDATE TECHNICIAN SCHEDULE AVAILABILITY
-        // ========================================
         validationUtils.validateTechnicianSchedule(technician, appointmentDateTime);
-        
-        // ========================================
-        // 4. ROLE-BASED SERVICE TYPE RESTRICTIONS
-        // ========================================
         validationUtils.validateServiceTypeRestrictions(job.getJobType(), userRole);
-        
-        // ========================================
-        // 4.5 QUOTATION COMPLETION REQUIREMENT
-        // ========================================
         validationUtils.validateQuotationCompleted(job.getJobType(), requestModel, customer, appointmentDateTime);
-        
-        // ========================================
-        // 4.6 DUPLICATE QUOTATION VALIDATION
-        // ========================================
         validationUtils.validateDuplicateQuotation(job.getJobType(), requestModel, appointmentDateTime.toLocalDate(), customer);
-        
-        // ========================================
-        // 5. TIME SLOT VALIDATION BASED ON SERVICE DURATION
-        // ========================================
+        validationUtils.validateDuplicateServiceAddressAndDay(job.getJobType(), requestModel, appointmentDateTime.toLocalDate());
         validationUtils.validateTimeSlotAvailability(technician, appointmentDateTime, job);
         
-        // ========================================
-        // 6. CREATE APPOINTMENT
-        // ========================================
+
         Appointment appointment = appointmentRequestMapper.toEntity(requestModel);
         appointment.setCustomer(customer);
         appointment.setTechnician(technician);
@@ -267,8 +230,7 @@ public class AppointmentServiceImpl implements AppointmentService {
         }
 
         Appointment appointment = appointmentOptional.get();
-        
-        // Validate that all related entities still exist
+
         validateAppointmentEntityIntegrity(appointment);
 
         if ("CUSTOMER".equals(userRole)) {
@@ -325,14 +287,6 @@ public class AppointmentServiceImpl implements AppointmentService {
                 " has invalid cellar (cellar may have been deleted)."
             );
         }
-        
-        // Schedule is optional - can be null for manually created appointments
-        // if (appointment.getSchedule() == null) {
-        //     throw new ResourceNotFoundException(
-        //         "Appointment " + appointment.getAppointmentIdentifier().getAppointmentId() + 
-        //         " has invalid schedule (schedule may have been deleted)."
-        //     );
-        // }
     }
     
  

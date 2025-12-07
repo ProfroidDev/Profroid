@@ -30,11 +30,6 @@ public class AppointmentValidationUtils {
         this.scheduleRepository = scheduleRepository;
     }
 
-    /**
-     * Validates booking deadline rules:
-     * - For AM appointments (9h, 11h): must book by 5 PM (17h) the previous day
-     * - For PM appointments (13h, 15h, 17h): must book by 9 AM the same day
-     */
     public void validateBookingDeadline(LocalDateTime appointmentDateTime, LocalDateTime now) {
         int appointmentHour = appointmentDateTime.getHour();
         LocalDate appointmentDate = appointmentDateTime.toLocalDate();
@@ -63,11 +58,6 @@ public class AppointmentValidationUtils {
         }
     }
 
-    /**
-     * Validates role-based service type restrictions:
-     * - Customers can ONLY book QUOTATION
-     * - Technicians can book INSTALLATION, REPARATION, MAINTENANCE, or QUOTATION
-     */
     public void validateServiceTypeRestrictions(JobType jobType, String userRole) {
         if ("CUSTOMER".equals(userRole)) {
             if (jobType != JobType.QUOTATION) {
@@ -80,12 +70,7 @@ public class AppointmentValidationUtils {
         // Technicians can book any service type - no restriction needed
     }
 
-    /**
-     * Validates duplicate address and day logic with comprehensive status checks:
-     * - Only one appointment per day per address
-     * - SCHEDULED or COMPLETED appointments block new appointments
-     * - Only CANCELLED appointments allow rebooking
-     */
+
     public void validateDuplicateAddressAndDay(
             AppointmentRequestModel requestModel, 
             LocalDate appointmentDate,
@@ -121,11 +106,6 @@ public class AppointmentValidationUtils {
         }
     }
 
-    /**
-     * Validates that only ONE QUOTATION is allowed per address per day.
-     * This applies regardless of customer - no two quotations at same address on same day.
-     * Other services can coexist at different time slots.
-     */
     public void validateDuplicateQuotation(
             JobType jobType,
             AppointmentRequestModel requestModel,
@@ -173,15 +153,6 @@ public class AppointmentValidationUtils {
         }
     }
 
-    /**
-     * Validates that non-quotation services scheduled AFTER a quotation require it to be completed first.
-     * Business Rules:
-     * 1. If there's a COMPLETED quotation at the address → Allow service
-     * 2. If there's a SCHEDULED quotation AND service is AFTER the quotation time → Block (must complete quotation first)
-     * 3. If there's a SCHEDULED quotation AND service is BEFORE the quotation → Allow (service doesn't depend on quotation)
-     * 4. If there's NO quotation at all → Allow (technician already knows the issue)
-     * Note: Same time appointments are blocked by the duplicate address/day validation
-     */
     public void validateQuotationCompleted(
             JobType jobType,
             AppointmentRequestModel requestModel,
@@ -245,13 +216,6 @@ public class AppointmentValidationUtils {
         // Otherwise, proceed (no quotation or only future-time scheduled quotation on that day)
     }
 
-    /**
-     * Validates time slot availability based on service duration:
-     * - QUOTATION: 30 min (1 slot)
-     * - MAINTENANCE: 60 min (2 slots - takes current hour + next hour)
-     * - REPARATION: 90 min (2 slots - takes current hour + next hour)
-     * - INSTALLATION: 240 min (4 slots - must start at exactly 9 AM, 11 AM, or 1 PM to finish by 5 PM)
-     */
     public void validateTimeSlotAvailability(Employee technician, LocalDateTime appointmentDateTime, Job job) {
         LocalDate appointmentDate = appointmentDateTime.toLocalDate();
         LocalTime appointmentTime = appointmentDateTime.toLocalTime();
@@ -266,9 +230,19 @@ public class AppointmentValidationUtils {
             );
         }
         
-        // Get service duration
-        int durationMinutes = job.getEstimatedDurationMinutes();
+        // Get service duration (fallback to defaults if missing)
+        int durationMinutes = resolveDurationMinutes(job);
         int requiredSlots = calculateRequiredSlots(durationMinutes);
+
+        // Ensure the remaining day has enough discrete slots (5 total: 9, 11, 13, 15, 17)
+        int startIndex = hourToSlotIndex(appointmentHour);
+        int totalSlotsInDay = 5;
+        if (startIndex < 0 || startIndex + requiredSlots > totalSlotsInDay) {
+            throw new InvalidOperationException(
+                "Not enough remaining time on this day for the requested service at " + appointmentTime +
+                " (requires " + requiredSlots + " slot(s)). Choose an earlier start time."
+            );
+        }
         
         // Special validation for INSTALLATION (4 hours) - must start at 9, 11, or 13 to finish by 17:00
         if (job.getJobType() == JobType.INSTALLATION) {
@@ -289,7 +263,7 @@ public class AppointmentValidationUtils {
         for (Appointment existing : dayAppointments) {
             LocalTime existingTime = existing.getAppointmentDate().toLocalTime();
             int existingHour = existingTime.getHour();
-            int existingDuration = existing.getJob().getEstimatedDurationMinutes();
+            int existingDuration = resolveDurationMinutes(existing.getJob());
             int existingSlots = calculateRequiredSlots(existingDuration);
             
             // Check if time slots overlap
@@ -370,17 +344,29 @@ public class AppointmentValidationUtils {
      * Calculate required time slots (in hours) based on duration in minutes
      */
     private int calculateRequiredSlots(int durationMinutes) {
-        // QUOTATION (30 min) = 1 slot
-        // MAINTENANCE (60 min) = 2 slots  
-        // REPARATION (90 min) = 2 slots
-        // INSTALLATION (240 min) = 4 slots
-        if (durationMinutes <= 30) {
+        // Business rule: <=90 minutes fits in the current slot; beyond that, each started hour adds a slot
+        if (durationMinutes <= 90) {
             return 1;
-        } else if (durationMinutes <= 90) {
-            return 2; // Takes 2 hour slots
-        } else {
-            return (int) Math.ceil(durationMinutes / 60.0);
         }
+        return (int) Math.ceil(durationMinutes / 60.0);
+    }
+
+    /**
+     * Resolve duration in minutes, falling back to defaults per job type when null.
+     */
+    private int resolveDurationMinutes(Job job) {
+        Integer duration = job.getEstimatedDurationMinutes();
+        if (duration != null) {
+            return duration;
+        }
+
+        // Fallback defaults by job type
+        return switch (job.getJobType()) {
+            case QUOTATION -> 30;
+            case MAINTENANCE -> 60;
+            case REPARATION -> 90;
+            case INSTALLATION -> 240;
+        };
     }
 
     /**
@@ -410,7 +396,7 @@ public class AppointmentValidationUtils {
     
     /**
      * Get the array of discrete slot indices occupied by an appointment
-     * Slot indices: 9=0, 11=1, 13=2, 15=3, 17=4
+     * Slot indices: 9=0, 11=1, 1 PM = 2, 3 PM = 3, 5 PM = 4
      */
     private int[] getOccupiedSlotIndices(int startHour, int slots) {
         int startIndex = hourToSlotIndex(startHour);
@@ -486,5 +472,36 @@ public class AppointmentValidationUtils {
                 "Appointments cannot be scheduled on weekends. This should have been caught earlier."
             );
         };
+    }
+
+    public void validateDuplicateServiceAddressAndDay(
+            JobType jobType,
+            AppointmentRequestModel requestModel,
+            LocalDate appointmentDate) {
+        if (jobType == JobType.QUOTATION) {
+            return; // handled by quotation logic
+        }
+        AppointmentAddress address = requestModel.getAppointmentAddress();
+        List<AppointmentStatusType> blockingStatuses = Arrays.asList(
+            AppointmentStatusType.SCHEDULED,
+            AppointmentStatusType.COMPLETED
+        );
+        List<Appointment> existingServices = appointmentRepository.findByAddressAndDateAndStatusIn(
+            address.getStreetAddress(),
+            address.getCity(),
+            address.getProvince(),
+            address.getPostalCode(),
+            appointmentDate,
+            blockingStatuses
+        );
+        // Only block if the job type is not QUOTATION and the existing appointment is also not a quotation
+        boolean serviceExists = existingServices.stream()
+            .anyMatch(a -> a.getJob() != null && a.getJob().getJobType() != JobType.QUOTATION);
+        if (serviceExists) {
+            throw new InvalidOperationException(
+                "A service appointment already exists for this address on " + appointmentDate + 
+                ". Only one service per address per day is allowed. Please choose a different date or cancel the existing service."
+            );
+        }
     }
 }

@@ -9,6 +9,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.List;
 
 @Data
@@ -39,7 +40,12 @@ public class AppointmentResponseModel {
     private String cellarName;
 
     // Appointment Details
-    private LocalDateTime appointmentDate;
+    private LocalDateTime appointmentDate;      // start date-time (original)
+    private LocalTime appointmentTime;          // start time only
+    private LocalDateTime appointmentStartDate; // alias for start date-time
+    private LocalTime appointmentStartTime;     // alias for start time only
+    private LocalDateTime appointmentEndDate;
+    private LocalTime appointmentEndTime;
     private String description;
     private String status;  // SCHEDULED, COMPLETED, CANCELLED
 
