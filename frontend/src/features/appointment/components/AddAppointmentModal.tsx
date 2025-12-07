@@ -16,6 +16,7 @@ import { getEmployeeScheduleForDate } from "../../employee/api/getEmployeeSchedu
 import { getEmployeeSchedule } from "../../employee/api/getEmployeeSchedule";
 import type { TimeSlotType } from "../../employee/models/EmployeeScheduleRequestModel";
 import { getPostalCodeError } from "../../../utils/postalCodeValidator";
+import { getMyJobs } from "../api/getMyJobs";
 
 // Cache for shared data to reduce API calls when modal is opened/closed multiple times
 const dataCache: {
@@ -200,6 +201,7 @@ export default function AddAppointmentModal({
   const [scheduleError, setScheduleError] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState<boolean>(false);
+  const [allAppointments, setAllAppointments] = useState<AppointmentResponseModel[]>([]);
 
   useEffect(() => {
     let isMounted = true;
@@ -256,6 +258,28 @@ export default function AddAppointmentModal({
       isMounted = false;
     };
   }, [mode, customerId, technicianId, selectedTechnicianId]);
+
+  // Fetch all appointments to check for conflicts
+  useEffect(() => {
+    async function fetchAppointments() {
+      // In customer mode, we need to fetch appointments for the selected technician to check their availability
+      // In technician mode, we fetch appointments for the technician
+      const targetId = mode === "customer" ? selectedTechnicianId : technicianId;
+      if (!targetId) return;
+
+      try {
+        // Use the correct API endpoint - getMyJobs for technician's appointments
+        const appointments = await getMyJobs(targetId);
+        setAllAppointments(appointments);
+      } catch (err) {
+        console.error('Failed to fetch appointments:', err);
+        // If fetch fails, continue without filtering (backend will validate)
+        setAllAppointments([]);
+      }
+    }
+
+    fetchAppointments();
+  }, [mode, customerId, technicianId, selectedTechnicianId, appointmentDate]);
 
   const jobOptions = useMemo(() => {
     if (mode === "customer") {
@@ -409,6 +433,8 @@ export default function AddAppointmentModal({
 
   const availableSlots = useMemo(() => {
     if (!selectedJob || !appointmentDate || isWeekend(appointmentDate)) return [];
+    if (!selectedTechnician) return [];
+    
     const slotSet = new Set(scheduleSlots);
     const slots: string[] = [];
 
@@ -425,11 +451,66 @@ export default function AddAppointmentModal({
       if (isPast(appointmentDate, time)) return;
       if (!passesBookingDeadline(appointmentDate, time)) return;
 
+      // Filter out times when technician already has an appointment
+      const slotHour = parseInt(time.split(':')[0]);
+      
+      const hasConflict = allAppointments.some((apt) => {
+        const aptDate = new Date(apt.appointmentDate).toISOString().split('T')[0];
+        if (aptDate !== appointmentDate) return false;
+        if (apt.status === "CANCELLED") return false;
+        
+        // Check if it's the same technician by name
+        const isSameTechnician = 
+          apt.technicianFirstName === selectedTechnician.firstName &&
+          apt.technicianLastName === selectedTechnician.lastName;
+        if (!isSameTechnician) return false;
+        
+        const aptTime = new Date(apt.appointmentDate).toTimeString().split(':')[0];
+        const aptHour = parseInt(aptTime);
+        
+        // Calculate which slots are occupied by existing appointment
+        const aptJobType = apt.jobType;
+        let aptRequiredSlots = 1;
+        if (aptJobType === "INSTALLATION") aptRequiredSlots = 4;
+        else if (aptJobType === "MAINTENANCE" || aptJobType === "REPARATION") aptRequiredSlots = 2;
+        
+        // Check if the time slots overlap
+        // Convert hours to slot indices (9=0, 11=1, 13=2, 15=3, 17=4)
+        const hourToIndex = (h: number) => {
+          if (h === 9) return 0;
+          if (h === 11) return 1;
+          if (h === 13) return 2;
+          if (h === 15) return 3;
+          if (h === 17) return 4;
+          return -1;
+        };
+        
+        const myStartIndex = hourToIndex(slotHour);
+        const aptStartIndex = hourToIndex(aptHour);
+        
+        if (myStartIndex === -1 || aptStartIndex === -1) return false;
+        
+        // Check if any of the required slots overlap
+        for (let i = 0; i < required; i++) {
+          const mySlotIndex = myStartIndex + i;
+          for (let j = 0; j < aptRequiredSlots; j++) {
+            const aptSlotIndex = aptStartIndex + j;
+            if (mySlotIndex === aptSlotIndex) {
+              return true; // Overlap found
+            }
+          }
+        }
+        
+        return false;
+      });
+
+      if (hasConflict) return;
+
       slots.push(time);
     });
 
     return slots;
-  }, [appointmentDate, scheduleSlots, selectedJob]);
+  }, [appointmentDate, scheduleSlots, selectedJob, allAppointments, selectedTechnician]);
 
   useEffect(() => {
     if (!appointmentTime && availableSlots.length > 0) {
@@ -551,7 +632,6 @@ export default function AddAppointmentModal({
           <div>
             <p className="eyebrow">{mode === "customer" ? "Customer Booking" : "Technician Scheduling"}</p>
             <h2>Add Appointment</h2>
-            <p className="muted">Follow business rules: weekdays only, allowed slots (9, 11, 13, 15, 17), and booking deadlines.</p>
           </div>
           <button className="ghost" onClick={onClose} aria-label="Close">×</button>
         </header>
@@ -581,7 +661,6 @@ export default function AddAppointmentModal({
                     ))}
                   </select>
                 </div>
-                {mode === "customer" && <small className="hint">Customers can only request quotations.</small>}
               </label>
 
               <label className="field">
@@ -699,7 +778,6 @@ export default function AddAppointmentModal({
                   </option>
                 ))}
               </select>
-              <small className="hint">Must belong to the selected customer.</small>
             </label>
 
             <div className="grid two">
