@@ -154,7 +154,7 @@ public class CellarServiceImpl implements CellarService {
         // 3. Check if customer exists
         Customer customer = customerRepository.findCustomerByCustomerIdentifier_CustomerId(ownerCustomerId);
         if (customer == null) {
-            throw new ResourceNotFoundException("Customer " + ownerCustomerId + " not found.");
+            throw new EntityNotFoundException("Customer " + ownerCustomerId + " not found.");
         }
 
         // 4. Find the cellar
