@@ -245,9 +245,19 @@ export default function ServicesPage(): React.ReactElement {
         setShowUpdateSuccessNotification(false);
       }, 3000);
     } catch (error) {
-      setUpdateError(
-        error instanceof Error ? error.message : "Failed to update service"
-      );
+      // Try to extract backend error message if available
+      let errorMsg = "Failed to update service";
+      if (error && typeof error === "object" && "response" in error) {
+        const axiosError = error as { response?: { data?: { message?: string }, status?: number } };
+        if (axiosError.response?.data?.message) {
+          errorMsg = axiosError.response.data.message;
+        } else if (axiosError.response?.status) {
+          errorMsg = `Request failed with status code ${axiosError.response.status}`;
+        }
+      } else if (error instanceof Error && error.message) {
+        errorMsg = error.message;
+      }
+      setUpdateError(errorMsg);
     } finally {
       setUpdateLoading(false);
     }
