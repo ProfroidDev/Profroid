@@ -18,7 +18,11 @@ type NonTechSlot = { start: string; end: string };
 type TechSlot = TimeSlotType;
 
 const DAYS: DayOfWeekType[] = ['MONDAY', 'TUESDAY', 'WEDNESDAY', 'THURSDAY', 'FRIDAY'];
-const AVAILABLE_SLOTS: TimeSlotType[] = ['NINE_AM', 'ELEVEN_AM', 'ONE_PM', 'THREE_PM', 'FIVE_PM'];
+function getAvailableSlots(isTechnician: boolean): TimeSlotType[] {
+  return isTechnician
+    ? ['NINE_AM', 'ELEVEN_AM', 'ONE_PM', 'THREE_PM']
+    : ['NINE_AM', 'ELEVEN_AM', 'ONE_PM', 'THREE_PM', 'FIVE_PM'];
+}
 
 const SLOT_LABELS: Record<TimeSlotType, string> = {
   NINE_AM: '9:00 AM',
@@ -322,7 +326,7 @@ export default function UpdateScheduleModal({ employeeId, isTechnician, existing
                       );
                     })}
                   <div className="slot-add-controls">
-                    {AVAILABLE_SLOTS.filter(slotType => !techSlots[day].includes(slotType)).map(slotType => (
+                    {getAvailableSlots(isTechnician).filter(slotType => !techSlots[day].includes(slotType)).map(slotType => (
                       <button
                         key={slotType}
                         className="btn-slot-option"
