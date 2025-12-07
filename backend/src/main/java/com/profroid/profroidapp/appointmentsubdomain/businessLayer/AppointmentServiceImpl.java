@@ -1,18 +1,33 @@
 package com.profroid.profroidapp.appointmentsubdomain.businessLayer;
 
-import com.profroid.profroidapp.appointmentsubdomain.dataAccessLayer.Appointment;
-import com.profroid.profroidapp.appointmentsubdomain.dataAccessLayer.AppointmentRepository;
+import com.profroid.profroidapp.appointmentsubdomain.dataAccessLayer.*;
+import com.profroid.profroidapp.appointmentsubdomain.mappingLayer.AppointmentRequestMapper;
 import com.profroid.profroidapp.appointmentsubdomain.mappingLayer.AppointmentResponseMapper;
 import com.profroid.profroidapp.appointmentsubdomain.presentationLayer.AppointmentRequestModel;
 import com.profroid.profroidapp.appointmentsubdomain.presentationLayer.AppointmentResponseModel;
+import com.profroid.profroidapp.appointmentsubdomain.utils.AppointmentValidationUtils;
+import com.profroid.profroidapp.cellarsubdomain.dataAccessLayer.Cellar;
+import com.profroid.profroidapp.cellarsubdomain.dataAccessLayer.CellarRepository;
 import com.profroid.profroidapp.customersubdomain.dataAccessLayer.Customer;
 import com.profroid.profroidapp.customersubdomain.dataAccessLayer.CustomerRepository;
 import com.profroid.profroidapp.employeesubdomain.dataAccessLayer.employeeDataAccessLayer.Employee;
 import com.profroid.profroidapp.employeesubdomain.dataAccessLayer.employeeDataAccessLayer.EmployeeRepository;
+import com.profroid.profroidapp.employeesubdomain.dataAccessLayer.employeeDataAccessLayer.EmployeeRoleType;
+import com.profroid.profroidapp.employeesubdomain.dataAccessLayer.employeeScheduleDataAccessLayer.Schedule;
+import com.profroid.profroidapp.employeesubdomain.dataAccessLayer.employeeScheduleDataAccessLayer.ScheduleRepository;
 import com.profroid.profroidapp.employeesubdomain.mappingLayer.employeeMappers.EmployeeResponseMapper;
+import com.profroid.profroidapp.jobssubdomain.dataAccessLayer.Job;
+import com.profroid.profroidapp.jobssubdomain.dataAccessLayer.JobRepository;
+import com.profroid.profroidapp.jobssubdomain.dataAccessLayer.JobType;
+import com.profroid.profroidapp.utils.exceptions.InvalidOperationException;
 import com.profroid.profroidapp.utils.exceptions.ResourceNotFoundException;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
@@ -20,21 +35,186 @@ import java.util.Optional;
 public class AppointmentServiceImpl implements AppointmentService {
 
     private final AppointmentRepository appointmentRepository;
+    private final AppointmentRequestMapper appointmentRequestMapper;
     private final AppointmentResponseMapper appointmentResponseMapper;
     private final CustomerRepository customerRepository;
     private final EmployeeRepository employeeRepository;
+    private final JobRepository jobRepository;
+    private final CellarRepository cellarRepository;
     private final EmployeeResponseMapper employeeResponseMapper;
+    private final ScheduleRepository scheduleRepository;
+    private final AppointmentValidationUtils validationUtils;
 
     public AppointmentServiceImpl(AppointmentRepository appointmentRepository,
+                                  AppointmentRequestMapper appointmentRequestMapper,
                                   AppointmentResponseMapper appointmentResponseMapper,
                                   CustomerRepository customerRepository,
                                   EmployeeRepository employeeRepository,
-                                  EmployeeResponseMapper employeeResponseMapper) {
+                                  JobRepository jobRepository,
+                                  CellarRepository cellarRepository,
+                                  EmployeeResponseMapper employeeResponseMapper,
+                                  ScheduleRepository scheduleRepository,
+                                  AppointmentValidationUtils validationUtils) {
         this.appointmentRepository = appointmentRepository;
+        this.appointmentRequestMapper = appointmentRequestMapper;
         this.appointmentResponseMapper = appointmentResponseMapper;
         this.customerRepository = customerRepository;
         this.employeeRepository = employeeRepository;
+        this.jobRepository = jobRepository;
+        this.cellarRepository = cellarRepository;
         this.employeeResponseMapper = employeeResponseMapper;
+        this.scheduleRepository = scheduleRepository;
+        this.validationUtils = validationUtils;
+    }
+
+    @Override
+    public AppointmentResponseModel addAppointment(AppointmentRequestModel requestModel, String userId, String userRole) {
+        LocalDateTime now = LocalDateTime.now();
+        LocalDateTime appointmentDateTime = requestModel.getAppointmentDate();
+        
+        // ========================================
+        // 1. TIME VALIDATION - Cannot book past times
+        // ========================================
+        if (appointmentDateTime.isBefore(now)) {
+            throw new InvalidOperationException(
+                "Cannot book an appointment in the past. Appointment time: " + appointmentDateTime + 
+                ", Current time: " + now
+            );
+        }
+        
+        // ========================================
+        // 1.5 WEEKEND VALIDATION - No appointments on weekends
+        // ========================================
+        if (appointmentDateTime.getDayOfWeek() == java.time.DayOfWeek.SATURDAY || 
+            appointmentDateTime.getDayOfWeek() == java.time.DayOfWeek.SUNDAY) {
+            throw new InvalidOperationException(
+                "Appointments cannot be scheduled on weekends (Saturday or Sunday). " +
+                "Please choose a weekday. Requested date: " + appointmentDateTime.toLocalDate() + 
+                " (" + appointmentDateTime.getDayOfWeek() + ")"
+            );
+        }
+        
+        // ========================================
+        // 2. BOOKING DEADLINE VALIDATION
+        // ========================================
+        validationUtils.validateBookingDeadline(appointmentDateTime, now);
+        
+        // ========================================
+        // 3. FETCH AND VALIDATE ENTITIES
+        // ========================================
+        Customer customer;
+        Employee technician;
+        
+        // Determine customer based on user role
+        if ("CUSTOMER".equals(userRole)) {
+            // Customer booking for themselves
+            customer = customerRepository.findCustomerByCustomerIdentifier_CustomerId(userId);
+            if (customer == null) {
+                throw new ResourceNotFoundException("Customer " + userId + " not found.");
+            }
+        } else {
+            // Technician or other role booking for a customer
+            // Customer must be specified in request by customerId
+            if (requestModel.getCustomerId() == null || requestModel.getCustomerId().isEmpty()) {
+                throw new InvalidOperationException(
+                    "When technician creates an appointment, customer ID must be provided in the request body."
+                );
+            }
+            
+            customer = customerRepository.findCustomerByCustomerIdentifier_CustomerId(
+                requestModel.getCustomerId()
+            );
+            
+            if (customer == null) {
+                throw new ResourceNotFoundException(
+                    "Customer not found with ID: " + requestModel.getCustomerId()
+                );
+            }
+        }
+        
+        // Find technician by name
+        List<Employee> technicianCandidates = employeeRepository.findByFirstNameAndLastName(
+            requestModel.getTechnicianFirstName(), 
+            requestModel.getTechnicianLastName()
+        );
+        
+        if (technicianCandidates.isEmpty()) {
+            throw new ResourceNotFoundException(
+                "Technician not found: " + requestModel.getTechnicianFirstName() + 
+                " " + requestModel.getTechnicianLastName()
+            );
+        }
+        
+        // Filter for active technicians with TECHNICIAN role
+        technician = technicianCandidates.stream()
+            .filter(Employee::getIsActive)
+            .filter(e -> e.getEmployeeRole().getEmployeeRoleType() == EmployeeRoleType.TECHNICIAN)
+            .findFirst()
+            .orElseThrow(() -> new ResourceNotFoundException(
+                "No active technician found with the name: " + requestModel.getTechnicianFirstName() + 
+                " " + requestModel.getTechnicianLastName()
+            ));
+        
+        // Find job by name
+        Job job = jobRepository.findJobByJobName(requestModel.getJobName());
+        if (job == null) {
+            throw new ResourceNotFoundException("Job not found: " + requestModel.getJobName());
+        }
+        
+        if (!job.isActive()) {
+            throw new InvalidOperationException("Job " + requestModel.getJobName() + " is not active.");
+        }
+        
+        // Find cellar by name
+        Cellar cellar = cellarRepository.findCellarByName(requestModel.getCellarName());
+        if (cellar == null) {
+            throw new ResourceNotFoundException("Cellar not found: " + requestModel.getCellarName());
+        }
+        
+        // ========================================
+        // 3.2 VALIDATE CELLAR OWNERSHIP
+        // ========================================
+        validationUtils.validateCellarOwnership(cellar, customer);
+        
+        // ========================================
+        // 3.5 VALIDATE TECHNICIAN SCHEDULE AVAILABILITY
+        // ========================================
+        validationUtils.validateTechnicianSchedule(technician, appointmentDateTime);
+        
+        // ========================================
+        // 4. ROLE-BASED SERVICE TYPE RESTRICTIONS
+        // ========================================
+        validationUtils.validateServiceTypeRestrictions(job.getJobType(), userRole);
+        
+        // ========================================
+        // 4.5 QUOTATION COMPLETION REQUIREMENT
+        // ========================================
+        validationUtils.validateQuotationCompleted(job.getJobType(), requestModel, customer, appointmentDateTime);
+        
+        // ========================================
+        // 4.6 DUPLICATE QUOTATION VALIDATION
+        // ========================================
+        validationUtils.validateDuplicateQuotation(job.getJobType(), requestModel, appointmentDateTime.toLocalDate(), customer);
+        
+        // ========================================
+        // 5. TIME SLOT VALIDATION BASED ON SERVICE DURATION
+        // ========================================
+        validationUtils.validateTimeSlotAvailability(technician, appointmentDateTime, job);
+        
+        // ========================================
+        // 6. CREATE APPOINTMENT
+        // ========================================
+        Appointment appointment = appointmentRequestMapper.toEntity(requestModel);
+        appointment.setCustomer(customer);
+        appointment.setTechnician(technician);
+        appointment.setJob(job);
+        appointment.setCellar(cellar);
+        appointment.setSchedule(null); // Schedule can be set later if needed
+        
+        // Save appointment
+        Appointment savedAppointment = appointmentRepository.save(appointment);
+        
+        return appointmentResponseMapper.toResponseModel(savedAppointment);
     }
 
     @Override
@@ -146,12 +326,13 @@ public class AppointmentServiceImpl implements AppointmentService {
             );
         }
         
-        if (appointment.getSchedule() == null) {
-            throw new ResourceNotFoundException(
-                "Appointment " + appointment.getAppointmentIdentifier().getAppointmentId() + 
-                " has invalid schedule (schedule may have been deleted)."
-            );
-        }
+        // Schedule is optional - can be null for manually created appointments
+        // if (appointment.getSchedule() == null) {
+        //     throw new ResourceNotFoundException(
+        //         "Appointment " + appointment.getAppointmentIdentifier().getAppointmentId() + 
+        //         " has invalid schedule (schedule may have been deleted)."
+        //     );
+        // }
     }
     
  

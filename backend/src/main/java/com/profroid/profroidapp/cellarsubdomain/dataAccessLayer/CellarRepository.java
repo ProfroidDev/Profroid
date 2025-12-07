@@ -7,8 +7,6 @@ import java.util.List;
 
 public interface CellarRepository extends JpaRepository<Cellar, CellarIdentifier> {
     Cellar findCellarByCellarIdentifier_CellarId(String cellarIdentifier);
+    Cellar findCellarByName(String name);
     List<Cellar> findByOwnerCustomerIdentifier(CustomerIdentifier ownerCustomerIdentifier);
-
-
-
 }

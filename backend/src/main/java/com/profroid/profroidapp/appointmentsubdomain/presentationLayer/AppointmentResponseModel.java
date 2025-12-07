@@ -20,6 +20,7 @@ public class AppointmentResponseModel {
     private String appointmentId;  // UUID
 
     // Customer Information
+    private String customerId;  // Customer UUID
     private String customerFirstName;
     private String customerLastName;
     private List<CustomerPhoneNumber> customerPhoneNumbers;

@@ -1,6 +1,7 @@
 package com.profroid.profroidapp.appointmentsubdomain.presentationLayer;
 
 import com.profroid.profroidapp.appointmentsubdomain.businessLayer.AppointmentService;
+import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -98,5 +99,36 @@ public class AppointmentController {
         
         AppointmentResponseModel appointment = appointmentService.getAppointmentById(appointmentId, userId, effectiveRole);
         return ResponseEntity.ok(appointment);
+    }
+
+    @PostMapping
+    public ResponseEntity<AppointmentResponseModel> createAppointment(
+            @Valid @RequestBody AppointmentRequestModel appointmentRequest,
+            @RequestHeader(value = "X-Customer-Id", required = false) String customerId,
+            @RequestHeader(value = "X-Employee-Id", required = false) String employeeId,
+            @RequestHeader(value = "X-User-Role", required = false) String userRole) {
+        
+        // Determine userId and role
+        String userId;
+        String effectiveRole;
+        
+        if (customerId != null && !customerId.isEmpty()) {
+            userId = customerId;
+            effectiveRole = "CUSTOMER";
+        } else if (employeeId != null && !employeeId.isEmpty()) {
+            userId = employeeId;
+            effectiveRole = (userRole != null && !userRole.isEmpty()) ? userRole : "TECHNICIAN";
+        } else if (userRole != null && !userRole.isEmpty()) {
+            // Use default based on role
+            userId = "CUSTOMER".equals(userRole) ? DEFAULT_TEST_CUSTOMER_ID : DEFAULT_TEST_TECHNICIAN_ID;
+            effectiveRole = userRole;
+        } else {
+            // Default to customer
+            userId = DEFAULT_TEST_CUSTOMER_ID;
+            effectiveRole = "CUSTOMER";
+        }
+        
+        AppointmentResponseModel createdAppointment = appointmentService.addAppointment(appointmentRequest, userId, effectiveRole);
+        return ResponseEntity.status(HttpStatus.CREATED).body(createdAppointment);
     }
 }

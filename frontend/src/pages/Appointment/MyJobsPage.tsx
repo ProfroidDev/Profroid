@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { getMyJobs } from "../../features/appointment/api/getMyJobs";
 import type { AppointmentResponseModel } from "../../features/appointment/models/AppointmentResponseModel";
+import AddAppointmentModal from "../../features/appointment/components/AddAppointmentModal";
 import Toast from "../../shared/components/Toast";
 import { MapPin, Clock, User, Wrench, DollarSign, Phone, AlertCircle } from "lucide-react";
 import "./MyJobsPage.css";
@@ -14,6 +15,7 @@ export default function MyJobsPage(): React.ReactElement {
   const [selectedJob, setSelectedJob] = useState<AppointmentResponseModel | null>(null);
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' | 'info' | 'warning' } | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [showAddModal, setShowAddModal] = useState<boolean>(false);
   
   // For testing: allow switching technician ID
   const [technicianId, setTechnicianId] = useState<string>(DEFAULT_TECHNICIAN_ID);
@@ -53,6 +55,12 @@ export default function MyJobsPage(): React.ReactElement {
     }
   };
 
+  const handleCreated = () => {
+    setShowAddModal(false);
+    fetchJobs();
+    setToast({ message: "Appointment created", type: "success" });
+  };
+
   const formatDate = (dateString: string): string => {
     const date = new Date(dateString);
     return date.toLocaleDateString("en-US", {
@@ -86,6 +94,11 @@ export default function MyJobsPage(): React.ReactElement {
           <p className="user-name-display">Welcome, {jobs[0].technicianFirstName} {jobs[0].technicianLastName}</p>
         )}
         <p className="jobs-subtitle">Your assigned service appointments and work schedule</p>
+        <div className="header-actions">
+          <button className="btn-primary" onClick={() => setShowAddModal(true)}>
+            Add Appointment
+          </button>
+        </div>
         
         {/* Test ID Switcher */}
         <div className="test-switcher">
@@ -255,6 +268,15 @@ export default function MyJobsPage(): React.ReactElement {
             </div>
           </div>
         </div>
+      )}
+
+      {showAddModal && (
+        <AddAppointmentModal
+          mode="technician"
+          technicianId={technicianId}
+          onClose={() => setShowAddModal(false)}
+          onCreated={handleCreated}
+        />
       )}
 
       {toast && (
