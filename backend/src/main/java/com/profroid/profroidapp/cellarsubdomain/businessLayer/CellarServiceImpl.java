@@ -12,7 +12,6 @@ import com.profroid.profroidapp.customersubdomain.dataAccessLayer.CustomerReposi
 import com.profroid.profroidapp.utils.exceptions.InvalidIdentifierException;
 import com.profroid.profroidapp.utils.exceptions.InvalidOperationException;
 import com.profroid.profroidapp.utils.exceptions.ResourceNotFoundException;
-import org.springframework.data.crossstore.ChangeSetPersister;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.stereotype.Service;
 
@@ -141,7 +140,50 @@ public class CellarServiceImpl implements CellarService {
 
     @Override
     public CellarResponseModel updateCellar(String ownerCustomerId, String cellarId, CellarRequestModel cellarRequestModel) {
-        return null;
+
+        // 1. Validate customer ID format
+        if (ownerCustomerId == null || ownerCustomerId.trim().length() != 36) {
+            throw new InvalidIdentifierException("Customer ID must be a 36-character UUID string.");
+        }
+
+        // 2. Validate cellar ID format
+        if (cellarId == null || cellarId.trim().length() != 36) {
+            throw new InvalidIdentifierException("Cellar ID must be a 36-character UUID string.");
+        }
+
+        // 3. Check if customer exists
+        Customer customer = customerRepository.findCustomerByCustomerIdentifier_CustomerId(ownerCustomerId);
+        if (customer == null) {
+            throw new ResourceNotFoundException("Customer " + ownerCustomerId + " not found.");
+        }
+
+        // 4. Find the cellar
+        Cellar foundCellar = cellarRepository.findCellarByCellarIdentifier_CellarId(cellarId);
+        if (foundCellar == null) {
+            throw new ResourceNotFoundException("Cellar " + cellarId + " not found.");
+        }
+
+        // 5. Verify ownership
+        if (!foundCellar.getOwnerCustomerIdentifier().getCustomerId().equals(ownerCustomerId)) {
+            throw new InvalidOperationException(
+                    "Cellar " + cellarId + " does not belong to customer " + ownerCustomerId + "."
+            );
+        }
+
+        // 6. Update all cellar fields
+        foundCellar.setName(cellarRequestModel.getName());
+        foundCellar.setHeight(cellarRequestModel.getHeight());
+        foundCellar.setWidth(cellarRequestModel.getWidth());
+        foundCellar.setDepth(cellarRequestModel.getDepth());
+        foundCellar.setBottleCapacity(cellarRequestModel.getBottleCapacity());
+        foundCellar.setHasCoolingSystem(cellarRequestModel.isHasCoolingSystem());
+        foundCellar.setHasHumidityControl(cellarRequestModel.isHasHumidityControl());
+        foundCellar.setHasAutoRegulation(cellarRequestModel.isHasAutoRegulation());
+        foundCellar.setCellarType(cellarRequestModel.getCellarType());
+
+        // 7. Save and return
+        Cellar updatedCellar = cellarRepository.save(foundCellar);
+        return cellarResponseMapper.toResponseModel(updatedCellar);
     }
 
     @Override

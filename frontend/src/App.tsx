@@ -3,7 +3,7 @@ import { BrowserRouter, Routes, Route, Link } from "react-router-dom";
 import "./App.css";
 
 import CustomerListPage from "./pages/Customer/CustomerListPage";
-import ServicesPage from "./pages/Jobs/ServicesPage";
+import ServicesPage from "./pages/jobs/ServicesPage";
 import Navigation from "./shared/components/Navigation";
 import Footer from "./shared/components/Footer";
 import EmployeeSchedulePage from "./pages/Employee/EmployeeSchedulePage";
@@ -38,10 +38,7 @@ function App(): React.ReactElement {
         <Route path="/customers" element={<CustomerListPage />} />
         <Route path="/services" element={<ServicesPage />} />
         <Route path="/employees" element={<EmployeeListPage />} />
-        <Route
-          path="/employees/schedule"
-          element={<EmployeeSchedulePage />}
-        />
+        <Route path="/employees/schedule" element={<EmployeeSchedulePage />} />
         <Route path="/my-appointments" element={<MyAppointmentsPage />} />
         <Route path="/my-jobs" element={<MyJobsPage />} />
       </Routes>
