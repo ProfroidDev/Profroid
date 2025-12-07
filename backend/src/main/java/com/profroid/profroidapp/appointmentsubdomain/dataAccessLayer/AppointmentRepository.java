@@ -3,6 +3,7 @@ package com.profroid.profroidapp.appointmentsubdomain.dataAccessLayer;
 import com.profroid.profroidapp.customersubdomain.dataAccessLayer.Customer;
 import com.profroid.profroidapp.employeesubdomain.dataAccessLayer.employeeDataAccessLayer.Employee;
 import com.profroid.profroidapp.employeesubdomain.dataAccessLayer.employeeScheduleDataAccessLayer.Schedule;
+import com.profroid.profroidapp.jobssubdomain.dataAccessLayer.Job;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -24,6 +25,9 @@ public interface AppointmentRepository extends JpaRepository<Appointment, Intege
 
     // Find all appointments for a specific technician
     List<Appointment> findAllByTechnician(Employee technician);
+
+    // Find appointments by job
+    List<Appointment> findAllByJob(Job job);
 
     // Find all active appointments
     List<Appointment> findAllByIsActiveTrue();

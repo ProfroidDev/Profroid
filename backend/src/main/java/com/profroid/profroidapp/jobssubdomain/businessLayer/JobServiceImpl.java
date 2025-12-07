@@ -1,5 +1,7 @@
 package com.profroid.profroidapp.jobssubdomain.businessLayer;
 
+import com.profroid.profroidapp.appointmentsubdomain.dataAccessLayer.Appointment;
+import com.profroid.profroidapp.appointmentsubdomain.dataAccessLayer.AppointmentRepository;
 import com.profroid.profroidapp.jobssubdomain.dataAccessLayer.Job;
 import com.profroid.profroidapp.jobssubdomain.dataAccessLayer.JobIdentifier;
 import com.profroid.profroidapp.jobssubdomain.dataAccessLayer.JobRepository;
@@ -7,9 +9,12 @@ import com.profroid.profroidapp.jobssubdomain.mappingLayer.JobRequestMapper;
 import com.profroid.profroidapp.jobssubdomain.mappingLayer.JobResponseMapper;
 import com.profroid.profroidapp.jobssubdomain.presentationLayer.JobRequestModel;
 import com.profroid.profroidapp.jobssubdomain.presentationLayer.JobResponseModel;
+import com.profroid.profroidapp.utils.exceptions.InvalidOperationException;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
+import java.time.LocalTime;
 import java.util.List;
 
 @Service
@@ -18,11 +23,16 @@ public class JobServiceImpl implements JobService {
     private final JobRepository jobRepository;
     private final JobResponseMapper jobResponseMapper;
     private final JobRequestMapper jobRequestMapper;
+    private final AppointmentRepository appointmentRepository;
 
-    public JobServiceImpl(JobRepository jobRepository, JobResponseMapper jobResponseMapper, JobRequestMapper jobRequestMapper) {
+    public JobServiceImpl(JobRepository jobRepository,
+                          JobResponseMapper jobResponseMapper,
+                          JobRequestMapper jobRequestMapper,
+                          AppointmentRepository appointmentRepository) {
         this.jobRepository = jobRepository;
         this.jobResponseMapper = jobResponseMapper;
         this.jobRequestMapper = jobRequestMapper;
+        this.appointmentRepository = appointmentRepository;
     }
 
     @Override
@@ -66,6 +76,9 @@ public class JobServiceImpl implements JobService {
         foundJob.setJobType(requestModel.getJobType());
         foundJob.setActive(requestModel.isActive());
 
+        // Re-validate all existing appointments for this job with the new duration
+        validateExistingAppointments(foundJob);
+
         Job updatedJob = jobRepository.save(foundJob);
         return jobResponseMapper.toResponseModel(updatedJob);
     }
@@ -81,6 +94,111 @@ public class JobServiceImpl implements JobService {
         // Soft delete: set active to false instead of deleting
         foundJob.setActive(false);
         jobRepository.save(foundJob);
+    }
+
+
+    private void validateExistingAppointments(Job updatedJob) {
+        List<Appointment> appointments = appointmentRepository.findAllByJob(updatedJob);
+        if (appointments.isEmpty()) {
+            return; // nothing to validate
+        }
+
+        int updatedDurationMinutes = resolveDurationMinutes(updatedJob);
+        int updatedSlots = calculateRequiredSlots(updatedDurationMinutes);
+
+        for (Appointment target : appointments) {
+            LocalDate date = target.getAppointmentDate().toLocalDate();
+            LocalTime startTime = target.getAppointmentDate().toLocalTime();
+            int startHour = startTime.getHour();
+
+            // Validate day capacity for the target appointment itself
+            int startIndex = hourToSlotIndex(startHour);
+            if (startIndex < 0 || startIndex + updatedSlots > 5) {
+                throw new InvalidOperationException(
+                    "Job duration update would exceed available working hours for appointment at " + startTime +
+                    " on " + date + ". Choose an earlier time or shorten the duration."
+                );
+            }
+
+            // Fetch all scheduled/completed appointments for the same technician and date
+            List<Appointment> sameDayAppointments = appointmentRepository.findByTechnicianAndDateAndScheduled(
+                target.getTechnician(),
+                date
+            );
+
+            for (Appointment other : sameDayAppointments) {
+                if (other.getId().equals(target.getId())) {
+                    continue; // skip self
+                }
+
+                int otherDuration = resolveDurationMinutes(other.getJob());
+                int otherSlots = calculateRequiredSlots(otherDuration);
+                int otherStartHour = other.getAppointmentDate().getHour();
+
+                if (timeSlotsOverlap(startHour, updatedSlots, otherStartHour, otherSlots)) {
+                    throw new InvalidOperationException(
+                        "Job duration update causes overlap: appointment at " + startTime + " now conflicts with " +
+                        other.getAppointmentDate().toLocalTime() + " on " + date + ". Adjust existing appointments or choose a shorter duration."
+                    );
+                }
+            }
+        }
+    }
+
+    private int resolveDurationMinutes(Job job) {
+        Integer duration = job.getEstimatedDurationMinutes();
+        if (duration != null) {
+            return duration;
+        }
+
+        return switch (job.getJobType()) {
+            case QUOTATION -> 30;
+            case MAINTENANCE -> 60;
+            case REPARATION -> 90;
+            case INSTALLATION -> 240;
+        };
+    }
+
+    private int calculateRequiredSlots(int durationMinutes) {
+        // Business rule: <=90 minutes fits in the current slot; beyond that, each started hour adds a slot
+        if (durationMinutes <= 90) {
+            return 1;
+        }
+        return (int) Math.ceil(durationMinutes / 60.0);
+    }
+
+    private boolean timeSlotsOverlap(int startHour1, int slots1, int startHour2, int slots2) {
+        int[] occupied1 = getOccupiedSlotIndices(startHour1, slots1);
+        int[] occupied2 = getOccupiedSlotIndices(startHour2, slots2);
+
+        for (int a : occupied1) {
+            for (int b : occupied2) {
+                if (a == b) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    private int[] getOccupiedSlotIndices(int startHour, int slots) {
+        int startIndex = hourToSlotIndex(startHour);
+        int[] occupied = new int[slots];
+        for (int i = 0; i < slots; i++) {
+            occupied[i] = startIndex + i;
+        }
+        return occupied;
+    }
+
+    private int hourToSlotIndex(int hour) {
+        return switch (hour) {
+            case 9 -> 0;
+            case 11 -> 1;
+            case 13 -> 2;
+            case 15 -> 3;
+            case 17 -> 4;
+            default -> -1;
+        };
     }
 }
 

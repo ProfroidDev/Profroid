@@ -158,7 +158,17 @@ export default function MyAppointmentsPage(): React.ReactElement {
               {/* Date & Time */}
               <div className="appointment-info-row">
                 <Clock size={18} />
-                <span>{formatDate(appointment.appointmentDate)}</span>
+                <span>
+                  {formatDate(appointment.appointmentDate)}
+                  {appointment.appointmentStartTime && appointment.appointmentEndTime && (
+                    <>
+                      {" | "}
+                      <strong>Start:</strong> {appointment.appointmentStartTime}
+                      {" | "}
+                      <strong>End:</strong> {appointment.appointmentEndTime}
+                    </>
+                  )}
+                </span>
               </div>
 
               {/* Technician */}
@@ -229,7 +239,17 @@ export default function MyAppointmentsPage(): React.ReactElement {
 
               <div className="detail-section">
                 <h3>Appointment Time</h3>
-                <p>{formatDate(selectedAppointment.appointmentDate)}</p>
+                <p>
+                  {formatDate(selectedAppointment.appointmentDate)}
+                  {selectedAppointment.appointmentStartTime && selectedAppointment.appointmentEndTime && (
+                    <>
+                      <br />
+                      <strong>Start:</strong> {selectedAppointment.appointmentStartTime}
+                      {" | "}
+                      <strong>End:</strong> {selectedAppointment.appointmentEndTime}
+                    </>
+                  )}
+                </p>
               </div>
 
               <div className="detail-section">

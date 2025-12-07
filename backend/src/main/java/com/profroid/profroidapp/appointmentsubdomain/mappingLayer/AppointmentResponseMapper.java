@@ -23,10 +23,34 @@ public interface AppointmentResponseMapper {
     @Mapping(source = "appointment.job.hourlyRate", target = "hourlyRate")
     @Mapping(source = "appointment.cellar.name", target = "cellarName")
     @Mapping(source = "appointment.appointmentDate", target = "appointmentDate")
+    @Mapping(target = "appointmentTime", expression = "java(appointment.getAppointmentDate().toLocalTime())")
+    @Mapping(source = "appointment.appointmentDate", target = "appointmentStartDate")
+    @Mapping(target = "appointmentStartTime", expression = "java(appointment.getAppointmentDate().toLocalTime())")
+    @Mapping(target = "appointmentEndDate", expression = "java(computeEndDateTime(appointment))")
+    @Mapping(target = "appointmentEndTime", expression = "java(computeEndDateTime(appointment).toLocalTime())")
     @Mapping(source = "appointment.description", target = "description")
     @Mapping(source = "appointment.appointmentStatus.appointmentStatusType", target = "status")
     @Mapping(source = "appointment.appointmentAddress", target = "appointmentAddress")
     AppointmentResponseModel toResponseModel(Appointment appointment);
 
     List<AppointmentResponseModel> toResponseModelList(List<Appointment> appointments);
+
+    default java.time.LocalDateTime computeEndDateTime(Appointment appointment) {
+        int durationMinutes = appointment.getJob() != null && appointment.getJob().getEstimatedDurationMinutes() != null
+                ? appointment.getJob().getEstimatedDurationMinutes()
+                : resolveDefaultDuration(appointment);
+        return appointment.getAppointmentDate().plusMinutes(durationMinutes);
+    }
+
+    private int resolveDefaultDuration(Appointment appointment) {
+        if (appointment.getJob() == null || appointment.getJob().getJobType() == null) {
+            return 60; // safe fallback
+        }
+        return switch (appointment.getJob().getJobType()) {
+            case QUOTATION -> 30;
+            case MAINTENANCE -> 60;
+            case REPARATION -> 90;
+            case INSTALLATION -> 240;
+        };
+    }
 }

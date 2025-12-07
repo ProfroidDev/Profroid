@@ -16,7 +16,7 @@ export interface AppointmentResponseModel {
   // Technician Information
   technicianFirstName: string;
   technicianLastName: string;
-  technicianRole?: string | { [key: string]: any };
+  technicianRole?: string | { employeeRoleType?: string; [key: string]: unknown };
   
   // Job Information
   jobName: string;
@@ -28,6 +28,8 @@ export interface AppointmentResponseModel {
   
   // Appointment Details
   appointmentDate: string;
+  appointmentStartTime?: string;
+  appointmentEndTime?: string;
   description: string;
   status: string; // SCHEDULED, COMPLETED, CANCELLED
   

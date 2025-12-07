@@ -3,7 +3,7 @@ import { BrowserRouter, Routes, Route, Link } from "react-router-dom";
 import "./App.css";
 
 import CustomerListPage from "./pages/Customer/CustomerListPage";
-import ServicesPage from "./pages/jobs/ServicesPage";
+import ServicesPage from "./pages/Jobs/ServicesPage";
 import Navigation from "./shared/components/Navigation";
 import Footer from "./shared/components/Footer";
 import EmployeeSchedulePage from "./pages/Employee/EmployeeSchedulePage";

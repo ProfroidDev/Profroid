@@ -3,6 +3,7 @@ package com.profroid.profroidapp.appointmentsubdomain.dataAccessLayer;
 import jakarta.persistence.Embeddable;
 import jakarta.validation.constraints.NotBlank;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
@@ -10,6 +11,7 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
+@Builder
 public class AppointmentAddress {
 
     @NotBlank(message = "Street address is required.")

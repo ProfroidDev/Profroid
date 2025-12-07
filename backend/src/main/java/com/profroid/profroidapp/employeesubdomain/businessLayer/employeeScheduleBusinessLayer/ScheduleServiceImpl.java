@@ -218,6 +218,10 @@ public class ScheduleServiceImpl implements ScheduleService {
                     throw new MissingDataException("Non-technician employees cannot work more than 8 hours per day. Day: " + request.getDayOfWeek() + ", Hours: " + dailyHours);
                 }
             } else {
+                // Block FIVE_PM slot for technicians
+                if (request.getTimeSlots().contains(TimeSlotType.FIVE_PM)) {
+                    throw new MissingDataException("Technicians cannot have a time slot at 5:00 PM. Day: " + request.getDayOfWeek());
+                }
                 List<Integer> minutes = request.getTimeSlots().stream()
                         .map(this::toMinutes)
                         .sorted()

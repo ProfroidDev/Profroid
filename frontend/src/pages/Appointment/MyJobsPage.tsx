@@ -72,6 +72,8 @@ export default function MyJobsPage(): React.ReactElement {
       minute: "2-digit"
     });
   };
+  
+    // No formatting for start/end time, display raw string as in appointment page
 
   const getStatusBadge = (status: string): string => {
     switch (status) {
@@ -159,7 +161,17 @@ export default function MyJobsPage(): React.ReactElement {
               {/* Date & Time */}
               <div className="job-info-row">
                 <Clock size={18} />
-                <span>{formatDate(job.appointmentDate)}</span>
+                <span>
+                  {formatDate(job.appointmentDate)}
+                  {job.appointmentStartTime && job.appointmentEndTime && (
+                    <>
+                      {" | "}
+                      <strong>Start:</strong> {job.appointmentStartTime}
+                      {" | "}
+                      <strong>End:</strong> {job.appointmentEndTime}
+                    </>
+                  )}
+                </span>
               </div>
 
               {/* Customer Info */}
@@ -238,7 +250,17 @@ export default function MyJobsPage(): React.ReactElement {
 
               <div className="detail-section">
                 <h3>Scheduled Time</h3>
-                <p>{formatDate(selectedJob.appointmentDate)}</p>
+                <p>
+                  {formatDate(selectedJob.appointmentDate)}
+                  {selectedJob.appointmentStartTime && selectedJob.appointmentEndTime && (
+                    <>
+                      <br />
+                      <strong>Start:</strong> {selectedJob.appointmentStartTime}
+                      {" | "}
+                      <strong>End:</strong> {selectedJob.appointmentEndTime}
+                    </>
+                  )}
+                </p>
               </div>
 
               <div className="detail-section customer-highlight">

@@ -114,6 +114,8 @@
 .id-input:focus {
   outline: none;
   border-color: #f093fb;
+}
+
 .btn-refresh {
   background: linear-gradient(90deg, #7a0901 60%, #a32c1a 100%);
   color: white;
@@ -123,15 +125,13 @@
   cursor: pointer;
   font-weight: 600;
   transition: background 0.2s, box-shadow 0.2s, transform 0.2s;
-  box-shadow: 0 2px 8px rgba(122,9,1,0.08);
+  box-shadow: 0 2px 8px rgba(122, 9, 1, 0.08);
 }
 
 .btn-refresh:hover {
   background: linear-gradient(90deg, #a32c1a 60%, #7a0901 100%);
   transform: translateY(-1px);
-  box-shadow: 0 4px 16px rgba(122,9,1,0.12);
-} transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(30, 58, 95, 0.3);
+  box-shadow: 0 4px 16px rgba(122, 9, 1, 0.12);
 }
 
 /* ===============================
@@ -388,7 +388,9 @@
 }
 
 /* ===============================
-   MODAL
+  MODAL
+================================= */
+
 .modal-overlay-light {
   position: fixed;
   inset: 0;
@@ -500,8 +502,6 @@
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.5px;
-  margin-left: 8px;
-} letter-spacing: 0.5px;
   margin-left: 8px;
 }
 

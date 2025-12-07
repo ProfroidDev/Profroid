@@ -102,19 +102,24 @@ const SLOT_TO_LABEL: Record<TimeSlotType, string> = {
 
 function getRequiredSlots(job?: JobResponseModel): number {
   if (!job) return 1;
-  if (job.jobType === "INSTALLATION") return 4;
-  if (job.jobType === "QUOTATION") return 1;
-  // MAINTENANCE/REPARATION default to 2 slots (60-90 mins)
-  return 2;
+  
+  // Calculate slots based on estimated duration from job response
+  // Each slot is 2 hours (120 minutes)
+  const MINUTES_PER_SLOT = 120;
+  const duration = job.estimatedDurationMinutes || 120;
+  const requiredSlots = Math.ceil(duration / MINUTES_PER_SLOT);
+  
+  // Cap at maximum available slots (5 slots from 9 AM to 5 PM)
+  return Math.min(requiredSlots, 5);
 }
 
 function slotAllowedForJob(job: JobResponseModel | undefined, slot: TimeSlotType): boolean {
   if (!job) return true;
-  if (job.jobType === "INSTALLATION" && !["NINE_AM", "ELEVEN_AM", "ONE_PM"].includes(slot)) {
-    return false;
-  }
+  
   const required = getRequiredSlots(job);
   const startIdx = SLOT_ORDER.indexOf(slot);
+  
+  // Check if there are enough consecutive slots available for this job duration
   return startIdx + required <= SLOT_ORDER.length;
 }
 
@@ -434,74 +439,56 @@ export default function AddAppointmentModal({
   const availableSlots = useMemo(() => {
     if (!selectedJob || !appointmentDate || isWeekend(appointmentDate)) return [];
     if (!selectedTechnician) return [];
-    
+
     const slotSet = new Set(scheduleSlots);
     const slots: string[] = [];
+    const jobDuration = selectedJob.estimatedDurationMinutes || 120;
 
     SLOT_ORDER.forEach((slot) => {
       if (!slotSet.has(slot)) return;
       if (!slotAllowedForJob(selectedJob, slot)) return;
 
-      const required = getRequiredSlots(selectedJob);
-      const startIdx = SLOT_ORDER.indexOf(slot);
-      const needed = SLOT_ORDER.slice(startIdx, startIdx + required);
-      if (needed.length < required || !needed.every((s) => slotSet.has(s))) return;
-
       const time = SLOT_TO_TIME[slot];
       if (isPast(appointmentDate, time)) return;
       if (!passesBookingDeadline(appointmentDate, time)) return;
 
-      // Filter out times when technician already has an appointment
-      const slotHour = parseInt(time.split(':')[0]);
-      
+      // Calculate end time for this slot
+      const slotStart = new Date(`${appointmentDate}T${time}:00`);
+      const slotEnd = new Date(slotStart.getTime() + jobDuration * 60 * 1000);
+
+      // Check if slotEnd goes past the last slot (5:00 PM)
+      const lastSlotEnd = new Date(`${appointmentDate}T17:00:00`);
+      if (slotEnd > lastSlotEnd) return;
+
+      // Overlap detection
       const hasConflict = allAppointments.some((apt) => {
         const aptDate = new Date(apt.appointmentDate).toISOString().split('T')[0];
         if (aptDate !== appointmentDate) return false;
         if (apt.status === "CANCELLED") return false;
-        
+
         // Check if it's the same technician by name
-        const isSameTechnician = 
+        const isSameTechnician =
           apt.technicianFirstName === selectedTechnician.firstName &&
           apt.technicianLastName === selectedTechnician.lastName;
         if (!isSameTechnician) return false;
-        
-        const aptTime = new Date(apt.appointmentDate).toTimeString().split(':')[0];
-        const aptHour = parseInt(aptTime);
-        
-        // Calculate which slots are occupied by existing appointment
-        const aptJobType = apt.jobType;
-        let aptRequiredSlots = 1;
-        if (aptJobType === "INSTALLATION") aptRequiredSlots = 4;
-        else if (aptJobType === "MAINTENANCE" || aptJobType === "REPARATION") aptRequiredSlots = 2;
-        
-        // Check if the time slots overlap
-        // Convert hours to slot indices (9=0, 11=1, 13=2, 15=3, 17=4)
-        const hourToIndex = (h: number) => {
-          if (h === 9) return 0;
-          if (h === 11) return 1;
-          if (h === 13) return 2;
-          if (h === 15) return 3;
-          if (h === 17) return 4;
-          return -1;
-        };
-        
-        const myStartIndex = hourToIndex(slotHour);
-        const aptStartIndex = hourToIndex(aptHour);
-        
-        if (myStartIndex === -1 || aptStartIndex === -1) return false;
-        
-        // Check if any of the required slots overlap
-        for (let i = 0; i < required; i++) {
-          const mySlotIndex = myStartIndex + i;
-          for (let j = 0; j < aptRequiredSlots; j++) {
-            const aptSlotIndex = aptStartIndex + j;
-            if (mySlotIndex === aptSlotIndex) {
-              return true; // Overlap found
-            }
-          }
+
+        // Use start/end time from backend if available
+        const aptStart = apt.appointmentStartTime ? new Date(`${appointmentDate}T${apt.appointmentStartTime}`) : new Date(apt.appointmentDate);
+        const aptEnd = new Date(aptStart);
+        if (apt.appointmentStartTime && apt.appointmentEndTime) {
+          // Parse times as minutes since midnight
+          const [startHour, startMin] = apt.appointmentStartTime.split(":").map(Number);
+          const [endHour, endMin] = apt.appointmentEndTime.split(":").map(Number);
+          const startMinutes = startHour * 60 + startMin;
+          const endMinutes = endHour * 60 + endMin;
+          const durationMs = (endMinutes - startMinutes) * 60 * 1000;
+          aptEnd.setTime(aptStart.getTime() + durationMs);
+        } else {
+          aptEnd.setTime(aptStart.getTime() + 60 * 60 * 1000); // fallback 1 hour
         }
-        
-        return false;
+
+        // Overlap check
+        return slotStart < aptEnd && slotEnd > aptStart;
       });
 
       if (hasConflict) return;

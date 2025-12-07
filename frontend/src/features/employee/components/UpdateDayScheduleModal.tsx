@@ -20,6 +20,12 @@ type TechSlot = TimeSlotType;
 
 const AVAILABLE_SLOTS: TimeSlotType[] = ['NINE_AM', 'ELEVEN_AM', 'ONE_PM', 'THREE_PM', 'FIVE_PM'];
 
+function getAvailableSlots(isTechnician: boolean): TimeSlotType[] {
+  return isTechnician
+    ? ['NINE_AM', 'ELEVEN_AM', 'ONE_PM', 'THREE_PM']
+    : AVAILABLE_SLOTS;
+}
+
 const SLOT_LABELS: Record<TimeSlotType, string> = {
   NINE_AM: '9:00 AM',
   ELEVEN_AM: '11:00 AM',
@@ -272,7 +278,7 @@ export default function UpdateDayScheduleModal({
             ) : (
               <>
                 <div style={{ marginBottom: '16px' }}>
-                  {AVAILABLE_SLOTS.map(slot => {
+                  {getAvailableSlots(isTechnician).map(slot => {
                     const isSelected = techSlots.includes(slot);
                     
                     return (
