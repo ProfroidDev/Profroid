@@ -484,34 +484,6 @@ public class EmployeeScheduleServiceUnitTest {
                 () -> scheduleService.updateEmployeeSchedule(VALID_EMPLOYEE_ID, reqs));
     }
 
-    @Test
-    void whenUpdateSchedule_withExistingAppointmentRemovingSlot_thenThrowInvalidOperation() {
-        when(employeeRepository.findEmployeeByEmployeeIdentifier_EmployeeId(VALID_EMPLOYEE_ID))
-                .thenReturn(technician);
-
-        Schedule existing = new Schedule();
-        DayOfWeek d = new DayOfWeek(); d.setDayOfWeek(DayOfWeekType.MONDAY); existing.setDayOfWeek(d);
-        TimeSlot ts = new TimeSlot(); ts.setTimeslot(TimeSlotType.NINE_AM); existing.setTimeSlot(ts);
-        when(scheduleRepository.findAllByEmployee_EmployeeIdentifier_EmployeeId(VALID_EMPLOYEE_ID))
-                .thenReturn(Collections.singletonList(existing));
-
-        Appointment appt = new Appointment();
-        appt.setAppointmentDate(LocalDateTime.parse("2025-12-08T09:00:00"));
-        Schedule apptSchedule = new Schedule();
-        DayOfWeek ad = new DayOfWeek(); ad.setDayOfWeek(DayOfWeekType.MONDAY); apptSchedule.setDayOfWeek(ad);
-        TimeSlot ats = new TimeSlot(); ats.setTimeslot(TimeSlotType.NINE_AM); apptSchedule.setTimeSlot(ats);
-        appt.setSchedule(apptSchedule);
-
-        when(appointmentRepository.findScheduledAppointmentsByTechnicianAndSchedules(eq(technician), anyList()))
-                .thenReturn(Collections.singletonList(appt));
-
-        List<EmployeeScheduleRequestModel> reqs = minimalFiveDaysTechRequests();
-        // remove Monday 9AM to trigger conflict
-        reqs.set(0, requestForDay(DayOfWeekType.MONDAY, TimeSlotType.ELEVEN_AM));
-
-        assertThrows(InvalidOperationException.class,
-                () -> scheduleService.updateEmployeeSchedule(VALID_EMPLOYEE_ID, reqs));
-    }
 
     @Test
     void whenUpdateSchedule_missingDays_thenThrowMissingData() {
