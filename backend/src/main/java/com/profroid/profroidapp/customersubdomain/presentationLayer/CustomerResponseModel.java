@@ -14,7 +14,7 @@ import java.util.List;
 @AllArgsConstructor
 @NoArgsConstructor
 public class CustomerResponseModel {
-    CustomerIdentifier customerId;
+    String customerId;
     String firstName;
     String lastName;
     List<CustomerPhoneNumber> phoneNumbers;

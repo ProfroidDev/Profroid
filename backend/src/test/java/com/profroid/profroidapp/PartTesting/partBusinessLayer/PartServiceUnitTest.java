@@ -4,8 +4,8 @@ import com.profroid.profroidapp.partsubdomain.businessLayer.PartServiceImpl;
 import com.profroid.profroidapp.partsubdomain.dataAccessLayer.Part;
 import com.profroid.profroidapp.partsubdomain.dataAccessLayer.PartIdentifier;
 import com.profroid.profroidapp.partsubdomain.dataAccessLayer.PartRepository;
-import com.profroid.profroidapp.partsubdomain.mapperLayer.PartRequestMapper;
-import com.profroid.profroidapp.partsubdomain.mapperLayer.PartResponseMapper;
+import com.profroid.profroidapp.partsubdomain.mappingLayer.PartRequestMapper;
+import com.profroid.profroidapp.partsubdomain.mappingLayer.PartResponseMapper;
 import com.profroid.profroidapp.partsubdomain.presentationLayer.PartRequestModel;
 import com.profroid.profroidapp.utils.exceptions.InvalidIdentifierException;
 import com.profroid.profroidapp.utils.exceptions.ResourceAlreadyExistsException;
@@ -13,7 +13,6 @@ import com.profroid.profroidapp.utils.exceptions.ResourceNotFoundException;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.ArgumentCaptor;
 
 import java.util.*;
 

@@ -64,7 +64,7 @@ public class CustomerServiceUnitTest {
         existingCustomer.setCustomerAddress(address);
 
         existingCustomerResponse = CustomerResponseModel.builder()
-                .customerId(new CustomerIdentifier(VALID_CUSTOMER_ID))
+                .customerId(VALID_CUSTOMER_ID)
                 .firstName("John")
                 .lastName("Doe")
                 .userId("johndoe")
@@ -119,7 +119,7 @@ public class CustomerServiceUnitTest {
 
         CustomerResponseModel response = customerService.getCustomerById(VALID_CUSTOMER_ID);
 
-        assertEquals(VALID_CUSTOMER_ID, response.getCustomerId().getCustomerId());
+        assertEquals(VALID_CUSTOMER_ID, response.getCustomerId());
         verify(customerRepository).findCustomerByCustomerIdentifier_CustomerId(VALID_CUSTOMER_ID);
     }
 
@@ -158,7 +158,7 @@ public class CustomerServiceUnitTest {
 
         CustomerResponseModel result = customerService.createCustomer(validRequest);
 
-        assertEquals(VALID_CUSTOMER_ID, result.getCustomerId().getCustomerId());
+        assertEquals(VALID_CUSTOMER_ID, result.getCustomerId());
         verify(customerRepository).findCustomerByUserId("johndoe");
         verify(customerRepository).save(entity);
     }
@@ -229,7 +229,7 @@ public class CustomerServiceUnitTest {
         when(customerRepository.save(any(Customer.class))).thenReturn(updated);
 
         CustomerResponseModel responseModel = CustomerResponseModel.builder()
-                .customerId(new CustomerIdentifier(VALID_CUSTOMER_ID))
+                .customerId(VALID_CUSTOMER_ID)
                 .firstName("John")
                 .lastName("Doe")
                 .userId("johndoe")
