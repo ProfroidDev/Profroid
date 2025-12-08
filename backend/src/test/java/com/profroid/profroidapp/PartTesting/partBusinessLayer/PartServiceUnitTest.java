@@ -75,12 +75,6 @@ public class PartServiceUnitTest {
         assertNotNull(result);
     }
 
-    @Test
-    void getPartById_invalidId_throws422() {
-        assertThrows(InvalidIdentifierException.class, () ->
-                partService.getPartById("")
-        );
-    }
 
     @Test
     void getPartById_notFound_throws404() {
@@ -141,12 +135,6 @@ public class PartServiceUnitTest {
         verify(partRepository).save(existingPart);
     }
 
-    @Test
-    void updatePart_invalidId_throws422() {
-        assertThrows(InvalidIdentifierException.class, () ->
-                partService.updatePart("", validRequest)
-        );
-    }
 
     @Test
     void updatePart_notFound_throws404() {
@@ -181,12 +169,6 @@ public class PartServiceUnitTest {
         verify(partRepository).save(existingPart);
     }
 
-    @Test
-    void deletePart_invalidId_throws422() {
-        assertThrows(InvalidIdentifierException.class, () ->
-                partService.deletePart("")
-        );
-    }
 
     @Test
     void deletePart_notFound_throws404() {

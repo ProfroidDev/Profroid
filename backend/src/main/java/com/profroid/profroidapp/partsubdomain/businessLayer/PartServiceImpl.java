@@ -47,7 +47,6 @@ public class PartServiceImpl implements PartService {
     @Override
     public PartResponseModel getPartById(String partId) {
 
-        validatePartId(partId);
 
         Part foundPart = partRepository.findPartByPartIdentifier_PartId(partId);
 
@@ -88,7 +87,6 @@ public class PartServiceImpl implements PartService {
     @Override
     public PartResponseModel updatePart(String partId, PartRequestModel requestModel) {
 
-        validatePartId(partId);
 
         Part existingPart = partRepository.findPartByPartIdentifier_PartId(partId);
 
@@ -121,7 +119,6 @@ public class PartServiceImpl implements PartService {
     @Override
     public void deletePart(String partId) {
 
-        validatePartId(partId);
 
         Part part = partRepository.findPartByPartIdentifier_PartId(partId);
 
@@ -138,14 +135,4 @@ public class PartServiceImpl implements PartService {
     }
 
 
-    private void validatePartId(String partId) {
-        if (partId == null || partId.trim().isEmpty()) {
-            throw new InvalidIdentifierException("Part ID cannot be null or empty.");
-        }
-
-        // Must match "PC-123456"
-        if (!partId.matches("^PC-\\d{6}$")) {
-            throw new InvalidIdentifierException("Part ID '" + partId + "' is invalid. Expected format: PC-######");
-        }
-    }
 }
