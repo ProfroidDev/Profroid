@@ -1,5 +1,6 @@
 package com.profroid.profroidapp.JobTesting.jobBusinessLayer;
 
+import com.profroid.profroidapp.appointmentsubdomain.dataAccessLayer.AppointmentRepository;
 import com.profroid.profroidapp.jobssubdomain.businessLayer.JobServiceImpl;
 import com.profroid.profroidapp.jobssubdomain.dataAccessLayer.Job;
 import com.profroid.profroidapp.jobssubdomain.dataAccessLayer.JobIdentifier;
@@ -35,6 +36,9 @@ public class JobServiceUnitTest {
     private JobResponseMapper jobResponseMapper;
     @Mock
     private JobRequestMapper jobRequestMapper;
+
+    @Mock
+    private AppointmentRepository appointmentRepository;
 
     @InjectMocks
     private JobServiceImpl jobService;
@@ -142,8 +146,13 @@ public class JobServiceUnitTest {
     // [Job-Service][Unit Test][Positive] Update job with valid data -> succeeds
     @Test
     void updateJob_validData_succeeds() {
+        // Arrange
         when(jobRepository.findJobByJobIdentifier_JobId(VALID_JOB_ID))
                 .thenReturn(existingJob);
+
+        // No appointments for this job -> validation passes
+        when(appointmentRepository.findAllByJob(existingJob))
+                .thenReturn(List.of());
 
         JobRequestModel updateRequest = JobRequestModel.builder()
                 .jobName("Updated HVAC Installation")
@@ -162,6 +171,7 @@ public class JobServiceUnitTest {
         updatedJob.setEstimatedDurationMinutes(300);
         updatedJob.setJobType(JobType.MAINTENANCE);
         updatedJob.setActive(true);
+
         when(jobRepository.save(any(Job.class))).thenReturn(updatedJob);
 
         JobResponseModel updatedResponse = JobResponseModel.builder()
@@ -173,13 +183,19 @@ public class JobServiceUnitTest {
                 .jobType(JobType.MAINTENANCE)
                 .active(true)
                 .build();
+
         when(jobResponseMapper.toResponseModel(updatedJob)).thenReturn(updatedResponse);
 
+        // Act
         JobResponseModel response = jobService.updateJob(VALID_JOB_ID, updateRequest);
+
+        // Assert
         assertEquals("Updated HVAC Installation", response.getJobName());
         assertEquals(85.00, response.getHourlyRate());
         assertEquals(JobType.MAINTENANCE, response.getJobType());
+
         verify(jobRepository).findJobByJobIdentifier_JobId(VALID_JOB_ID);
+        verify(appointmentRepository).findAllByJob(existingJob);   // optional but nice
         verify(jobRepository).save(any(Job.class));
         verify(jobResponseMapper).toResponseModel(updatedJob);
     }
@@ -347,8 +363,13 @@ public class JobServiceUnitTest {
     // [Job-Service][Unit Test][Positive] Update job with all fields -> succeeds
     @Test
     void updateJob_allFields_succeeds() {
+        // Existing job found in repo
         when(jobRepository.findJobByJobIdentifier_JobId(VALID_JOB_ID))
                 .thenReturn(existingJob);
+
+        // No existing appointments for this job → validation passes
+        when(appointmentRepository.findAllByJob(existingJob))
+                .thenReturn(List.of());
 
         JobRequestModel completeUpdate = JobRequestModel.builder()
                 .jobName("Completely Updated Job")
@@ -367,6 +388,7 @@ public class JobServiceUnitTest {
         updated.setEstimatedDurationMinutes(360);
         updated.setJobType(JobType.REPARATION);
         updated.setActive(false);
+
         when(jobRepository.save(any(Job.class))).thenReturn(updated);
 
         JobResponseModel response = JobResponseModel.builder()
@@ -380,13 +402,20 @@ public class JobServiceUnitTest {
                 .build();
         when(jobResponseMapper.toResponseModel(updated)).thenReturn(response);
 
+        // Act
         JobResponseModel result = jobService.updateJob(VALID_JOB_ID, completeUpdate);
+
+        // Assert
         assertEquals("Completely Updated Job", result.getJobName());
         assertEquals("Completely updated description", result.getJobDescription());
         assertEquals(100.00, result.getHourlyRate());
         assertEquals(360, result.getEstimatedDurationMinutes());
         assertEquals(JobType.REPARATION, result.getJobType());
         assertFalse(result.isActive());
+
+        verify(jobRepository).findJobByJobIdentifier_JobId(VALID_JOB_ID);
+        verify(appointmentRepository).findAllByJob(existingJob);  // optional but good
         verify(jobRepository).save(any(Job.class));
+        verify(jobResponseMapper).toResponseModel(updated);
     }
 }
