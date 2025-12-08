@@ -226,6 +226,26 @@
   transform: translateY(-2px);
 }
 
+.btn-delete-part {
+  flex: 1;
+  background: #fff;
+  color: #c53030;
+  border: 2px solid #c53030;
+  padding: 10px 20px;
+  border-radius: 10px;
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: pointer;
+  box-shadow: 0 2px 8px rgba(122, 9, 1, 0.08);
+  transition: background 0.2s, box-shadow 0.2s, transform 0.2s;
+}
+
+.btn-delete-part:hover {
+  background: #ffe0e0;
+  box-shadow: 0 4px 12px rgba(197, 48, 48, 0.12);
+  transform: translateY(-2px);
+}
+
 /* ===== Loading & Empty States ===== */
 .parts-loading,
 .parts-empty {

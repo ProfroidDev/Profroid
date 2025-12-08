@@ -112,7 +112,7 @@ public class CustomerControllerIntegrationTest {
                 .expectBody(CustomerResponseModel.class)
                 .value(customer -> {
                     assertNotNull(customer);
-                    assertEquals(testCustomerId, customer.getCustomerId().getCustomerId());
+                    assertEquals(testCustomerId, customer.getCustomerId());
                     assertEquals("johndoe", customer.getUserId());
                 });
     }

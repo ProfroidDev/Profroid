@@ -43,4 +43,10 @@ public class PartController {
         PartResponseModel responseModel = partService.updatePart(partId, requestModel);
         return ResponseEntity.ok(responseModel);
     }
+
+    @DeleteMapping("/{partId}")
+    public ResponseEntity<Void> deletePart(@PathVariable String partId) {
+        partService.deletePart(partId);
+        return ResponseEntity.noContent().build();
+    }
 }

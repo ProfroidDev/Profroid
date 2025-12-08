@@ -1,4 +1,4 @@
-package com.profroid.profroidapp.partsubdomain.mapperLayer;
+package com.profroid.profroidapp.partsubdomain.mappingLayer;
 
 import com.profroid.profroidapp.partsubdomain.dataAccessLayer.Part;
 import com.profroid.profroidapp.partsubdomain.dataAccessLayer.PartIdentifier;

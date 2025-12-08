@@ -83,7 +83,7 @@ public class CustomerControllerUnitTest {
                 .build();
 
         // Identifier
-        CustomerIdentifier identifier = new CustomerIdentifier(VALID_CUSTOMER_ID);
+        String identifier = VALID_CUSTOMER_ID;
 
         // Response
         validCustomerResponse = CustomerResponseModel.builder()
@@ -154,7 +154,7 @@ public class CustomerControllerUnitTest {
         assertNotNull(response);
         assertEquals(HttpStatus.OK, response.getStatusCode());
         assertEquals(VALID_CUSTOMER_ID,
-                response.getBody().getCustomerId().getCustomerId());
+                response.getBody().getCustomerId());
 
         verify(customerService, times(1)).getCustomerById(VALID_CUSTOMER_ID);
     }
@@ -215,7 +215,7 @@ public class CustomerControllerUnitTest {
         validCustomerRequest.setPhoneNumbers(Arrays.asList(phone1, phone2));
 
         CustomerResponseModel multiPhoneResponse = CustomerResponseModel.builder()
-                .customerId(new CustomerIdentifier(VALID_CUSTOMER_ID))
+                .customerId(VALID_CUSTOMER_ID)
                 .firstName("Alice")
                 .lastName("Martin")
                 .userId("alicemartin")
@@ -261,7 +261,7 @@ public class CustomerControllerUnitTest {
                 .build();
 
         CustomerResponseModel updatedResponse = CustomerResponseModel.builder()
-                .customerId(new CustomerIdentifier(VALID_CUSTOMER_ID))
+                .customerId(VALID_CUSTOMER_ID)
                 .firstName("Alicia")
                 .lastName("Martinez")
                 .userId("alicia999")
