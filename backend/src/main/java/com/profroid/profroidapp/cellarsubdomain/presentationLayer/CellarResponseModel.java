@@ -24,4 +24,6 @@ public class CellarResponseModel {
     private boolean hasAutoRegulation;
 
     private CellarType cellarType;
+
+    public boolean isActive;
 }

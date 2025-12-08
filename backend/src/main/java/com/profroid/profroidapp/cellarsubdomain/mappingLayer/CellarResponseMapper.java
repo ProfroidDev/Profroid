@@ -27,7 +27,9 @@ public interface CellarResponseMapper {
             @Mapping(source = "cellar.hasHumidityControl", target = "hasHumidityControl"),
             @Mapping(source = "cellar.hasAutoRegulation", target = "hasAutoRegulation"),
 
-            @Mapping(source = "cellar.cellarType", target = "cellarType")
+            @Mapping(source = "cellar.cellarType", target = "cellarType"),
+
+            @Mapping(source = "cellar.isActive", target = "isActive")
     })
     CellarResponseModel toResponseModel(Cellar cellar);
 

@@ -33,6 +33,8 @@ public interface CellarRequestMapper {
 
             @Mapping(source = "requestModel.cellarType", target = "cellarType"),
 
+            @Mapping(target = "isActive", ignore = true),
+
             // JPA auto key
             @Mapping(target = "id", ignore = true)
     })

@@ -44,4 +44,15 @@ public class CellarController {
         return ResponseEntity.ok(responseModel);
     }
 
+    @DeleteMapping("/{cellarId}/deactivate")
+    public ResponseEntity<CellarResponseModel> deactivateCellar(@PathVariable String cellarId) {
+        CellarResponseModel deactivated = cellarService.deactivateCellar(cellarId);
+        return ResponseEntity.status(HttpStatus.OK).body(deactivated);
+    }
+
+    @PatchMapping("/{cellarId}/reactivate")
+    public ResponseEntity<CellarResponseModel> reactivateCellar(@PathVariable String cellarId) {
+        CellarResponseModel reactivated = cellarService.reactivateCellar(cellarId);
+        return ResponseEntity.status(HttpStatus.OK).body(reactivated);
+    }
 }

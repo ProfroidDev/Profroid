@@ -11,6 +11,9 @@ import com.profroid.profroidapp.jobssubdomain.presentationLayer.JobRequestModel;
 import com.profroid.profroidapp.jobssubdomain.presentationLayer.JobResponseModel;
 import com.profroid.profroidapp.utils.exceptions.InvalidOperationException;
 import jakarta.persistence.EntityNotFoundException;
+import com.profroid.profroidapp.utils.exceptions.InvalidIdentifierException;
+import com.profroid.profroidapp.utils.exceptions.InvalidOperationException;
+import com.profroid.profroidapp.utils.exceptions.ResourceNotFoundException;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
@@ -44,10 +47,14 @@ public class JobServiceImpl implements JobService {
 
     @Override
     public JobResponseModel getJobById(String jobId) {
+        if (jobId == null || jobId.trim().length() != 36) {
+            throw new InvalidIdentifierException("Job ID must be a 36-character UUID string.");
+        }
+
         Job foundJob = jobRepository.findJobByJobIdentifier_JobId(jobId);
 
         if (foundJob == null) {
-            throw new EntityNotFoundException("Job not found:" + jobId);
+            throw new ResourceNotFoundException("Job " + jobId + " not found.");
         }
         return jobResponseMapper.toResponseModel(foundJob);
     }
@@ -62,10 +69,14 @@ public class JobServiceImpl implements JobService {
 
     @Override
     public JobResponseModel updateJob(String jobId, JobRequestModel requestModel) {
+        if (jobId == null || jobId.trim().length() != 36) {
+            throw new InvalidIdentifierException("Job ID must be a 36-character UUID string.");
+        }
+
         Job foundJob = jobRepository.findJobByJobIdentifier_JobId(jobId);
 
         if (foundJob == null) {
-            throw new EntityNotFoundException("Job not found: " + jobId);
+            throw new ResourceNotFoundException("Job " + jobId + " not found.");
         }
 
         // Update all job fields
@@ -84,16 +95,24 @@ public class JobServiceImpl implements JobService {
     }
 
     @Override
-    public void deleteJob(String jobId) {
+    public JobResponseModel deactivateJob(String jobId) {
+        if (jobId == null || jobId.trim().length() != 36) {
+            throw new InvalidIdentifierException("Job ID must be a 36-character UUID string.");
+        }
+
         Job foundJob = jobRepository.findJobByJobIdentifier_JobId(jobId);
 
         if (foundJob == null) {
-            throw new EntityNotFoundException("Job not found: " + jobId);
+            throw new ResourceNotFoundException("Job " + jobId + " not found.");
         }
 
-        // Soft delete: set active to false instead of deleting
+        if (!foundJob.isActive()) {
+            throw new InvalidOperationException("Job " + jobId + " is already deactivated.");
+        }
+
         foundJob.setActive(false);
-        jobRepository.save(foundJob);
+        Job deactivatedJob = jobRepository.save(foundJob);
+        return jobResponseMapper.toResponseModel(deactivatedJob);
     }
 
 
@@ -200,6 +219,25 @@ public class JobServiceImpl implements JobService {
             default -> -1;
         };
     }
-}
 
+@Override
+public JobResponseModel reactivateJob(String jobId) {
+    if (jobId == null || jobId.trim().length() != 36) {
+        throw new InvalidIdentifierException("Job ID must be a 36-character UUID string.");
+    }
+        Job foundJob = jobRepository.findJobByJobIdentifier_JobId(jobId);
+
+        if (foundJob == null) {
+            throw new ResourceNotFoundException("Job " + jobId + " not found.");
+        }
+
+        if (foundJob.isActive()) {
+            throw new InvalidOperationException("Job " + jobId + " is already active.");
+        }
+
+        foundJob.setActive(true);
+        Job reactivatedJob = jobRepository.save(foundJob);
+        return jobResponseMapper.toResponseModel(reactivatedJob);
+    }
+}
 

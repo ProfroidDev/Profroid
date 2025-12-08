@@ -50,5 +50,7 @@ public class Cellar {
 
     @Enumerated(EnumType.STRING)
     private CellarType cellarType;
+
+    private Boolean isActive = true;
 }
 

@@ -38,9 +38,15 @@ public class JobController {
         return ResponseEntity.ok(jobService.updateJob(jobId, requestModel));
     }
 
-    @DeleteMapping("/{jobId}")
-    public ResponseEntity<Void> deleteJob(@PathVariable String jobId){
-        jobService.deleteJob(jobId);
-        return ResponseEntity.noContent().build();
+    @DeleteMapping("/{jobId}/deactivate")
+    public ResponseEntity<JobResponseModel> deactivateJob(@PathVariable String jobId){
+        JobResponseModel deactivated = jobService.deactivateJob(jobId);
+        return ResponseEntity.status(HttpStatus.OK).body(deactivated);
+    }
+
+    @PatchMapping("/{jobId}/reactivate")
+    public ResponseEntity<JobResponseModel> reactivateJob(@PathVariable String jobId){
+        JobResponseModel reactivated = jobService.reactivateJob(jobId);
+        return ResponseEntity.status(HttpStatus.OK).body(reactivated);
     }
 }

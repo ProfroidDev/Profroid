@@ -17,5 +17,7 @@ public interface CellarService {
 
     CellarResponseModel updateCellar(String ownerCustomerId, String cellarId, CellarRequestModel cellarRequestModel);
 
-    void deleteCellar(String ownerCustomerId, String cellarId);
+    CellarResponseModel deactivateCellar(String cellarId);
+
+    CellarResponseModel reactivateCellar(String cellarId);
 }

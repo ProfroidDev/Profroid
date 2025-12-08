@@ -2,11 +2,14 @@ import React, { useEffect, useState } from "react";
 import { getJobs } from "../../features/jobs/api/getAllJobs";
 import { getJobById } from "../../features/jobs/api/getJobById";
 import { createJob } from "../../features/jobs/api/createJob";
-import { deleteJob } from "../../features/jobs/api/deleteJob";
+import { deactivateJob } from "../../features/jobs/api/deactivateJob";
+import { reactivateJob } from "../../features/jobs/api/reactivateJob";
 import type { JobResponseModel } from "../../features/jobs/models/JobResponseModel";
 import type { JobRequestModel } from "../../features/jobs/models/JobRequestModel";
 import "./ServicesPage.css";
 import { updateJob } from "../../features/jobs/api/updateJob";
+import ConfirmationModal from "../../components/ConfirmationModal";
+import Toast from "../../shared/components/Toast";
 
 export default function ServicesPage(): React.ReactElement {
   const [jobs, setJobs] = useState<JobResponseModel[]>([]);
@@ -17,21 +20,10 @@ export default function ServicesPage(): React.ReactElement {
   const [createModalOpen, setCreateModalOpen] = useState<boolean>(false);
   const [createLoading, setCreateLoading] = useState<boolean>(false);
   const [createError, setCreateError] = useState<string>("");
-  const [showSuccessNotification, setShowSuccessNotification] =
-    useState<boolean>(false);
-  const [showDeleteSuccessNotification, setShowDeleteSuccessNotification] =
-    useState<boolean>(false);
-  const [deleteConfirmModalOpen, setDeleteConfirmModalOpen] =
-    useState<boolean>(false);
-  const [jobToDelete, setJobToDelete] = useState<JobResponseModel | null>(null);
-  const [deleteLoading, setDeleteLoading] = useState<boolean>(false);
-  const [deleteError, setDeleteError] = useState<string>("");
   const [updateModalOpen, setUpdateModalOpen] = useState<boolean>(false);
   const [jobToUpdate, setJobToUpdate] = useState<JobResponseModel | null>(null);
   const [updateLoading, setUpdateLoading] = useState<boolean>(false);
   const [updateError, setUpdateError] = useState<string>("");
-  const [showUpdateSuccessNotification, setShowUpdateSuccessNotification] =
-    useState<boolean>(false);
   const [updateFormData, setUpdateFormData] = useState<JobRequestModel>({
     jobName: "",
     jobDescription: "",
@@ -47,6 +39,24 @@ export default function ServicesPage(): React.ReactElement {
     estimatedDurationMinutes: 0,
     jobType: "QUOTATION",
     active: true,
+  });
+
+  // Deactivate/Reactivate state
+  const [deactivateLoading, setDeactivateLoading] = useState<boolean>(false);
+  const [toast, setToast] = useState<{
+    message: string;
+    type: "success" | "error" | "info" | "warning";
+  } | null>(null);
+
+  // Confirmation modal state
+  const [confirmationModal, setConfirmationModal] = useState<{
+    isOpen: boolean;
+    type: "deactivate" | "reactivate" | null;
+    job: JobResponseModel | null;
+  }>({
+    isOpen: false,
+    type: null,
+    job: null,
   });
 
   useEffect(() => {
@@ -107,49 +117,6 @@ export default function ServicesPage(): React.ReactElement {
       active: true,
     });
     setCreateError("");
-  }
-
-  function openDeleteConfirm(jobId: string) {
-    const jobToDelete = jobs.find((j) => j.jobId === jobId) || null;
-    setJobToDelete(jobToDelete);
-    setDeleteConfirmModalOpen(true);
-    setDeleteError("");
-  }
-
-  function closeDeleteConfirm() {
-    setDeleteConfirmModalOpen(false);
-    setJobToDelete(null);
-    setDeleteError("");
-  }
-
-  async function handleDeleteJob() {
-    if (!jobToDelete) {
-      return;
-    }
-
-    setDeleteLoading(true);
-    setDeleteError("");
-
-    try {
-      await deleteJob(jobToDelete.jobId);
-      // Remove the deleted job from the list
-      setJobs((prevJobs) =>
-        prevJobs.filter((job) => job.jobId !== jobToDelete.jobId)
-      );
-      closeDeleteConfirm();
-      // Show success notification
-      setShowDeleteSuccessNotification(true);
-      // Auto-hide after 3 seconds
-      setTimeout(() => {
-        setShowDeleteSuccessNotification(false);
-      }, 3000);
-    } catch (error) {
-      setDeleteError(
-        error instanceof Error ? error.message : "Failed to delete service"
-      );
-    } finally {
-      setDeleteLoading(false);
-    }
   }
 
   function openUpdateModal(jobId: string) {
@@ -239,11 +206,10 @@ export default function ServicesPage(): React.ReactElement {
       );
       closeUpdateModal();
       // Show success notification
-      setShowUpdateSuccessNotification(true);
-      // Auto-hide after 3 seconds
-      setTimeout(() => {
-        setShowUpdateSuccessNotification(false);
-      }, 3000);
+      setToast({
+        message: "Service has been updated successfully!",
+        type: "success",
+      });
     } catch (error) {
       // Try to extract backend error message if available
       let errorMsg = "Failed to update service";
@@ -312,17 +278,82 @@ export default function ServicesPage(): React.ReactElement {
       setJobs((prevJobs) => [...prevJobs, newJob]);
       closeCreateModal();
       // Show success notification
-      setShowSuccessNotification(true);
-      // Auto-hide after 3 seconds
-      setTimeout(() => {
-        setShowSuccessNotification(false);
-      }, 3000);
+      setToast({
+        message: "Service has been created successfully!",
+        type: "success",
+      });
     } catch (error) {
       setCreateError(
         error instanceof Error ? error.message : "Failed to create service"
       );
     } finally {
       setCreateLoading(false);
+    }
+  }
+
+  async function handleDeactivateJob(job: JobResponseModel) {
+    setConfirmationModal({
+      isOpen: true,
+      type: "deactivate",
+      job,
+    });
+  }
+
+  async function confirmDeactivate() {
+    if (!confirmationModal.job) return;
+
+    setDeactivateLoading(true);
+    try {
+      const updatedJob = await deactivateJob(confirmationModal.job.jobId);
+      setToast({
+        message: `${confirmationModal.job.jobName} has been deactivated. You can reactivate it at any time.`,
+        type: "warning",
+      });
+      // Update the job in the list to show deactivated state
+      setJobs(
+        jobs.map((j) =>
+          j.jobId === confirmationModal.job?.jobId ? updatedJob : j
+        )
+      );
+    } catch (error) {
+      console.error("Error deactivating job:", error);
+      setToast({ message: "Failed to deactivate service", type: "error" });
+    } finally {
+      setDeactivateLoading(false);
+      setConfirmationModal({ isOpen: false, type: null, job: null });
+    }
+  }
+
+  async function handleReactivateJob(job: JobResponseModel) {
+    setConfirmationModal({
+      isOpen: true,
+      type: "reactivate",
+      job,
+    });
+  }
+
+  async function confirmReactivate() {
+    if (!confirmationModal.job) return;
+
+    setDeactivateLoading(true);
+    try {
+      const updatedJob = await reactivateJob(confirmationModal.job.jobId);
+      setToast({
+        message: `${confirmationModal.job.jobName} has been reactivated successfully!`,
+        type: "success",
+      });
+      // Update the job in the list to show reactivated state
+      setJobs(
+        jobs.map((j) =>
+          j.jobId === confirmationModal.job?.jobId ? updatedJob : j
+        )
+      );
+    } catch (error) {
+      console.error("Error reactivating job:", error);
+      setToast({ message: "Failed to reactivate service", type: "error" });
+    } finally {
+      setDeactivateLoading(false);
+      setConfirmationModal({ isOpen: false, type: null, job: null });
     }
   }
 
@@ -340,14 +371,24 @@ export default function ServicesPage(): React.ReactElement {
       ) : (
         <div className="services-list">
           {jobs.map((j) => (
-            <div key={j.jobId} className="service-card-wrapper">
+            <div
+              key={j.jobId}
+              className={`service-card-wrapper ${
+                !j.active ? "service-inactive" : ""
+              }`}
+            >
               <div className="service-card">
                 <div className="service-image" aria-hidden>
                   <span>Image</span>
                 </div>
 
                 <div className="service-content">
-                  <h3 className="service-title">{j.jobName}</h3>
+                  <h3 className="service-title">
+                    {j.jobName}
+                    {!j.active && (
+                      <span className="inactive-badge"> (Inactive)</span>
+                    )}
+                  </h3>
                   <p className="service-desc">{j.jobDescription}</p>
                 </div>
 
@@ -358,42 +399,46 @@ export default function ServicesPage(): React.ReactElement {
                   <button
                     className="btn-view-light"
                     onClick={() => void openDetails(j.jobId)}
+                    disabled={!j.active}
                   >
                     View Details
                   </button>
                   <button
                     className="btn-view-light"
                     onClick={() => void openUpdateModal(j.jobId)}
+                    disabled={!j.active}
                   >
                     Modify
                   </button>
+                  {j.active ? (
+                    <button
+                      className="btn-view-light"
+                      style={{
+                        marginLeft: 8,
+                        backgroundColor: "#ff6b6b",
+                        color: "white",
+                      }}
+                      onClick={() => handleDeactivateJob(j)}
+                      disabled={deactivateLoading}
+                    >
+                      Deactivate
+                    </button>
+                  ) : (
+                    <button
+                      className="btn-view-light"
+                      style={{
+                        marginLeft: 8,
+                        backgroundColor: "#51cf66",
+                        color: "white",
+                      }}
+                      onClick={() => handleReactivateJob(j)}
+                      disabled={deactivateLoading}
+                    >
+                      Reactivate
+                    </button>
+                  )}
                 </div>
               </div>
-              <button
-                className="service-delete-btn"
-                onClick={() => void openDeleteConfirm(j.jobId)}
-                aria-label="Delete service"
-                title="Delete service"
-              ></button>
-                {/* Trash/Delete SVG icon */}
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  width="20"
-                  height="20"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  aria-hidden="true"
-                  focusable="false"
-                >
-                  <polyline points="3 6 5 6 21 6" />
-                  <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m5 0V4a2 2 0 0 1 2-2h0a2 2 0 0 1 2 2v2" />
-                  <line x1="10" y1="11" x2="10" y2="17" />
-                  <line x1="14" y1="11" x2="14" y2="17" />
-                </svg>
             </div>
           ))}
         </div>
@@ -585,130 +630,6 @@ export default function ServicesPage(): React.ReactElement {
         </div>
       )}
 
-      {showSuccessNotification && (
-        <div className="success-notification">
-          <div className="success-content">
-            <div className="success-icon">
-              <svg
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="black"
-                strokeWidth="3.5"
-              >
-                <polyline points="20 6 9 17 4 12"></polyline>
-              </svg>
-            </div>
-            <div className="success-text">
-              <h4>Service Added Successfully</h4>
-              <p>The Service is now active</p>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {showDeleteSuccessNotification && (
-        <div className="delete-success-notification">
-          <div className="delete-success-content">
-            <div className="delete-success-icon">
-              <svg
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="3.5"
-              >
-                <polyline points="20 6 9 17 4 12"></polyline>
-              </svg>
-            </div>
-            <div className="delete-success-text">
-              <h4>Service Deleted Successfully</h4>
-              <p>The service is no longer active</p>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {deleteConfirmModalOpen && (
-        <div
-          className="modal-overlay"
-          role="dialog"
-          aria-modal
-          onClick={closeDeleteConfirm}
-        >
-          <div className="modal" onClick={(e) => e.stopPropagation()}>
-            <div className="modal-header">
-              <h3>Delete Service</h3>
-              <button
-                className="modal-close-light"
-                aria-label="Close"
-                onClick={closeDeleteConfirm}
-                disabled={deleteLoading}
-              >
-                &#10005;
-              </button>
-            </div>
-
-            {deleteError && <div className="error-message">{deleteError}</div>}
-
-            {jobToDelete && (
-              <>
-                <div className="service-details">
-                  <p>
-                    <strong>Job ID:</strong> {jobToDelete.jobId}
-                  </p>
-                  <p>
-                    <strong>Service Name:</strong> {jobToDelete.jobName}
-                  </p>
-                  <p>
-                    <strong>Description:</strong> {jobToDelete.jobDescription}
-                  </p>
-                  <p>
-                    <strong>Hourly Rate:</strong> $
-                    {jobToDelete.hourlyRate?.toFixed(2)}
-                  </p>
-                  <p>
-                    <strong>Estimated Duration (mins):</strong>{" "}
-                    {jobToDelete.estimatedDurationMinutes}
-                  </p>
-                  <p>
-                    <strong>Type:</strong> {jobToDelete.jobType}
-                  </p>
-                  <p>
-                    <strong>Active:</strong> {jobToDelete.active ? "Yes" : "No"}
-                  </p>
-                </div>
-
-                <div className="service-details" style={{ marginTop: "16px" }}>
-                  <p style={{ color: "#d32f2f", fontWeight: "600" }}>
-                    Are you sure you want to delete this service?
-                  </p>
-                  <p style={{ color: "#666" }}>This action cannot be undone.</p>
-                </div>
-              </>
-            )}
-
-            <div className="form-actions">
-              <button
-                type="button"
-                className="btn-cancel"
-                onClick={closeDeleteConfirm}
-                disabled={deleteLoading}
-              >
-                Cancel
-              </button>
-              <button
-                type="button"
-                className="btn-create"
-                onClick={() => void handleDeleteJob()}
-                disabled={deleteLoading}
-                style={{ backgroundColor: "#d32f2f" }}
-              >
-                {deleteLoading ? "Deleting..." : "Delete"}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
       {updateModalOpen && (
         <div
           className="modal-overlay"
@@ -849,25 +770,40 @@ export default function ServicesPage(): React.ReactElement {
         </div>
       )}
 
-      {showUpdateSuccessNotification && (
-        <div className="success-notification">
-          <div className="success-content">
-            <div className="success-icon">
-              <svg
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="black"
-                strokeWidth="3.5"
-              >
-                <polyline points="20 6 9 17 4 12"></polyline>
-              </svg>
-            </div>
-            <div className="success-text">
-              <h4>Service Updated Successfully</h4>
-              <p>The service has been modified</p>
-            </div>
-          </div>
-        </div>
+      <ConfirmationModal
+        isOpen={confirmationModal.isOpen}
+        title={
+          confirmationModal.type === "deactivate"
+            ? "Deactivate Service"
+            : "Reactivate Service"
+        }
+        message={
+          confirmationModal.type === "deactivate"
+            ? `Are you sure you want to deactivate "${confirmationModal.job?.jobName}"? This service will no longer be available for appointments.`
+            : `Are you sure you want to reactivate "${confirmationModal.job?.jobName}"? This service will become available again.`
+        }
+        confirmText={
+          confirmationModal.type === "deactivate" ? "Deactivate" : "Reactivate"
+        }
+        cancelText="Cancel"
+        isDanger={confirmationModal.type === "deactivate"}
+        isLoading={deactivateLoading}
+        onConfirm={
+          confirmationModal.type === "deactivate"
+            ? confirmDeactivate
+            : confirmReactivate
+        }
+        onCancel={() =>
+          setConfirmationModal({ isOpen: false, type: null, job: null })
+        }
+      />
+
+      {toast && (
+        <Toast
+          message={toast.message}
+          type={toast.type}
+          onClose={() => setToast(null)}
+        />
       )}
     </div>
   );

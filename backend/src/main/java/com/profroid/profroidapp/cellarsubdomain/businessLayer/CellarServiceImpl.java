@@ -187,7 +187,46 @@ public class CellarServiceImpl implements CellarService {
     }
 
     @Override
-    public void deleteCellar(String ownerCustomerId, String cellarId) {
+    public CellarResponseModel deactivateCellar(String cellarId) {
+        if (cellarId == null || cellarId.trim().length() != 36) {
+            throw new InvalidIdentifierException("Cellar ID must be a 36-character UUID string.");
+        }
 
+        Cellar cellar = cellarRepository.findCellarByCellarIdentifier_CellarId(cellarId);
+
+        if (cellar == null) {
+            throw new ResourceNotFoundException("Cellar " + cellarId + " not found.");
+        }
+
+        if (!cellar.getIsActive()) {
+            throw new InvalidOperationException("Cellar " + cellarId + " is already deactivated.");
+        }
+
+        cellar.setIsActive(false);
+        Cellar deactivatedCellar = cellarRepository.save(cellar);
+
+        return cellarResponseMapper.toResponseModel(deactivatedCellar);
+    }
+
+    @Override
+    public CellarResponseModel reactivateCellar(String cellarId) {
+        if (cellarId == null || cellarId.trim().length() != 36) {
+            throw new InvalidIdentifierException("Cellar ID must be a 36-character UUID string.");
+        }
+
+        Cellar cellar = cellarRepository.findCellarByCellarIdentifier_CellarId(cellarId);
+
+        if (cellar == null) {
+            throw new ResourceNotFoundException("Cellar " + cellarId + " not found.");
+        }
+
+        if (cellar.getIsActive()) {
+            throw new InvalidOperationException("Cellar " + cellarId + " is already active.");
+        }
+
+        cellar.setIsActive(true);
+        Cellar reactivatedCellar = cellarRepository.save(cellar);
+
+        return cellarResponseMapper.toResponseModel(reactivatedCellar);
     }
 }
