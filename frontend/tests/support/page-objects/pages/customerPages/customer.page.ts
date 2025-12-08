@@ -85,6 +85,9 @@ export class CustomerPage {
   saveButton = () =>
     this.page.getByRole("button", { name: /save changes/i });
 
+  createButton = () =>
+    this.page.getByRole("button", { name: /Create Customer/i });
+
   // ============================================
   // EDIT ACTION
   // ============================================
@@ -112,5 +115,34 @@ export class CustomerPage {
     if (data.userId) await this.userIdInput().fill(data.userId);
 
     await this.saveButton().click();
+  }
+
+  // ============================================
+  // CREATE ACTION
+  // ============================================
+  async createCustomer(data: {
+    firstName?: string;
+    lastName?: string;
+    phoneType?: string;
+    phoneNumber?: string;
+    street?: string;
+    city?: string;
+    province?: string;
+    country?: string;
+    postalCode?: string;
+    userId?: string;
+  }) {
+    if (data.firstName) await this.firstNameInput().fill(data.firstName);
+    if (data.lastName) await this.lastNameInput().fill(data.lastName);
+    if (data.phoneType) await this.phoneTypeSelect().selectOption(data.phoneType);
+    if (data.phoneNumber) await this.phoneNumberInput().fill(data.phoneNumber);
+    if (data.street) await this.streetInput().fill(data.street);
+    if (data.city) await this.cityInput().fill(data.city);
+    if (data.province) await this.provinceInput().fill(data.province);
+    if (data.country) await this.countryInput().fill(data.country);
+    if (data.postalCode) await this.postalCodeInput().fill(data.postalCode);
+    if (data.userId) await this.userIdInput().fill(data.userId);
+
+    await this.createButton().click();
   }
 }

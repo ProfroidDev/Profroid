@@ -7,7 +7,7 @@ export class EmployeePage {
 
   constructor(page: Page) {
     this.page = page;
-    this.addEmployeeButton = page.getByRole("button", { name: /add employee/i });
+    this.addEmployeeButton = page.getByRole("button", { name: /add new employee/i });
     this.tableRows = page.locator(".employees-table-light tbody tr");
   }
 
@@ -89,6 +89,8 @@ export class EmployeePage {
   // =====================================================
   firstNameInput = () => this.page.locator("#firstName");
   lastNameInput = () => this.page.locator("#lastName");
+  userIdInput = () => this.page.locator("#userId");
+  roleSelect = () => this.page.locator("#role");
   phoneNumberInput = () => this.page.locator("[id^='phoneNumber-']").first();
   streetInput = () => this.page.locator("#streetAddress");
   cityInput = () => this.page.locator("#city");
@@ -100,6 +102,9 @@ export class EmployeePage {
 
   saveButton = () =>
     this.page.getByRole("button", { name: /save changes/i });
+
+  addButton = () =>
+    this.page.getByRole("button", { name: /Add Employee/i });
 
   // =====================================================
   // EDIT ACTION
@@ -123,5 +128,62 @@ export class EmployeePage {
     if (data.province) await this.provinceInput().selectOption(data.province);
     if (data.postalCode) await this.postalCodeInput().fill(data.postalCode);
     // Note: country is disabled and cannot be filled
+  }
+
+  // =====================================================
+  // CREATE ACTION
+  // =====================================================
+  async createEmployee(data: {
+    firstName?: string;
+    lastName?: string;
+    userId?: string;
+    role?: string;
+    phoneType?: string;
+    phoneNumber?: string;
+    street?: string;
+    city?: string;
+    province?: string;
+    postalCode?: string;
+  }) {
+    if (data.firstName) {
+      await this.firstNameInput().waitFor({ state: "visible" });
+      await this.firstNameInput().fill(data.firstName);
+    }
+    if (data.lastName) {
+      await this.lastNameInput().waitFor({ state: "visible" });
+      await this.lastNameInput().fill(data.lastName);
+    }
+    if (data.userId) {
+      await this.userIdInput().waitFor({ state: "visible" });
+      await this.userIdInput().fill(data.userId);
+    }
+    if (data.role) {
+      await this.roleSelect().waitFor({ state: "visible" });
+      await this.roleSelect().selectOption(data.role);
+    }
+    if (data.street) {
+      await this.streetInput().waitFor({ state: "visible" });
+      await this.streetInput().fill(data.street);
+    }
+    if (data.province) {
+      await this.provinceInput().waitFor({ state: "visible" });
+      await this.provinceInput().selectOption(data.province);
+    }
+    if (data.city) {
+      await this.cityInput().waitFor({ state: "visible" });
+      await this.cityInput().fill(data.city);
+    }
+    if (data.postalCode) {
+      await this.postalCodeInput().waitFor({ state: "visible" });
+      await this.postalCodeInput().fill(data.postalCode);
+    }
+    if (data.phoneNumber) {
+      await this.phoneNumberInput().waitFor({ state: "visible" });
+      await this.phoneNumberInput().fill(data.phoneNumber);
+    }
+    if (data.phoneType) {
+      await this.phoneTypeSelect().waitFor({ state: "visible" });
+      await this.phoneTypeSelect().selectOption(data.phoneType);
+    }
   }
 }
