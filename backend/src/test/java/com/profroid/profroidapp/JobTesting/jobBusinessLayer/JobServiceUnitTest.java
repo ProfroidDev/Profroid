@@ -418,4 +418,177 @@ public class JobServiceUnitTest {
         verify(jobRepository).save(any(Job.class));
         verify(jobResponseMapper).toResponseModel(updated);
     }
+
+
+    @Test
+    void calculateRequiredSlots_shortAndLongDurations() throws Exception {
+        var method = JobServiceImpl.class.getDeclaredMethod("calculateRequiredSlots", int.class);
+        method.setAccessible(true);
+
+        int resultShort = (int) method.invoke(jobService, 60);
+        int resultLong = (int) method.invoke(jobService, 150);
+
+        assertEquals(1, resultShort);  // ≤90 → 1 slot
+        assertEquals(3, resultLong);   // ceil(150 / 60) = 3
+    }
+
+    @Test
+    void hourToSlotIndex_allCases() throws Exception {
+        var method = JobServiceImpl.class.getDeclaredMethod("hourToSlotIndex", int.class);
+        method.setAccessible(true);
+
+        assertEquals(0, method.invoke(jobService, 9));
+        assertEquals(1, method.invoke(jobService, 11));
+        assertEquals(2, method.invoke(jobService, 13));
+        assertEquals(3, method.invoke(jobService, 15));
+        assertEquals(4, method.invoke(jobService, 17));
+        assertEquals(-1, method.invoke(jobService, 8)); // default branch
+    }
+
+    @Test
+    void getOccupiedSlotIndices_returnsCorrectSlots() throws Exception {
+        var method = JobServiceImpl.class.getDeclaredMethod("getOccupiedSlotIndices", int.class, int.class);
+        method.setAccessible(true);
+
+        int[] slots = (int[]) method.invoke(jobService, 9, 3); // 9h → index 0 → [0,1,2]
+        assertArrayEquals(new int[]{0, 1, 2}, slots);
+    }
+
+    @Test
+    void resolveDurationMinutes_handlesAllCases() throws Exception {
+        var method = JobServiceImpl.class.getDeclaredMethod("resolveDurationMinutes", Job.class);
+        method.setAccessible(true);
+
+        Job jobWithDuration = new Job();
+        jobWithDuration.setEstimatedDurationMinutes(200);
+        assertEquals(200, method.invoke(jobService, jobWithDuration));
+
+        for (var type : JobType.values()) {
+            Job j = new Job();
+            j.setJobType(type);
+            j.setEstimatedDurationMinutes(null);
+            int minutes = (int) method.invoke(jobService, j);
+            switch (type) {
+                case QUOTATION -> assertEquals(30, minutes);
+                case MAINTENANCE -> assertEquals(60, minutes);
+                case REPARATION -> assertEquals(90, minutes);
+                case INSTALLATION -> assertEquals(240, minutes);
+            }
+        }
+    }
+
+    @Test
+    void timeSlotsOverlap_detectsOverlapAndNonOverlap() throws Exception {
+        var method = JobServiceImpl.class.getDeclaredMethod(
+                "timeSlotsOverlap", int.class, int.class, int.class, int.class);
+        method.setAccessible(true);
+
+        // Overlapping: both start at 9 with 2 slots each
+        assertTrue((boolean) method.invoke(jobService, 9, 2, 9, 2));
+
+        // Non-overlapping: 9→10 vs 15→16
+        assertFalse((boolean) method.invoke(jobService, 9, 1, 15, 1));
+    }
+
+
+    // [Job-Service][Unit Test][Negative] Update job – new duration exceeds working hours for existing appointment
+    @Test
+    void updateJob_durationExceedsWorkingHours_throwsInvalidOperation() {
+        // Arrange: existing job is found
+        when(jobRepository.findJobByJobIdentifier_JobId(VALID_JOB_ID))
+                .thenReturn(existingJob);
+
+        // Single appointment at 17:00 (slot index 4)
+        var appt = mock(com.profroid.profroidapp.appointmentsubdomain.dataAccessLayer.Appointment.class);
+        java.time.LocalDateTime dt = java.time.LocalDateTime.of(2025, 1, 1, 17, 0);
+        when(appt.getAppointmentDate()).thenReturn(dt);
+
+        // This job has exactly this appointment
+        when(appointmentRepository.findAllByJob(existingJob))
+                .thenReturn(List.of(appt));
+
+        // New duration: 180 minutes = 3 hours → 3 slots
+        // 17h → slot index 4, so 4 + 3 = 7 > 5 → exceeds working hours
+        JobRequestModel updateRequest = JobRequestModel.builder()
+                .jobName(existingJob.getJobName())
+                .jobDescription(existingJob.getJobDescription())
+                .hourlyRate(existingJob.getHourlyRate())
+                .estimatedDurationMinutes(180)  // long enough to overflow
+                .jobType(existingJob.getJobType())
+                .active(existingJob.isActive())
+                .build();
+
+        // Act + Assert: the "day capacity" check should throw before any overlap logic
+        assertThrows(InvalidOperationException.class,
+                () -> jobService.updateJob(VALID_JOB_ID, updateRequest));
+
+        // Verify we only hit the first level of validation
+        verify(jobRepository).findJobByJobIdentifier_JobId(VALID_JOB_ID);
+        verify(appointmentRepository).findAllByJob(existingJob);
+        verify(appointmentRepository, never())
+                .findByTechnicianAndDateAndScheduled(any(), any());
+        verify(jobRepository, never()).save(any());
+    }
+
+    // [Job-Service][Unit Test][Negative] Update job – new duration overlaps with another same-day appointment
+    @Test
+    void updateJob_overlapWithSameDayAppointment_throwsInvalidOperation() {
+        // Existing job found
+        when(jobRepository.findJobByJobIdentifier_JobId(VALID_JOB_ID))
+                .thenReturn(existingJob);
+
+        // Target appointment at 09:00
+        var appt1 = mock(com.profroid.profroidapp.appointmentsubdomain.dataAccessLayer.Appointment.class);
+        // Another appointment at 11:00 (same technician & date)
+        var appt2 = mock(com.profroid.profroidapp.appointmentsubdomain.dataAccessLayer.Appointment.class);
+
+        // IDs so appt1 != appt2 (continue will only skip appt1 as "self")
+        when(appt1.getId()).thenReturn(1);
+        when(appt2.getId()).thenReturn(2);
+
+        var date = java.time.LocalDate.of(2025, 1, 1);
+        var dt1 = date.atTime(9, 0);   // 9h -> slot index 0
+        var dt2 = date.atTime(11, 0);  // 11h -> slot index 1
+
+        when(appt1.getAppointmentDate()).thenReturn(dt1);
+        when(appt2.getAppointmentDate()).thenReturn(dt2);
+
+        // Target technician (we don't care about the actual value, so null is fine)
+        when(appt1.getTechnician()).thenReturn(null);
+
+        // First query: appointments for this job
+        when(appointmentRepository.findAllByJob(existingJob))
+                .thenReturn(java.util.List.of(appt1));
+
+        // Second query: same-day appointments for that technician and date
+        // Returns both target (appt1) and another appointment (appt2)
+        when(appointmentRepository.findByTechnicianAndDateAndScheduled(any(), any()))
+                .thenReturn(java.util.List.of(appt1, appt2));
+
+        // "Other" appointment's job (must not be null)
+        Job otherJob = new Job();
+        otherJob.setEstimatedDurationMinutes(60);           // 60 min → 1 slot
+        otherJob.setJobType(JobType.MAINTENANCE);
+        when(appt2.getJob()).thenReturn(otherJob);
+
+        // Update request: new duration 180 min → 3 slots
+        // Target at 9:00 → slots [0,1,2]
+        // Other at 11:00 with 1 slot → [1] → overlap ⇒ InvalidOperationException
+        JobRequestModel updateRequest = JobRequestModel.builder()
+                .jobName(existingJob.getJobName())
+                .jobDescription(existingJob.getJobDescription())
+                .hourlyRate(existingJob.getHourlyRate())
+                .estimatedDurationMinutes(180)    // long job
+                .jobType(existingJob.getJobType())
+                .active(existingJob.isActive())
+                .build();
+
+        // Act + Assert
+        assertThrows(InvalidOperationException.class,
+                () -> jobService.updateJob(VALID_JOB_ID, updateRequest));
+
+        verify(appointmentRepository).findAllByJob(existingJob);
+        verify(appointmentRepository).findByTechnicianAndDateAndScheduled(any(), any());
+        verify(jobRepository, never()).save(any());
+    }
 }
