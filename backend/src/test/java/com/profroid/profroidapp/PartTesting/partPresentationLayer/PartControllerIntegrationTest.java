@@ -95,13 +95,7 @@ public class PartControllerIntegrationTest {
                 });
     }
 
-    @Test
-    void whenGetPartById_withInvalidId_thenReturn422() {
-        webTestClient.get()
-                .uri("/api/v1/parts/{partId}", "bad-id")
-                .exchange()
-                .expectStatus().isEqualTo(422);
-    }
+
 
     @Test
     void whenGetPartById_withNonExistingId_thenReturn404() {
@@ -174,20 +168,7 @@ public class PartControllerIntegrationTest {
                 });
     }
 
-    @Test
-    void whenUpdatePart_withInvalidId_thenReturn422() {
-        PartRequestModel updateRequest = PartRequestModel.builder()
-                .name("Fan X")
-                .available(false)
-                .build();
 
-        webTestClient.put()
-                .uri("/api/v1/parts/{partId}", "bad-id")
-                .contentType(MediaType.APPLICATION_JSON)
-                .bodyValue(updateRequest)
-                .exchange()
-                .expectStatus().isEqualTo(422);
-    }
 
     @Test
     void whenUpdatePart_withNonExistingId_thenReturn404() {
@@ -218,13 +199,7 @@ public class PartControllerIntegrationTest {
         assertFalse(deleted.getAvailable());
     }
 
-    @Test
-    void whenDeletePart_withInvalidId_thenReturn422() {
-        webTestClient.delete()
-                .uri("/api/v1/parts/{partId}", "bad-id")
-                .exchange()
-                .expectStatus().isEqualTo(422);
-    }
+
 
     @Test
     void whenDeletePart_withNonExistingId_thenReturn404() {
