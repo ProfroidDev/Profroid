@@ -2,7 +2,7 @@ import express, { Express, Request, Response } from "express";
 import cors from "cors";
 import dotenv from "dotenv";
 import auth from "./lib/auth";
-import authRoutes from "./routes/auth.routes";
+import authRoutes from "./routes/auth.routes.js";
 
 dotenv.config();
 
@@ -10,8 +10,18 @@ const app: Express = express();
 const port = process.env.PORT || 3001;
 
 // Middleware
+const allowedOrigins = (process.env.FRONTEND_URLS || "http://localhost:5173,http://localhost:3000")
+  .split(",")
+  .map(url => url.trim());
+
 app.use(cors({
-  origin: process.env.FRONTEND_URL || "http://localhost:5173",
+  origin: (origin, callback) => {
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error("CORS not allowed"));
+    }
+  },
   credentials: true,
   methods: ["GET", "POST", "PUT", "DELETE", "PATCH"],
   allowedHeaders: ["Content-Type", "Authorization"],

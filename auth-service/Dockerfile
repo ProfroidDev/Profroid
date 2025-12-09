@@ -1,6 +1,9 @@
-FROM node:20-alpine
+FROM node:20-bullseye-slim
 
 WORKDIR /app
+
+# Install OpenSSL (glibc) for Prisma engines
+RUN apt-get update && apt-get install -y --no-install-recommends openssl ca-certificates && rm -rf /var/lib/apt/lists/*
 
 # Copy package files
 COPY package*.json ./

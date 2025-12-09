@@ -1,10 +1,12 @@
 version: "3.9"
 
-# Full production setup - runs everything including frontend
-# Run: docker compose up --build
+# Development setup - runs backend services only (MySQL, auth-service, Spring Boot)
+# Frontend runs locally for faster development
+# Run: docker compose -f docker-compose.dev.yml up --build
+# Then in another terminal: cd frontend && npm run dev
+# Frontend will be at http://localhost:5173
 
 services:
-
   mysql:
     image: mysql:8.0
     container_name: profroid-mysql
@@ -40,7 +42,7 @@ services:
       context: ./auth-service
       dockerfile: Dockerfile
     container_name: profroid-auth-service
-    restart: always
+    restart: on-failure
     depends_on:
       - mysql
     environment:
@@ -70,19 +72,6 @@ services:
       SPRING_DATASOURCE_PASSWORD: root
     ports:
       - "8080:8080"
-    networks:
-      - profroid-net
-
-  frontend:
-    build:
-      context: ./frontend
-      dockerfile: Dockerfile
-    container_name: profroid-frontend
-    restart: always
-    depends_on:
-      - monolith
-    ports:
-      - "3000:3000"
     networks:
       - profroid-net
 

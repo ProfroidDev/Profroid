@@ -34,22 +34,44 @@ export default function Navigation(): React.ReactElement {
 
         {/* Desktop Menu */}
         <div className="nav-links">
-          <a href="/parts">Parts</a>
-          <a href="/services">Services</a>
-          <a href="/customers">Customers</a>
+          {/* Admin-only links */}
           {isAuthenticated && user?.role === "admin" && (
-            <a href="/employees">Employees</a>
+            <>
+              <a href="/parts">Parts</a>
+              <a href="/customers">Customers</a>
+              <a href="/employees">Employees</a>
+            </>
           )}
-          <a href="/my-appointments">My Appointments</a>
-          <a href="/my-jobs">My Jobs</a>
+
+          {/* Employee-only links */}
+          {isAuthenticated && user?.role === "employee" && (
+            <>
+              <a href="/employees/schedule">Schedule</a>
+              <a href="/my-jobs">My Jobs</a>
+            </>
+          )}
+
+          {/* Customer-only links */}
+          {isAuthenticated && user?.role === "customer" && (
+            <>
+              <a href="/services">Services</a>
+              <a href="/my-appointments">My Appointments</a>
+            </>
+          )}
+
+          {/* Public links */}
           <a href="/#about">About</a>
           <a href="/#contact">Contact</a>
 
-          <button className="nav-cart">
-            <ShoppingCart className="icon" />
-          </button>
+          {isAuthenticated && (
+            <button className="nav-cart">
+              <ShoppingCart className="icon" />
+            </button>
+          )}
 
-          <button className="nav-book">Book Appointment</button>
+          {isAuthenticated && (
+            <button className="nav-book">Book Appointment</button>
+          )}
 
           {isAuthenticated ? (
             <>
@@ -76,18 +98,38 @@ export default function Navigation(): React.ReactElement {
       {/* Mobile Menu */}
       {open && (
         <div className="nav-mobile-menu">
-          <a href="/parts">Parts</a>
-          <a href="/services">Services</a>
-          <a href="/customers">Customers</a>
+          {/* Admin-only links */}
           {isAuthenticated && user?.role === "admin" && (
-            <a href="/employees">Employees</a>
+            <>
+              <a href="/parts">Parts</a>
+              <a href="/customers">Customers</a>
+              <a href="/employees">Employees</a>
+            </>
           )}
-          <a href="/my-appointments">My Appointments</a>
-          <a href="/my-jobs">My Jobs</a>
+
+          {/* Employee-only links */}
+          {isAuthenticated && user?.role === "employee" && (
+            <>
+              <a href="/employees/schedule">Schedule</a>
+              <a href="/my-jobs">My Jobs</a>
+            </>
+          )}
+
+          {/* Customer-only links */}
+          {isAuthenticated && user?.role === "customer" && (
+            <>
+              <a href="/services">Services</a>
+              <a href="/my-appointments">My Appointments</a>
+            </>
+          )}
+
+          {/* Public links */}
           <a href="/#about">About</a>
           <a href="/#contact">Contact</a>
 
-          <button className="nav-book w-full">Book Appointment</button>
+          {isAuthenticated && (
+            <button className="nav-book w-full">Book Appointment</button>
+          )}
 
           {isAuthenticated ? (
             <>

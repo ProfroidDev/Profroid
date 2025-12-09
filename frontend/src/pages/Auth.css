@@ -5,14 +5,14 @@
   align-items: center;
   justify-content: center;
   min-height: 100vh;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: #f7f6f3;
   padding: 1rem;
 }
 
 .auth-card {
   background: white;
-  border-radius: 8px;
-  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+  border-radius: 16px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
   width: 100%;
   max-width: 400px;
   padding: 2rem;
@@ -25,8 +25,10 @@
 
 .auth-header h1 {
   margin: 0;
-  color: #333;
+  color: #7a0901;
   font-size: 1.8rem;
+  font-weight: 700;
+  letter-spacing: 1px;
 }
 
 .auth-header p {
@@ -48,23 +50,23 @@
 }
 
 .form-group label {
-  font-weight: 500;
+  font-weight: 600;
   color: #333;
   font-size: 0.9rem;
 }
 
 .form-group input {
   padding: 0.75rem;
-  border: 1px solid #ddd;
-  border-radius: 4px;
+  border: 2px solid #ddd;
+  border-radius: 10px;
   font-size: 1rem;
   transition: all 0.3s ease;
 }
 
 .form-group input:focus {
   outline: none;
-  border-color: #667eea;
-  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+  border-color: #7a0901;
+  box-shadow: 0 0 0 3px rgba(122, 9, 1, 0.1);
 }
 
 .form-group input:disabled {
@@ -74,19 +76,21 @@
 
 .btn-primary {
   padding: 0.75rem 1rem;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(90deg, #7a0901 60%, #a32c1a 100%);
   color: white;
   border: none;
-  border-radius: 4px;
+  border-radius: 10px;
   font-size: 1rem;
   font-weight: 600;
   cursor: pointer;
   transition: all 0.3s ease;
+  box-shadow: 0 2px 8px rgba(122, 9, 1, 0.08);
 }
 
 .btn-primary:hover:not(:disabled) {
+  background: linear-gradient(90deg, #a32c1a 60%, #7a0901 100%);
   transform: translateY(-2px);
-  box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
+  box-shadow: 0 4px 16px rgba(122, 9, 1, 0.12);
 }
 
 .btn-primary:disabled {
@@ -96,18 +100,21 @@
 
 .btn-secondary {
   padding: 0.75rem 1rem;
-  background: #f0f0f0;
-  color: #333;
-  border: 1px solid #ddd;
-  border-radius: 4px;
+  background: #fff;
+  color: #7a0901;
+  border: 2px solid #7a0901;
+  border-radius: 10px;
   font-size: 1rem;
   font-weight: 600;
   cursor: pointer;
   transition: all 0.3s ease;
+  box-shadow: 0 2px 8px rgba(122, 9, 1, 0.08);
 }
 
 .btn-secondary:hover:not(:disabled) {
-  background: #e0e0e0;
+  background: #f0ece7;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(122, 9, 1, 0.12);
 }
 
 .btn-secondary:disabled {
@@ -117,20 +124,20 @@
 
 .alert {
   padding: 0.75rem 1rem;
-  border-radius: 4px;
+  border-radius: 10px;
   font-size: 0.9rem;
 }
 
 .alert-error {
   background-color: #fee;
   color: #c33;
-  border: 1px solid #fcc;
+  border: 2px solid #c53030;
 }
 
 .alert-success {
   background-color: #efe;
   color: #3c3;
-  border: 1px solid #cfc;
+  border: 2px solid #2d8a3d;
 }
 
 .auth-footer {
@@ -147,14 +154,14 @@
 }
 
 .link {
-  color: #667eea;
+  color: #7a0901;
   text-decoration: none;
   font-weight: 600;
   transition: all 0.3s ease;
 }
 
 .link:hover {
-  color: #764ba2;
+  color: #a32c1a;
   text-decoration: underline;
 }
 
@@ -162,16 +169,17 @@
 
 .profile-container {
   min-height: 100vh;
-  background: #f5f5f5;
+  background: #f7f6f3;
   padding: 2rem 1rem;
+  padding-top: 120px;
 }
 
 .profile-card {
   max-width: 800px;
   margin: 0 auto;
   background: white;
-  border-radius: 8px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  border-radius: 16px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
   padding: 2rem;
 }
 
@@ -181,12 +189,14 @@
   align-items: center;
   margin-bottom: 2rem;
   padding-bottom: 1rem;
-  border-bottom: 1px solid #eee;
+  border-bottom: 2px solid #eee;
 }
 
 .profile-header h1 {
   margin: 0;
-  color: #333;
+  color: #7a0901;
+  font-size: 1.8rem;
+  font-weight: 700;
 }
 
 .profile-section {
@@ -202,8 +212,9 @@
 
 .section-header h2 {
   margin: 0;
-  color: #333;
+  color: #7a0901;
   font-size: 1.3rem;
+  font-weight: 700;
 }
 
 .profile-info {
@@ -220,13 +231,14 @@
 
 .info-row .label {
   font-weight: 600;
-  color: #666;
+  color: #333;
   min-width: 120px;
 }
 
 .info-row .value {
-  color: #333;
+  color: #7a0901;
   flex: 1;
+  font-weight: 500;
 }
 
 .form-row {

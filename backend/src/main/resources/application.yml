@@ -38,7 +38,7 @@ spring:
   jpa:
     show-sql: true
     hibernate:
-      ddl-auto: update
+      ddl-auto: create-drop
 
     properties:
       hibernate:
@@ -49,6 +49,8 @@ spring:
     init:
       platform: h2
       mode: always  # prevents loading MySQL scripts
+      data-locations: classpath:data.sql
+      schema-locations: classpath:schema.sql
 
 ---
 ## ===============================

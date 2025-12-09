@@ -131,7 +131,7 @@
 
 .nav-signin {
   padding: 8px 16px;
-  border-radius: 6px;
+  border-radius: 8px;
   border: none;
   cursor: pointer;
   font-weight: 600;
@@ -139,13 +139,15 @@
   align-items: center;
   gap: 6px;
   transition: all 0.3s ease;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(90deg, #7a0901 60%, #a32c1a 100%);
   color: white;
+  box-shadow: 0 2px 8px rgba(122, 9, 1, 0.08);
 }
 
 .nav-signin:hover {
+  background: linear-gradient(90deg, #a32c1a 60%, #7a0901 100%);
   transform: translateY(-2px);
-  box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+  box-shadow: 0 4px 16px rgba(122, 9, 1, 0.12);
 }
 
 /* Mobile Auth Buttons */
@@ -184,8 +186,15 @@
 }
 
 .nav-mobile-signin {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(90deg, #7a0901 60%, #a32c1a 100%);
   color: white;
+  box-shadow: 0 2px 8px rgba(122, 9, 1, 0.08);
+}
+
+.nav-mobile-signin:hover {
+  background: linear-gradient(90deg, #a32c1a 60%, #7a0901 100%);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 16px rgba(122, 9, 1, 0.12);
 }
 
 /* MOBILE */
