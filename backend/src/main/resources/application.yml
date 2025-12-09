@@ -13,6 +13,9 @@ logging:
     org.hibernate.SQL: DEBUG
     org.hibernate.type.descriptor.sql.BasicBinder: TRACE
 
+jwt:
+  secret: ${JWT_SECRET:Qt0K6UmrLyz5f4EfphuWm2xBBOY7yaaV}
+
 spring:
   profiles:
     active: h2   # IDE + CI will default to H2 (safe)

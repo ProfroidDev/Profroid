@@ -47,8 +47,8 @@ services:
       DATABASE_URL: mysql://root:root@mysql:3306/profroid_auth
       PORT: 3001
       NODE_ENV: production
-      BETTER_AUTH_SECRET: ${BETTER_AUTH_SECRET:-your-secret-key-min-32-characters-long}
-      JWT_SECRET: ${JWT_SECRET:-your-secret-key-min-32-characters-long}
+      BETTER_AUTH_SECRET: ${BETTER_AUTH_SECRET:-Qt0K6UmrLyz5f4EfphuWm2xBBOY7yaaV}
+      JWT_SECRET: ${JWT_SECRET:-Qt0K6UmrLyz5f4EfphuWm2xBBOY7yaaV}
       FRONTEND_URLS: http://localhost:3000,http://localhost:5173
       BACKEND_URL: http://localhost:8080
     ports:
@@ -69,6 +69,7 @@ services:
       SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/profroid
       SPRING_DATASOURCE_USERNAME: root
       SPRING_DATASOURCE_PASSWORD: root
+      JWT_SECRET: ${JWT_SECRET:-Qt0K6UmrLyz5f4EfphuWm2xBBOY7yaaV}
     ports:
       - "8080:8080"
     networks:

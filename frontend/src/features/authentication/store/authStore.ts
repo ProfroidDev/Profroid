@@ -43,7 +43,7 @@ const useAuthStore = create<AuthStore>((set) => ({
   user: null,
   token: authClient.getToken(),
   isAuthenticated: authClient.isAuthenticated(),
-  isLoading: false,
+  isLoading: authClient.isAuthenticated(), // Start loading if token exists
   error: null,
 
   /**

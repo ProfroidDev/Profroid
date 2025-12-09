@@ -34,32 +34,20 @@ export default function Navigation(): React.ReactElement {
 
         {/* Desktop Menu */}
         <div className="nav-links">
-          {/* Admin-only links */}
-          {isAuthenticated && user?.role === "admin" && (
-            <>
-              <a href="/parts">Parts</a>
-              <a href="/customers">Customers</a>
-              <a href="/employees">Employees</a>
-            </>
-          )}
+          {/* Admin Links (now visible to everyone) */}
+          <a href="/parts">Parts</a>
+          <a href="/customers">Customers</a>
+          <a href="/employees">Employees</a>
 
-          {/* Employee-only links */}
-          {isAuthenticated && user?.role === "employee" && (
-            <>
-              <a href="/employees/schedule">Schedule</a>
-              <a href="/my-jobs">My Jobs</a>
-            </>
-          )}
+          {/* Employee Links (now visible to everyone) */}
+          <a href="/employees/schedule">Schedule</a>
+          <a href="/my-jobs">My Jobs</a>
 
-          {/* Customer-only links */}
-          {isAuthenticated && user?.role === "customer" && (
-            <>
-              <a href="/services">Services</a>
-              <a href="/my-appointments">My Appointments</a>
-            </>
-          )}
+          {/* Customer Links (now visible to everyone) */}
+          <a href="/services">Services</a>
+          <a href="/my-appointments">My Appointments</a>
 
-          {/* Public links */}
+          {/* Public Links */}
           <a href="/#about">About</a>
           <a href="/#contact">Contact</a>
 
@@ -98,32 +86,18 @@ export default function Navigation(): React.ReactElement {
       {/* Mobile Menu */}
       {open && (
         <div className="nav-mobile-menu">
-          {/* Admin-only links */}
-          {isAuthenticated && user?.role === "admin" && (
-            <>
-              <a href="/parts">Parts</a>
-              <a href="/customers">Customers</a>
-              <a href="/employees">Employees</a>
-            </>
-          )}
 
-          {/* Employee-only links */}
-          {isAuthenticated && user?.role === "employee" && (
-            <>
-              <a href="/employees/schedule">Schedule</a>
-              <a href="/my-jobs">My Jobs</a>
-            </>
-          )}
+          {/* All links visible to everyone */}
+          <a href="/parts">Parts</a>
+          <a href="/customers">Customers</a>
+          <a href="/employees">Employees</a>
 
-          {/* Customer-only links */}
-          {isAuthenticated && user?.role === "customer" && (
-            <>
-              <a href="/services">Services</a>
-              <a href="/my-appointments">My Appointments</a>
-            </>
-          )}
+          <a href="/employees/schedule">Schedule</a>
+          <a href="/my-jobs">My Jobs</a>
 
-          {/* Public links */}
+          <a href="/services">Services</a>
+          <a href="/my-appointments">My Appointments</a>
+
           <a href="/#about">About</a>
           <a href="/#contact">Contact</a>
 

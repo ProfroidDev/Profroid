@@ -27,8 +27,12 @@ export function ProtectedRoute({ children, requiredRole }: ProtectedRouteProps) 
   }
 
   // Check role if required
-  if (requiredRole && user.role !== requiredRole) {
-    return <Navigate to="/" replace />;
+  if (requiredRole) {
+    console.log(`Route requires role: ${requiredRole}, user role: ${user.role}`);
+    if (user.role !== requiredRole) {
+      console.log(`Role mismatch: ${user.role} !== ${requiredRole}, redirecting to home`);
+      return <Navigate to="/" replace />;
+    }
   }
 
   return <>{children}</>;
