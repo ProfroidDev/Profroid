@@ -5,11 +5,7 @@ const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001/api/auth'
 
 export interface AuthResponse {
   success: boolean;
-  session?: {
-    id: string;
-    userId: string;
-    expires: string;
-  };
+  token?: string;
   user?: {
     id: string;
     email: string;
@@ -67,9 +63,9 @@ class AuthAPI {
 
     // Add request interceptor to include session token
     this.client.interceptors.request.use((config) => {
-      const sessionId = localStorage.getItem('sessionId');
-      if (sessionId) {
-        config.headers.Authorization = `Bearer ${sessionId}`;
+      const token = localStorage.getItem('authToken');
+      if (token) {
+        config.headers.Authorization = `Bearer ${token}`;
       }
       return config;
     });
@@ -85,6 +81,10 @@ class AuthAPI {
         password,
         name: name || '',
       });
+
+      if (response.data.token) {
+        localStorage.setItem('authToken', response.data.token);
+      }
       return response.data;
     } catch (error: unknown) {
       return {
@@ -104,9 +104,9 @@ class AuthAPI {
         password,
       });
 
-      // Store session ID in localStorage
-      if (response.data.session?.id) {
-        localStorage.setItem('sessionId', response.data.session.id);
+      // Store JWT token in localStorage
+      if (response.data.token) {
+        localStorage.setItem('authToken', response.data.token);
       }
 
       return response.data;
@@ -172,7 +172,7 @@ class AuthAPI {
   async signOut(): Promise<boolean> {
     try {
       await this.client.post('/sign-out');
-      localStorage.removeItem('sessionId');
+      localStorage.removeItem('authToken');
       return true;
     } catch (error) {
       console.error('Sign out failed', error);
@@ -193,24 +193,24 @@ class AuthAPI {
   }
 
   /**
-   * Get stored session ID
+   * Get stored auth token
    */
-  getSessionId(): string | null {
-    return localStorage.getItem('sessionId');
+  getToken(): string | null {
+    return localStorage.getItem('authToken');
   }
 
   /**
    * Check if user is authenticated
    */
   isAuthenticated(): boolean {
-    return !!this.getSessionId();
+    return !!this.getToken();
   }
 
   /**
    * Clear session
    */
   clearSession(): void {
-    localStorage.removeItem('sessionId');
+    localStorage.removeItem('authToken');
   }
 }
 

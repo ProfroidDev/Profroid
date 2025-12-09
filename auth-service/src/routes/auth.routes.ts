@@ -1,9 +1,17 @@
 import { Router, type Request, type Response } from "express";
 import { PrismaClient } from "@prisma/client";
 import crypto from "crypto";
+import jwt from "jsonwebtoken";
 
 const router = Router();
 const prisma = new PrismaClient();
+
+const JWT_SECRET = process.env.JWT_SECRET || process.env.BETTER_AUTH_SECRET || "";
+const JWT_EXPIRES_IN = "7d";
+
+if (!JWT_SECRET) {
+  throw new Error("JWT_SECRET is required");
+}
 
 // Simple password hashing (for demo - use bcrypt in production)
 function hashPassword(password: string): string {
@@ -12,6 +20,43 @@ function hashPassword(password: string): string {
 
 function verifyPassword(password: string, hash: string): boolean {
   return hashPassword(password) === hash;
+}
+
+type JWTPayload = {
+  sub: string;
+  email: string;
+  role?: string;
+};
+
+function signToken(user: { id: string; email: string }, role?: string): string {
+  return jwt.sign(
+    {
+      sub: user.id,
+      email: user.email,
+      role: role || "customer",
+    },
+    JWT_SECRET as string,
+    { expiresIn: JWT_EXPIRES_IN }
+  );
+}
+
+function getPayloadFromRequest(req: Request, res: Response): JWTPayload | null {
+  const authHeader = req.headers.authorization;
+  if (!authHeader || !authHeader.startsWith("Bearer ")) {
+    res.status(401).json({ error: "No authorization token" });
+    return null;
+  }
+
+  const token = authHeader.substring(7);
+  try {
+    const decoded = jwt.verify(token, JWT_SECRET as string);
+    const payload = decoded as JWTPayload;
+    return payload;
+  } catch (error) {
+    console.error("JWT verification error:", error);
+    res.status(401).json({ error: "Invalid or expired token" });
+    return null;
+  }
 }
 
 /**
@@ -46,7 +91,7 @@ router.post("/register", async (req: Request, res: Response) => {
     });
 
     // Create user profile
-    await prisma.userProfile.create({
+    const profile = await prisma.userProfile.create({
       data: {
         userId: user.id,
         role: "customer",
@@ -66,12 +111,17 @@ router.post("/register", async (req: Request, res: Response) => {
       },
     });
 
+    const token = signToken({ id: user.id, email: user.email as string }, profile.role);
+
     return res.status(201).json({
       success: true,
+      token,
       user: {
         id: user.id,
         email: user.email,
         name: user.name,
+        role: profile.role,
+        isActive: profile.isActive,
       },
     });
   } catch (error) {
@@ -110,34 +160,23 @@ router.post("/sign-in", async (req: Request, res: Response) => {
       return res.status(401).json({ error: "Invalid credentials" });
     }
 
-    // Create session
-    const session = await prisma.session.create({
-      data: {
-        id: crypto.randomUUID(),
-        userId: user.id,
-        expires: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7 days
-      },
-    });
-
     // Get user profile
     const profile = await prisma.userProfile.findUnique({
       where: { userId: user.id },
     });
 
+    const token = signToken({ id: user.id, email: user.email as string }, profile?.role);
+
     res.json({
       success: true,
-      session: {
-        id: session.id,
-        userId: user.id,
-        expires: session.expires,
-      },
+      token,
       user: {
         id: user.id,
         email: user.email,
         name: user.name,
         emailVerified: user.emailVerified,
         role: profile?.role || "customer",
-        isActive: profile?.isActive || true,
+        isActive: profile?.isActive ?? true,
       },
     });
   } catch (error) {
@@ -149,29 +188,16 @@ router.post("/sign-in", async (req: Request, res: Response) => {
 /**
  * Get current user
  * GET /api/auth/user
- * Headers: Authorization: Bearer <sessionId>
+ * Headers: Authorization: Bearer <jwt>
  */
 router.get("/user", async (req: Request, res: Response) => {
   try {
-    const authHeader = req.headers.authorization;
-    if (!authHeader || !authHeader.startsWith("Bearer ")) {
-      return res.status(401).json({ error: "No authorization token" });
-    }
-
-    const sessionId = authHeader.substring(7);
-
-    // Find session
-    const session = await prisma.session.findUnique({
-      where: { id: sessionId },
-    });
-
-    if (!session || session.expires < new Date()) {
-      return res.status(401).json({ error: "Invalid or expired session" });
-    }
+    const payload = getPayloadFromRequest(req, res);
+    if (!payload) return;
 
     // Get user
     const user = await prisma.user.findUnique({
-      where: { id: session.userId },
+      where: { id: payload.sub },
     });
 
     if (!user) {
@@ -211,31 +237,18 @@ router.get("/user", async (req: Request, res: Response) => {
 /**
  * Update user profile
  * PUT /api/auth/user
- * Headers: Authorization: Bearer <sessionId>
+ * Headers: Authorization: Bearer <jwt>
  */
 router.put("/user", async (req: Request, res: Response) => {
   try {
-    const authHeader = req.headers.authorization;
-    if (!authHeader || !authHeader.startsWith("Bearer ")) {
-      return res.status(401).json({ error: "No authorization token" });
-    }
-
-    const sessionId = authHeader.substring(7);
-
-    // Verify session
-    const session = await prisma.session.findUnique({
-      where: { id: sessionId },
-    });
-
-    if (!session || session.expires < new Date()) {
-      return res.status(401).json({ error: "Invalid or expired session" });
-    }
+    const payload = getPayloadFromRequest(req, res);
+    if (!payload) return;
 
     const { name, phone, address, postalCode, city, province, country } = req.body;
 
     // Update user
     const updatedUser = await prisma.user.update({
-      where: { id: session.userId },
+      where: { id: payload.sub },
       data: {
         ...(name && { name }),
       },
@@ -243,13 +256,13 @@ router.put("/user", async (req: Request, res: Response) => {
 
     // Update or create profile
     let profile = await prisma.userProfile.findUnique({
-      where: { userId: session.userId },
+      where: { userId: payload.sub },
     });
 
     if (!profile) {
       profile = await prisma.userProfile.create({
         data: {
-          userId: session.userId,
+          userId: payload.sub,
           phone: phone || null,
           address: address || null,
           postalCode: postalCode || null,
@@ -260,7 +273,7 @@ router.put("/user", async (req: Request, res: Response) => {
       });
     } else {
       profile = await prisma.userProfile.update({
-        where: { userId: session.userId },
+        where: { userId: payload.sub },
         data: {
           ...(phone !== undefined && { phone }),
           ...(address !== undefined && { address }),
@@ -300,34 +313,21 @@ router.put("/user", async (req: Request, res: Response) => {
 /**
  * Change password
  * POST /api/auth/change-password
- * Headers: Authorization: Bearer <sessionId>
+ * Headers: Authorization: Bearer <jwt>
  */
 router.post("/change-password", async (req: Request, res: Response) => {
   try {
-    const authHeader = req.headers.authorization;
-    if (!authHeader || !authHeader.startsWith("Bearer ")) {
-      return res.status(401).json({ error: "No authorization token" });
-    }
-
-    const sessionId = authHeader.substring(7);
+    const payload = getPayloadFromRequest(req, res);
+    if (!payload) return;
     const { oldPassword, newPassword } = req.body;
 
     if (!oldPassword || !newPassword) {
       return res.status(400).json({ error: "Old password and new password are required" });
     }
 
-    // Verify session
-    const session = await prisma.session.findUnique({
-      where: { id: sessionId },
-    });
-
-    if (!session || session.expires < new Date()) {
-      return res.status(401).json({ error: "Invalid or expired session" });
-    }
-
     // Get account and verify old password
     const account = await prisma.account.findFirst({
-      where: { userId: session.userId, provider: "email" },
+      where: { userId: payload.sub, provider: "email" },
     });
 
     if (!account || !verifyPassword(oldPassword, account.accessToken || "")) {
@@ -352,23 +352,13 @@ router.post("/change-password", async (req: Request, res: Response) => {
 /**
  * Sign out
  * POST /api/auth/sign-out
- * Headers: Authorization: Bearer <sessionId>
+ * Headers: Authorization: Bearer <jwt>
  */
 router.post("/sign-out", async (req: Request, res: Response) => {
   try {
-    const authHeader = req.headers.authorization;
-    if (!authHeader || !authHeader.startsWith("Bearer ")) {
-      return res.status(401).json({ error: "No authorization token" });
-    }
-
-    const sessionId = authHeader.substring(7);
-
-    // Delete session
-    await prisma.session.delete({
-      where: { id: sessionId },
-    }).catch(() => {
-      // Session might not exist, ignore
-    });
+    // JWT is stateless; simply acknowledge sign out if token is provided and valid
+    const payload = getPayloadFromRequest(req, res);
+    if (!payload) return;
 
     res.json({ success: true, message: "Signed out successfully" });
   } catch (error) {

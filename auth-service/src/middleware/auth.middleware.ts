@@ -1,8 +1,14 @@
 import { Request, Response, NextFunction } from "express";
-import auth from "../lib/auth";
 import { PrismaClient } from "@prisma/client";
+import jwt from "jsonwebtoken";
 
 const prisma = new PrismaClient();
+
+const JWT_SECRET = process.env.JWT_SECRET || process.env.BETTER_AUTH_SECRET;
+
+if (!JWT_SECRET) {
+  throw new Error("JWT_SECRET is required");
+}
 
 export interface AuthRequest extends Request {
   userId?: string;
@@ -19,18 +25,16 @@ export const verifyAuth = async (
   next: NextFunction
 ): Promise<void> => {
   try {
-    const session = await auth.api.getSession({
-      headers: req.headers,
-    } as any);
-
-    if (!session?.user) {
+    const authHeader = req.headers.authorization;
+    if (!authHeader || !authHeader.startsWith("Bearer ")) {
       res.status(401).json({ error: "Unauthorized" });
       return;
     }
 
-    req.userId = session.user.id;
-    req.user = session.user;
-    req.session = session;
+    const token = authHeader.substring(7);
+    const payload = jwt.verify(token, JWT_SECRET) as { sub: string };
+
+    req.userId = payload.sub;
     next();
   } catch (error) {
     console.error("Auth verification error:", error);
@@ -44,18 +48,18 @@ export const verifyAuth = async (
 export const requireRole = (allowedRoles: string[]) => {
   return async (req: AuthRequest, res: Response, next: NextFunction): Promise<void> => {
     try {
-      const session = await auth.api.getSession({
-        headers: req.headers,
-      } as any);
-
-      if (!session?.user) {
+      const authHeader = req.headers.authorization;
+      if (!authHeader || !authHeader.startsWith("Bearer ")) {
         res.status(401).json({ error: "Unauthorized" });
         return;
       }
 
+      const token = authHeader.substring(7);
+      const payload = jwt.verify(token, JWT_SECRET) as { sub: string };
+
       // Get user profile with role
       const userProfile = await prisma.userProfile.findUnique({
-        where: { userId: session.user.id },
+        where: { userId: payload.sub },
       });
 
       if (!userProfile || !allowedRoles.includes(userProfile.role)) {
@@ -63,9 +67,7 @@ export const requireRole = (allowedRoles: string[]) => {
         return;
       }
 
-      req.userId = session.user.id;
-      req.user = session.user;
-      req.session = session;
+      req.userId = payload.sub;
       next();
     } catch (error) {
       console.error("Role verification error:", error);
@@ -83,14 +85,11 @@ export const optionalAuth = async (
   next: NextFunction
 ): Promise<void> => {
   try {
-    const session = await auth.api.getSession({
-      headers: req.headers,
-    } as any);
-
-    if (session?.user) {
-      req.userId = session.user.id;
-      req.user = session.user;
-      req.session = session;
+    const authHeader = req.headers.authorization;
+    if (authHeader && authHeader.startsWith("Bearer ")) {
+      const token = authHeader.substring(7);
+      const payload = jwt.verify(token, JWT_SECRET) as { sub: string };
+      req.userId = payload.sub;
     }
 
     next();

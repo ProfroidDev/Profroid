@@ -19,7 +19,7 @@ export interface AuthUser {
 
 export interface AuthStore {
   user: AuthUser | null;
-  sessionId: string | null;
+  token: string | null;
   isAuthenticated: boolean;
   isLoading: boolean;
   error: string | null;
@@ -41,7 +41,7 @@ export interface AuthStore {
  */
 const useAuthStore = create<AuthStore>((set) => ({
   user: null,
-  sessionId: authClient.getSessionId(),
+  token: authClient.getToken(),
   isAuthenticated: authClient.isAuthenticated(),
   isLoading: false,
   error: null,
@@ -57,6 +57,7 @@ const useAuthStore = create<AuthStore>((set) => ({
         set({
           isLoading: false,
           isAuthenticated: true,
+          token: response.token || null,
           user: response.user as AuthUser,
         });
         return true;
@@ -83,10 +84,10 @@ const useAuthStore = create<AuthStore>((set) => ({
     set({ isLoading: true, error: null });
     try {
       const response = await authClient.signIn(email, password);
-      if (response.success && response.session && response.user) {
+      if (response.success && response.token && response.user) {
         set({
           isLoading: false,
-          sessionId: response.session.id,
+          token: response.token,
           isAuthenticated: true,
           user: response.user as AuthUser,
         });
@@ -116,7 +117,7 @@ const useAuthStore = create<AuthStore>((set) => ({
       await authClient.signOut();
       set({
         isLoading: false,
-        sessionId: null,
+        token: null,
         isAuthenticated: false,
         user: null,
         error: null,
@@ -235,7 +236,7 @@ const useAuthStore = create<AuthStore>((set) => ({
   setAuthenticated: (authenticated: boolean) => {
     set({ isAuthenticated: authenticated });
     if (!authenticated) {
-      set({ user: null, sessionId: null });
+      set({ user: null, token: null });
     }
   },
 }));
