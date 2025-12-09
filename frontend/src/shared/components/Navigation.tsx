@@ -1,9 +1,26 @@
 import React, { useState } from "react";
-import { Wine, Menu, X, LogIn, ShoppingCart } from "lucide-react";
+import { Wine, Menu, X, LogIn, ShoppingCart, LogOut, User } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import useAuthStore from "../../features/authentication/store/authStore";
 import "./Navigation.css";
 
 export default function Navigation(): React.ReactElement {
   const [open, setOpen] = useState(false);
+  const navigate = useNavigate();
+  const { isAuthenticated, user, logout } = useAuthStore();
+
+  const handleLogout = async () => {
+    await logout();
+    navigate("/login");
+  };
+
+  const handleLogin = () => {
+    navigate("/login");
+  };
+
+  const handleProfile = () => {
+    navigate("/profile");
+  };
 
   return (
     <nav className="nav-container">
@@ -20,7 +37,9 @@ export default function Navigation(): React.ReactElement {
           <a href="/parts">Parts</a>
           <a href="/services">Services</a>
           <a href="/customers">Customers</a>
-          <a href="/employees">Employees</a>
+          {isAuthenticated && user?.role === "admin" && (
+            <a href="/employees">Employees</a>
+          )}
           <a href="/my-appointments">My Appointments</a>
           <a href="/my-jobs">My Jobs</a>
           <a href="/#about">About</a>
@@ -32,9 +51,20 @@ export default function Navigation(): React.ReactElement {
 
           <button className="nav-book">Book Appointment</button>
 
-          <button className="nav-signin">
-            <LogIn className="icon" /> Sign In
-          </button>
+          {isAuthenticated ? (
+            <>
+              <button className="nav-profile" onClick={handleProfile}>
+                <User className="icon" /> {user?.name || "Profile"}
+              </button>
+              <button className="nav-logout" onClick={handleLogout}>
+                <LogOut className="icon" /> Logout
+              </button>
+            </>
+          ) : (
+            <button className="nav-signin" onClick={handleLogin}>
+              <LogIn className="icon" /> Sign In
+            </button>
+          )}
         </div>
 
         {/* Mobile Toggle */}
@@ -49,14 +79,30 @@ export default function Navigation(): React.ReactElement {
           <a href="/parts">Parts</a>
           <a href="/services">Services</a>
           <a href="/customers">Customers</a>
-          <a href="/employees">Employees</a>
+          {isAuthenticated && user?.role === "admin" && (
+            <a href="/employees">Employees</a>
+          )}
           <a href="/my-appointments">My Appointments</a>
           <a href="/my-jobs">My Jobs</a>
           <a href="/#about">About</a>
           <a href="/#contact">Contact</a>
 
           <button className="nav-book w-full">Book Appointment</button>
-          <button className="nav-signin w-full"><LogIn className="icon" /> Sign In</button>
+
+          {isAuthenticated ? (
+            <>
+              <button className="nav-mobile-profile" onClick={handleProfile}>
+                <User className="icon" /> {user?.name || "Profile"}
+              </button>
+              <button className="nav-mobile-logout" onClick={handleLogout}>
+                <LogOut className="icon" /> Logout
+              </button>
+            </>
+          ) : (
+            <button className="nav-mobile-signin" onClick={handleLogin}>
+              <LogIn className="icon" /> Sign In
+            </button>
+          )}
         </div>
       )}
     </nav>

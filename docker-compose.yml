@@ -32,6 +32,26 @@ services:
     networks:
       - profroid-net
 
+  auth-service:
+    build:
+      context: ./auth-service
+      dockerfile: Dockerfile
+    container_name: profroid-auth-service
+    restart: always
+    depends_on:
+      - mysql
+    environment:
+      DATABASE_URL: mysql://root:root@mysql:3306/profroid_auth
+      PORT: 3001
+      NODE_ENV: production
+      BETTER_AUTH_SECRET: ${BETTER_AUTH_SECRET:-your-secret-key-min-32-chars-long}
+      FRONTEND_URL: http://localhost:3000
+      BACKEND_URL: http://localhost:8080
+    ports:
+      - "3001:3001"
+    networks:
+      - profroid-net
+
   monolith:
     build:
       context: ./backend
