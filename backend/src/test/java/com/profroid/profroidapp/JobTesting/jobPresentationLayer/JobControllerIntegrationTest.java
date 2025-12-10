@@ -1,5 +1,6 @@
 package com.profroid.profroidapp.JobTesting.jobPresentationLayer;
 
+import com.profroid.profroidapp.config.TestSecurityConfig;
 import com.profroid.profroidapp.jobssubdomain.dataAccessLayer.Job;
 import com.profroid.profroidapp.jobssubdomain.dataAccessLayer.JobIdentifier;
 import com.profroid.profroidapp.jobssubdomain.dataAccessLayer.JobRepository;
@@ -10,14 +11,20 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.reactive.AutoConfigureWebTestClient;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.context.annotation.Import;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.reactive.server.WebTestClient;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.RANDOM_PORT;
 
+@ActiveProfiles("test")
+@Import(TestSecurityConfig.class)
+@AutoConfigureWebTestClient
 @SpringBootTest(webEnvironment = RANDOM_PORT)
 public class JobControllerIntegrationTest {
 

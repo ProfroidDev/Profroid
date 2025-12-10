@@ -6,6 +6,7 @@ import com.profroid.profroidapp.cellarsubdomain.dataAccessLayer.CellarRepository
 import com.profroid.profroidapp.cellarsubdomain.dataAccessLayer.CellarType;
 import com.profroid.profroidapp.cellarsubdomain.presentationLayer.CellarRequestModel;
 import com.profroid.profroidapp.cellarsubdomain.presentationLayer.CellarResponseModel;
+import com.profroid.profroidapp.config.TestSecurityConfig;
 import com.profroid.profroidapp.customersubdomain.dataAccessLayer.Customer;
 import com.profroid.profroidapp.customersubdomain.dataAccessLayer.CustomerAddress;
 import com.profroid.profroidapp.customersubdomain.dataAccessLayer.CustomerIdentifier;
@@ -14,9 +15,12 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.reactive.AutoConfigureWebTestClient;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.context.annotation.Import;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.reactive.server.WebTestClient;
 
 import java.util.Collections;
@@ -24,6 +28,9 @@ import java.util.Collections;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.RANDOM_PORT;
 
+@ActiveProfiles("test")
+@Import(TestSecurityConfig.class)
+@AutoConfigureWebTestClient
 @SpringBootTest(webEnvironment = RANDOM_PORT)
 public class CellarControllerIntegrationTest {
 
