@@ -26,6 +26,9 @@ yarn-error.log*
 *.swo
 *~
 
+# Cookies
+cookies.txt
+
 # OS
 .DS_Store
 Thumbs.db
