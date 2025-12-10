@@ -40,7 +40,6 @@ export default function Navigation(): React.ReactElement {
           <a href="/employees">Employees</a>
 
           {/* Employee Links (now visible to everyone) */}
-          <a href="/employees/schedule">Schedule</a>
           <a href="/my-jobs">My Jobs</a>
 
           {/* Customer Links (now visible to everyone) */}

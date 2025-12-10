@@ -6,7 +6,6 @@ import CustomerListPage from "./pages/Customer/CustomerListPage";
 import ServicesPage from "./pages/jobs/ServicesPage";
 import Navigation from "./shared/components/Navigation";
 import Footer from "./shared/components/Footer";
-import EmployeeSchedulePage from "./pages/Employee/EmployeeSchedulePage";
 import EmployeeListPage from "./pages/Employee/EmployeeListPage";
 import PartsPage from "./pages/Parts/PartsPage";
 import MyAppointmentsPage from "./pages/Appointment/MyAppointmentsPage";
@@ -68,11 +67,10 @@ function App(): React.ReactElement {
         {/* Protected Routes */}
         <Route path="/" element={<Home />} />
         <Route path="/profile" element={<ProtectedRoute><ProfilePage /></ProtectedRoute>} />
-        <Route path="/parts" element={<PartsPage />} />
+                <Route path="/parts" element={<PartsPage />} />
         <Route path="/customers" element={<CustomerListPage />} />
         <Route path="/services" element={<ServicesPage />} />
         <Route path="/employees" element={<EmployeeListPage />} />
-        <Route path="/employees/schedule" element={<EmployeeSchedulePage />} />
         <Route path="/my-appointments" element={<MyAppointmentsPage />} />
         <Route path="/my-jobs" element={<MyJobsPage />} />
       </Routes>
