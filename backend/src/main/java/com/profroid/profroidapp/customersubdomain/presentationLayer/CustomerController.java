@@ -3,11 +3,10 @@ package com.profroid.profroidapp.customersubdomain.presentationLayer;
 import com.profroid.profroidapp.cellarsubdomain.businessLayer.CellarService;
 import com.profroid.profroidapp.cellarsubdomain.presentationLayer.CellarResponseModel;
 import com.profroid.profroidapp.customersubdomain.businessLayer.CustomerService;
-import com.profroid.profroidapp.customersubdomain.presentationLayer.CustomerRequestModel;
-import com.profroid.profroidapp.customersubdomain.presentationLayer.CustomerResponseModel;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -40,6 +39,7 @@ public class CustomerController {
     }
 
     @PutMapping("/by-user/{userId}")
+    @PreAuthorize("hasAnyRole('CUSTOMER', 'TECHNICIAN', 'ADMIN')")
     public ResponseEntity<CustomerResponseModel> updateCustomerByUserId(@PathVariable String userId,
                                                                         @Valid @RequestBody CustomerRequestModel requestModel) {
         CustomerResponseModel updatedCustomer = customerService.updateCustomerByUserId(userId, requestModel);
@@ -77,6 +77,7 @@ public class CustomerController {
     }
 
     @PutMapping("/{customerId}")
+    @PreAuthorize("hasAnyRole('CUSTOMER', 'TECHNICIAN', 'ADMIN')")
     public ResponseEntity<CustomerResponseModel> updateCustomer(@PathVariable String customerId,
                                                                 @Valid @RequestBody CustomerRequestModel requestModel) {
         CustomerResponseModel updatedCustomer = customerService.updateCustomer(customerId, requestModel);

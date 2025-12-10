@@ -2,7 +2,6 @@ package com.profroid.profroidapp.employeesubdomain.mappingLayer.employeeMappers;
 
 
 import com.profroid.profroidapp.employeesubdomain.dataAccessLayer.employeeDataAccessLayer.Employee;
-import com.profroid.profroidapp.employeesubdomain.dataAccessLayer.employeeDataAccessLayer.EmployeeIdentifier;
 import com.profroid.profroidapp.employeesubdomain.presentationLayer.employeePresentationLayer.EmployeeRequestModel;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;

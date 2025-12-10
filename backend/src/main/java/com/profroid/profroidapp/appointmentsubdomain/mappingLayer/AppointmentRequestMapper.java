@@ -1,7 +1,6 @@
 package com.profroid.profroidapp.appointmentsubdomain.mappingLayer;
 
 import com.profroid.profroidapp.appointmentsubdomain.dataAccessLayer.Appointment;
-import com.profroid.profroidapp.appointmentsubdomain.dataAccessLayer.AppointmentIdentifier;
 import com.profroid.profroidapp.appointmentsubdomain.dataAccessLayer.AppointmentStatus;
 import com.profroid.profroidapp.appointmentsubdomain.dataAccessLayer.AppointmentStatusType;
 import com.profroid.profroidapp.appointmentsubdomain.presentationLayer.AppointmentRequestModel;

@@ -331,6 +331,7 @@ export default function EmployeeAssignModal({ isOpen, onClose, onSuccess }: Empl
       };
 
       const employeeData: EmployeeRequestModel = {
+        userId: formData.userId,
         firstName: formData.firstName,
         lastName: formData.lastName,
         employeeAddress: employeeAddress,
@@ -372,7 +373,7 @@ export default function EmployeeAssignModal({ isOpen, onClose, onSuccess }: Empl
     <div className="modal-overlay-light">
       <div className="modal-container-light employee-modal">
         <div className="modal-header-light">
-          <h3>Assign Employee from Existing Account {step === 'enterDetails' && `- Step 2`}</h3>
+          <h3>Add Employee {step === 'enterDetails' && `- Step 2`}</h3>
           <button className="modal-close-light" onClick={onClose}>
             &#10005;
           </button>

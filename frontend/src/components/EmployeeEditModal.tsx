@@ -184,6 +184,7 @@ export default function EmployeeEditModal({ isOpen, employee, onClose, onSuccess
       };
 
       const employeeData: EmployeeRequestModel = {
+        userId: formData.userId,
         firstName: formData.firstName,
         lastName: formData.lastName,
         employeeAddress: employeeAddress,

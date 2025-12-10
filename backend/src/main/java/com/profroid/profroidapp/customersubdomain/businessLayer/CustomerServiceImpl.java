@@ -1,6 +1,7 @@
 package com.profroid.profroidapp.customersubdomain.businessLayer;
 
 import com.profroid.profroidapp.customersubdomain.dataAccessLayer.Customer;
+import com.profroid.profroidapp.customersubdomain.dataAccessLayer.CustomerAddress;
 import com.profroid.profroidapp.customersubdomain.dataAccessLayer.CustomerIdentifier;
 import com.profroid.profroidapp.customersubdomain.dataAccessLayer.CustomerRepository;
 import com.profroid.profroidapp.customersubdomain.mappingLayer.CustomerRequestMapper;
@@ -75,6 +76,8 @@ public class CustomerServiceImpl implements CustomerService {
             // Initialize with empty values - user can update later
             newCustomer.setFirstName("");
             newCustomer.setLastName("");
+            // Initialize empty address
+            newCustomer.setCustomerAddress(new CustomerAddress("", "", "", "", ""));
             
             foundCustomer = customerRepository.save(newCustomer);
         }

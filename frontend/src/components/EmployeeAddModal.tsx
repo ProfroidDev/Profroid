@@ -132,6 +132,7 @@ export default function EmployeeAddModal({ isOpen, onClose, onSuccess }: Employe
       };
 
       const employeeData: EmployeeRequestModel = {
+        userId: formData.userId,
         firstName: formData.firstName,
         lastName: formData.lastName,
         employeeAddress: employeeAddress,

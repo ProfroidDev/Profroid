@@ -4,6 +4,7 @@ import type { EmployeeRole } from "./EmployeeRole";
 
 
 export interface EmployeeRequestModel {
+  userId: string;
   firstName: string;
   lastName: string;
 

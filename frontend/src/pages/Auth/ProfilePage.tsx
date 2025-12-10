@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import useAuthStore from '../../features/authentication/store/authStore';
 import '../Auth.css';
@@ -34,18 +34,95 @@ export default function ProfilePage() {
   const [confirmPassword, setConfirmPassword] = useState('');
 
   // Schedule state (for employees)
-  const [schedule, setSchedule] = useState<any[]>([]);
+  const [schedule, setSchedule] = useState<Record<string, unknown>[]>([]);
   const [scheduleLoading, setScheduleLoading] = useState(false);
   const [scheduleError, setScheduleError] = useState('');
 
-  // Fetch employee schedule if user is an employee
-  useEffect(() => {
-    if (user?.employeeType && user?.id) {
-      fetchEmployeeSchedule();
-    }
-  }, [user?.id, user?.employeeType]);
+  // Employee identifiers for schedule and updates
+  const [employeeId, setEmployeeId] = useState<string | null>(null);
 
-  const fetchEmployeeSchedule = async () => {
+  // Customer data state (address, phone, etc.)
+  const [customerData, setCustomerData] = useState<Record<string, unknown> | null>(null);
+
+  // Fetch customer data and employee schedule when component loads or user role changes
+  const fetchEmployeeData = useCallback(async () => {
+    if (!user?.id) return;
+
+    try {
+      const token = localStorage.getItem('authToken');
+      const response = await fetch(
+        `${import.meta.env.VITE_BACKEND_URL}/employees/by-user/${user.id}`,
+        {
+          method: 'GET',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json',
+          },
+        }
+      );
+
+      if (response.ok) {
+        const data = await response.json();
+        setCustomerData(data); // Reuse customerData state for employee data
+        if (data.employeeIdentifier?.employeeId) {
+          setEmployeeId(data.employeeIdentifier.employeeId);
+        }
+        // Update form fields with employee data
+        if (data.employeeAddress?.streetAddress) setAddress(data.employeeAddress.streetAddress);
+        if (data.employeeAddress?.city) setCity(data.employeeAddress.city);
+        if (data.employeeAddress?.province) setProvince(data.employeeAddress.province);
+        if (data.employeeAddress?.country) setCountry(data.employeeAddress.country);
+        if (data.employeeAddress?.postalCode) setPostalCode(data.employeeAddress.postalCode);
+        // Extract phone number from phoneNumbers array
+        if (data.phoneNumbers && data.phoneNumbers.length > 0) {
+          setPhone(data.phoneNumbers[0].number || '');
+        }
+      } else if (response.status === 404) {
+        // No employee record yet; clear employee-specific state
+        setEmployeeId(null);
+        setSchedule([]);
+      }
+    } catch (error) {
+      console.error('Error fetching employee data:', error);
+    }
+  }, [user?.id]);
+
+  const fetchCustomerData = useCallback(async () => {
+    if (!user?.id) return;
+
+    try {
+      const token = localStorage.getItem('authToken');
+      const response = await fetch(
+        `${import.meta.env.VITE_BACKEND_URL}/customers/by-user/${user.id}`,
+        {
+          method: 'GET',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json',
+          },
+        }
+      );
+
+      if (response.ok) {
+        const data = await response.json();
+        setCustomerData(data);
+        // Update form fields with customer data
+        if (data.streetAddress) setAddress(data.streetAddress);
+        if (data.city) setCity(data.city);
+        if (data.province) setProvince(data.province);
+        if (data.country) setCountry(data.country);
+        if (data.postalCode) setPostalCode(data.postalCode);
+        // Extract phone number from phoneNumbers array
+        if (data.phoneNumbers && data.phoneNumbers.length > 0) {
+          setPhone(data.phoneNumbers[0].number || '');
+        }
+      }
+    } catch (error) {
+      console.error('Error fetching customer data:', error);
+    }
+  }, [user?.id]);
+
+  const fetchEmployeeSchedule = useCallback(async () => {
     if (!user?.id) return;
     
     try {
@@ -67,10 +144,13 @@ export default function ProfilePage() {
 
       if (employeeResponse.ok) {
         const employee = await employeeResponse.json();
-        if (employee?.id) {
+        console.log('Employee data:', employee); // Debug log
+        const empId = employee?.employeeIdentifier?.employeeId;
+        if (empId) {
+          setEmployeeId(empId);
           // Fetch schedule for this employee
           const scheduleResponse = await fetch(
-            `${import.meta.env.VITE_BACKEND_URL}/employees/${employee.id}/schedules`,
+            `${import.meta.env.VITE_BACKEND_URL}/employees/${empId}/schedules`,
             {
               method: 'GET',
               headers: {
@@ -82,11 +162,17 @@ export default function ProfilePage() {
 
           if (scheduleResponse.ok) {
             const scheduleData = await scheduleResponse.json();
+            console.log('Schedule data:', scheduleData); // Debug log
             setSchedule(scheduleData || []);
+          } else {
+            console.error('Schedule fetch failed with status:', scheduleResponse.status);
+            setSchedule([]);
           }
         }
       } else if (employeeResponse.status === 404) {
         // Not an employee or not found
+        console.log('Employee not found (404)');
+        setEmployeeId(null);
         setSchedule([]);
       }
     } catch (error) {
@@ -95,7 +181,26 @@ export default function ProfilePage() {
     } finally {
       setScheduleLoading(false);
     }
-  };
+  }, [user?.id]);
+
+  useEffect(() => {
+    if (user?.id) {
+      if (user?.employeeType) {
+        fetchEmployeeData();
+      } else {
+        fetchCustomerData();
+        setEmployeeId(null);
+        setSchedule([]);
+      }
+    }
+  }, [user?.id, user?.employeeType, fetchEmployeeData, fetchCustomerData]);
+
+  // Once we know the employeeId, load the schedule
+  useEffect(() => {
+    if (user?.employeeType && employeeId) {
+      fetchEmployeeSchedule();
+    }
+  }, [user?.employeeType, employeeId, fetchEmployeeSchedule]);
 
   if (!user) {
     return (
@@ -118,23 +223,97 @@ export default function ProfilePage() {
     setFormError('');
     clearError();
 
-    const updates: Record<string, string> = {};
-    if (name !== user.name) updates.name = name;
-    if (phone !== (user.phone || '')) updates.phone = phone;
-    if (address !== (user.address || '')) updates.address = address;
-    if (postalCode !== (user.postalCode || '')) updates.postalCode = postalCode;
-    if (city !== (user.city || '')) updates.city = city;
-    if (province !== (user.province || '')) updates.province = province;
-    if (country !== (user.country || '')) updates.country = country;
+    try {
+      const token = localStorage.getItem('authToken');
 
-    if (Object.keys(updates).length === 0) {
-      setFormError('No changes to save');
-      return;
-    }
+      if (user?.employeeType) {
+        // Save employee data
+        const resolvedEmployeeId = employeeId || (customerData as { employeeIdentifier?: { employeeId?: string } } | null)?.employeeIdentifier?.employeeId;
 
-    const success = await updateProfile(updates);
-    if (success) {
-      setEditMode(false);
+        const employeeUpdateData = {
+          firstName: user.name?.split(' ')[0] || '',
+          lastName: user.name?.split(' ').slice(1).join(' ') || '',
+          employeeAddress: {
+            streetAddress: address,
+            city: city,
+            province: province,
+            country: country,
+            postalCode: postalCode,
+          },
+          phoneNumbers: phone ? [{ number: phone, type: 'WORK' }] : (customerData?.phoneNumbers || []),
+        };
+
+        if (!resolvedEmployeeId) {
+          throw new Error('No employee record found for this user. Assign the user as an employee first.');
+        }
+
+        const response = await fetch(
+          `${import.meta.env.VITE_BACKEND_URL}/employees/${resolvedEmployeeId}`,
+          {
+            method: 'PUT',
+            headers: {
+              'Authorization': `Bearer ${token}`,
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(employeeUpdateData),
+          }
+        );
+
+        if (!response.ok) {
+          throw new Error('Failed to save employee data');
+        }
+
+        const updatedData = await response.json();
+        setCustomerData(updatedData);
+      } else {
+        // Save customer data
+        const customerUpdateData = {
+          userId: user.id,
+          firstName: user.name?.split(' ')[0] || '',
+          lastName: user.name?.split(' ').slice(1).join(' ') || '',
+          streetAddress: address,
+          city: city,
+          province: province,
+          country: country,
+          postalCode: postalCode,
+          // Backend PhoneType enum allows WORK, MOBILE, HOME; use MOBILE for customers.
+          phoneNumbers: phone ? [{ number: phone, type: 'MOBILE' }] : (customerData?.phoneNumbers || []),
+        };
+
+        const response = await fetch(
+          `${import.meta.env.VITE_BACKEND_URL}/customers/by-user/${user.id}`,
+          {
+            method: 'PUT',
+            headers: {
+              'Authorization': `Bearer ${token}`,
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(customerUpdateData),
+          }
+        );
+
+        if (!response.ok) {
+          throw new Error('Failed to save customer data');
+        }
+
+        const updatedData = await response.json();
+        setCustomerData(updatedData);
+      }
+
+      const updates: Record<string, string> = {};
+      if (name !== user.name) updates.name = name;
+
+      if (Object.keys(updates).length > 0) {
+        const success = await updateProfile(updates);
+        if (success) {
+          setEditMode(false);
+        }
+      } else {
+        setEditMode(false);
+      }
+    } catch (error) {
+      console.error('Error saving profile:', error);
+      setFormError('Failed to save profile changes');
     }
   };
 
@@ -177,13 +356,29 @@ export default function ProfilePage() {
       <div className="profile-card">
         <div className="profile-header">
           <h1>My Profile</h1>
-          <button
-            onClick={handleLogout}
-            className="btn-secondary"
-            disabled={isLoading}
-          >
-            Logout
-          </button>
+          <div style={{ display: 'flex', gap: '0.5rem' }}>
+            <button
+              onClick={() => {
+                if (user?.employeeType) {
+                  fetchEmployeeData();
+                  fetchEmployeeSchedule();
+                } else {
+                  fetchCustomerData();
+                }
+              }}
+              className="btn-secondary"
+              disabled={isLoading}
+            >
+              Refresh
+            </button>
+            <button
+              onClick={handleLogout}
+              className="btn-secondary"
+              disabled={isLoading}
+            >
+              Logout
+            </button>
+          </div>
         </div>
 
         {/* Profile Information */}
@@ -319,12 +514,12 @@ export default function ProfilePage() {
                     onClick={() => {
                       setEditMode(false);
                       setName(user.name);
-                      setPhone(user.phone || '');
-                      setAddress(user.address || '');
-                      setPostalCode(user.postalCode || '');
-                      setCity(user.city || '');
-                      setProvince(user.province || '');
-                      setCountry(user.country || '');
+                      setPhone('');
+                      setAddress((customerData?.streetAddress as string) || '');
+                      setPostalCode((customerData?.postalCode as string) || '');
+                      setCity((customerData?.city as string) || '');
+                      setProvince((customerData?.province as string) || '');
+                      setCountry((customerData?.country as string) || '');
                     }}
                     className="btn-secondary"
                   >
@@ -342,31 +537,45 @@ export default function ProfilePage() {
                   <span className="label">Email:</span>
                   <span className="value">{user.email}</span>
                 </div>
-                {user.phone && (
+                {user?.employeeType && (
+                  <div className="info-row">
+                    <span className="label">Employee Type:</span>
+                    <span className="value">{user.employeeType}</span>
+                  </div>
+                )}
+                {customerData && (customerData.phoneNumbers as Array<Record<string, unknown>> | undefined) && (customerData.phoneNumbers as Array<Record<string, unknown>>).length > 0 && (
                   <div className="info-row">
                     <span className="label">Phone:</span>
-                    <span className="value">{user.phone}</span>
-                  </div>
-                )}
-                {user.address && (
-                  <div className="info-row">
-                    <span className="label">Address:</span>
-                    <span className="value">{user.address}</span>
-                  </div>
-                )}
-                {user.city && (
-                  <div className="info-row">
-                    <span className="label">City:</span>
                     <span className="value">
-                      {user.city}
-                      {user.province && `, ${user.province}`}
+                      {(customerData.phoneNumbers as Array<Record<string, unknown>>).map((p) => `${String(p.number)} (${String(p.type)})`).join(', ')}
                     </span>
                   </div>
                 )}
-                {user.country && (
+                {customerData && (customerData.streetAddress as string || (customerData.employeeAddress as Record<string, unknown>)?.streetAddress as string) && (
+                  <div className="info-row">
+                    <span className="label">Address:</span>
+                    <span className="value">{(customerData?.streetAddress as string) || ((customerData?.employeeAddress as Record<string, unknown>)?.streetAddress as string)}</span>
+                  </div>
+                )}
+                {customerData && ((customerData.city as string) || ((customerData.employeeAddress as Record<string, unknown>)?.city as string)) && (
+                  <div className="info-row">
+                    <span className="label">City:</span>
+                    <span className="value">
+                      {(customerData?.city as string) || ((customerData?.employeeAddress as Record<string, unknown>)?.city as string)}
+                      {((customerData?.province as string) || ((customerData?.employeeAddress as Record<string, unknown>)?.province as string)) && `, ${(customerData?.province as string) || ((customerData?.employeeAddress as Record<string, unknown>)?.province as string)}`}
+                    </span>
+                  </div>
+                )}
+                {customerData && ((customerData.postalCode as string) || ((customerData.employeeAddress as Record<string, unknown>)?.postalCode as string)) && (
+                  <div className="info-row">
+                    <span className="label">Postal Code:</span>
+                    <span className="value">{(customerData?.postalCode as string) || ((customerData?.employeeAddress as Record<string, unknown>)?.postalCode as string)}</span>
+                  </div>
+                )}
+                {customerData && ((customerData.country as string) || ((customerData.employeeAddress as Record<string, unknown>)?.country as string)) && (
                   <div className="info-row">
                     <span className="label">Country:</span>
-                    <span className="value">{user.country}</span>
+                    <span className="value">{(customerData?.country as string) || ((customerData?.employeeAddress as Record<string, unknown>)?.country as string)}</span>
                   </div>
                 )}
               </div>
@@ -480,16 +689,14 @@ export default function ProfilePage() {
                   <thead>
                     <tr>
                       <th>Day</th>
-                      <th>Start Time</th>
-                      <th>End Time</th>
+                      <th>Time Slots</th>
                     </tr>
                   </thead>
                   <tbody>
-                    {schedule.map((day: any, index: number) => (
+                    {schedule.map((day, index: number) => (
                       <tr key={index}>
-                        <td>{day.dayOfWeek}</td>
-                        <td>{day.startTime || '-'}</td>
-                        <td>{day.endTime || '-'}</td>
+                        <td>{String(day.dayOfWeek)}</td>
+                        <td>{Array.isArray(day.timeSlots) ? (day.timeSlots as Array<unknown>).map(String).join(', ') : '-'}</td>
                       </tr>
                     ))}
                   </tbody>
