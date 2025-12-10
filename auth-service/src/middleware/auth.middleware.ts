@@ -77,8 +77,78 @@ export const requireRole = (allowedRoles: string[]) => {
 };
 
 /**
- * Optional auth middleware - doesn't fail if no session
+ * Middleware to check if user is admin
  */
+export const requireAdmin = async (
+  req: AuthRequest,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
+  try {
+    const authHeader = req.headers.authorization;
+    if (!authHeader || !authHeader.startsWith("Bearer ")) {
+      res.status(401).json({ error: "Unauthorized" });
+      return;
+    }
+
+    const token = authHeader.substring(7);
+    const payload = jwt.verify(token, JWT_SECRET) as { sub: string };
+
+    // Get user profile with role
+    const userProfile = await prisma.userProfile.findUnique({
+      where: { userId: payload.sub },
+    });
+
+    if (userProfile?.role !== "admin") {
+      res.status(403).json({ error: "Admin access required" });
+      return;
+    }
+
+    req.userId = payload.sub;
+    next();
+  } catch (error) {
+    console.error("Admin verification error:", error);
+    res.status(401).json({ error: "Unauthorized" });
+  }
+};
+
+/**
+ * Middleware to check if user has specific employee type
+ */
+export const requireEmployeeType = (allowedTypes: string[]) => {
+  return async (req: AuthRequest, res: Response, next: NextFunction): Promise<void> => {
+    try {
+      const authHeader = req.headers.authorization;
+      if (!authHeader || !authHeader.startsWith("Bearer ")) {
+        res.status(401).json({ error: "Unauthorized" });
+        return;
+      }
+
+      const token = authHeader.substring(7);
+      const payload = jwt.verify(token, JWT_SECRET) as { sub: string };
+
+      // Get user profile with employeeType
+      const userProfile = await prisma.userProfile.findUnique({
+        where: { userId: payload.sub },
+      });
+
+      if (
+        userProfile?.role !== "employee" ||
+        !userProfile.employeeType ||
+        !allowedTypes.includes(userProfile.employeeType)
+      ) {
+        res.status(403).json({ error: "Forbidden" });
+        return;
+      }
+
+      req.userId = payload.sub;
+      next();
+    } catch (error) {
+      console.error("Employee type verification error:", error);
+      res.status(401).json({ error: "Unauthorized" });
+    }
+  };
+};
 export const optionalAuth = async (
   req: AuthRequest,
   res: Response,

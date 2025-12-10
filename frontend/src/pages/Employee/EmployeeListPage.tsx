@@ -10,6 +10,7 @@ import { getEmployeeScheduleForDate } from "../../features/employee/api/getEmplo
 import Calendar from 'react-calendar';
 import 'react-calendar/dist/Calendar.css';
 import EmployeeAddModal from "../../components/EmployeeAddModal";
+import EmployeeAssignModal from "../../components/EmployeeAssignModal";
 import EmployeeEditModal from "../../components/EmployeeEditModal";
 import ConfirmationModal from "../../components/ConfirmationModal";
 import Toast from "../../shared/components/Toast";
@@ -70,6 +71,7 @@ export default function EmployeeListPage(): React.ReactElement {
     fetchDateSchedule();
   }, [selectedDate, scheduleEmployeeData, employeeSchedule]);
   const [addModalOpen, setAddModalOpen] = useState<boolean>(false);
+  const [assignModalOpen, setAssignModalOpen] = useState<boolean>(false);
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' | 'info' | 'warning' } | null>(null);
 
   // Edit modal state
@@ -247,13 +249,21 @@ export default function EmployeeListPage(): React.ReactElement {
       <h2 className="employees-title-light">Employees</h2>
 
       <div className="employees-card-light">
-        <button 
-          className="btn-add-employee" 
-          onClick={() => setAddModalOpen(true)}
-          style={{ marginBottom: '20px' }}
-        >
-          + Add New Employee
-        </button>
+        <div style={{ marginBottom: '20px', display: 'flex', gap: '10px' }}>
+          <button 
+            className="btn-add-employee" 
+            onClick={() => setAddModalOpen(true)}
+          >
+            + Add New Employee (Manual)
+          </button>
+          <button 
+            className="btn-add-employee" 
+            onClick={() => setAssignModalOpen(true)}
+            style={{ backgroundColor: '#27ae60' }}
+          >
+            + Assign Employee from Account
+          </button>
+        </div>
 
         {loading ? (
           <div className="loading-light">Loading employees...</div>
@@ -492,6 +502,50 @@ export default function EmployeeListPage(): React.ReactElement {
         onSuccess={() => {
           setAddModalOpen(false);
           setToast({ message: 'Employee added successfully!', type: 'success' });
+          // Refresh employee list
+          async function load() {
+            setLoading(true);
+            try {
+              const data = await getEmployees();
+              setEmployees(data);
+            } catch (error) {
+              console.error("Error fetching employees:", error);
+            } finally {
+              setLoading(false);
+            }
+          }
+          load();
+        }}
+      />
+
+      <EmployeeAssignModal 
+        isOpen={assignModalOpen} 
+        onClose={() => setAssignModalOpen(false)}
+        onSuccess={() => {
+          setAssignModalOpen(false);
+          setToast({ message: 'Employee assigned successfully!', type: 'success' });
+          // Refresh employee list
+          async function load() {
+            setLoading(true);
+            try {
+              const data = await getEmployees();
+              setEmployees(data);
+            } catch (error) {
+              console.error("Error fetching employees:", error);
+            } finally {
+              setLoading(false);
+            }
+          }
+          load();
+        }}
+      />
+
+      <EmployeeAssignModal 
+        isOpen={assignModalOpen} 
+        onClose={() => setAssignModalOpen(false)}
+        onSuccess={() => {
+          setAssignModalOpen(false);
+          setToast({ message: 'Employee assigned successfully!', type: 'success' });
           // Refresh employee list
           async function load() {
             setLoading(true);

@@ -8,6 +8,7 @@ export interface AuthUser {
   image?: string;
   emailVerified: boolean;
   role: string;
+  employeeType?: string;
   isActive: boolean;
   phone?: string;
   address?: string;

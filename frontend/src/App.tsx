@@ -67,12 +67,12 @@ function App(): React.ReactElement {
         {/* Protected Routes */}
         <Route path="/" element={<Home />} />
         <Route path="/profile" element={<ProtectedRoute><ProfilePage /></ProtectedRoute>} />
-                <Route path="/parts" element={<PartsPage />} />
+        <Route path="/parts" element={<PartsPage />} />
         <Route path="/customers" element={<CustomerListPage />} />
         <Route path="/services" element={<ServicesPage />} />
-        <Route path="/employees" element={<EmployeeListPage />} />
+        <Route path="/employees" element={<ProtectedRoute requiredRole="admin"><EmployeeListPage /></ProtectedRoute>} />
         <Route path="/my-appointments" element={<MyAppointmentsPage />} />
-        <Route path="/my-jobs" element={<MyJobsPage />} />
+        <Route path="/my-jobs" element={<ProtectedRoute requiredEmployeeType="TECHNICIAN"><MyJobsPage /></ProtectedRoute>} />
       </Routes>
 
       <Footer />

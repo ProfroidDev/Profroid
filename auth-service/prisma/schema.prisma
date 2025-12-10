@@ -22,6 +22,7 @@ model user {
   accounts      account[]
   sessions      session[]
   verifications verification[]
+  userProfile   userProfile?
 }
 
 model account {
@@ -79,6 +80,7 @@ model userProfile {
   id            String   @id @default(cuid())
   userId        String   @unique
   role          String   @default("customer") // customer, employee, admin
+  employeeType  String?  // TECHNICIAN, MANAGER, SUPERVISOR, etc. - only for employees
   isActive      Boolean  @default(true)
   phone         String?
   address       String?
@@ -88,4 +90,6 @@ model userProfile {
   country       String?
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
+  
+  user          user     @relation(fields: [userId], references: [id], onDelete: Cascade)
 }

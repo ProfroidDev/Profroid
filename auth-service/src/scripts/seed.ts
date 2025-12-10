@@ -15,18 +15,21 @@ async function main() {
       name: "Admin User",
       password: "Admin123!",
       role: "admin",
+      employeeType: null,
     },
     {
       email: "tech@profroid.local",
       name: "Tech User",
       password: "Tech123!",
       role: "employee",
+      employeeType: "TECHNICIAN",
     },
     {
       email: "customer@profroid.local",
       name: "Customer User",
       password: "Customer123!",
       role: "customer",
+      employeeType: null,
     },
   ];
 
@@ -45,17 +48,19 @@ async function main() {
       },
     });
 
-    // Upsert profile with role
+    // Upsert profile with role and employeeType
     await prisma.userProfile.upsert({
       where: { userId: user.id },
       update: {
         role: u.role,
+        employeeType: u.employeeType,
         isActive: true,
       },
       create: {
         id: crypto.randomUUID(),
         userId: user.id,
         role: u.role,
+        employeeType: u.employeeType,
         isActive: true,
       },
     });
@@ -76,7 +81,7 @@ async function main() {
       },
     });
 
-    console.log(`Seeded user ${u.email} with role ${u.role}`);
+    console.log(`Seeded user ${u.email} with role ${u.role}${u.employeeType ? ` and type ${u.employeeType}` : ''}`);
   }
 }
 

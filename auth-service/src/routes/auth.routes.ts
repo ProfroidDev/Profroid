@@ -121,6 +121,7 @@ router.post("/register", async (req: Request, res: Response) => {
         email: user.email,
         name: user.name,
         role: profile.role,
+        employeeType: profile.employeeType,
         isActive: profile.isActive,
       },
     });
@@ -176,6 +177,7 @@ router.post("/sign-in", async (req: Request, res: Response) => {
         name: user.name,
         emailVerified: user.emailVerified,
         role: profile?.role || "customer",
+        employeeType: profile?.employeeType,
         isActive: profile?.isActive ?? true,
       },
     });
@@ -219,6 +221,7 @@ router.get("/user", async (req: Request, res: Response) => {
         emailVerified: user.emailVerified,
         createdAt: user.createdAt,
         role: profile?.role || "customer",
+        employeeType: profile?.employeeType,
         isActive: profile?.isActive || true,
         phone: profile?.phone,
         address: profile?.address,
@@ -373,6 +376,154 @@ router.post("/sign-out", async (req: Request, res: Response) => {
  */
 router.get("/health", (req: Request, res: Response) => {
   res.json({ status: "ok", message: "Auth service is running" });
+});
+
+/**
+ * Get all users without employee profile (for admin to create employees)
+ * GET /api/auth/unassigned-users
+ * Headers: Authorization: Bearer <jwt>
+ */
+router.get("/unassigned-users", async (req: Request, res: Response) => {
+  try {
+    const payload = getPayloadFromRequest(req, res);
+    if (!payload) return;
+
+    // Check if user is admin
+    const userProfile = await prisma.userProfile.findUnique({
+      where: { userId: payload.sub },
+    });
+
+    if (userProfile?.role !== "admin") {
+      res.status(403).json({ error: "Only admins can access this resource" });
+      return;
+    }
+
+    // Get all users who don't have an employee role or don't have an employeeType set
+    const unassignedUsers = await prisma.userProfile.findMany({
+      where: {
+        OR: [
+          { role: "customer" },
+          { AND: [{ role: "employee" }, { employeeType: null }] },
+        ],
+      },
+      include: {
+        user: {
+          select: {
+            id: true,
+            email: true,
+            name: true,
+          },
+        },
+      },
+    });
+
+    res.json({
+      success: true,
+      users: unassignedUsers.map((up) => ({
+        id: up.user.id,
+        email: up.user.email,
+        name: up.user.name,
+      })),
+    });
+  } catch (error) {
+    console.error("Fetch unassigned users error:", error);
+    return res.status(500).json({ error: "Failed to fetch unassigned users" });
+  }
+});
+
+/**
+ * Assign employee profile to existing user
+ * POST /api/auth/assign-employee
+ * Body: { userId: string, employeeType: string }
+ * Headers: Authorization: Bearer <jwt>
+ */
+router.post("/assign-employee", async (req: Request, res: Response) => {
+  try {
+    const payload = getPayloadFromRequest(req, res);
+    if (!payload) return;
+
+    const { userId, employeeType } = req.body;
+
+    if (!userId || !employeeType) {
+      res.status(400).json({ error: "userId and employeeType are required" });
+      return;
+    }
+
+    // Check if requester is admin
+    const adminProfile = await prisma.userProfile.findUnique({
+      where: { userId: payload.sub },
+    });
+
+    if (adminProfile?.role !== "admin") {
+      res.status(403).json({ error: "Only admins can assign employees" });
+      return;
+    }
+
+    // Update user profile to employee role with employeeType
+    const updatedProfile = await prisma.userProfile.update({
+      where: { userId },
+      data: {
+        role: "employee",
+        employeeType,
+        isActive: true,
+      },
+    });
+
+    res.json({
+      success: true,
+      message: `User assigned as ${employeeType} employee successfully`,
+      profile: {
+        userId: updatedProfile.userId,
+        role: updatedProfile.role,
+        employeeType: updatedProfile.employeeType,
+        isActive: updatedProfile.isActive,
+      },
+    });
+  } catch (error) {
+    console.error("Assign employee error:", error);
+    return res.status(500).json({ error: "Failed to assign employee" });
+  }
+});
+
+/**
+ * Get user by ID (for employee details)
+ * GET /api/auth/users/:userId
+ * Headers: Authorization: Bearer <jwt>
+ */
+router.get("/users/:userId", async (req: Request, res: Response) => {
+  try {
+    const payload = getPayloadFromRequest(req, res);
+    if (!payload) return;
+
+    const { userId } = req.params;
+
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+    });
+
+    if (!user) {
+      return res.status(404).json({ error: "User not found" });
+    }
+
+    const profile = await prisma.userProfile.findUnique({
+      where: { userId },
+    });
+
+    res.json({
+      success: true,
+      user: {
+        id: user.id,
+        email: user.email,
+        name: user.name,
+        role: profile?.role,
+        employeeType: profile?.employeeType,
+        isActive: profile?.isActive,
+      },
+    });
+  } catch (error) {
+    console.error("Get user error:", error);
+    return res.status(500).json({ error: "Failed to fetch user" });
+  }
 });
 
 export default router;
