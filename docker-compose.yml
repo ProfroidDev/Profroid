@@ -2,6 +2,7 @@ version: "3.9"
 
 # Full production setup - runs everything including frontend
 # Run: docker compose up --build
+# Environment variables are loaded from .env file
 
 services:
 
@@ -10,8 +11,8 @@ services:
     container_name: profroid-mysql
     restart: always
     environment:
-      MYSQL_ROOT_PASSWORD: root
-      MYSQL_DATABASE: profroid
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${MYSQL_DATABASE}
       MYSQL_ROOT_HOST: "%"
     ports:
       - "3307:3306"
@@ -29,7 +30,7 @@ services:
     environment:
       PMA_HOST: mysql
       PMA_USER: root
-      PMA_PASSWORD: root
+      PMA_PASSWORD: ${MYSQL_ROOT_PASSWORD}
     ports:
       - "8081:80"
     networks:
@@ -44,13 +45,13 @@ services:
     depends_on:
       - mysql
     environment:
-      DATABASE_URL: mysql://root:root@mysql:3306/profroid_auth
+      DATABASE_URL: mysql://root:${MYSQL_ROOT_PASSWORD}@mysql:3306/profroid_auth
       PORT: 3001
       NODE_ENV: production
-      BETTER_AUTH_SECRET: ${BETTER_AUTH_SECRET:-Qt0K6UmrLyz5f4EfphuWm2xBBOY7yaaV}
-      JWT_SECRET: ${JWT_SECRET:-Qt0K6UmrLyz5f4EfphuWm2xBBOY7yaaV}
-      FRONTEND_URLS: http://localhost:3000,http://localhost:5173
-      BACKEND_URL: http://localhost:8080
+      BETTER_AUTH_SECRET: ${BETTER_AUTH_SECRET}
+      JWT_SECRET: ${JWT_SECRET}
+      FRONTEND_URLS: ${FRONTEND_URLS}
+      BACKEND_URL: ${BACKEND_URL}
     ports:
       - "3001:3001"
     networks:
@@ -68,8 +69,8 @@ services:
       SPRING_PROFILES_ACTIVE: docker
       SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/profroid
       SPRING_DATASOURCE_USERNAME: root
-      SPRING_DATASOURCE_PASSWORD: root
-      JWT_SECRET: ${JWT_SECRET:-Qt0K6UmrLyz5f4EfphuWm2xBBOY7yaaV}
+      SPRING_DATASOURCE_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      JWT_SECRET: ${JWT_SECRET}
     ports:
       - "8080:8080"
     networks:
