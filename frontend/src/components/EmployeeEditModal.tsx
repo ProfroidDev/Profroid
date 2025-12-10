@@ -134,7 +134,7 @@ export default function EmployeeEditModal({ isOpen, employee, onClose, onSuccess
 
     if (!formData.firstName.trim()) newErrors.firstName = 'First name is required';
     if (!formData.lastName.trim()) newErrors.lastName = 'Last name is required';
-    if (!formData.userId.trim()) newErrors.userId = 'User ID is required';
+    // userId is read-only, no need to validate
     if (!formData.streetAddress.trim()) newErrors.streetAddress = 'Street address is required';
     if (!formData.city.trim()) newErrors.city = 'City is required';
     if (!formData.postalCode.trim()) newErrors.postalCode = 'Postal code is required';
@@ -186,7 +186,6 @@ export default function EmployeeEditModal({ isOpen, employee, onClose, onSuccess
       const employeeData: EmployeeRequestModel = {
         firstName: formData.firstName,
         lastName: formData.lastName,
-        userId: formData.userId,
         employeeAddress: employeeAddress,
         phoneNumbers: phoneNumbers,
         employeeRole: employeeRole,
@@ -256,11 +255,11 @@ export default function EmployeeEditModal({ isOpen, employee, onClose, onSuccess
                 id="userId"
                 name="userId"
                 value={formData.userId}
-                onChange={handleInputChange}
+                readOnly
+                disabled
                 placeholder="Enter user ID"
-                className={errors.userId ? 'input-error' : ''}
+                className="input-disabled"
               />
-              {errors.userId && <span className="field-error">{errors.userId}</span>}
             </div>
 
             <div className="form-group">

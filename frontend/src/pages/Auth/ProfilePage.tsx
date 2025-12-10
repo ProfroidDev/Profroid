@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import useAuthStore from '../../features/authentication/store/authStore';
 import '../Auth.css';
@@ -32,6 +32,70 @@ export default function ProfilePage() {
   const [oldPassword, setOldPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
+
+  // Schedule state (for employees)
+  const [schedule, setSchedule] = useState<any[]>([]);
+  const [scheduleLoading, setScheduleLoading] = useState(false);
+  const [scheduleError, setScheduleError] = useState('');
+
+  // Fetch employee schedule if user is an employee
+  useEffect(() => {
+    if (user?.employeeType && user?.id) {
+      fetchEmployeeSchedule();
+    }
+  }, [user?.id, user?.employeeType]);
+
+  const fetchEmployeeSchedule = async () => {
+    if (!user?.id) return;
+    
+    try {
+      setScheduleLoading(true);
+      setScheduleError('');
+      const token = localStorage.getItem('authToken');
+      
+      // First, find the employee by userId
+      const employeeResponse = await fetch(
+        `${import.meta.env.VITE_BACKEND_URL}/employees/by-user/${user.id}`,
+        {
+          method: 'GET',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json',
+          },
+        }
+      );
+
+      if (employeeResponse.ok) {
+        const employee = await employeeResponse.json();
+        if (employee?.id) {
+          // Fetch schedule for this employee
+          const scheduleResponse = await fetch(
+            `${import.meta.env.VITE_BACKEND_URL}/employees/${employee.id}/schedules`,
+            {
+              method: 'GET',
+              headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json',
+              },
+            }
+          );
+
+          if (scheduleResponse.ok) {
+            const scheduleData = await scheduleResponse.json();
+            setSchedule(scheduleData || []);
+          }
+        }
+      } else if (employeeResponse.status === 404) {
+        // Not an employee or not found
+        setSchedule([]);
+      }
+    } catch (error) {
+      console.error('Error fetching schedule:', error);
+      setScheduleError('Failed to load schedule');
+    } finally {
+      setScheduleLoading(false);
+    }
+  };
 
   if (!user) {
     return (
@@ -394,6 +458,46 @@ export default function ProfilePage() {
                 </button>
               </div>
             </form>
+          </div>
+        )}
+
+        {/* Employee Schedule */}
+        {user?.employeeType && !passwordMode && (
+          <div className="profile-section">
+            <div className="section-header">
+              <h2>My Schedule</h2>
+            </div>
+
+            {scheduleError && (
+              <div className="alert alert-error">{scheduleError}</div>
+            )}
+
+            {scheduleLoading ? (
+              <p>Loading schedule...</p>
+            ) : schedule.length > 0 ? (
+              <div className="schedule-table">
+                <table>
+                  <thead>
+                    <tr>
+                      <th>Day</th>
+                      <th>Start Time</th>
+                      <th>End Time</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {schedule.map((day: any, index: number) => (
+                      <tr key={index}>
+                        <td>{day.dayOfWeek}</td>
+                        <td>{day.startTime || '-'}</td>
+                        <td>{day.endTime || '-'}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            ) : (
+              <p>No schedule set yet</p>
+            )}
           </div>
         )}
       </div>

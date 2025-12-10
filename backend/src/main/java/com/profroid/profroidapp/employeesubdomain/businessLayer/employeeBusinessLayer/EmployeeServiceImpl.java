@@ -66,6 +66,20 @@ public class EmployeeServiceImpl implements EmployeeService {
     }
 
     @Override
+    public EmployeeResponseModel getEmployeeByUserId(String userId) {
+        if (userId == null || userId.trim().isEmpty()) {
+            throw new InvalidIdentifierException("User ID is required.");
+        }
+
+        Employee employee = employeeRepository.findEmployeeByUserId(userId);
+
+        if (employee == null) {
+            throw new ResourceNotFoundException("No employee found for user ID: " + userId);
+        }
+        return employeeResponseMapper.toResponseModel(employee);
+    }
+
+    @Override
     public EmployeeResponseModel addEmployee(EmployeeRequestModel employeeRequestModel) {
 
         String userId = employeeRequestModel.getUserId();

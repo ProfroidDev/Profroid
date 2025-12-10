@@ -34,6 +34,18 @@ public class CustomerController {
         return ResponseEntity.ok(customerService.getCustomerById(customerId));
     }
 
+    @GetMapping("/by-user/{userId}")
+    public ResponseEntity<CustomerResponseModel> getCustomerByUserId(@PathVariable String userId) {
+        return ResponseEntity.ok(customerService.getCustomerByUserId(userId));
+    }
+
+    @PutMapping("/by-user/{userId}")
+    public ResponseEntity<CustomerResponseModel> updateCustomerByUserId(@PathVariable String userId,
+                                                                        @Valid @RequestBody CustomerRequestModel requestModel) {
+        CustomerResponseModel updatedCustomer = customerService.updateCustomerByUserId(userId, requestModel);
+        return ResponseEntity.ok(updatedCustomer);
+    }
+
     @PostMapping
     public ResponseEntity<CustomerResponseModel> createCustomer( @Valid @RequestBody CustomerRequestModel requestModel) {
         CustomerResponseModel createdCustomer = customerService.createCustomer(requestModel);

@@ -57,6 +57,63 @@ public class CustomerServiceImpl implements CustomerService {
 
 
     @Override
+    public CustomerResponseModel getCustomerByUserId(String userId) {
+        if (userId == null || userId.trim().isEmpty()) {
+            throw new InvalidIdentifierException("User ID is required.");
+        }
+
+        Customer foundCustomer = customerRepository.findCustomerByUserId(userId);
+
+        if (foundCustomer == null) {
+            // Auto-create customer record if it doesn't exist
+            // This handles the case when a user registers via auth-service
+            CustomerIdentifier customerIdentifier = new CustomerIdentifier();
+            Customer newCustomer = new Customer();
+            newCustomer.setCustomerIdentifier(customerIdentifier);
+            newCustomer.setUserId(userId);
+            newCustomer.setIsActive(true);
+            // Initialize with empty values - user can update later
+            newCustomer.setFirstName("");
+            newCustomer.setLastName("");
+            
+            foundCustomer = customerRepository.save(newCustomer);
+        }
+
+        return customerResponseMapper.toResponseModel(foundCustomer);
+    }
+
+    @Override
+    public CustomerResponseModel updateCustomerByUserId(String userId, CustomerRequestModel requestModel) {
+        if (userId == null || userId.trim().isEmpty()) {
+            throw new InvalidIdentifierException("User ID is required.");
+        }
+
+        Customer foundCustomer = customerRepository.findCustomerByUserId(userId);
+
+        if (foundCustomer == null) {
+            throw new ResourceNotFoundException("No customer found for user ID: " + userId);
+        }
+
+        // Update simple fields
+        foundCustomer.setFirstName(requestModel.getFirstName());
+        foundCustomer.setLastName(requestModel.getLastName());
+
+        // Update address fields
+        foundCustomer.getCustomerAddress().setStreetAddress(requestModel.getStreetAddress());
+        foundCustomer.getCustomerAddress().setCity(requestModel.getCity());
+        foundCustomer.getCustomerAddress().setProvince(requestModel.getProvince());
+        foundCustomer.getCustomerAddress().setCountry(requestModel.getCountry());
+        foundCustomer.getCustomerAddress().setPostalCode(requestModel.getPostalCode());
+
+        // Update phone numbers
+        foundCustomer.setPhoneNumbers(requestModel.getPhoneNumbers());
+
+        Customer updatedCustomer = customerRepository.save(foundCustomer);
+        return customerResponseMapper.toResponseModel(updatedCustomer);
+    }
+
+
+    @Override
     public CustomerResponseModel createCustomer(CustomerRequestModel requestModel) {
 
         // Enforce unique userId
