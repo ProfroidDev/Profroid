@@ -1,5 +1,6 @@
 package com.profroid.profroidapp.PartTesting.partPresentationLayer;
 
+import com.profroid.profroidapp.config.TestSecurityConfig;
 import com.profroid.profroidapp.partsubdomain.dataAccessLayer.Part;
 import com.profroid.profroidapp.partsubdomain.dataAccessLayer.PartIdentifier;
 import com.profroid.profroidapp.partsubdomain.dataAccessLayer.PartRepository;
@@ -12,13 +13,19 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.reactive.AutoConfigureWebTestClient;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.reactive.server.WebTestClient;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.RANDOM_PORT;
 
+@ActiveProfiles("test")
+@Import(TestSecurityConfig.class)
+@AutoConfigureWebTestClient
 @SpringBootTest(webEnvironment = RANDOM_PORT)
 public class PartControllerIntegrationTest {
 

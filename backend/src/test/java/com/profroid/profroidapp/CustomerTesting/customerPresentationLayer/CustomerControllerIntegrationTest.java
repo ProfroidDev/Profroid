@@ -2,6 +2,7 @@ package com.profroid.profroidapp.CustomerTesting.customerPresentationLayer;
 
 import com.profroid.profroidapp.cellarsubdomain.dataAccessLayer.*;
 import com.profroid.profroidapp.cellarsubdomain.presentationLayer.CellarResponseModel;
+import com.profroid.profroidapp.config.TestSecurityConfig;
 import com.profroid.profroidapp.customersubdomain.dataAccessLayer.*;
 import com.profroid.profroidapp.customersubdomain.presentationLayer.CustomerRequestModel;
 import com.profroid.profroidapp.customersubdomain.presentationLayer.CustomerResponseModel;
@@ -9,8 +10,11 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.reactive.AutoConfigureWebTestClient;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.reactive.server.WebTestClient;
 
 import java.util.Collections;
@@ -18,6 +22,9 @@ import java.util.Collections;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.RANDOM_PORT;
 
+@ActiveProfiles("test")
+@Import(TestSecurityConfig.class)
+@AutoConfigureWebTestClient
 @SpringBootTest(webEnvironment = RANDOM_PORT)
 public class CustomerControllerIntegrationTest {
 

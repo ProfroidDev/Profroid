@@ -13,6 +13,9 @@ logging:
     org.hibernate.SQL: DEBUG
     org.hibernate.type.descriptor.sql.BasicBinder: TRACE
 
+jwt:
+  secret: ${JWT_SECRET:Qt0K6UmrLyz5f4EfphuWm2xBBOY7yaaV}
+
 spring:
   profiles:
     active: h2   # IDE + CI will default to H2 (safe)
@@ -38,7 +41,7 @@ spring:
   jpa:
     show-sql: true
     hibernate:
-      ddl-auto: update
+      ddl-auto: create-drop
 
     properties:
       hibernate:
@@ -49,6 +52,8 @@ spring:
     init:
       platform: h2
       mode: always  # prevents loading MySQL scripts
+      data-locations: classpath:data.sql
+      schema-locations: classpath:schema.sql
 
 ---
 ## ===============================

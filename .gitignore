@@ -5,6 +5,11 @@ build/
 !**/src/main/**/build/
 !**/src/test/**/build/
 
+# Environment variables
+.env
+.env.local
+.env.*.local
+
 ### STS ###
 .apt_generated
 .classpath

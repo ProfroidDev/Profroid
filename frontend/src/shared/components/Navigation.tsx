@@ -1,9 +1,26 @@
 import React, { useState } from "react";
-import { Wine, Menu, X, LogIn, ShoppingCart } from "lucide-react";
+import { Wine, Menu, X, LogIn, ShoppingCart, LogOut, User } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import useAuthStore from "../../features/authentication/store/authStore";
 import "./Navigation.css";
 
 export default function Navigation(): React.ReactElement {
   const [open, setOpen] = useState(false);
+  const navigate = useNavigate();
+  const { isAuthenticated, user, logout } = useAuthStore();
+
+  const handleLogout = async () => {
+    await logout();
+    navigate("/login");
+  };
+
+  const handleLogin = () => {
+    navigate("/login");
+  };
+
+  const handleProfile = () => {
+    navigate("/profile");
+  };
 
   return (
     <nav className="nav-container">
@@ -17,24 +34,46 @@ export default function Navigation(): React.ReactElement {
 
         {/* Desktop Menu */}
         <div className="nav-links">
+          {/* Admin Links (now visible to everyone) */}
           <a href="/parts">Parts</a>
-          <a href="/services">Services</a>
           <a href="/customers">Customers</a>
           <a href="/employees">Employees</a>
-          <a href="/my-appointments">My Appointments</a>
+
+          {/* Employee Links (now visible to everyone) */}
           <a href="/my-jobs">My Jobs</a>
+
+          {/* Customer Links (now visible to everyone) */}
+          <a href="/services">Services</a>
+          <a href="/my-appointments">My Appointments</a>
+
+          {/* Public Links */}
           <a href="/#about">About</a>
           <a href="/#contact">Contact</a>
 
-          <button className="nav-cart">
-            <ShoppingCart className="icon" />
-          </button>
+          {isAuthenticated && (
+            <button className="nav-cart">
+              <ShoppingCart className="icon" />
+            </button>
+          )}
 
-          <button className="nav-book">Book Appointment</button>
+          {isAuthenticated && (
+            <button className="nav-book">Book Appointment</button>
+          )}
 
-          <button className="nav-signin">
-            <LogIn className="icon" /> Sign In
-          </button>
+          {isAuthenticated ? (
+            <>
+              <button className="nav-profile" onClick={handleProfile}>
+                <User className="icon" /> {user?.name || "Profile"}
+              </button>
+              <button className="nav-logout" onClick={handleLogout}>
+                <LogOut className="icon" /> Logout
+              </button>
+            </>
+          ) : (
+            <button className="nav-signin" onClick={handleLogin}>
+              <LogIn className="icon" /> Sign In
+            </button>
+          )}
         </div>
 
         {/* Mobile Toggle */}
@@ -46,17 +85,39 @@ export default function Navigation(): React.ReactElement {
       {/* Mobile Menu */}
       {open && (
         <div className="nav-mobile-menu">
+
+          {/* All links visible to everyone */}
           <a href="/parts">Parts</a>
-          <a href="/services">Services</a>
           <a href="/customers">Customers</a>
           <a href="/employees">Employees</a>
-          <a href="/my-appointments">My Appointments</a>
+
+          <a href="/employees/schedule">Schedule</a>
           <a href="/my-jobs">My Jobs</a>
+
+          <a href="/services">Services</a>
+          <a href="/my-appointments">My Appointments</a>
+
           <a href="/#about">About</a>
           <a href="/#contact">Contact</a>
 
-          <button className="nav-book w-full">Book Appointment</button>
-          <button className="nav-signin w-full"><LogIn className="icon" /> Sign In</button>
+          {isAuthenticated && (
+            <button className="nav-book w-full">Book Appointment</button>
+          )}
+
+          {isAuthenticated ? (
+            <>
+              <button className="nav-mobile-profile" onClick={handleProfile}>
+                <User className="icon" /> {user?.name || "Profile"}
+              </button>
+              <button className="nav-mobile-logout" onClick={handleLogout}>
+                <LogOut className="icon" /> Logout
+              </button>
+            </>
+          ) : (
+            <button className="nav-mobile-signin" onClick={handleLogin}>
+              <LogIn className="icon" /> Sign In
+            </button>
+          )}
         </div>
       )}
     </nav>
