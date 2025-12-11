@@ -1,7 +1,12 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import useAuthStore from '../../features/authentication/store/authStore';
 import '../Auth.css';
+import Calendar from 'react-calendar';
+import 'react-calendar/dist/Calendar.css';
+import '../Employee/EmployeeListPage.css';
+import { getEmployeeScheduleForDate } from '../../features/employee/api/getEmployeeScheduleForDate';
+import type { EmployeeSchedule } from '../../features/employee/models/EmployeeSchedule';
 
 type PhoneNumber = {
   number?: string;
@@ -65,6 +70,8 @@ export default function ProfilePage() {
   const [schedule, setSchedule] = useState<Record<string, unknown>[]>([]);
   const [scheduleLoading, setScheduleLoading] = useState(false);
   const [scheduleError, setScheduleError] = useState('');
+  const [selectedDate, setSelectedDate] = useState<Date | null>(null);
+  const [selectedDateSchedule, setSelectedDateSchedule] = useState<EmployeeSchedule | null>(null);
 
   // Employee identifiers for schedule and updates
   const [employeeId, setEmployeeId] = useState<string | null>(null);
@@ -157,24 +164,37 @@ export default function ProfilePage() {
 
   const fetchCustomerData = fetchCustomerDataLocally;
 
-  // Ensure customer data is loaded on first render without manual refresh
+  // Guard to avoid duplicate fetches in React 18 StrictMode (dev)
+  const didInitialLoadRef = useRef(false);
+
+  // Load appropriate data based on user type: employee or customer
   useEffect(() => {
-    if (user?.id && !storedCustomerData) {
+    if (!user?.id) return;
+
+    // Prevent duplicate invocation in dev StrictMode
+    if (didInitialLoadRef.current) return;
+    didInitialLoadRef.current = true;
+
+    if (user?.employeeType) {
+      // User is an employee - fetch employee data
+      fetchEmployeeData();
+    } else if (!storedCustomerData) {
+      // User is a customer - fetch customer data
       fetchCustomerData();
     }
-  }, [user?.id, storedCustomerData, fetchCustomerData]);
+  }, [user?.id, user?.employeeType, storedCustomerData, fetchCustomerData, fetchEmployeeData]);
 
   const fetchEmployeeSchedule = useCallback(async () => {
-    if (!user?.id) return;
+    if (!employeeId) return; // Only fetch schedule if we have an employeeId
     
     try {
       setScheduleLoading(true);
       setScheduleError('');
       const token = localStorage.getItem('authToken');
       
-      // First, find the employee by userId
-      const employeeResponse = await fetch(
-        `${import.meta.env.VITE_BACKEND_URL}/employees/by-user/${user.id}`,
+      // Fetch schedule for this employee using the employeeId we already have
+      const scheduleResponse = await fetch(
+        `${import.meta.env.VITE_BACKEND_URL}/employees/${employeeId}/schedules`,
         {
           method: 'GET',
           headers: {
@@ -184,37 +204,12 @@ export default function ProfilePage() {
         }
       );
 
-      if (employeeResponse.ok) {
-        const employee = await employeeResponse.json();
-        console.log('Employee data:', employee); // Debug log
-        const empId = employee?.employeeIdentifier?.employeeId;
-        if (empId) {
-          setEmployeeId(empId);
-          // Fetch schedule for this employee
-          const scheduleResponse = await fetch(
-            `${import.meta.env.VITE_BACKEND_URL}/employees/${empId}/schedules`,
-            {
-              method: 'GET',
-              headers: {
-                'Authorization': `Bearer ${token}`,
-                'Content-Type': 'application/json',
-              },
-            }
-          );
-
-          if (scheduleResponse.ok) {
-            const scheduleData = await scheduleResponse.json();
-            console.log('Schedule data:', scheduleData); // Debug log
-            setSchedule(scheduleData || []);
-          } else {
-            console.error('Schedule fetch failed with status:', scheduleResponse.status);
-            setSchedule([]);
-          }
-        }
-      } else if (employeeResponse.status === 404) {
-        // Not an employee or not found
-        console.log('Employee not found (404)');
-        setEmployeeId(null);
+      if (scheduleResponse.ok) {
+        const scheduleData = await scheduleResponse.json();
+        console.log('Schedule data:', scheduleData); // Debug log
+        setSchedule(scheduleData || []);
+      } else {
+        console.error('Schedule fetch failed with status:', scheduleResponse.status);
         setSchedule([]);
       }
     } catch (error) {
@@ -223,7 +218,42 @@ export default function ProfilePage() {
     } finally {
       setScheduleLoading(false);
     }
-  }, [user?.id]);
+  }, [employeeId]);
+
+  // Keep selectedDateSchedule in sync when selectedDate changes
+  useEffect(() => {
+    async function syncSelectedDate() {
+      if (!selectedDate) {
+        setSelectedDateSchedule(null);
+        return;
+      }
+      // Try date-specific schedule first
+      try {
+        if (employeeId) {
+          const yyyy = selectedDate.getFullYear();
+          const mm = String(selectedDate.getMonth() + 1).padStart(2, '0');
+          const dd = String(selectedDate.getDate()).padStart(2, '0');
+          const formatted = `${yyyy}-${mm}-${dd}`;
+          const dateSched = await getEmployeeScheduleForDate(employeeId, formatted);
+          if (dateSched && dateSched.length > 0) {
+            setSelectedDateSchedule(dateSched[0]);
+            return;
+          }
+        }
+      } catch {
+        // fall through to weekly template
+      }
+      // Fallback to weekly template from loaded schedule
+      const dayOfWeek = selectedDate
+        .toLocaleDateString('en-US', { weekday: 'long' })
+        .toUpperCase();
+      const weekly = (schedule || []).find(
+        (s: Record<string, unknown>) => (s.dayOfWeek as string || '')?.toUpperCase() === dayOfWeek
+      );
+      setSelectedDateSchedule((weekly as unknown as EmployeeSchedule) || null);
+    }
+    syncSelectedDate();
+  }, [selectedDate, employeeId, schedule]);
 
   useEffect(() => {
     if (user?.id && storedCustomerData) {
@@ -245,14 +275,16 @@ export default function ProfilePage() {
         setEditMode(true);
       }
     }
-  }, [storedCustomerData]);
+  }, [user?.id, storedCustomerData]);
 
-  // Once we know the employeeId, load the schedule
+  // Once we have the employeeId from fetchEmployeeData, load the schedule
   useEffect(() => {
-    if (user?.employeeType && employeeId) {
+    if (employeeId) {
       fetchEmployeeSchedule();
+      // Auto-select today after initial load
+      setSelectedDate(new Date());
     }
-  }, [user?.employeeType, employeeId, fetchEmployeeSchedule]);
+  }, [employeeId, fetchEmployeeSchedule]);
 
   if (!user) {
     return (
@@ -283,6 +315,7 @@ export default function ProfilePage() {
         const resolvedEmployeeId = employeeId || (customerData as { employeeIdentifier?: { employeeId?: string } } | null)?.employeeIdentifier?.employeeId;
 
         const employeeUpdateData = {
+          userId: user.id, // Include userId so backend can verify ownership
           firstName: firstName || '',
           lastName: lastName || '',
           employeeAddress: {
@@ -293,6 +326,7 @@ export default function ProfilePage() {
             postalCode: postalCode,
           },
           phoneNumbers: phone ? [{ number: phone, type: 'WORK' }] : (customerData?.phoneNumbers || []),
+          // Do not include employeeRole - backend will preserve it for non-admin users
         };
 
         if (!resolvedEmployeeId) {
@@ -586,25 +620,12 @@ export default function ProfilePage() {
                 </div>
               </form>
             ) : (
-              <div className="profile-info">
-                  <div className="info-row">
-                    <span className="label">First Name:</span>
-                    <span className="value">{customerData?.firstName || '—'}</span>
-                  </div>
-                  <div className="info-row">
-                    <span className="label">Last Name:</span>
-                    <span className="value">{customerData?.lastName || '—'}</span>
-                  </div>
+              <>
                 <div className="info-row">
-                  <span className="label">Email:</span>
-                  <span className="value">{user.email}</span>
+                  <span className="label">First Name:</span>
+                  <span className="value">{customerData?.firstName || '—'}</span>
                 </div>
-                {user?.employeeType && (
-                  <div className="info-row">
-                    <span className="label">Employee Type:</span>
-                    <span className="value">{user.employeeType}</span>
-                  </div>
-                )}
+
                 {customerData?.phoneNumbers && customerData.phoneNumbers.length > 0 && (
                   <div className="info-row">
                     <span className="label">Phone:</span>
@@ -613,12 +634,14 @@ export default function ProfilePage() {
                     </span>
                   </div>
                 )}
+
                 {customerData && (customerData.streetAddress || customerData.employeeAddress?.streetAddress) && (
                   <div className="info-row">
                     <span className="label">Address:</span>
                     <span className="value">{customerData.streetAddress || customerData.employeeAddress?.streetAddress}</span>
                   </div>
                 )}
+
                 {customerData && (customerData.city || customerData.employeeAddress?.city) && (
                   <div className="info-row">
                     <span className="label">City:</span>
@@ -628,19 +651,21 @@ export default function ProfilePage() {
                     </span>
                   </div>
                 )}
+
                 {customerData && (customerData.postalCode || customerData.employeeAddress?.postalCode) && (
                   <div className="info-row">
                     <span className="label">Postal Code:</span>
                     <span className="value">{customerData.postalCode || customerData.employeeAddress?.postalCode}</span>
                   </div>
                 )}
+
                 {customerData && (customerData.country || customerData.employeeAddress?.country) && (
                   <div className="info-row">
                     <span className="label">Country:</span>
                     <span className="value">{customerData.country || customerData.employeeAddress?.country}</span>
                   </div>
                 )}
-              </div>
+              </>
             )}
 
             <button
@@ -745,27 +770,41 @@ export default function ProfilePage() {
 
             {scheduleLoading ? (
               <p>Loading schedule...</p>
-            ) : schedule.length > 0 ? (
-              <div className="schedule-table">
-                <table>
-                  <thead>
-                    <tr>
-                      <th>Day</th>
-                      <th>Time Slots</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {schedule.map((day, index: number) => (
-                      <tr key={index}>
-                        <td>{String(day.dayOfWeek)}</td>
-                        <td>{Array.isArray(day.timeSlots) ? (day.timeSlots as Array<unknown>).map(String).join(', ') : '-'}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
             ) : (
-              <p>No schedule set yet</p>
+              <div className="modal-content-light">
+                <div className="modal-section schedule-calendar-section">
+                  <h4 className="modal-label">Select Date</h4>
+                  <div className="calendar-center">
+                    <Calendar onChange={(date) => setSelectedDate(date as Date | null)} value={selectedDate} />
+                  </div>
+                </div>
+                <div className="modal-section">
+                  <h4 className="modal-label">Time Slots</h4>
+                  <ul className="modal-list">
+                    {(() => {
+                      if (!selectedDate) return <li className="modal-list-item">Select a date</li>;
+                      const sched = selectedDateSchedule as EmployeeSchedule | null;
+                      if (!sched || !sched.timeSlots || sched.timeSlots.length === 0) {
+                        const dayOfWeek = selectedDate
+                          .toLocaleDateString('en-US', { weekday: 'long' })
+                          .toUpperCase();
+                        const weekly = (schedule || []).find(
+                          (s: Record<string, unknown>) => (s.dayOfWeek as string || '')?.toUpperCase() === dayOfWeek
+                        ) as EmployeeSchedule | undefined;
+                        if (weekly && Array.isArray(weekly.timeSlots) && weekly.timeSlots.length > 0) {
+                          return weekly.timeSlots.map((slot: string, i: number) => (
+                            <li key={i} className="modal-list-item">{slot}</li>
+                          ));
+                        }
+                        return <li className="modal-list-item">No schedule for this date</li>;
+                      }
+                      return (sched.timeSlots || []).map((slot: string, i: number) => (
+                        <li key={i} className="modal-list-item">{slot}</li>
+                      ));
+                    })()}
+                  </ul>
+                </div>
+              </div>
             )}
           </div>
         )}

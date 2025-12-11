@@ -115,20 +115,6 @@ export default function EmployeeEditModal({ isOpen, employee, onClose, onSuccess
     setFormData(prev => ({ ...prev, phoneNumbers: newPhones }));
   };
 
-  const addPhoneField = () => {
-    setFormData(prev => ({
-      ...prev,
-      phoneNumbers: [...prev.phoneNumbers, { number: '', type: 'MOBILE' }],
-    }));
-  };
-
-  const removePhoneField = (index: number) => {
-    setFormData(prev => ({
-      ...prev,
-      phoneNumbers: prev.phoneNumbers.filter((_, i) => i !== index),
-    }));
-  };
-
   const validateForm = (): boolean => {
     const newErrors: Record<string, string> = {};
 
@@ -231,6 +217,7 @@ export default function EmployeeEditModal({ isOpen, employee, onClose, onSuccess
                 onChange={handleInputChange}
                 placeholder="Enter first name"
                 className={errors.firstName ? 'input-error' : ''}
+                disabled
               />
               {errors.firstName && <span className="field-error">{errors.firstName}</span>}
             </div>
@@ -245,22 +232,9 @@ export default function EmployeeEditModal({ isOpen, employee, onClose, onSuccess
                 onChange={handleInputChange}
                 placeholder="Enter last name"
                 className={errors.lastName ? 'input-error' : ''}
+                disabled
               />
               {errors.lastName && <span className="field-error">{errors.lastName}</span>}
-            </div>
-
-            <div className="form-group">
-              <label htmlFor="userId">User ID *</label>
-              <input
-                type="text"
-                id="userId"
-                name="userId"
-                value={formData.userId}
-                readOnly
-                disabled
-                placeholder="Enter user ID"
-                className="input-disabled"
-              />
             </div>
 
             <div className="form-group">
@@ -298,6 +272,7 @@ export default function EmployeeEditModal({ isOpen, employee, onClose, onSuccess
                 onChange={handleInputChange}
                 placeholder="Enter street address"
                 className={errors.streetAddress ? 'input-error' : ''}
+                disabled
               />
               {errors.streetAddress && <span className="field-error">{errors.streetAddress}</span>}
             </div>
@@ -310,6 +285,7 @@ export default function EmployeeEditModal({ isOpen, employee, onClose, onSuccess
                   name="province"
                   value={formData.province}
                   onChange={handleInputChange}
+                  disabled
                 >
                   {provinces.map(province => (
                     <option key={province} value={province}>
@@ -329,6 +305,7 @@ export default function EmployeeEditModal({ isOpen, employee, onClose, onSuccess
                   onChange={handleInputChange}
                   placeholder="Enter your city"
                   className={errors.city ? 'input-error' : ''}
+                  disabled
                 />
                 {errors.city && <span className="field-error">{errors.city}</span>}
               </div>
@@ -344,6 +321,7 @@ export default function EmployeeEditModal({ isOpen, employee, onClose, onSuccess
                 onChange={handleInputChange}
                 placeholder="e.g., M5V 3A8"
                 className={errors.postalCode ? 'input-error' : ''}
+                disabled
               />
               {errors.postalCode && <span className="field-error">{errors.postalCode}</span>}
             </div>
@@ -376,6 +354,7 @@ export default function EmployeeEditModal({ isOpen, employee, onClose, onSuccess
                       onChange={(e) => handlePhoneChange(index, 'number', e.target.value)}
                       placeholder="(555) 555-5555"
                       className={errors.phoneNumbers ? 'input-error' : ''}
+                      disabled
                     />
                   </div>
 
@@ -385,6 +364,7 @@ export default function EmployeeEditModal({ isOpen, employee, onClose, onSuccess
                       id={`phoneType-${index}`}
                       value={phone.type}
                       onChange={(e) => handlePhoneChange(index, 'type', e.target.value)}
+                      disabled
                     >
                       {phoneTypes.map(type => (
                         <option key={type} value={type}>
@@ -393,28 +373,10 @@ export default function EmployeeEditModal({ isOpen, employee, onClose, onSuccess
                       ))}
                     </select>
                   </div>
-
-                  {formData.phoneNumbers.length > 1 && (
-                    <button
-                      type="button"
-                      className="btn-remove-phone"
-                      onClick={() => removePhoneField(index)}
-                    >
-                      Remove
-                    </button>
-                  )}
                 </div>
               </div>
             ))}
             {errors.phoneNumbers && <span className="field-error">{errors.phoneNumbers}</span>}
-
-            <button
-              type="button"
-              className="btn-add-phone"
-              onClick={addPhoneField}
-            >
-              + Add Another Phone
-            </button>
           </div>
 
           {/* Buttons */}

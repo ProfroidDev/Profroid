@@ -221,3 +221,52 @@
     width: 100%;
   }
 }
+
+/* User search results */
+.user-search-results {
+  margin-top: 10px;
+  max-height: 250px;
+  overflow-y: auto;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  background: white;
+}
+
+.user-list {
+  padding: 0;
+  margin: 0;
+  list-style: none;
+}
+
+.user-list-item {
+  padding: 12px 15px;
+  cursor: pointer;
+  border-bottom: 1px solid #eee;
+  transition: background-color 0.2s;
+}
+
+.user-list-item:last-child {
+  border-bottom: none;
+}
+
+.user-list-item:hover {
+  background-color: #f8f8f8;
+}
+
+.user-name {
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 4px;
+}
+
+.user-email {
+  font-size: 0.9rem;
+  color: #666;
+}
+
+.search-no-results {
+  padding: 20px;
+  text-align: center;
+  color: #999;
+}
+

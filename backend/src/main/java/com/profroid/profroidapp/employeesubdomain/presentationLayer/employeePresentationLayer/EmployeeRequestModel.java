@@ -35,7 +35,6 @@ public class EmployeeRequestModel {
     @Valid
     private EmployeeAddress employeeAddress;
 
-    @NotNull(message = "Employee role is required.")
     @Valid
     private EmployeeRole employeeRole;
 

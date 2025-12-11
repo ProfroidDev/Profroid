@@ -22,6 +22,8 @@ interface CustomerPhoneNumber {
 }
 
 interface CustomerData {
+  firstName?: string;
+  lastName?: string;
   streetAddress?: string;
   city?: string;
   province?: string;
@@ -58,6 +60,8 @@ export default function EmployeeAssignModal({ isOpen, onClose, onSuccess }: Empl
   });
 
   const [unassignedUsers, setUnassignedUsers] = useState<UnassignedUser[]>([]);
+  const [allUsers, setAllUsers] = useState<UnassignedUser[]>([]);
+  const [searchQuery, setSearchQuery] = useState('');
   const [loading, setLoading] = useState(false);
   const [submitError, setSubmitError] = useState('');
   const [fetchError, setFetchError] = useState('');
@@ -69,6 +73,7 @@ export default function EmployeeAssignModal({ isOpen, onClose, onSuccess }: Empl
       fetchUnassignedUsers();
       setStep('selectUser');
       setSelectedUser(null);
+      setSearchQuery('');
       setFormData({
         userId: '',
         employeeType: EMPLOYEE_TYPES[0] || 'TECHNICIAN',
@@ -105,12 +110,22 @@ export default function EmployeeAssignModal({ isOpen, onClose, onSuccess }: Empl
       }
 
       const data = await response.json();
-      setUnassignedUsers(data.users || []);
+      const users = data.users || [];
+      setUnassignedUsers(users);
+      setAllUsers(users);
     } catch (error: unknown) {
       console.error('Error fetching unassigned users:', error);
       setFetchError(getErrorMessage(error));
     }
   };
+
+  // Filter users based on search query
+  const filteredUsers = searchQuery.trim()
+    ? allUsers.filter(user =>
+        (user.name || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
+        (user.email || '').toLowerCase().includes(searchQuery.toLowerCase())
+      )
+    : allUsers;
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
@@ -128,18 +143,7 @@ export default function EmployeeAssignModal({ isOpen, onClose, onSuccess }: Empl
     }
   };
 
-  const handlePhoneChange = (index: number, field: string, value: string) => {
-    const newPhones = [...formData.phoneNumbers];
-    newPhones[index] = { ...newPhones[index], [field]: value };
-    setFormData(prev => ({ ...prev, phoneNumbers: newPhones }));
-  };
 
-  const addPhoneField = () => {
-    setFormData(prev => ({
-      ...prev,
-      phoneNumbers: [...prev.phoneNumbers, { number: '', type: 'MOBILE' }],
-    }));
-  };
 
   const removePhoneField = (index: number) => {
     setFormData(prev => ({
@@ -201,6 +205,8 @@ export default function EmployeeAssignModal({ isOpen, onClose, onSuccess }: Empl
       // Pre-fill form with customer data
       setFormData(prev => ({
         ...prev,
+        firstName: customerData.firstName || prev.firstName,
+        lastName: customerData.lastName || prev.lastName,
         streetAddress: customerData.streetAddress || '',
         city: customerData.city || '',
         province: customerData.province || prev.province,
@@ -321,10 +327,17 @@ export default function EmployeeAssignModal({ isOpen, onClose, onSuccess }: Empl
         postalCode: formData.postalCode,
       };
 
-      const phoneNumbers: EmployeePhoneNumber[] = formData.phoneNumbers.map(p => ({
-        number: p.number,
-        type: p.type as EmployeePhoneType,
-      }));
+      let phoneNumbers: EmployeePhoneNumber[] = formData.phoneNumbers
+        .filter(p => p.number.trim() !== '')
+        .map(p => ({
+          number: p.number,
+          type: p.type as EmployeePhoneType,
+        }));
+      
+      // Backend requires at least one phone number, so add a default if none provided
+      if (phoneNumbers.length === 0) {
+        phoneNumbers = [{ number: 'N/A', type: 'MOBILE' }];
+      }
 
       const employeeRole: EmployeeRole = {
         employeeRoleType: formData.employeeType as EmployeeRoleType,
@@ -339,7 +352,9 @@ export default function EmployeeAssignModal({ isOpen, onClose, onSuccess }: Empl
         employeeRole: employeeRole,
       };
 
+      console.log('Sending employee data to backend:', employeeData);
       await addEmployee(employeeData);
+      console.log('Employee created successfully');
 
       onClose();
       onSuccess?.();
@@ -393,24 +408,42 @@ export default function EmployeeAssignModal({ isOpen, onClose, onSuccess }: Empl
                 <h4 className="form-section-title">Step 1: Select User and Employee Type</h4>
                 
                 <div className="form-group">
-                  <label htmlFor="userId">Select User *</label>
-                  <select
-                    id="userId"
-                    name="userId"
-                    value={formData.userId}
-                    onChange={(e) => handleUserSelect(e.target.value)}
+                  <label htmlFor="userSearch">Search User *</label>
+                  <input
+                    type="text"
+                    id="userSearch"
+                    placeholder="Search by name or email..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
                     className={errors.userId ? 'input-error' : ''}
                     disabled={unassignedUsers.length === 0}
-                  >
-                    <option value="">-- Choose a user --</option>
-                    {unassignedUsers.map(user => (
-                      <option key={user.id} value={user.id}>
-                        {user.name} ({user.email})
-                      </option>
-                    ))}
-                  </select>
+                  />
                   {errors.userId && <span className="field-error">{errors.userId}</span>}
                 </div>
+
+                {searchQuery.trim() && (
+                  <div className="user-search-results">
+                    {filteredUsers.length === 0 ? (
+                      <div className="search-no-results">No users found matching "{searchQuery}"</div>
+                    ) : (
+                      <div className="user-list">
+                        {filteredUsers.map(user => (
+                          <div
+                            key={user.id}
+                            className="user-list-item"
+                            onClick={() => {
+                              handleUserSelect(user.id);
+                              setSearchQuery('');
+                            }}
+                          >
+                            <div className="user-name">{user.name}</div>
+                            <div className="user-email">{user.email}</div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                )}
 
                 <div className="form-group">
                   <label htmlFor="employeeType">Employee Type *</label>
@@ -480,9 +513,9 @@ export default function EmployeeAssignModal({ isOpen, onClose, onSuccess }: Empl
                     id="streetAddress"
                     name="streetAddress"
                     value={formData.streetAddress}
-                    onChange={handleInputChange}
+                    disabled
                     placeholder="Enter street address"
-                    className={errors.streetAddress ? 'input-error' : ''}
+                    className="input-disabled"
                   />
                   {errors.streetAddress && <span className="field-error">{errors.streetAddress}</span>}
                 </div>
@@ -494,7 +527,7 @@ export default function EmployeeAssignModal({ isOpen, onClose, onSuccess }: Empl
                       id="province"
                       name="province"
                       value={formData.province}
-                      onChange={handleInputChange}
+                      disabled
                     >
                       {provinces.map(province => (
                         <option key={province} value={province}>
@@ -511,9 +544,9 @@ export default function EmployeeAssignModal({ isOpen, onClose, onSuccess }: Empl
                       id="city"
                       name="city"
                       value={formData.city}
-                      onChange={handleInputChange}
+                      disabled
                       placeholder="Enter your city"
-                      className={errors.city ? 'input-error' : ''}
+                      className="input-disabled"
                     />
                     {errors.city && <span className="field-error">{errors.city}</span>}
                   </div>
@@ -526,9 +559,9 @@ export default function EmployeeAssignModal({ isOpen, onClose, onSuccess }: Empl
                     id="postalCode"
                     name="postalCode"
                     value={formData.postalCode}
-                    onChange={handleInputChange}
+                    disabled
                     placeholder="e.g., M5V 3A8"
-                    className={errors.postalCode ? 'input-error' : ''}
+                    className="input-disabled"
                   />
                   {errors.postalCode && <span className="field-error">{errors.postalCode}</span>}
                 </div>
@@ -557,9 +590,9 @@ export default function EmployeeAssignModal({ isOpen, onClose, onSuccess }: Empl
                           type="tel"
                           id={`phoneNumber-${index}`}
                           value={phone.number}
-                          onChange={(e) => handlePhoneChange(index, 'number', e.target.value)}
+                          disabled
                           placeholder="(555) 555-5555"
-                          className={errors.phoneNumbers ? 'input-error' : ''}
+                          className="input-disabled"
                         />
                       </div>
 
@@ -568,7 +601,7 @@ export default function EmployeeAssignModal({ isOpen, onClose, onSuccess }: Empl
                         <select
                           id={`phoneType-${index}`}
                           value={phone.type}
-                          onChange={(e) => handlePhoneChange(index, 'type', e.target.value)}
+                          disabled
                         >
                           {phoneTypes.map(type => (
                             <option key={type} value={type}>
@@ -591,14 +624,6 @@ export default function EmployeeAssignModal({ isOpen, onClose, onSuccess }: Empl
                   </div>
                 ))}
                 {errors.phoneNumbers && <span className="field-error">{errors.phoneNumbers}</span>}
-
-                <button
-                  type="button"
-                  className="btn-add-phone"
-                  onClick={addPhoneField}
-                >
-                  + Add Another Phone
-                </button>
               </div>
             </>
           )}
