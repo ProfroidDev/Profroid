@@ -54,13 +54,13 @@ public class EmployeeController {
             @Valid @RequestBody EmployeeRequestModel employeeRequestModel,
             Authentication authentication) {
         
-        // Check if user is ADMIN
-        boolean isAdmin = authentication.getAuthorities().stream()
+        // Check if user is ADMIN (guard against null authentication for test profile)
+        boolean isAdmin = authentication != null && authentication.getAuthorities().stream()
                 .anyMatch(grantedAuthority -> grantedAuthority.getAuthority().equals("ROLE_ADMIN"));
-        
+
         // Get existing employee data
         EmployeeResponseModel existing = this.employeeService.getEmployeeById(employeeId);
-        
+
         if (isAdmin) {
             // Admin can ONLY change the role, preserve all other fields
             employeeRequestModel.setUserId(existing.getUserId());
@@ -72,14 +72,14 @@ public class EmployeeController {
         } else {
             // Non-admin users can only update their own employee record
             // Verify the employee record belongs to the user making the request
-            if (!existing.getUserId().equals(employeeRequestModel.getUserId())) {
+            if (authentication == null || !existing.getUserId().equals(employeeRequestModel.getUserId())) {
                 return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
             }
-            
+
             // Non-admin users cannot update employeeRole - preserve existing role
             employeeRequestModel.setEmployeeRole(existing.getEmployeeRole());
         }
-        
+
         EmployeeResponseModel updated = this.employeeService.updateEmployee(employeeId, employeeRequestModel);
         return ResponseEntity.status(HttpStatus.OK).body(updated);
     }

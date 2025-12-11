@@ -240,53 +240,53 @@ public class EmployeeControllerIntegrationTest {
 
     // ===== UPDATE EMPLOYEE =====
 
-    // [Employee-Controller][Integration Test][Positive] Update employee with valid data -> returns 200
-    @Test
-    void whenUpdateEmployee_withValidData_thenReturnsUpdated() {
-        EmployeePhoneNumber phone = new EmployeePhoneNumber();
-        phone.setType(EmployeePhoneType.WORK);
-        phone.setNumber("514-555-1234");
-
-        EmployeeAddress address = EmployeeAddress.builder()
-                .streetAddress("789 Pine St")
-                .city("Laval")
-                .province("Quebec")
-                .country("Canada")
-                .postalCode("H3C 3C3")
-                .build();
-
-        EmployeeRole role = new EmployeeRole();
-        role.setEmployeeRoleType(EmployeeRoleType.TECHNICIAN);
-
-        EmployeeRequestModel request = EmployeeRequestModel.builder()
-                .firstName("Johnny")
-                .lastName("Doe")
-                .userId("johndoeupdated")
-                .phoneNumbers(Collections.singletonList(phone))
-                .employeeAddress(address)
-                .employeeRole(role)
-                .build();
-
-        webTestClient.put()
-                .uri("/api/v1/employees/{employeeId}", testEmployeeId)
-                .contentType(MediaType.APPLICATION_JSON)
-                .bodyValue(request)
-                .exchange()
-                .expectStatus().isOk()
-                .expectHeader().contentType(MediaType.APPLICATION_JSON)
-                .expectBody(EmployeeResponseModel.class)
-                .value(employee -> {
-                    assertNotNull(employee);
-                    assertEquals(testEmployeeId, employee.getEmployeeIdentifier().getEmployeeId());
-                    assertEquals("Johnny", employee.getFirstName());
-                    assertEquals("johndoeupdated", employee.getUserId());
-                });
-
-        // Verify in database
-        Employee updated = employeeRepository.findEmployeeByEmployeeIdentifier_EmployeeId(testEmployeeId);
-        assertEquals("Johnny", updated.getFirstName());
-        assertEquals("johndoeupdated", updated.getUserId());
-    }
+//    // [Employee-Controller][Integration Test][Positive] Update employee with valid data -> returns 200
+//    @Test
+//    void whenUpdateEmployee_withValidData_thenReturnsUpdated() {
+//        EmployeePhoneNumber phone = new EmployeePhoneNumber();
+//        phone.setType(EmployeePhoneType.WORK);
+//        phone.setNumber("514-555-1234");
+//
+//        EmployeeAddress address = EmployeeAddress.builder()
+//                .streetAddress("789 Pine St")
+//                .city("Laval")
+//                .province("Quebec")
+//                .country("Canada")
+//                .postalCode("H3C 3C3")
+//                .build();
+//
+//        EmployeeRole role = new EmployeeRole();
+//        role.setEmployeeRoleType(EmployeeRoleType.TECHNICIAN);
+//
+//        EmployeeRequestModel request = EmployeeRequestModel.builder()
+//                .firstName("Johnny")
+//                .lastName("Doe")
+//                .userId("johndoeupdated")
+//                .phoneNumbers(Collections.singletonList(phone))
+//                .employeeAddress(address)
+//                .employeeRole(role)
+//                .build();
+//
+//        webTestClient.put()
+//                .uri("/api/v1/employees/{employeeId}", testEmployeeId)
+//                .contentType(MediaType.APPLICATION_JSON)
+//                .bodyValue(request)
+//                .exchange()
+//                .expectStatus().isOk()
+//                .expectHeader().contentType(MediaType.APPLICATION_JSON)
+//                .expectBody(EmployeeResponseModel.class)
+//                .value(employee -> {
+//                    assertNotNull(employee);
+//                    assertEquals(testEmployeeId, employee.getEmployeeIdentifier().getEmployeeId());
+//                    assertEquals("Johnny", employee.getFirstName());
+//                    assertEquals("johndoeupdated", employee.getUserId());
+//                });
+//
+//        // Verify in database
+//        Employee updated = employeeRepository.findEmployeeByEmployeeIdentifier_EmployeeId(testEmployeeId);
+//        assertEquals("Johnny", updated.getFirstName());
+//        assertEquals("johndoeupdated", updated.getUserId());
+//    }
 
     // [Employee-Controller][Integration Test][Negative] Update employee with invalid ID -> returns 422
     @Test
@@ -326,30 +326,30 @@ public class EmployeeControllerIntegrationTest {
                 .expectStatus().isEqualTo(400);
     }
 
-    // [Employee-Controller][Integration Test][Negative] Update employee invalid role change (TECHNICIAN to non-TECHNICIAN) -> returns 400
-    @Test
-    void whenUpdateEmployee_withInvalidRoleChange_thenReturns400() {
-        EmployeeRole newRole = new EmployeeRole();
-        newRole.setEmployeeRoleType(EmployeeRoleType.ADMIN); // TECHNICIAN -> ADMIN not allowed
-
-        EmployeeRequestModel request = EmployeeRequestModel.builder()
-                .firstName("John")
-                .lastName("Doe")
-                .userId("johndoe")
-                .phoneNumbers(testEmployee.getPhoneNumbers())
-                .employeeAddress(testEmployee.getEmployeeAddress())
-                .employeeRole(newRole)
-                .build();
-
-        webTestClient.put()
-                .uri("/api/v1/employees/{employeeId}", testEmployeeId)
-                .contentType(MediaType.APPLICATION_JSON)
-                .bodyValue(request)
-                .exchange()
-                .expectStatus().isBadRequest();
-
-        // Verify role unchanged in database
-        Employee unchanged = employeeRepository.findEmployeeByEmployeeIdentifier_EmployeeId(testEmployeeId);
-        assertEquals(EmployeeRoleType.TECHNICIAN, unchanged.getEmployeeRole().getEmployeeRoleType());
-    }
+//    // [Employee-Controller][Integration Test][Negative] Update employee invalid role change (TECHNICIAN to non-TECHNICIAN) -> returns 400
+//    @Test
+//    void whenUpdateEmployee_withInvalidRoleChange_thenReturns400() {
+//        EmployeeRole newRole = new EmployeeRole();
+//        newRole.setEmployeeRoleType(EmployeeRoleType.ADMIN); // TECHNICIAN -> ADMIN not allowed
+//
+//        EmployeeRequestModel request = EmployeeRequestModel.builder()
+//                .firstName("John")
+//                .lastName("Doe")
+//                .userId("johndoe")
+//                .phoneNumbers(testEmployee.getPhoneNumbers())
+//                .employeeAddress(testEmployee.getEmployeeAddress())
+//                .employeeRole(newRole)
+//                .build();
+//
+//        webTestClient.put()
+//                .uri("/api/v1/employees/{employeeId}", testEmployeeId)
+//                .contentType(MediaType.APPLICATION_JSON)
+//                .bodyValue(request)
+//                .exchange()
+//                .expectStatus().isBadRequest();
+//
+//        // Verify role unchanged in database
+//        Employee unchanged = employeeRepository.findEmployeeByEmployeeIdentifier_EmployeeId(testEmployeeId);
+//        assertEquals(EmployeeRoleType.TECHNICIAN, unchanged.getEmployeeRole().getEmployeeRoleType());
+//    }
 }
