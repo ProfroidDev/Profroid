@@ -37,13 +37,10 @@ async function main() {
     // Upsert user record
     const user = await prisma.user.upsert({
       where: { email: u.email },
-      update: {
-        name: u.name,
-      },
+      update: {},
       create: {
         id: crypto.randomUUID(),
         email: u.email,
-        name: u.name,
         emailVerified: true,
       },
     });

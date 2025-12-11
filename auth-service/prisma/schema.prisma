@@ -13,7 +13,6 @@ datasource db {
 // BetterAuth User Schema
 model user {
   id            String    @id
-  name          String?
   email         String?   @unique
   emailVerified Boolean   @default(false)
   image         String?

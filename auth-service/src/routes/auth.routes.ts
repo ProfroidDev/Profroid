@@ -85,17 +85,16 @@ router.post("/register", async (req: Request, res: Response) => {
       data: {
         id: crypto.randomUUID(),
         email,
-        name: name || null,
         emailVerified: false,
       },
     });
 
-    // Create user profile
+    // Create user profile as PENDING (not active)
     const profile = await prisma.userProfile.create({
       data: {
         userId: user.id,
         role: "customer",
-        isActive: true,
+        isActive: false, // Not active until customer data is submitted
       },
     });
 
@@ -111,19 +110,12 @@ router.post("/register", async (req: Request, res: Response) => {
       },
     });
 
-    const token = signToken({ id: user.id, email: user.email as string }, profile.role);
-
+    // DO NOT issue token yet - user must complete customer registration first
     return res.status(201).json({
       success: true,
-      token,
-      user: {
-        id: user.id,
-        email: user.email,
-        name: user.name,
-        role: profile.role,
-        employeeType: profile.employeeType,
-        isActive: profile.isActive,
-      },
+      requiresCompletion: true,
+      userId: user.id,
+      message: "Please complete your customer registration",
     });
   } catch (error) {
     console.error("Registration error:", error);
@@ -166,6 +158,16 @@ router.post("/sign-in", async (req: Request, res: Response) => {
       where: { userId: user.id },
     });
 
+    // Check if user has completed registration (customer data)
+    if (!profile?.isActive) {
+      return res.status(200).json({
+        success: false,
+        requiresCompletion: true,
+        userId: user.id,
+        message: "Please complete your customer registration",
+      });
+    }
+
     const token = signToken({ id: user.id, email: user.email as string }, profile?.role);
 
     res.json({
@@ -174,7 +176,6 @@ router.post("/sign-in", async (req: Request, res: Response) => {
       user: {
         id: user.id,
         email: user.email,
-        name: user.name,
         emailVerified: user.emailVerified,
         role: profile?.role || "customer",
         employeeType: profile?.employeeType,
@@ -216,19 +217,12 @@ router.get("/user", async (req: Request, res: Response) => {
       user: {
         id: user.id,
         email: user.email,
-        name: user.name,
         image: user.image,
         emailVerified: user.emailVerified,
         createdAt: user.createdAt,
         role: profile?.role || "customer",
         employeeType: profile?.employeeType,
         isActive: profile?.isActive || true,
-        phone: profile?.phone,
-        address: profile?.address,
-        postalCode: profile?.postalCode,
-        city: profile?.city,
-        province: profile?.province,
-        country: profile?.country,
       },
     });
   } catch (error) {
@@ -247,64 +241,31 @@ router.put("/user", async (req: Request, res: Response) => {
     const payload = getPayloadFromRequest(req, res);
     if (!payload) return;
 
-    const { name, phone, address, postalCode, city, province, country } = req.body;
-
-    // Update user
-    const updatedUser = await prisma.user.update({
+    // No user fields to update currently (email immutable here)
+    const updatedUser = await prisma.user.findUnique({
       where: { id: payload.sub },
-      data: {
-        ...(name && { name }),
-      },
     });
 
-    // Update or create profile
-    let profile = await prisma.userProfile.findUnique({
+    if (!updatedUser) {
+      return res.status(404).json({ error: "User not found" });
+    }
+
+    // Get profile
+    const profile = await prisma.userProfile.findUnique({
       where: { userId: payload.sub },
     });
-
-    if (!profile) {
-      profile = await prisma.userProfile.create({
-        data: {
-          userId: payload.sub,
-          phone: phone || null,
-          address: address || null,
-          postalCode: postalCode || null,
-          city: city || null,
-          province: province || null,
-          country: country || null,
-        },
-      });
-    } else {
-      profile = await prisma.userProfile.update({
-        where: { userId: payload.sub },
-        data: {
-          ...(phone !== undefined && { phone }),
-          ...(address !== undefined && { address }),
-          ...(postalCode !== undefined && { postalCode }),
-          ...(city !== undefined && { city }),
-          ...(province !== undefined && { province }),
-          ...(country !== undefined && { country }),
-        },
-      });
-    }
 
     res.json({
       success: true,
       user: {
         id: updatedUser.id,
         email: updatedUser.email,
-        name: updatedUser.name,
         image: updatedUser.image,
         emailVerified: updatedUser.emailVerified,
         createdAt: updatedUser.createdAt,
-        role: profile.role,
-        isActive: profile.isActive,
-        phone: profile.phone,
-        address: profile.address,
-        postalCode: profile.postalCode,
-        city: profile.city,
-        province: profile.province,
-        country: profile.country,
+        role: profile?.role || "customer",
+        employeeType: profile?.employeeType,
+        isActive: profile?.isActive || true,
       },
     });
   } catch (error) {
@@ -411,7 +372,6 @@ router.get("/unassigned-users", async (req: Request, res: Response) => {
           select: {
             id: true,
             email: true,
-            name: true,
           },
         },
       },
@@ -422,7 +382,6 @@ router.get("/unassigned-users", async (req: Request, res: Response) => {
       users: unassignedUsers.map((up) => ({
         id: up.user.id,
         email: up.user.email,
-        name: up.user.name,
       })),
     });
   } catch (error) {
@@ -514,7 +473,6 @@ router.get("/users/:userId", async (req: Request, res: Response) => {
       user: {
         id: user.id,
         email: user.email,
-        name: user.name,
         role: profile?.role,
         employeeType: profile?.employeeType,
         isActive: profile?.isActive,
@@ -523,6 +481,147 @@ router.get("/users/:userId", async (req: Request, res: Response) => {
   } catch (error) {
     console.error("Get user error:", error);
     return res.status(500).json({ error: "Failed to fetch user" });
+  }
+});
+
+/**
+ * Complete registration by activating user (called after customer data is submitted to backend)
+ * POST /api/auth/complete-registration
+ * Body: { userId: string, customerData: { firstName, lastName, streetAddress, city, province, postalCode, country, phoneNumbers } }
+ * No auth required - but validates userId is pending
+ */
+router.post("/complete-registration", async (req: Request, res: Response) => {
+  try {
+    const { userId, customerData } = req.body;
+
+    if (!userId) {
+      return res.status(400).json({ error: "userId is required" });
+    }
+
+    // Find user and verify they are pending (not already active)
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+    });
+
+    if (!user) {
+      return res.status(404).json({ error: "User not found" });
+    }
+
+    const profile = await prisma.userProfile.findUnique({
+      where: { userId },
+    });
+
+    if (!profile) {
+      return res.status(404).json({ error: "User profile not found" });
+    }
+
+    // Security check: only allow if user is still pending
+    if (profile.isActive) {
+      return res.status(400).json({ error: "Registration already completed" });
+    }
+
+    // If customerData provided, create customer record in backend
+    if (customerData) {
+      try {
+        const backendUrl = process.env.BACKEND_URL;
+        console.log(`Calling backend at: ${backendUrl}/api/v1/customers`);
+        
+        const customerPayload = {
+          ...customerData,
+          userId,
+        };
+
+        console.log("Customer payload:", JSON.stringify(customerPayload, null, 2));
+
+        const backendResponse = await fetch(`${backendUrl}/api/v1/customers`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(customerPayload),
+        });
+
+        console.log(`Backend response status: ${backendResponse.status}`);
+
+        if (!backendResponse.ok) {
+          const errorData = await backendResponse.json().catch(() => ({}));
+          console.error("Backend customer creation failed:", errorData);
+          return res.status(500).json({ 
+            error: "Failed to create customer record",
+            details: errorData.message || errorData.error || `Backend returned ${backendResponse.status}`,
+            backendUrl
+          });
+        }
+
+        console.log("Customer created successfully in backend");
+      } catch (backendError) {
+        console.error("Error calling backend:", backendError);
+        const errorMessage = backendError instanceof Error ? backendError.message : "Unknown error";
+        return res.status(500).json({ 
+          error: "Failed to communicate with backend service",
+          details: errorMessage,
+          backendUrl: process.env.BACKEND_URL || "http://localhost:8080"
+        });
+      }
+    }
+
+    // Activate user profile
+    const updatedProfile = await prisma.userProfile.update({
+      where: { userId },
+      data: { isActive: true },
+    });
+
+    // Issue token now that registration is complete
+    const token = signToken({ id: user.id, email: user.email as string }, updatedProfile.role);
+
+    return res.json({
+      success: true,
+      token,
+      user: {
+        id: user.id,
+        email: user.email,
+        emailVerified: user.emailVerified,
+        role: updatedProfile.role,
+        employeeType: updatedProfile.employeeType,
+        isActive: updatedProfile.isActive,
+      },
+    });
+  } catch (error) {
+    console.error("Complete registration error:", error);
+    return res.status(500).json({ error: "Failed to complete registration" });
+  }
+});
+
+/**
+ * Cancel incomplete registration (cleanup if user abandons the process)
+ * DELETE /api/auth/cancel-registration/:userId
+ * No auth required - cleanup endpoint
+ */
+router.delete("/cancel-registration/:userId", async (req: Request, res: Response) => {
+  try {
+    const { userId } = req.params;
+
+    // Delete user and related records if not active (incomplete registration)
+    const profile = await prisma.userProfile.findUnique({
+      where: { userId },
+    });
+
+    if (profile && !profile.isActive) {
+      // Delete in order: account, profile, user
+      await prisma.account.deleteMany({ where: { userId } });
+      await prisma.userProfile.delete({ where: { userId } });
+      await prisma.user.delete({ where: { id: userId } });
+
+      return res.json({
+        success: true,
+        message: "Incomplete registration cancelled",
+      });
+    }
+
+    return res.status(400).json({ error: "Cannot cancel active user" });
+  } catch (error) {
+    console.error("Cancel registration error:", error);
+    return res.status(500).json({ error: "Failed to cancel registration" });
   }
 });
 
