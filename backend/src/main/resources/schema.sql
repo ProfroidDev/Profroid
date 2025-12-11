@@ -10,7 +10,8 @@ create table if not exists customers
     country VARCHAR(50),
     postal_code VARCHAR(9),
     user_id VARCHAR(36),
-    is_active BOOLEAN NOT NULL DEFAULT true
+    is_active BOOLEAN NOT NULL DEFAULT true,
+    FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE CASCADE
     );
 
 CREATE TABLE IF NOT EXISTS customer_phonenumbers (
@@ -48,7 +49,8 @@ CREATE TABLE IF NOT EXISTS employees (
                            province VARCHAR(255) NOT NULL,
                            country VARCHAR(255) NOT NULL,
                            postal_code VARCHAR(10) NOT NULL,
-                           is_active BOOLEAN NOT NULL DEFAULT true
+                           is_active BOOLEAN NOT NULL DEFAULT true,
+                           FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE CASCADE
 );
 
 
