@@ -66,20 +66,10 @@ public class CustomerServiceImpl implements CustomerService {
         Customer foundCustomer = customerRepository.findCustomerByUserId(userId);
 
         if (foundCustomer == null) {
-            // Auto-create customer record if it doesn't exist
-            // This handles the case when a user registers via auth-service
-            CustomerIdentifier customerIdentifier = new CustomerIdentifier();
-            Customer newCustomer = new Customer();
-            newCustomer.setCustomerIdentifier(customerIdentifier);
-            newCustomer.setUserId(userId);
-            newCustomer.setIsActive(true);
-            // Initialize with empty values - user can update later
-            newCustomer.setFirstName("");
-            newCustomer.setLastName("");
-            // Initialize empty address
-            newCustomer.setCustomerAddress(new CustomerAddress("", "", "", "", ""));
-            
-            foundCustomer = customerRepository.save(newCustomer);
+            throw new ResourceNotFoundException(
+                    "Customer with user ID '" + userId + "' not found. " +
+                    "Please create a customer profile first using the createCustomer endpoint."
+            );
         }
 
         return customerResponseMapper.toResponseModel(foundCustomer);
@@ -94,16 +84,10 @@ public class CustomerServiceImpl implements CustomerService {
         Customer foundCustomer = customerRepository.findCustomerByUserId(userId);
 
         if (foundCustomer == null) {
-            // Auto-create a customer record if missing, mirroring GET behavior
-            CustomerIdentifier customerIdentifier = new CustomerIdentifier();
-            Customer newCustomer = new Customer();
-            newCustomer.setCustomerIdentifier(customerIdentifier);
-            newCustomer.setUserId(userId);
-            newCustomer.setIsActive(true);
-            newCustomer.setFirstName("");
-            newCustomer.setLastName("");
-            newCustomer.setCustomerAddress(new CustomerAddress("", "", "", "", ""));
-            foundCustomer = customerRepository.save(newCustomer);
+            throw new ResourceNotFoundException(
+                    "Customer with user ID '" + userId + "' not found. " +
+                    "Cannot update a non-existent customer."
+            );
         }
 
         // Update simple fields

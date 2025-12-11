@@ -70,10 +70,11 @@ export default function EmployeeAssignModal({ isOpen, onClose, onSuccess }: Empl
   // Fetch unassigned users when modal opens
   useEffect(() => {
     if (isOpen) {
-      fetchUnassignedUsers();
       setStep('selectUser');
       setSelectedUser(null);
       setSearchQuery('');
+      setUnassignedUsers([]);
+      setAllUsers([]);
       setFormData({
         userId: '',
         employeeType: EMPLOYEE_TYPES[0] || 'TECHNICIAN',
@@ -89,13 +90,35 @@ export default function EmployeeAssignModal({ isOpen, onClose, onSuccess }: Empl
     }
   }, [isOpen]);
 
-  const fetchUnassignedUsers = async () => {
+  // Debounce search
+  useEffect(() => {
+    if (!searchQuery || searchQuery.trim().length < 2) {
+      setUnassignedUsers([]);
+      setAllUsers([]);
+      return;
+    }
+
+    const timeoutId = setTimeout(() => {
+      fetchUnassignedUsers(searchQuery);
+    }, 300); // 300ms debounce
+
+    return () => clearTimeout(timeoutId);
+  }, [searchQuery]);
+
+  const fetchUnassignedUsers = async (query: string = '') => {
     try {
       setFetchError('');
       const token = localStorage.getItem('authToken');
       
+      // Only search if query is at least 2 characters
+      if (query.trim().length < 2) {
+        setUnassignedUsers([]);
+        setAllUsers([]);
+        return;
+      }
+
       const response = await fetch(
-        `${import.meta.env.VITE_API_URL}/unassigned-users`,
+        `${import.meta.env.VITE_API_URL}/search-users?q=${encodeURIComponent(query)}&limit=50`,
         {
           method: 'GET',
           headers: {
@@ -109,12 +132,16 @@ export default function EmployeeAssignModal({ isOpen, onClose, onSuccess }: Empl
         throw new Error(`Failed to fetch users: ${response.statusText}`);
       }
 
-      const data = await response.json();
-      const users = data.users || [];
+      const result = await response.json();
+      const users = (result.data || []).map((u: { userId: string; email: string }) => ({
+        id: u.userId,
+        email: u.email,
+        name: u.email, // Use email as name since we don't have separate name field
+      }));
       setUnassignedUsers(users);
       setAllUsers(users);
     } catch (error: unknown) {
-      console.error('Error fetching unassigned users:', error);
+      console.error('Error fetching users:', error);
       setFetchError(getErrorMessage(error));
     }
   };
@@ -400,8 +427,12 @@ export default function EmployeeAssignModal({ isOpen, onClose, onSuccess }: Empl
 
           {step === 'selectUser' && (
             <>
-              {unassignedUsers.length === 0 && !fetchError && (
-                <div className="form-info-message">No unassigned users available</div>
+              {fetchError && (
+                <div className="form-error-message">{fetchError}</div>
+              )}
+
+              {searchQuery.trim().length > 0 && searchQuery.trim().length < 2 && (
+                <div className="form-info-message">Type at least 2 characters to search</div>
               )}
 
               <div className="form-section">
@@ -416,7 +447,6 @@ export default function EmployeeAssignModal({ isOpen, onClose, onSuccess }: Empl
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                     className={errors.userId ? 'input-error' : ''}
-                    disabled={unassignedUsers.length === 0}
                   />
                   {errors.userId && <span className="field-error">{errors.userId}</span>}
                 </div>

@@ -340,9 +340,15 @@ router.get("/health", (req: Request, res: Response) => {
 });
 
 /**
- * Get all users without employee profile (for admin to create employees)
- * GET /api/auth/unassigned-users
+ * Get paginated list of unassigned users (for admin to create employees)
+ * GET /api/auth/unassigned-users?page=1&limit=20
  * Headers: Authorization: Bearer <jwt>
+ * 
+ * Security & Privacy Considerations:
+ * - Pagination limits data exposure per request
+ * - Only admins can access (role check)
+ * - Returns only necessary fields (userId only, no email)
+ * - Limits to max 100 results per page
  */
 router.get("/unassigned-users", async (req: Request, res: Response) => {
   try {
@@ -359,7 +365,28 @@ router.get("/unassigned-users", async (req: Request, res: Response) => {
       return;
     }
 
-    // Get all users who don't have an employee role or don't have an employeeType set
+    // Parse pagination parameters with validation
+    let page = parseInt(req.query.page as string) || 1;
+    let limit = parseInt(req.query.limit as string) || 20;
+
+    // Validate and enforce limits
+    if (page < 1) page = 1;
+    if (limit < 1) limit = 1;
+    if (limit > 100) limit = 100; // Maximum 100 per page
+
+    const skip = (page - 1) * limit;
+
+    // Get total count for pagination metadata
+    const totalCount = await prisma.userProfile.count({
+      where: {
+        OR: [
+          { role: "customer" },
+          { AND: [{ role: "employee" }, { employeeType: null }] },
+        ],
+      },
+    });
+
+    // Get paginated users
     const unassignedUsers = await prisma.userProfile.findMany({
       where: {
         OR: [
@@ -367,26 +394,123 @@ router.get("/unassigned-users", async (req: Request, res: Response) => {
           { AND: [{ role: "employee" }, { employeeType: null }] },
         ],
       },
-      include: {
-        user: {
-          select: {
-            id: true,
-            email: true,
-          },
-        },
+      select: {
+        userId: true, // Only return userId, not email
+      },
+      skip,
+      take: limit,
+      orderBy: {
+        userId: "asc", // Consistent ordering for pagination
       },
     });
 
+    const totalPages = Math.ceil(totalCount / limit);
+
     res.json({
       success: true,
-      users: unassignedUsers.map((up) => ({
-        id: up.user.id,
-        email: up.user.email,
-      })),
+      data: unassignedUsers.map((up) => ({ userId: up.userId })),
+      pagination: {
+        page,
+        limit,
+        totalCount,
+        totalPages,
+        hasNextPage: page < totalPages,
+        hasPrevPage: page > 1,
+      },
     });
   } catch (error) {
     console.error("Fetch unassigned users error:", error);
     return res.status(500).json({ error: "Failed to fetch unassigned users" });
+  }
+});
+
+/**
+ * Search for users to assign as employees
+ * GET /api/auth/search-users?q=email&page=1&limit=20
+ * Headers: Authorization: Bearer <jwt>
+ * 
+ * Security & Privacy:
+ * - Admins only
+ * - Requires search query (min 2 chars) to prevent bulk enumeration
+ * - Pagination enforced (max 50 per page for search)
+ * - Returns userId and email for search results
+ */
+router.get("/search-users", async (req: Request, res: Response) => {
+  try {
+    const payload = getPayloadFromRequest(req, res);
+    if (!payload) return;
+
+    // Check if user is admin
+    const userProfile = await prisma.userProfile.findUnique({
+      where: { userId: payload.sub },
+    });
+
+    if (userProfile?.role !== "admin") {
+      res.status(403).json({ error: "Only admins can access this resource" });
+      return;
+    }
+
+    const query = (req.query.q as string)?.trim() || "";
+
+    // Require search query to prevent bulk data exposure
+    if (query.length < 2) {
+      return res.status(400).json({
+        error: "Search query must be at least 2 characters",
+      });
+    }
+
+    // Parse pagination
+    let page = parseInt(req.query.page as string) || 1;
+    let limit = parseInt(req.query.limit as string) || 20;
+
+    if (page < 1) page = 1;
+    if (limit < 1) limit = 1;
+    if (limit > 50) limit = 50; // Stricter limit for search
+
+    const skip = (page - 1) * limit;
+
+    // Search users by email
+    const totalCount = await prisma.user.count({
+      where: {
+        email: { contains: query },
+      },
+    });
+
+    const users = await prisma.user.findMany({
+      where: {
+        email: { contains: query },
+      },
+      select: {
+        id: true,
+        email: true,
+      },
+      skip,
+      take: limit,
+      orderBy: {
+        email: "asc",
+      },
+    });
+
+    const totalPages = Math.ceil(totalCount / limit);
+
+    res.json({
+      success: true,
+      data: users.map((u) => ({
+        userId: u.id,
+        email: u.email,
+      })),
+      pagination: {
+        page,
+        limit,
+        totalCount,
+        totalPages,
+        hasNextPage: page < totalPages,
+        hasPrevPage: page > 1,
+      },
+    });
+  } catch (error) {
+    console.error("Search users error:", error);
+    return res.status(500).json({ error: "Failed to search users" });
   }
 });
 
@@ -560,7 +684,6 @@ router.post("/complete-registration", async (req: Request, res: Response) => {
         return res.status(500).json({ 
           error: "Failed to communicate with backend service",
           details: errorMessage,
-          backendUrl: process.env.BACKEND_URL || "http://localhost:8080"
         });
       }
     }
