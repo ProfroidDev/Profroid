@@ -10,7 +10,7 @@ const provinces = ['Ontario', 'Quebec', 'British Columbia', 'Alberta', 'Manitoba
 export default function RegisterPage() {
   const navigate = useNavigate();
   const location = useLocation();
-  const { error, isLoading, clearError, setUser, setAuthenticated } = useAuthStore();
+  const { error, isLoading, clearError, setUser, setAuthenticated, fetchCustomerData } = useAuthStore();
   const [step, setStep] = useState<1 | 2>(1);
   const [userId, setUserId] = useState('');
   
@@ -159,6 +159,11 @@ export default function RegisterPage() {
           isActive: response.user.isActive ?? true,
         } as AuthUser);
         setAuthenticated(true);
+
+        // Immediately load customer profile data so /profile has data without manual refresh
+        // Pass userId directly since user might not be fully set in store yet
+        await fetchCustomerData(response.user.id);
+
         navigate('/');
       } else {
         setFormError(response.error || 'Failed to complete registration');

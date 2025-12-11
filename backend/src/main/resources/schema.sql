@@ -1,14 +1,3 @@
-DROP TABLE IF EXISTS appointments;
-DROP TABLE IF EXISTS employee_phonenumbers;
-DROP TABLE IF EXISTS customer_phonenumbers;
-DROP TABLE IF EXISTS jobs;
-DROP TABLE IF EXISTS schedules;
-DROP TABLE IF EXISTS employees;
-DROP TABLE IF EXISTS cellars;
-DROP TABLE IF EXISTS customers;
-DROP TABLE IF EXISTS parts;
-
-
 create table if not exists customers
 (
     id INTEGER NOT NULL AUTO_INCREMENT PRIMARY KEY,
@@ -25,11 +14,12 @@ create table if not exists customers
     );
 
 CREATE TABLE IF NOT EXISTS customer_phonenumbers (
-                                                   customer_id INTEGER,
-                                                   type VARCHAR(50),
-    number VARCHAR(50)
-
-    );
+    customer_id INTEGER NOT NULL,
+    type VARCHAR(50),
+    number VARCHAR(50),
+    FOREIGN KEY (customer_id) REFERENCES customers(id) ON DELETE CASCADE,
+    PRIMARY KEY (customer_id, number)
+);
 
 CREATE TABLE IF NOT EXISTS jobs  (
                       id INT AUTO_INCREMENT PRIMARY KEY,
@@ -81,7 +71,7 @@ CREATE TABLE IF NOT EXISTS schedules (
     UNIQUE (employee_fk, day_of_week, time_slot, specific_date)
     );
 
-CREATE TABLE cellars (
+CREATE TABLE IF NOT EXISTS cellars (
                          id INT AUTO_INCREMENT PRIMARY KEY,                 -- Internal DB ID
 
                          cellar_id VARCHAR(36) NOT NULL UNIQUE,             -- Public UUID (CellarIdentifier)
@@ -102,7 +92,7 @@ CREATE TABLE cellars (
                          cellar_type VARCHAR(50) NOT NULL                 -- Enum stored as string
 );
 
-CREATE TABLE parts (
+CREATE TABLE IF NOT EXISTS parts (
                        id INT AUTO_INCREMENT PRIMARY KEY,
                        part_id VARCHAR(255) NOT NULL UNIQUE,
                        name VARCHAR(255) NOT NULL,

@@ -1,11 +1,12 @@
 # ============================
 # 1 - Builder Image
+#    Use Gradle image to avoid downloading the distribution during build
 # ============================
-FROM eclipse-temurin:17-jdk AS builder
+FROM gradle:8.7-jdk17 AS builder
 
 WORKDIR /workspace
 
-# Copy Gradle wrapper files first
+# Copy Gradle wrapper files first (for dependencies and plugins)
 COPY gradlew .
 COPY gradlew.bat .
 COPY gradle gradle
@@ -17,9 +18,8 @@ COPY settings.gradle .
 # Copy source code
 COPY src src
 
-# Make gradlew executable and build
-RUN chmod +x gradlew && \
-    ./gradlew clean bootJar --no-daemon
+# Build using preinstalled Gradle (matches wrapper version) to avoid fetching distribution
+RUN gradle clean bootJar --no-daemon
 
 # ============================
 # 2 - Runtime Image

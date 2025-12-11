@@ -34,12 +34,12 @@ function Home(): React.ReactElement {
 }
 
 function App(): React.ReactElement {
-  const { fetchUser } = useAuthStore();
+  const { initializeAuth } = useAuthStore();
 
   useEffect(() => {
-    // Fetch user session on app load if authenticated
-    fetchUser();
-  }, [fetchUser]);
+    // Initialize auth and fetch user + customer data on app load
+    initializeAuth();
+  }, [initializeAuth]);
 
   return (
     <BrowserRouter>

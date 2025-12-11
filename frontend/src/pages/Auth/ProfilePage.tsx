@@ -38,6 +38,8 @@ export default function ProfilePage() {
     isLoading,
     error,
     clearError,
+    customerData: storedCustomerData,
+    setCustomerData: setStoredCustomerData,
   } = useAuthStore();
 
   const [editMode, setEditMode] = useState(false);
@@ -68,7 +70,7 @@ export default function ProfilePage() {
   const [employeeId, setEmployeeId] = useState<string | null>(null);
 
   // Customer data state (address, phone, etc.)
-  const [customerData, setCustomerData] = useState<CustomerData | null>(null);
+  const [customerData, setCustomerData] = useState<CustomerData | null>(storedCustomerData || null);
 
   // Fetch customer data and employee schedule when component loads or user role changes
   const fetchEmployeeData = useCallback(async () => {
@@ -115,7 +117,7 @@ export default function ProfilePage() {
     }
   }, [user?.id]);
 
-  const fetchCustomerData = useCallback(async () => {
+  const fetchCustomerDataLocally = useCallback(async () => {
     if (!user?.id) return;
 
     try {
@@ -134,6 +136,7 @@ export default function ProfilePage() {
       if (response.ok) {
         const data: CustomerData = await response.json();
         setCustomerData(data);
+        setStoredCustomerData(data); // Also update store
         setFirstName(data.firstName || '');
         setLastName(data.lastName || '');
         // Update form fields with customer data
@@ -150,7 +153,16 @@ export default function ProfilePage() {
     } catch (error) {
       console.error('Error fetching customer data:', error);
     }
-  }, [user?.id]);
+  }, [user?.id, setStoredCustomerData]);
+
+  const fetchCustomerData = fetchCustomerDataLocally;
+
+  // Ensure customer data is loaded on first render without manual refresh
+  useEffect(() => {
+    if (user?.id && !storedCustomerData) {
+      fetchCustomerData();
+    }
+  }, [user?.id, storedCustomerData, fetchCustomerData]);
 
   const fetchEmployeeSchedule = useCallback(async () => {
     if (!user?.id) return;
@@ -214,16 +226,26 @@ export default function ProfilePage() {
   }, [user?.id]);
 
   useEffect(() => {
-    if (user?.id) {
-      if (user?.employeeType) {
-        fetchEmployeeData();
-      } else {
-        fetchCustomerData();
-        setEmployeeId(null);
-        setSchedule([]);
+    if (user?.id && storedCustomerData) {
+      // Initialize form with stored customer data
+      setCustomerData(storedCustomerData);
+      setFirstName(storedCustomerData.firstName || '');
+      setLastName(storedCustomerData.lastName || '');
+      if (storedCustomerData.streetAddress) setAddress(storedCustomerData.streetAddress);
+      if (storedCustomerData.city) setCity(storedCustomerData.city);
+      if (storedCustomerData.province) setProvince(storedCustomerData.province);
+      if (storedCustomerData.country) setCountry(storedCustomerData.country);
+      if (storedCustomerData.postalCode) setPostalCode(storedCustomerData.postalCode);
+      if (storedCustomerData.phoneNumbers && storedCustomerData.phoneNumbers.length > 0) {
+        setPhone(storedCustomerData.phoneNumbers[0].number || '');
+      }
+      
+      // Auto-enable edit mode if customer data is empty (no firstName/lastName)
+      if (!storedCustomerData.firstName && !storedCustomerData.lastName) {
+        setEditMode(true);
       }
     }
-  }, [user?.id, user?.employeeType, fetchEmployeeData, fetchCustomerData]);
+  }, [storedCustomerData]);
 
   // Once we know the employeeId, load the schedule
   useEffect(() => {
@@ -295,6 +317,7 @@ export default function ProfilePage() {
 
         const updatedData = await response.json();
         setCustomerData(updatedData);
+        setStoredCustomerData(updatedData); // Also update store so data persists
       } else {
         // Save customer data
         const customerUpdateData = {
@@ -328,6 +351,7 @@ export default function ProfilePage() {
 
         const updatedData = await response.json();
         setCustomerData(updatedData);
+        setStoredCustomerData(updatedData); // Also update store so data persists
       }
 
       setEditMode(false);

@@ -6,7 +6,7 @@ import '../Auth.css';
 
 export default function LoginPage() {
   const navigate = useNavigate();
-  const { error, isLoading, clearError, login } = useAuthStore();
+  const { error, isLoading, clearError, login, fetchCustomerData } = useAuthStore();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [formError, setFormError] = useState('');
@@ -25,7 +25,8 @@ export default function LoginPage() {
     const success = await login(email, password);
     
     if (success) {
-      // Store login was successful, navigate to home
+      // Ensure customer/employee data is loaded before routing
+      await fetchCustomerData();
       navigate('/');
     } else {
       // Check if requiresCompletion by calling authClient directly for registration flow

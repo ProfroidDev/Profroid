@@ -94,7 +94,16 @@ public class CustomerServiceImpl implements CustomerService {
         Customer foundCustomer = customerRepository.findCustomerByUserId(userId);
 
         if (foundCustomer == null) {
-            throw new ResourceNotFoundException("No customer found for user ID: " + userId);
+            // Auto-create a customer record if missing, mirroring GET behavior
+            CustomerIdentifier customerIdentifier = new CustomerIdentifier();
+            Customer newCustomer = new Customer();
+            newCustomer.setCustomerIdentifier(customerIdentifier);
+            newCustomer.setUserId(userId);
+            newCustomer.setIsActive(true);
+            newCustomer.setFirstName("");
+            newCustomer.setLastName("");
+            newCustomer.setCustomerAddress(new CustomerAddress("", "", "", "", ""));
+            foundCustomer = customerRepository.save(newCustomer);
         }
 
         // Update simple fields
