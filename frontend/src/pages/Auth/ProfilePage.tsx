@@ -3,11 +3,36 @@ import { useNavigate } from 'react-router-dom';
 import useAuthStore from '../../features/authentication/store/authStore';
 import '../Auth.css';
 
+type PhoneNumber = {
+  number?: string;
+  type?: string;
+};
+
+type Address = {
+  streetAddress?: string;
+  city?: string;
+  province?: string;
+  country?: string;
+  postalCode?: string;
+};
+
+type CustomerData = {
+  firstName?: string;
+  lastName?: string;
+  streetAddress?: string;
+  city?: string;
+  province?: string;
+  country?: string;
+  postalCode?: string;
+  phoneNumbers?: PhoneNumber[];
+  employeeIdentifier?: { employeeId?: string };
+  employeeAddress?: Address;
+};
+
 export default function ProfilePage() {
   const navigate = useNavigate();
   const {
     user,
-    updateProfile,
     changePassword,
     logout,
     isLoading,
@@ -20,13 +45,14 @@ export default function ProfilePage() {
   const [formError, setFormError] = useState('');
 
   // Profile form state
-  const [name, setName] = useState(user?.name || '');
-  const [phone, setPhone] = useState(user?.phone || '');
-  const [address, setAddress] = useState(user?.address || '');
-  const [postalCode, setPostalCode] = useState(user?.postalCode || '');
-  const [city, setCity] = useState(user?.city || '');
-  const [province, setProvince] = useState(user?.province || '');
-  const [country, setCountry] = useState(user?.country || '');
+  const [firstName, setFirstName] = useState('');
+  const [lastName, setLastName] = useState('');
+  const [phone, setPhone] = useState('');
+  const [address, setAddress] = useState('');
+  const [postalCode, setPostalCode] = useState('');
+  const [city, setCity] = useState('');
+  const [province, setProvince] = useState('');
+  const [country, setCountry] = useState('');
 
   // Password form state
   const [oldPassword, setOldPassword] = useState('');
@@ -42,7 +68,7 @@ export default function ProfilePage() {
   const [employeeId, setEmployeeId] = useState<string | null>(null);
 
   // Customer data state (address, phone, etc.)
-  const [customerData, setCustomerData] = useState<Record<string, unknown> | null>(null);
+  const [customerData, setCustomerData] = useState<CustomerData | null>(null);
 
   // Fetch customer data and employee schedule when component loads or user role changes
   const fetchEmployeeData = useCallback(async () => {
@@ -62,8 +88,10 @@ export default function ProfilePage() {
       );
 
       if (response.ok) {
-        const data = await response.json();
+        const data: CustomerData = await response.json();
         setCustomerData(data); // Reuse customerData state for employee data
+        setFirstName(data.firstName || '');
+        setLastName(data.lastName || '');
         if (data.employeeIdentifier?.employeeId) {
           setEmployeeId(data.employeeIdentifier.employeeId);
         }
@@ -104,8 +132,10 @@ export default function ProfilePage() {
       );
 
       if (response.ok) {
-        const data = await response.json();
+        const data: CustomerData = await response.json();
         setCustomerData(data);
+        setFirstName(data.firstName || '');
+        setLastName(data.lastName || '');
         // Update form fields with customer data
         if (data.streetAddress) setAddress(data.streetAddress);
         if (data.city) setCity(data.city);
@@ -231,8 +261,8 @@ export default function ProfilePage() {
         const resolvedEmployeeId = employeeId || (customerData as { employeeIdentifier?: { employeeId?: string } } | null)?.employeeIdentifier?.employeeId;
 
         const employeeUpdateData = {
-          firstName: user.name?.split(' ')[0] || '',
-          lastName: user.name?.split(' ').slice(1).join(' ') || '',
+          firstName: firstName || '',
+          lastName: lastName || '',
           employeeAddress: {
             streetAddress: address,
             city: city,
@@ -269,8 +299,8 @@ export default function ProfilePage() {
         // Save customer data
         const customerUpdateData = {
           userId: user.id,
-          firstName: user.name?.split(' ')[0] || '',
-          lastName: user.name?.split(' ').slice(1).join(' ') || '',
+          firstName: firstName || '',
+          lastName: lastName || '',
           streetAddress: address,
           city: city,
           province: province,
@@ -300,17 +330,7 @@ export default function ProfilePage() {
         setCustomerData(updatedData);
       }
 
-      const updates: Record<string, string> = {};
-      if (name !== user.name) updates.name = name;
-
-      if (Object.keys(updates).length > 0) {
-        const success = await updateProfile(updates);
-        if (success) {
-          setEditMode(false);
-        }
-      } else {
-        setEditMode(false);
-      }
+      setEditMode(false);
     } catch (error) {
       console.error('Error saving profile:', error);
       setFormError('Failed to save profile changes');
@@ -398,15 +418,27 @@ export default function ProfilePage() {
 
             {editMode ? (
               <form onSubmit={handleProfileSubmit} className="auth-form">
-                <div className="form-group">
-                  <label htmlFor="name">Full Name</label>
-                  <input
-                    id="name"
-                    type="text"
-                    value={name}
-                    onChange={(e) => setName(e.target.value)}
-                    disabled={isLoading}
-                  />
+                <div className="form-row">
+                  <div className="form-group">
+                    <label htmlFor="firstName">First Name</label>
+                    <input
+                      id="firstName"
+                      type="text"
+                      value={firstName}
+                      onChange={(e) => setFirstName(e.target.value)}
+                      disabled={isLoading}
+                    />
+                  </div>
+                  <div className="form-group">
+                    <label htmlFor="lastName">Last Name</label>
+                    <input
+                      id="lastName"
+                      type="text"
+                      value={lastName}
+                      onChange={(e) => setLastName(e.target.value)}
+                      disabled={isLoading}
+                    />
+                  </div>
                 </div>
 
                 <div className="form-group">
@@ -512,14 +544,16 @@ export default function ProfilePage() {
                   <button
                     type="button"
                     onClick={() => {
-                      setEditMode(false);
-                      setName(user.name);
-                      setPhone('');
-                      setAddress((customerData?.streetAddress as string) || '');
-                      setPostalCode((customerData?.postalCode as string) || '');
-                      setCity((customerData?.city as string) || '');
-                      setProvince((customerData?.province as string) || '');
-                      setCountry((customerData?.country as string) || '');
+                        setEditMode(false);
+                        setFirstName(customerData?.firstName || '');
+                        setLastName(customerData?.lastName || '');
+                        const phoneFromData = customerData?.phoneNumbers?.[0]?.number || '';
+                        setPhone(phoneFromData);
+                        setAddress(customerData?.streetAddress || customerData?.employeeAddress?.streetAddress || '');
+                        setPostalCode(customerData?.postalCode || customerData?.employeeAddress?.postalCode || '');
+                        setCity(customerData?.city || customerData?.employeeAddress?.city || '');
+                        setProvince(customerData?.province || customerData?.employeeAddress?.province || '');
+                        setCountry(customerData?.country || customerData?.employeeAddress?.country || '');
                     }}
                     className="btn-secondary"
                   >
@@ -529,10 +563,14 @@ export default function ProfilePage() {
               </form>
             ) : (
               <div className="profile-info">
-                <div className="info-row">
-                  <span className="label">Name:</span>
-                  <span className="value">{user.name}</span>
-                </div>
+                  <div className="info-row">
+                    <span className="label">First Name:</span>
+                    <span className="value">{customerData?.firstName || '—'}</span>
+                  </div>
+                  <div className="info-row">
+                    <span className="label">Last Name:</span>
+                    <span className="value">{customerData?.lastName || '—'}</span>
+                  </div>
                 <div className="info-row">
                   <span className="label">Email:</span>
                   <span className="value">{user.email}</span>
@@ -543,39 +581,39 @@ export default function ProfilePage() {
                     <span className="value">{user.employeeType}</span>
                   </div>
                 )}
-                {customerData && (customerData.phoneNumbers as Array<Record<string, unknown>> | undefined) && (customerData.phoneNumbers as Array<Record<string, unknown>>).length > 0 && (
+                {customerData?.phoneNumbers && customerData.phoneNumbers.length > 0 && (
                   <div className="info-row">
                     <span className="label">Phone:</span>
                     <span className="value">
-                      {(customerData.phoneNumbers as Array<Record<string, unknown>>).map((p) => `${String(p.number)} (${String(p.type)})`).join(', ')}
+                      {customerData.phoneNumbers.map((p) => `${String(p.number)} (${String(p.type)})`).join(', ')}
                     </span>
                   </div>
                 )}
-                {customerData && (customerData.streetAddress as string || (customerData.employeeAddress as Record<string, unknown>)?.streetAddress as string) && (
+                {customerData && (customerData.streetAddress || customerData.employeeAddress?.streetAddress) && (
                   <div className="info-row">
                     <span className="label">Address:</span>
-                    <span className="value">{(customerData?.streetAddress as string) || ((customerData?.employeeAddress as Record<string, unknown>)?.streetAddress as string)}</span>
+                    <span className="value">{customerData.streetAddress || customerData.employeeAddress?.streetAddress}</span>
                   </div>
                 )}
-                {customerData && ((customerData.city as string) || ((customerData.employeeAddress as Record<string, unknown>)?.city as string)) && (
+                {customerData && (customerData.city || customerData.employeeAddress?.city) && (
                   <div className="info-row">
                     <span className="label">City:</span>
                     <span className="value">
-                      {(customerData?.city as string) || ((customerData?.employeeAddress as Record<string, unknown>)?.city as string)}
-                      {((customerData?.province as string) || ((customerData?.employeeAddress as Record<string, unknown>)?.province as string)) && `, ${(customerData?.province as string) || ((customerData?.employeeAddress as Record<string, unknown>)?.province as string)}`}
+                      {customerData.city || customerData.employeeAddress?.city}
+                      {(customerData.province || customerData.employeeAddress?.province) && `, ${customerData.province || customerData.employeeAddress?.province}`}
                     </span>
                   </div>
                 )}
-                {customerData && ((customerData.postalCode as string) || ((customerData.employeeAddress as Record<string, unknown>)?.postalCode as string)) && (
+                {customerData && (customerData.postalCode || customerData.employeeAddress?.postalCode) && (
                   <div className="info-row">
                     <span className="label">Postal Code:</span>
-                    <span className="value">{(customerData?.postalCode as string) || ((customerData?.employeeAddress as Record<string, unknown>)?.postalCode as string)}</span>
+                    <span className="value">{customerData.postalCode || customerData.employeeAddress?.postalCode}</span>
                   </div>
                 )}
-                {customerData && ((customerData.country as string) || ((customerData.employeeAddress as Record<string, unknown>)?.country as string)) && (
+                {customerData && (customerData.country || customerData.employeeAddress?.country) && (
                   <div className="info-row">
                     <span className="label">Country:</span>
-                    <span className="value">{(customerData?.country as string) || ((customerData?.employeeAddress as Record<string, unknown>)?.country as string)}</span>
+                    <span className="value">{customerData.country || customerData.employeeAddress?.country}</span>
                   </div>
                 )}
               </div>

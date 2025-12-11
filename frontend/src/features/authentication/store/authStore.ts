@@ -4,18 +4,11 @@ import authClient from '../api/authClient';
 export interface AuthUser {
   id: string;
   email: string;
-  name: string;
   image?: string;
   emailVerified: boolean;
   role: string;
   employeeType?: string;
   isActive: boolean;
-  phone?: string;
-  address?: string;
-  postalCode?: string;
-  city?: string;
-  province?: string;
-  country?: string;
 }
 
 export interface AuthStore {
@@ -26,7 +19,6 @@ export interface AuthStore {
   error: string | null;
 
   // Actions
-  register: (email: string, password: string, name?: string) => Promise<boolean>;
   login: (email: string, password: string) => Promise<boolean>;
   logout: () => Promise<void>;
   fetchUser: () => Promise<void>;
@@ -48,37 +40,6 @@ const useAuthStore = create<AuthStore>((set) => ({
   error: null,
 
   /**
-   * Register new user
-   */
-  register: async (email: string, password: string, name?: string) => {
-    set({ isLoading: true, error: null });
-    try {
-      const response = await authClient.register(email, password, name);
-      if (response.success) {
-        set({
-          isLoading: false,
-          isAuthenticated: true,
-          token: response.token || null,
-          user: response.user as AuthUser,
-        });
-        return true;
-      } else {
-        set({
-          isLoading: false,
-          error: response.error || 'Registration failed',
-        });
-        return false;
-      }
-    } catch (error: unknown) {
-      set({
-        isLoading: false,
-        error: error instanceof Error ? error.message : 'Registration failed',
-      });
-      return false;
-    }
-  },
-
-  /**
    * Login user
    */
   login: async (email: string, password: string) => {
@@ -86,13 +47,42 @@ const useAuthStore = create<AuthStore>((set) => ({
     try {
       const response = await authClient.signIn(email, password);
       if (response.success && response.token && response.user) {
+        // Store token first
         set({
-          isLoading: false,
           token: response.token,
           isAuthenticated: true,
           user: response.user as AuthUser,
         });
+        
+        // Then fetch full user details to get employeeType and other fields
+        try {
+          const userResponse = await authClient.getUser();
+          if (userResponse.success && userResponse.user) {
+            set({
+              isLoading: false,
+              user: {
+                ...response.user,
+                role: userResponse.user.role,
+                isActive: userResponse.user.isActive,
+                // employeeType will be fetched separately if needed
+              } as AuthUser,
+            });
+          } else {
+            // Fallback to initial user if fetch fails
+            set({ isLoading: false });
+          }
+        } catch (fetchError) {
+          console.error('Failed to fetch full user details:', fetchError);
+          set({ isLoading: false });
+        }
         return true;
+      } else if (response.requiresCompletion) {
+        // User needs to complete customer registration
+        set({
+          isLoading: false,
+          error: response.message || 'Please complete your registration',
+        });
+        return false;
       } else {
         set({
           isLoading: false,

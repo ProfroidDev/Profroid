@@ -81,7 +81,7 @@ export default function Navigation(): React.ReactElement {
           {isAuthenticated ? (
             <>
               <button className="nav-profile" onClick={handleProfile}>
-                <User className="icon" /> {user?.name || "Profile"}
+                <User className="icon" /> {user?.email || "Profile"}
               </button>
               <button className="nav-logout" onClick={handleLogout}>
                 <LogOut className="icon" /> Logout
@@ -139,7 +139,7 @@ export default function Navigation(): React.ReactElement {
           {isAuthenticated ? (
             <>
               <button className="nav-mobile-profile" onClick={handleProfile}>
-                <User className="icon" /> {user?.name || "Profile"}
+                <User className="icon" /> {user?.email || "Profile"}
               </button>
               <button className="nav-mobile-logout" onClick={handleLogout}>
                 <LogOut className="icon" /> Logout

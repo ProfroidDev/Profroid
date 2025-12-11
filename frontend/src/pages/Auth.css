@@ -122,6 +122,34 @@
   cursor: not-allowed;
 }
 
+.btn-danger {
+  padding: 0.5rem 1rem;
+  background: #c53030;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-danger:hover:not(:disabled) {
+  background: #9b2c2c;
+}
+
+.btn-danger:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.field-error {
+  color: #c53030;
+  font-size: 0.85rem;
+  margin-top: 0.25rem;
+  display: block;
+}
+
 .alert {
   padding: 0.75rem 1rem;
   border-radius: 10px;
