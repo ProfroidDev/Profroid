@@ -27,9 +27,6 @@ public class EmployeeRequestModel {
     @NotBlank(message = "Last name is required.")
     private String lastName;
 
-    @NotBlank(message = "User ID is required for system login.")
-    private String userId;
-
     @NotEmpty(message = "At least one phone number is required.")
     @Valid
     private List<EmployeePhoneNumber> phoneNumbers;
@@ -38,7 +35,9 @@ public class EmployeeRequestModel {
     @Valid
     private EmployeeAddress employeeAddress;
 
-    @NotNull(message = "Employee role is required.")
     @Valid
     private EmployeeRole employeeRole;
+
+    // userId is set by controller from JWT token, never sent from client
+    private String userId;
 }

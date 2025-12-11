@@ -15,6 +15,8 @@ public interface EmployeeService {
 
     EmployeeResponseModel getEmployeeById(String employeeId);
 
+    EmployeeResponseModel getEmployeeByUserId(String userId);
+
     EmployeeResponseModel addEmployee(EmployeeRequestModel employeeRequestModel);
 
     EmployeeResponseModel updateEmployee(String employeeId, @Valid EmployeeRequestModel employeeRequestModel);

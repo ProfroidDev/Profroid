@@ -66,14 +66,44 @@ public class EmployeeServiceImpl implements EmployeeService {
     }
 
     @Override
+    public EmployeeResponseModel getEmployeeByUserId(String userId) {
+        if (userId == null || userId.trim().isEmpty()) {
+            throw new InvalidIdentifierException("User ID is required.");
+        }
+
+        Employee employee = employeeRepository.findEmployeeByUserId(userId);
+
+        if (employee == null) {
+            throw new ResourceNotFoundException("No employee found for user ID: " + userId);
+        }
+        return employeeResponseMapper.toResponseModel(employee);
+    }
+
+    @Override
     public EmployeeResponseModel addEmployee(EmployeeRequestModel employeeRequestModel) {
 
         String userId = employeeRequestModel.getUserId();
 
-        if (employeeRepository.findEmployeeByUserId(userId) != null) {
+        // Check if an ACTIVE employee already exists with this userId
+        Employee existingEmployee = employeeRepository.findEmployeeByUserId(userId);
+        
+        if (existingEmployee != null && existingEmployee.getIsActive()) {
             throw new ResourceAlreadyExistsException(
-                    "Cannot add employee: An employee already exists with user ID '" + userId + "'."
+                    "Cannot add employee: An active employee already exists with user ID '" + userId + "'."
             );
+        }
+        
+        // If inactive employee exists, reactivate and update it instead of creating new
+        if (existingEmployee != null && !existingEmployee.getIsActive()) {
+            existingEmployee.setIsActive(true);
+            existingEmployee.setFirstName(employeeRequestModel.getFirstName());
+            existingEmployee.setLastName(employeeRequestModel.getLastName());
+            existingEmployee.setEmployeeAddress(employeeRequestModel.getEmployeeAddress());
+            existingEmployee.setPhoneNumbers(employeeRequestModel.getPhoneNumbers());
+            existingEmployee.setEmployeeRole(employeeRequestModel.getEmployeeRole());
+            
+            Employee reactivatedEmployee = employeeRepository.save(existingEmployee);
+            return employeeResponseMapper.toResponseModel(reactivatedEmployee);
         }
 
         Employee employee = employeeRequestMapper.toEntity(employeeRequestModel);

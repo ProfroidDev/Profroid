@@ -1,6 +1,5 @@
 package com.profroid.profroidapp.customersubdomain.presentationLayer;
 
-import com.profroid.profroidapp.customersubdomain.dataAccessLayer.CustomerIdentifier;
 import com.profroid.profroidapp.customersubdomain.dataAccessLayer.CustomerPhoneNumber;
 import lombok.AllArgsConstructor;
 import lombok.Builder;

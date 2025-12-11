@@ -1,6 +1,7 @@
 package com.profroid.profroidapp.customersubdomain.businessLayer;
 
 import com.profroid.profroidapp.customersubdomain.dataAccessLayer.Customer;
+import com.profroid.profroidapp.customersubdomain.dataAccessLayer.CustomerAddress;
 import com.profroid.profroidapp.customersubdomain.dataAccessLayer.CustomerIdentifier;
 import com.profroid.profroidapp.customersubdomain.dataAccessLayer.CustomerRepository;
 import com.profroid.profroidapp.customersubdomain.mappingLayer.CustomerRequestMapper;
@@ -53,6 +54,58 @@ public class CustomerServiceImpl implements CustomerService {
         }
 
         return customerResponseMapper.toResponseModel(foundCustomer);
+    }
+
+
+    @Override
+    public CustomerResponseModel getCustomerByUserId(String userId) {
+        if (userId == null || userId.trim().isEmpty()) {
+            throw new InvalidIdentifierException("User ID is required.");
+        }
+
+        Customer foundCustomer = customerRepository.findCustomerByUserId(userId);
+
+        if (foundCustomer == null) {
+            throw new ResourceNotFoundException(
+                    "Customer with user ID '" + userId + "' not found. " +
+                    "Please create a customer profile first using the createCustomer endpoint."
+            );
+        }
+
+        return customerResponseMapper.toResponseModel(foundCustomer);
+    }
+
+    @Override
+    public CustomerResponseModel updateCustomerByUserId(String userId, CustomerRequestModel requestModel) {
+        if (userId == null || userId.trim().isEmpty()) {
+            throw new InvalidIdentifierException("User ID is required.");
+        }
+
+        Customer foundCustomer = customerRepository.findCustomerByUserId(userId);
+
+        if (foundCustomer == null) {
+            throw new ResourceNotFoundException(
+                    "Customer with user ID '" + userId + "' not found. " +
+                    "Cannot update a non-existent customer."
+            );
+        }
+
+        // Update simple fields
+        foundCustomer.setFirstName(requestModel.getFirstName());
+        foundCustomer.setLastName(requestModel.getLastName());
+
+        // Update address fields
+        foundCustomer.getCustomerAddress().setStreetAddress(requestModel.getStreetAddress());
+        foundCustomer.getCustomerAddress().setCity(requestModel.getCity());
+        foundCustomer.getCustomerAddress().setProvince(requestModel.getProvince());
+        foundCustomer.getCustomerAddress().setCountry(requestModel.getCountry());
+        foundCustomer.getCustomerAddress().setPostalCode(requestModel.getPostalCode());
+
+        // Update phone numbers
+        foundCustomer.setPhoneNumbers(requestModel.getPhoneNumbers());
+
+        Customer updatedCustomer = customerRepository.save(foundCustomer);
+        return customerResponseMapper.toResponseModel(updatedCustomer);
     }
 
 

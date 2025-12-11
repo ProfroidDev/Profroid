@@ -39,6 +39,7 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/h2-console/**").permitAll()
                         .requestMatchers("/api/auth/**").permitAll()  // Auth endpoints public
+                        .requestMatchers("POST", "/api/v1/customers").permitAll()  // Customer creation from auth service
                         .requestMatchers("/api/v1/jobs").permitAll() // Jobs list is public
                         .anyRequest().authenticated()  // All other APIs require authentication
                 )

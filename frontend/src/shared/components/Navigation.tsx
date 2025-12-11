@@ -22,6 +22,12 @@ export default function Navigation(): React.ReactElement {
     navigate("/profile");
   };
 
+  // Check if user is admin
+  const isAdmin = user?.role === "admin";
+  
+  // Check if user is technician employee
+  const isTechnician = user?.role === "employee" && user?.employeeType === "TECHNICIAN";
+
   return (
     <nav className="nav-container">
       <div className="nav-inner">
@@ -34,21 +40,33 @@ export default function Navigation(): React.ReactElement {
 
         {/* Desktop Menu */}
         <div className="nav-links">
-          {/* Admin Links (now visible to everyone) */}
-          <a href="/parts">Parts</a>
-          <a href="/customers">Customers</a>
-          <a href="/employees">Employees</a>
+          {/* Admin Links - only visible to admins */}
+          {isAdmin && (
+            <>
+              <a href="/parts">Parts</a>
+              <a href="/customers">Customers</a>
+              <a href="/employees">Employees</a>
+            </>
+          )}
 
-          {/* Employee Links (now visible to everyone) */}
-          <a href="/my-jobs">My Jobs</a>
+          {/* Employee Links - only visible to TECHNICIAN employees */}
+          {isTechnician && <a href="/my-jobs">My Jobs</a>}
 
-          {/* Customer Links (now visible to everyone) */}
-          <a href="/services">Services</a>
-          <a href="/my-appointments">My Appointments</a>
+          {/* Customer Links - visible to customers and employees */}
+          {user?.role === "customer" && (
+            <>
+              <a href="/services">Services</a>
+              <a href="/my-appointments">My Appointments</a>
+            </>
+          )}
 
           {/* Public Links */}
-          <a href="/#about">About</a>
-          <a href="/#contact">Contact</a>
+          {!isAuthenticated && (
+            <>
+              <a href="/#about">About</a>
+              <a href="/#contact">Contact</a>
+            </>
+          )}
 
           {isAuthenticated && (
             <button className="nav-cart">
@@ -63,7 +81,7 @@ export default function Navigation(): React.ReactElement {
           {isAuthenticated ? (
             <>
               <button className="nav-profile" onClick={handleProfile}>
-                <User className="icon" /> {user?.name || "Profile"}
+                <User className="icon" /> {user?.email || "Profile"}
               </button>
               <button className="nav-logout" onClick={handleLogout}>
                 <LogOut className="icon" /> Logout
@@ -86,19 +104,33 @@ export default function Navigation(): React.ReactElement {
       {open && (
         <div className="nav-mobile-menu">
 
-          {/* All links visible to everyone */}
-          <a href="/parts">Parts</a>
-          <a href="/customers">Customers</a>
-          <a href="/employees">Employees</a>
+          {/* Admin Links - only visible to admins */}
+          {isAdmin && (
+            <>
+              <a href="/parts">Parts</a>
+              <a href="/customers">Customers</a>
+              <a href="/employees">Employees</a>
+            </>
+          )}
 
-          <a href="/employees/schedule">Schedule</a>
-          <a href="/my-jobs">My Jobs</a>
+          {/* Employee Links - only visible to TECHNICIAN employees */}
+          {isTechnician && <a href="/my-jobs">My Jobs</a>}
 
-          <a href="/services">Services</a>
-          <a href="/my-appointments">My Appointments</a>
+          {/* Customer Links - visible to customers */}
+          {user?.role === "customer" && (
+            <>
+              <a href="/services">Services</a>
+              <a href="/my-appointments">My Appointments</a>
+            </>
+          )}
 
-          <a href="/#about">About</a>
-          <a href="/#contact">Contact</a>
+          {/* Public Links */}
+          {!isAuthenticated && (
+            <>
+              <a href="/#about">About</a>
+              <a href="/#contact">Contact</a>
+            </>
+          )}
 
           {isAuthenticated && (
             <button className="nav-book w-full">Book Appointment</button>
@@ -107,7 +139,7 @@ export default function Navigation(): React.ReactElement {
           {isAuthenticated ? (
             <>
               <button className="nav-mobile-profile" onClick={handleProfile}>
-                <User className="icon" /> {user?.name || "Profile"}
+                <User className="icon" /> {user?.email || "Profile"}
               </button>
               <button className="nav-mobile-logout" onClick={handleLogout}>
                 <LogOut className="icon" /> Logout

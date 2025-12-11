@@ -1,11 +1,12 @@
 import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import useAuthStore from '../../features/authentication/store/authStore';
+import authClient from '../../features/authentication/api/authClient';
 import '../Auth.css';
 
 export default function LoginPage() {
   const navigate = useNavigate();
-  const { login, error, isLoading, clearError } = useAuthStore();
+  const { error, isLoading, clearError, login, fetchCustomerData } = useAuthStore();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [formError, setFormError] = useState('');
@@ -20,9 +21,20 @@ export default function LoginPage() {
       return;
     }
 
+    // Use store's login action which updates auth state
     const success = await login(email, password);
+    
     if (success) {
+      // Ensure customer/employee data is loaded before routing
+      await fetchCustomerData();
       navigate('/');
+    } else {
+      // Check if requiresCompletion by calling authClient directly for registration flow
+      const response = await authClient.signIn(email, password);
+      if (response.requiresCompletion && response.userId) {
+        navigate('/register', { state: { completionMode: true, userId: response.userId, email } });
+      }
+      // If neither, error is already in store and will display below
     }
   };
 

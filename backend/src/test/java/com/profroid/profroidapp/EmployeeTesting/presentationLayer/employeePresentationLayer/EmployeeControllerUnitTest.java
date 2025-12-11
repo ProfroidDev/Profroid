@@ -16,15 +16,21 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Collection;
+import java.util.List;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.lenient;
 
 @ExtendWith(MockitoExtension.class)
 public class EmployeeControllerUnitTest {
@@ -34,6 +40,9 @@ public class EmployeeControllerUnitTest {
 
     @Mock
     private EmployeeService employeeService;
+
+    @Mock
+    private Authentication authentication;
 
     private final String VALID_EMPLOYEE_ID = "e89ba5d-4f42-44f3-ad1d-4723841d5402";
     private final String INVALID_EMPLOYEE_ID = "invalid-id";
@@ -83,6 +92,10 @@ public class EmployeeControllerUnitTest {
                 .employeeAddress(address)
                 .employeeRole(role)
                 .build();
+
+        // Default: no admin privileges, lenient to avoid unnecessary stubbing warnings
+        lenient().when(authentication.getAuthorities()).thenReturn(Collections.emptyList());
+
     }
 
     // ===== GET ALL EMPLOYEES TESTS =====
@@ -257,8 +270,15 @@ public class EmployeeControllerUnitTest {
         when(employeeService.updateEmployee(eq(VALID_EMPLOYEE_ID), any(EmployeeRequestModel.class)))
                 .thenReturn(updatedResponse);
 
+        when(employeeService.getEmployeeById(VALID_EMPLOYEE_ID)).thenReturn(validEmployeeResponse);
+
         // Act
-        ResponseEntity<EmployeeResponseModel> response = employeeController.updateEmployee(VALID_EMPLOYEE_ID, updateRequest);
+        // Treat caller as admin to bypass userId check
+        List<GrantedAuthority> adminAuthorities = new java.util.ArrayList<>();
+        adminAuthorities.add(new SimpleGrantedAuthority("ROLE_ADMIN"));
+        doReturn(adminAuthorities).when(authentication).getAuthorities();
+
+        ResponseEntity<EmployeeResponseModel> response = employeeController.updateEmployee(VALID_EMPLOYEE_ID, updateRequest, authentication);
 
         // Assert
         assertNotNull(response);
@@ -275,28 +295,30 @@ public class EmployeeControllerUnitTest {
     @Test
     void whenUpdateEmployee_withNonExistingId_thenThrowResourceNotFoundException() {
         // Arrange
-        when(employeeService.updateEmployee(eq(NON_EXISTING_EMPLOYEE_ID), any(EmployeeRequestModel.class)))
-                .thenThrow(new ResourceNotFoundException("Employee with id " + NON_EXISTING_EMPLOYEE_ID + " not found"));
+        when(employeeService.getEmployeeById(NON_EXISTING_EMPLOYEE_ID))
+            .thenThrow(new ResourceNotFoundException("Employee with id " + NON_EXISTING_EMPLOYEE_ID + " not found"));
 
         // Act & Assert
+        lenient().when(authentication.getAuthorities()).thenReturn(Collections.emptyList());
         assertThrows(ResourceNotFoundException.class, () -> {
-            employeeController.updateEmployee(NON_EXISTING_EMPLOYEE_ID, validEmployeeRequest);
+            employeeController.updateEmployee(NON_EXISTING_EMPLOYEE_ID, validEmployeeRequest, authentication);
         });
-        verify(employeeService, times(1)).updateEmployee(eq(NON_EXISTING_EMPLOYEE_ID), any(EmployeeRequestModel.class));
+        verify(employeeService, never()).updateEmployee(eq(NON_EXISTING_EMPLOYEE_ID), any(EmployeeRequestModel.class));
     }
 
     // [Employee-Service][Unit Test][Negative] Update employee when ID is invalid -> throws InvalidIdentifierException
     @Test
     void whenUpdateEmployee_withInvalidId_thenThrowInvalidIdentifierException() {
         // Arrange
-        when(employeeService.updateEmployee(eq(INVALID_EMPLOYEE_ID), any(EmployeeRequestModel.class)))
-                .thenThrow(new InvalidIdentifierException("Employee id=" + INVALID_EMPLOYEE_ID + " is invalid"));
+        when(employeeService.getEmployeeById(INVALID_EMPLOYEE_ID))
+            .thenThrow(new InvalidIdentifierException("Employee id=" + INVALID_EMPLOYEE_ID + " is invalid"));
 
         // Act & Assert
+        lenient().when(authentication.getAuthorities()).thenReturn(Collections.emptyList());
         assertThrows(InvalidIdentifierException.class, () -> {
-            employeeController.updateEmployee(INVALID_EMPLOYEE_ID, validEmployeeRequest);
+            employeeController.updateEmployee(INVALID_EMPLOYEE_ID, validEmployeeRequest, authentication);
         });
-        verify(employeeService, times(1)).updateEmployee(eq(INVALID_EMPLOYEE_ID), any(EmployeeRequestModel.class));
+        verify(employeeService, never()).updateEmployee(eq(INVALID_EMPLOYEE_ID), any(EmployeeRequestModel.class));
     }
 
     // [Employee-Service][Unit Test][Positive] Update employee role -> returns updated employee
@@ -328,8 +350,15 @@ public class EmployeeControllerUnitTest {
         when(employeeService.updateEmployee(eq(VALID_EMPLOYEE_ID), any(EmployeeRequestModel.class)))
                 .thenReturn(updatedResponse);
 
+        when(employeeService.getEmployeeById(VALID_EMPLOYEE_ID)).thenReturn(validEmployeeResponse);
+
         // Act
-        ResponseEntity<EmployeeResponseModel> response = employeeController.updateEmployee(VALID_EMPLOYEE_ID, updateRequest);
+        // Treat caller as admin to allow role change
+        List<GrantedAuthority> adminAuthorities = new java.util.ArrayList<>();
+        adminAuthorities.add(new SimpleGrantedAuthority("ROLE_ADMIN"));
+        doReturn(adminAuthorities).when(authentication).getAuthorities();
+
+        ResponseEntity<EmployeeResponseModel> response = employeeController.updateEmployee(VALID_EMPLOYEE_ID, updateRequest, authentication);
 
         // Assert
         assertNotNull(response);

@@ -1,7 +1,7 @@
 import axios from 'axios';
 import type { AxiosInstance } from 'axios';
 
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001/api/auth';
+const API_URL = import.meta.env.VITE_API_URL;
 
 export interface AuthResponse {
   success: boolean;
@@ -9,12 +9,14 @@ export interface AuthResponse {
   user?: {
     id: string;
     email: string;
-    name: string;
     image?: string;
     emailVerified: boolean;
     role?: string;
     isActive?: boolean;
   };
+  requiresCompletion?: boolean;
+  userId?: string;
+  message?: string;
   error?: string;
 }
 
@@ -23,7 +25,6 @@ export interface UserResponse {
   user?: {
     id: string;
     email: string;
-    name: string;
     image?: string;
     emailVerified: boolean;
     role: string;
@@ -82,9 +83,31 @@ class AuthAPI {
         name: name || '',
       });
 
+      // Don't store token yet - user must complete customer registration first
+      return response.data;
+    } catch (error: unknown) {
+      return {
+        success: false,
+        error: getErrorMessage(error),
+      };
+    }
+  }
+
+  /**
+   * Complete registration after customer data is submitted
+   */
+  async completeRegistration(userId: string, customerData?: unknown): Promise<AuthResponse> {
+    try {
+      const response = await this.client.post<AuthResponse>('/complete-registration', {
+        userId,
+        customerData,
+      });
+
+      // Store JWT token now that registration is complete
       if (response.data.token) {
         localStorage.setItem('authToken', response.data.token);
       }
+
       return response.data;
     } catch (error: unknown) {
       return {
@@ -104,7 +127,7 @@ class AuthAPI {
         password,
       });
 
-      // Store JWT token in localStorage
+      // Store JWT token only if registration is complete
       if (response.data.token) {
         localStorage.setItem('authToken', response.data.token);
       }

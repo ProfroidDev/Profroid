@@ -502,7 +502,8 @@ public class AppointmentServiceUnitTest {
         when(appointmentResponseMapper.toResponseModel(mockAppointment)).thenReturn(responseModel);
 
         // Stubs for the request model
-        when(requestModel.getAppointmentDate()).thenReturn(java.time.LocalDateTime.now().plusDays(2));
+        // Use a deterministic weekday (Monday) to avoid weekend validation failures
+        when(requestModel.getAppointmentDate()).thenReturn(java.time.LocalDateTime.of(2040, 12, 18, 10, 0));
         when(requestModel.getJobName()).thenReturn("Installation");
         when(requestModel.getCellarName()).thenReturn("Main Cellar");
 
@@ -558,7 +559,7 @@ public class AppointmentServiceUnitTest {
 
         // Stubs for the request model
         when(requestModel.getCustomerId()).thenReturn("123e4567-e89b-12d3-a456-426614174000"); // Technician must supply customerId
-        when(requestModel.getAppointmentDate()).thenReturn(java.time.LocalDateTime.now().plusDays(2));
+        when(requestModel.getAppointmentDate()).thenReturn(java.time.LocalDateTime.of(2040, 12, 18, 10, 0));
         when(requestModel.getJobName()).thenReturn("Installation");
         when(requestModel.getCellarName()).thenReturn("Main Cellar");
 

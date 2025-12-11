@@ -122,6 +122,34 @@
   cursor: not-allowed;
 }
 
+.btn-danger {
+  padding: 0.5rem 1rem;
+  background: #c53030;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-danger:hover:not(:disabled) {
+  background: #9b2c2c;
+}
+
+.btn-danger:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.field-error {
+  color: #c53030;
+  font-size: 0.85rem;
+  margin-top: 0.25rem;
+  display: block;
+}
+
 .alert {
   padding: 0.75rem 1rem;
   border-radius: 10px;
@@ -280,4 +308,46 @@
 
 .form-actions button {
   flex: 1;
+}
+
+/* Schedule Table Styles */
+.schedule-table {
+  width: 100%;
+  overflow-x: auto;
+  margin: 1rem 0;
+}
+
+.schedule-table table {
+  width: 100%;
+  border-collapse: collapse;
+  background: white;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.schedule-table thead {
+  background-color: #f5f5f5;
+}
+
+.schedule-table th {
+  padding: 1rem;
+  text-align: left;
+  font-weight: 600;
+  color: #333;
+  border-bottom: 2px solid #ddd;
+}
+
+.schedule-table td {
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid #eee;
+  color: #666;
+}
+
+.schedule-table tbody tr:hover {
+  background-color: #fafafa;
+}
+
+.schedule-table tbody tr:last-child td {
+  border-bottom: none;
 }

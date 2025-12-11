@@ -5,13 +5,14 @@ import useAuthStore from '../store/authStore';
 interface ProtectedRouteProps {
   children: ReactNode;
   requiredRole?: string;
+  requiredEmployeeType?: string;
 }
 
 /**
  * Protected route component that requires authentication
- * Optionally checks for specific role
+ * Optionally checks for specific role and/or employee type
  */
-export function ProtectedRoute({ children, requiredRole }: ProtectedRouteProps) {
+export function ProtectedRoute({ children, requiredRole, requiredEmployeeType }: ProtectedRouteProps) {
   const { isAuthenticated, user, isLoading } = useAuthStore();
 
   if (isLoading) {
@@ -31,6 +32,15 @@ export function ProtectedRoute({ children, requiredRole }: ProtectedRouteProps) 
     console.log(`Route requires role: ${requiredRole}, user role: ${user.role}`);
     if (user.role !== requiredRole) {
       console.log(`Role mismatch: ${user.role} !== ${requiredRole}, redirecting to home`);
+      return <Navigate to="/" replace />;
+    }
+  }
+
+  // Check employee type if required
+  if (requiredEmployeeType) {
+    console.log(`Route requires employee type: ${requiredEmployeeType}, user employee type: ${user.employeeType}`);
+    if (user.employeeType !== requiredEmployeeType) {
+      console.log(`Employee type mismatch: ${user.employeeType} !== ${requiredEmployeeType}, redirecting to home`);
       return <Navigate to="/" replace />;
     }
   }

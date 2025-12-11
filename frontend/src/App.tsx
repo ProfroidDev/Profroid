@@ -34,12 +34,12 @@ function Home(): React.ReactElement {
 }
 
 function App(): React.ReactElement {
-  const { fetchUser } = useAuthStore();
+  const { initializeAuth } = useAuthStore();
 
   useEffect(() => {
-    // Fetch user session on app load if authenticated
-    fetchUser();
-  }, [fetchUser]);
+    // Initialize auth and fetch user + customer data on app load
+    initializeAuth();
+  }, [initializeAuth]);
 
   return (
     <BrowserRouter>
@@ -67,12 +67,12 @@ function App(): React.ReactElement {
         {/* Protected Routes */}
         <Route path="/" element={<Home />} />
         <Route path="/profile" element={<ProtectedRoute><ProfilePage /></ProtectedRoute>} />
-                <Route path="/parts" element={<PartsPage />} />
+        <Route path="/parts" element={<PartsPage />} />
         <Route path="/customers" element={<CustomerListPage />} />
         <Route path="/services" element={<ServicesPage />} />
-        <Route path="/employees" element={<EmployeeListPage />} />
+        <Route path="/employees" element={<ProtectedRoute requiredRole="admin"><EmployeeListPage /></ProtectedRoute>} />
         <Route path="/my-appointments" element={<MyAppointmentsPage />} />
-        <Route path="/my-jobs" element={<MyJobsPage />} />
+        <Route path="/my-jobs" element={<ProtectedRoute requiredEmployeeType="TECHNICIAN"><MyJobsPage /></ProtectedRoute>} />
       </Routes>
 
       <Footer />
