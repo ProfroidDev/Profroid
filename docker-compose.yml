@@ -44,6 +44,8 @@ services:
     restart: always
     depends_on:
       - mysql
+    env_file:
+      - ./auth-service/.env
     environment:
       DATABASE_URL: mysql://root:${MYSQL_ROOT_PASSWORD}@mysql:3306/profroid_auth
       PORT: 3001

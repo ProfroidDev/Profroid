@@ -147,7 +147,7 @@ router.post("/sign-in", async (req: Request, res: Response) => {
 
     // Get password hash
     const account = await prisma.account.findFirst({
-      where: { userId: user.id, provider: "email" },
+      where: { userId: user!.id, provider: "email" },
     });
 
     if (!account || !verifyPassword(password, account.accessToken || "")) {
@@ -371,28 +371,24 @@ router.post("/forgot-password", async (req: Request, res: Response) => {
     const expiresAt = new Date();
     expiresAt.setHours(expiresAt.getHours() + 1);
 
-    // Store hashed token and expiration in database
-    await prisma.user.update({
-      where: { id: user.id },
+    // Store reset token in verification table
+    const verification = await prisma.verification.create({
       data: {
-        resetPasswordToken: hashedToken,
-        resetPasswordExpires: expiresAt,
+        id: crypto.randomUUID(),
+        identifier: "password_reset",
+        value: hashedToken,
+        expiresAt: expiresAt,
+        userId: user.id,
       },
     });
 
     // Send email with the unhashed token
     try {
-      await sendPasswordResetEmail(email, resetToken, user.name || undefined);
+      await sendPasswordResetEmail(email, resetToken, undefined);
     } catch (emailError) {
       console.error("Failed to send reset email:", emailError);
-      // Clear the token if email fails
-      await prisma.user.update({
-        where: { id: user.id },
-        data: {
-          resetPasswordToken: null,
-          resetPasswordExpires: null,
-        },
-      });
+      // Clear the token entry if email fails
+      await prisma.verification.delete({ where: { id: verification.id } });
       return res.status(500).json({ 
         error: "Failed to send password reset email. Please try again later." 
       });
@@ -439,11 +435,23 @@ router.post("/reset-password", async (req: Request, res: Response) => {
       .update(token)
       .digest("hex");
 
-    // Find user by reset token
-    const user = await prisma.user.findFirst({
+    // Find verification by token
+    const verification = await prisma.verification.findFirst({
       where: {
-        resetPasswordToken: hashedToken,
+        identifier: "password_reset",
+        value: hashedToken,
       },
+    });
+
+    if (!verification) {
+      return res.status(400).json({ 
+        error: "Invalid or expired reset token" 
+      });
+    }
+
+    // Find user by verification.userId
+    const user = await prisma.user.findUnique({
+      where: { id: verification.userId as string },
     });
 
     if (!user) {
@@ -453,15 +461,8 @@ router.post("/reset-password", async (req: Request, res: Response) => {
     }
 
     // Check if token has expired
-    if (!user.resetPasswordExpires || user.resetPasswordExpires < new Date()) {
-      // Clear expired token
-      await prisma.user.update({
-        where: { id: user.id },
-        data: {
-          resetPasswordToken: null,
-          resetPasswordExpires: null,
-        },
-      });
+    if (verification.expiresAt < new Date()) {
+      await prisma.verification.delete({ where: { id: verification.id } });
       return res.status(400).json({ 
         error: "Reset token has expired. Please request a new password reset." 
       });
@@ -488,23 +489,17 @@ router.post("/reset-password", async (req: Request, res: Response) => {
       },
     });
 
-    // Clear reset token fields
-    await prisma.user.update({
-      where: { id: user.id },
-      data: {
-        resetPasswordToken: null,
-        resetPasswordExpires: null,
-      },
-    });
+    // Remove used verification token
+    await prisma.verification.delete({ where: { id: verification.id } });
 
     // Optional: Invalidate all existing sessions for security
     await prisma.session.deleteMany({
-      where: { userId: user.id },
+      where: { userId: user!.id },
     });
 
     // Send confirmation email
     try {
-      await sendPasswordChangedEmail(user.email || "", user.name || undefined);
+      await sendPasswordChangedEmail(user!.email || "", undefined);
     } catch (emailError) {
       console.error("Failed to send confirmation email:", emailError);
       // Don't fail the request if confirmation email fails
