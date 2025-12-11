@@ -72,10 +72,13 @@ public class EmployeeController {
         } else {
             // Non-admin users can only update their own employee record
             // Verify the employee record belongs to the user making the request
-            if (authentication == null || !existing.getUserId().equals(employeeRequestModel.getUserId())) {
+            String authenticatedUserId = authentication.getName();
+            if (authentication == null || !existing.getUserId().equals(authenticatedUserId)) {
                 return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
             }
 
+            // Ensure userId in request model cannot be tampered with
+            employeeRequestModel.setUserId(authenticatedUserId);
             // Non-admin users cannot update employeeRole - preserve existing role
             employeeRequestModel.setEmployeeRole(existing.getEmployeeRole());
         }
