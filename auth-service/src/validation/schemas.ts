@@ -39,9 +39,25 @@ export const VerifyEmailSchema = z.object({
   token: z.string().min(1, "Verification token is required"),
 });
 
+export const ForgotPasswordSchema = z.object({
+  email: z.string().email("Invalid email address"),
+});
+
+export const ResetPasswordSchema = z.object({
+  token: z.string().min(1, "Reset token is required"),
+  newPassword: z.string()
+    .min(8, "New password must be at least 8 characters")
+    .refine(
+      (pwd) => /[A-Z]/.test(pwd) && /[0-9]/.test(pwd),
+      "Password must contain at least one uppercase letter and one number"
+    ),
+});
+
 // Type inference from Zod schemas
 export type RegisterInput = z.infer<typeof RegisterSchema>;
 export type SignInInput = z.infer<typeof SignInSchema>;
 export type UpdateProfileInput = z.infer<typeof UpdateProfileSchema>;
 export type ChangePasswordInput = z.infer<typeof ChangePasswordSchema>;
 export type VerifyEmailInput = z.infer<typeof VerifyEmailSchema>;
+export type ForgotPasswordInput = z.infer<typeof ForgotPasswordSchema>;
+export type ResetPasswordInput = z.infer<typeof ResetPasswordSchema>;
