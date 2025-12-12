@@ -7,6 +7,7 @@ import com.profroid.profroidapp.employeesubdomain.dataAccessLayer.employeeDataAc
 import com.profroid.profroidapp.employeesubdomain.dataAccessLayer.employeeDataAccessLayer.EmployeeRepository;
 import com.profroid.profroidapp.utils.exceptions.ResourceNotFoundException;
 import jakarta.validation.Valid;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -14,6 +15,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDate;
 import java.util.List;
 
 @RestController
@@ -83,6 +85,20 @@ public class AppointmentController {
         String employeeId = getEmployeeIdFromUserId(userId);
         List<AppointmentResponseModel> appointments = appointmentService.getTechnicianAppointments(employeeId);
         return ResponseEntity.ok(appointments);
+    }
+
+    /**
+     * Get booked time slots for a technician on a specific date.
+     * Used by customers to check technician availability when booking appointments.
+     * Returns only time slots, not full appointment details for privacy.
+     */
+    @GetMapping("/technician/{technicianId}/booked-slots")
+    @PreAuthorize("hasAnyRole('CUSTOMER', 'TECHNICIAN', 'ADMIN')")
+    public ResponseEntity<TechnicianBookedSlotsResponseModel> getTechnicianBookedSlots(
+            @PathVariable String technicianId,
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date) {
+        TechnicianBookedSlotsResponseModel bookedSlots = appointmentService.getTechnicianBookedSlots(technicianId, date);
+        return ResponseEntity.ok(bookedSlots);
     }
 
     @GetMapping("/{appointmentId}")

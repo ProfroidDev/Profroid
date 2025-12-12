@@ -6,6 +6,7 @@ import com.profroid.profroidapp.appointmentsubdomain.mappingLayer.AppointmentRes
 import com.profroid.profroidapp.appointmentsubdomain.presentationLayer.AppointmentRequestModel;
 import com.profroid.profroidapp.appointmentsubdomain.presentationLayer.AppointmentResponseModel;
 import com.profroid.profroidapp.appointmentsubdomain.presentationLayer.AppointmentStatusChangeRequestModel;
+import com.profroid.profroidapp.appointmentsubdomain.presentationLayer.TechnicianBookedSlotsResponseModel;
 import com.profroid.profroidapp.appointmentsubdomain.utils.AppointmentValidationUtils;
 import com.profroid.profroidapp.cellarsubdomain.dataAccessLayer.Cellar;
 import com.profroid.profroidapp.cellarsubdomain.dataAccessLayer.CellarRepository;
@@ -440,5 +441,46 @@ public class AppointmentServiceImpl implements AppointmentService {
 
             Appointment updatedAppointment = appointmentRepository.save(appointment);
             return appointmentResponseMapper.toResponseModel(updatedAppointment);
+        }
+        
+        @Override
+        public TechnicianBookedSlotsResponseModel getTechnicianBookedSlots(String technicianId, LocalDate date) {
+            // Validate technician exists
+            Employee technician = employeeRepository.findEmployeeByEmployeeIdentifier_EmployeeId(technicianId);
+            if (technician == null) {
+                throw new ResourceNotFoundException("Technician not found: " + technicianId);
+            }
+            
+            // Find all appointments for this technician on the given date
+            LocalDateTime startOfDay = date.atStartOfDay();
+            LocalDateTime endOfDay = date.plusDays(1).atStartOfDay();
+            
+            List<Appointment> appointments = appointmentRepository.findByTechnicianAndAppointmentDateBetween(
+                    technician, startOfDay, endOfDay);
+            
+            // Filter out cancelled appointments and build booked slots
+            List<TechnicianBookedSlotsResponseModel.BookedSlot> bookedSlots = appointments.stream()
+                    .filter(apt -> apt.getAppointmentStatus() != null && 
+                            apt.getAppointmentStatus().getAppointmentStatusType() != AppointmentStatusType.CANCELLED)
+                    .map(apt -> {
+                        // Extract start time from appointmentDate
+                        LocalTime startTime = apt.getAppointmentDate().toLocalTime();
+                        
+                        // Calculate end time based on job duration (default 60 mins if job is null)
+                        int durationMinutes = apt.getJob() != null ? apt.getJob().getEstimatedDurationMinutes() : 60;
+                        LocalTime endTime = startTime.plusMinutes(durationMinutes);
+                        
+                        return TechnicianBookedSlotsResponseModel.BookedSlot.builder()
+                                .startTime(startTime)
+                                .endTime(endTime)
+                                .build();
+                    })
+                    .toList();
+            
+            return TechnicianBookedSlotsResponseModel.builder()
+                    .technicianId(technicianId)
+                    .date(date)
+                    .bookedSlots(bookedSlots)
+                    .build();
         }
 }

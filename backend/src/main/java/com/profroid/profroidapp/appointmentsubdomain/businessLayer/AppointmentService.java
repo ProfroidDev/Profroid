@@ -3,11 +3,13 @@ package com.profroid.profroidapp.appointmentsubdomain.businessLayer;
 import com.profroid.profroidapp.appointmentsubdomain.presentationLayer.AppointmentRequestModel;
 import com.profroid.profroidapp.appointmentsubdomain.presentationLayer.AppointmentResponseModel;
 import com.profroid.profroidapp.appointmentsubdomain.presentationLayer.AppointmentStatusChangeRequestModel;
+import com.profroid.profroidapp.appointmentsubdomain.presentationLayer.TechnicianBookedSlotsResponseModel;
 
 import jakarta.validation.Valid;
 
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
 import java.util.List;
 
 @Service
@@ -26,4 +28,10 @@ public interface AppointmentService {
 
     AppointmentResponseModel updateAppointment(String appointmentId, AppointmentRequestModel appointmentRequest,
             String userId, String effectiveRole);
+    
+    /**
+     * Get booked time slots for a technician on a specific date.
+     * Used by customers to check technician availability when booking.
+     */
+    TechnicianBookedSlotsResponseModel getTechnicianBookedSlots(String technicianId, LocalDate date);
 }

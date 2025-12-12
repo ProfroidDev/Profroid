@@ -17,6 +17,7 @@ import { getEmployeeSchedule } from "../../employee/api/getEmployeeSchedule";
 import type { TimeSlotType } from "../../employee/models/EmployeeScheduleRequestModel";
 import { getPostalCodeError } from "../../../utils/postalCodeValidator";
 import { getMyJobs } from "../api/getMyJobs";
+import { getTechnicianBookedSlots, type BookedSlot } from "../api/getTechnicianBookedSlots";
 import useAuthStore from "../../authentication/store/authStore";
 
 // Cache for shared data to reduce API calls when modal is opened/closed multiple times
@@ -227,6 +228,7 @@ export default function AddAppointmentModal({
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState<boolean>(false);
   const [allAppointments, setAllAppointments] = useState<AppointmentResponseModel[]>([]);
+  const [technicianBookedSlots, setTechnicianBookedSlots] = useState<BookedSlot[]>([]);
 
   useEffect(() => {
     let isMounted = true;
@@ -284,8 +286,28 @@ export default function AddAppointmentModal({
     };
   }, [mode, customerId, technicianId, selectedTechnicianId]);
 
-  // Fetch all appointments to check for conflicts
-  // Note: This now only works in technician mode since getMyJobs uses JWT
+  // Fetch technician's booked slots for customer mode (availability checking)
+  useEffect(() => {
+    async function fetchBookedSlots() {
+      // Only fetch in customer mode when we have a technician and date selected
+      if (mode !== "customer" || !selectedTechnicianId || !appointmentDate) {
+        setTechnicianBookedSlots([]);
+        return;
+      }
+
+      try {
+        const response = await getTechnicianBookedSlots(selectedTechnicianId, appointmentDate);
+        setTechnicianBookedSlots(response.bookedSlots || []);
+      } catch (err) {
+        console.error('Failed to fetch technician booked slots:', err);
+        setTechnicianBookedSlots([]);
+      }
+    }
+
+    fetchBookedSlots();
+  }, [mode, selectedTechnicianId, appointmentDate]);
+
+  // Fetch all appointments to check for conflicts (technician mode only)
   useEffect(() => {
     async function fetchAppointments() {
       // Only fetch in technician mode - the technician can see their own jobs
@@ -482,7 +504,20 @@ export default function AddAppointmentModal({
       const lastSlotEnd = new Date(`${appointmentDate}T17:00:00`);
       if (slotEnd > lastSlotEnd) return;
 
-      // Overlap detection
+      // Check for conflicts with booked slots (for customer mode)
+      const hasBookedConflict = technicianBookedSlots.some((bookedSlot) => {
+        if (!bookedSlot.startTime || !bookedSlot.endTime) return false;
+        
+        const bookedStart = new Date(`${appointmentDate}T${bookedSlot.startTime}`);
+        const bookedEnd = new Date(`${appointmentDate}T${bookedSlot.endTime}`);
+        
+        // Overlap check: slotStart < bookedEnd AND slotEnd > bookedStart
+        return slotStart < bookedEnd && slotEnd > bookedStart;
+      });
+
+      if (hasBookedConflict) return;
+
+      // Overlap detection with allAppointments (for technician mode)
       const hasConflict = allAppointments.some((apt) => {
         const aptDate = new Date(apt.appointmentDate).toISOString().split('T')[0];
         if (aptDate !== appointmentDate) return false;
@@ -519,7 +554,7 @@ export default function AddAppointmentModal({
     });
 
     return slots;
-  }, [appointmentDate, scheduleSlots, selectedJob, allAppointments, selectedTechnician]);
+  }, [appointmentDate, scheduleSlots, selectedJob, allAppointments, selectedTechnician, technicianBookedSlots]);
 
   useEffect(() => {
     if (!appointmentTime && availableSlots.length > 0) {
