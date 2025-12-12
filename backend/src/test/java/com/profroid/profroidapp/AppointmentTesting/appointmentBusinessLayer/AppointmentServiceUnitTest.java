@@ -28,6 +28,9 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+
+import java.time.LocalDateTime;
+
 import static org.mockito.Mockito.*;
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -84,7 +87,8 @@ public class AppointmentServiceUnitTest {
         lenient().when(employeeRepository.findByFirstNameAndLastName("Bob", "Williams")).thenReturn(java.util.Collections.singletonList(mockTechnician));
 
         // Ensure getAppointmentDate returns a valid date
-        lenient().when(requestModel.getAppointmentDate()).thenReturn(java.time.LocalDateTime.now().plusDays(1));
+        lenient().when(requestModel.getAppointmentDate())
+                .thenReturn(LocalDateTime.of(2050, 1, 6, 10, 0));
 
         // Mock job lookup
         lenient().when(requestModel.getJobName()).thenReturn("Installation"); // Use a job name from data.sql
