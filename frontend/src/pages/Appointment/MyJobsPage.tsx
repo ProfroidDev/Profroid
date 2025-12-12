@@ -3,11 +3,9 @@ import { getMyJobs } from "../../features/appointment/api/getMyJobs";
 import type { AppointmentResponseModel } from "../../features/appointment/models/AppointmentResponseModel";
 import AddAppointmentModal from "../../features/appointment/components/AddAppointmentModal";
 import Toast from "../../shared/components/Toast";
+import useAuthStore from "../../features/authentication/store/authStore";
 import { MapPin, Clock, User, Wrench, DollarSign, Phone, AlertCircle } from "lucide-react";
 import "./MyJobsPage.css";
-
-// Default test technician ID from backend
-const DEFAULT_TECHNICIAN_ID = "a9e6d3f2-1c0a-4b5c-9d8e-7a6f5e4d3c2b"; // Bob Williams
 
 export default function MyJobsPage(): React.ReactElement {
   const [jobs, setJobs] = useState<AppointmentResponseModel[]>([]);
@@ -17,20 +15,20 @@ export default function MyJobsPage(): React.ReactElement {
   const [error, setError] = useState<string | null>(null);
   const [showAddModal, setShowAddModal] = useState<boolean>(false);
   
-  // For testing: allow switching technician ID
-  const [technicianId, setTechnicianId] = useState<string>(DEFAULT_TECHNICIAN_ID);
-  const [showIdInput, setShowIdInput] = useState<boolean>(false);
+  const { user, customerData } = useAuthStore();
 
   useEffect(() => {
-    fetchJobs();
+    if (user) {
+      fetchJobs();
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [technicianId]);
+  }, [user]);
 
   const fetchJobs = async () => {
     try {
       setLoading(true);
       setError(null);
-      const data = await getMyJobs(technicianId);
+      const data = await getMyJobs();
       setJobs(data);
     } catch (error: unknown) {
       console.error("Error fetching jobs:", error);
@@ -41,6 +39,11 @@ export default function MyJobsPage(): React.ReactElement {
         if (axiosError.response?.status === 404) {
           const errorMsg = axiosError.response?.data?.message || "Technician not found or you don't have permission to view these jobs";
           setError(errorMsg);
+          setJobs([]);
+          return;
+        }
+        if (axiosError.response?.status === 403) {
+          setError("You don't have permission to view jobs. Please ensure you're logged in as a technician.");
           setJobs([]);
           return;
         }
@@ -92,39 +95,14 @@ export default function MyJobsPage(): React.ReactElement {
     <div className="jobs-page-light">
       <div className="jobs-header">
         <h1 className="jobs-title-light">My Jobs</h1>
-        {jobs.length > 0 && (
-          <p className="user-name-display">Welcome, {jobs[0].technicianFirstName} {jobs[0].technicianLastName}</p>
+        {customerData?.firstName && customerData?.lastName && (
+          <p className="user-name-display">Welcome, {customerData.firstName} {customerData.lastName}</p>
         )}
         <p className="jobs-subtitle">Your assigned service appointments and work schedule</p>
         <div className="header-actions">
           <button className="btn-primary" onClick={() => setShowAddModal(true)}>
             Add Appointment
           </button>
-        </div>
-        
-        {/* Test ID Switcher */}
-        <div className="test-switcher">
-          <button 
-            className="btn-toggle-id"
-            onClick={() => setShowIdInput(!showIdInput)}
-          >
-            Technician Mode
-          </button>
-          
-          {showIdInput && (
-            <div className="id-input-container">
-              <input
-                type="text"
-                value={technicianId}
-                onChange={(e) => setTechnicianId(e.target.value)}
-                placeholder="Enter Technician ID"
-                className="id-input"
-              />
-              <button onClick={fetchJobs} className="btn-refresh">
-                Refresh
-              </button>
-            </div>
-          )}
         </div>
       </div>
 
@@ -295,7 +273,6 @@ export default function MyJobsPage(): React.ReactElement {
       {showAddModal && (
         <AddAppointmentModal
           mode="technician"
-          technicianId={technicianId}
           onClose={() => setShowAddModal(false)}
           onCreated={handleCreated}
         />

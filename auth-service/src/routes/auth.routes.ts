@@ -29,14 +29,16 @@ type JWTPayload = {
   sub: string;
   email: string;
   role?: string;
+  employeeType?: string;
 };
 
-function signToken(user: { id: string; email: string }, role?: string): string {
+function signToken(user: { id: string; email: string }, role?: string, employeeType?: string | null): string {
   return jwt.sign(
     {
       sub: user.id,
       email: user.email,
       role: role || "customer",
+      employeeType: employeeType || null,
     },
     JWT_SECRET as string,
     { expiresIn: JWT_EXPIRES_IN }
@@ -171,7 +173,7 @@ router.post("/sign-in", async (req: Request, res: Response) => {
       });
     }
 
-    const token = signToken({ id: user.id, email: user.email as string }, profile?.role);
+    const token = signToken({ id: user.id, email: user.email as string }, profile?.role, profile?.employeeType);
 
     res.json({
       success: true,
@@ -884,7 +886,7 @@ router.post("/complete-registration", async (req: Request, res: Response) => {
     });
 
     // Issue token now that registration is complete
-    const token = signToken({ id: user.id, email: user.email as string }, updatedProfile.role);
+    const token = signToken({ id: user.id, email: user.email as string }, updatedProfile.role, updatedProfile.employeeType);
 
     return res.json({
       success: true,

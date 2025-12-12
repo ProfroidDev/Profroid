@@ -12,6 +12,8 @@ export interface AuthUser {
 }
 
 export interface CustomerData {
+  customerId?: string;       // For customers - their customer ID
+  employeeId?: string;       // For employees - their employee ID
   firstName?: string;
   lastName?: string;
   streetAddress?: string;
@@ -180,7 +182,22 @@ const useAuthStore = create<AuthStore>((set, get) => ({
           );
 
           if (dataResponse.ok) {
-            const customerData: CustomerData = await dataResponse.json();
+            const rawData = await dataResponse.json();
+            
+            // Map the response to CustomerData, extracting customerId or employeeId
+            const customerData: CustomerData = {
+              customerId: rawData.customerId,
+              employeeId: rawData.employeeIdentifier?.employeeId,
+              firstName: rawData.firstName,
+              lastName: rawData.lastName,
+              streetAddress: rawData.streetAddress || rawData.employeeAddress?.streetAddress,
+              city: rawData.city || rawData.employeeAddress?.city,
+              province: rawData.province || rawData.employeeAddress?.province,
+              country: rawData.country || rawData.employeeAddress?.country,
+              postalCode: rawData.postalCode || rawData.employeeAddress?.postalCode,
+              phoneNumbers: rawData.phoneNumbers,
+            };
+            
             set({
               isLoading: false,
               customerData,
@@ -280,8 +297,23 @@ const useAuthStore = create<AuthStore>((set, get) => ({
       );
 
       if (response.ok) {
-        const data: CustomerData = await response.json();
-        set({ customerData: data });
+        const rawData = await response.json();
+        
+        // Map the response to CustomerData, extracting customerId or employeeId
+        const customerData: CustomerData = {
+          customerId: rawData.customerId,
+          employeeId: rawData.employeeIdentifier?.employeeId,
+          firstName: rawData.firstName,
+          lastName: rawData.lastName,
+          streetAddress: rawData.streetAddress || rawData.employeeAddress?.streetAddress,
+          city: rawData.city || rawData.employeeAddress?.city,
+          province: rawData.province || rawData.employeeAddress?.province,
+          country: rawData.country || rawData.employeeAddress?.country,
+          postalCode: rawData.postalCode || rawData.employeeAddress?.postalCode,
+          phoneNumbers: rawData.phoneNumbers,
+        };
+        
+        set({ customerData });
       } else if (response.status !== 404) {
         console.error('Failed to fetch customer data:', response.status);
       }

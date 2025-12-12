@@ -17,6 +17,7 @@ import { getEmployeeSchedule } from "../../employee/api/getEmployeeSchedule";
 import type { TimeSlotType } from "../../employee/models/EmployeeScheduleRequestModel";
 import { getPostalCodeError } from "../../../utils/postalCodeValidator";
 import { getMyJobs } from "../api/getMyJobs";
+import useAuthStore from "../../authentication/store/authStore";
 
 // Cache for shared data to reduce API calls when modal is opened/closed multiple times
 const dataCache: {
@@ -33,9 +34,22 @@ const dataCache: {
   loadingPromise: null,
 };
 
+// Clear cache on error or when data might be stale
+export function clearAppointmentDataCache() {
+  dataCache.jobs = null;
+  dataCache.employees = null;
+  dataCache.customers = null;
+  dataCache.cellars = null;
+  dataCache.loadingPromise = null;
+}
+
 function getCachedData(): Promise<[JobResponseModel[], EmployeeResponseModel[], CustomerResponseModel[], CellarResponseModel[]]> {
-  // If all data is already cached, return it immediately
-  if (dataCache.jobs && dataCache.employees && dataCache.customers && dataCache.cellars) {
+  // If all data is already cached AND has actual data, return it immediately
+  // Don't use cache if any array is empty (might be from a failed fetch)
+  if (dataCache.jobs && dataCache.jobs.length > 0 && 
+      dataCache.employees && 
+      dataCache.customers && 
+      dataCache.cellars) {
     return Promise.resolve([dataCache.jobs, dataCache.employees, dataCache.customers, dataCache.cellars]);
   }
 
@@ -51,15 +65,19 @@ function getCachedData(): Promise<[JobResponseModel[], EmployeeResponseModel[], 
     getCustomers(),
     getCellars(),
   ] as const).then(([jobs, employees, customers, cellars]) => {
-    // Cache the results
-    dataCache.jobs = jobs;
-    dataCache.employees = employees;
-    dataCache.customers = customers;
-    dataCache.cellars = cellars;
+    // Only cache if we got actual data (jobs should never be empty)
+    if (jobs.length > 0) {
+      dataCache.jobs = jobs;
+      dataCache.employees = employees;
+      dataCache.customers = customers;
+      dataCache.cellars = cellars;
+    }
     dataCache.loadingPromise = null;
     return [jobs, employees, customers, cellars];
   }).catch((error) => {
     dataCache.loadingPromise = null;
+    // Clear cache on error so next attempt will refetch
+    clearAppointmentDataCache();
     throw error;
   }) as Promise<[JobResponseModel[], EmployeeResponseModel[], CustomerResponseModel[], CellarResponseModel[]]>;
 
@@ -70,8 +88,6 @@ type Mode = "customer" | "technician";
 
 interface AddAppointmentModalProps {
   mode: Mode;
-  customerId?: string;
-  technicianId?: string;
   onClose: () => void;
   onCreated: (appointment: AppointmentResponseModel) => void;
 }
@@ -173,11 +189,15 @@ function labelForTime(time: string): string {
 
 export default function AddAppointmentModal({
   mode,
-  customerId,
-  technicianId,
   onClose,
   onCreated,
 }: AddAppointmentModalProps): React.ReactElement {
+  const { customerData } = useAuthStore();
+  
+  // Get customerId or employeeId from auth store
+  const customerId = customerData?.customerId;
+  const technicianId = customerData?.employeeId;
+  
   const [jobs, setJobs] = useState<JobResponseModel[]>([]);
   const [employees, setEmployees] = useState<EmployeeResponseModel[]>([]);
   const [customers, setCustomers] = useState<CustomerResponseModel[]>([]);
@@ -265,16 +285,18 @@ export default function AddAppointmentModal({
   }, [mode, customerId, technicianId, selectedTechnicianId]);
 
   // Fetch all appointments to check for conflicts
+  // Note: This now only works in technician mode since getMyJobs uses JWT
   useEffect(() => {
     async function fetchAppointments() {
-      // In customer mode, we need to fetch appointments for the selected technician to check their availability
-      // In technician mode, we fetch appointments for the technician
-      const targetId = mode === "customer" ? selectedTechnicianId : technicianId;
-      if (!targetId) return;
+      // Only fetch in technician mode - the technician can see their own jobs
+      if (mode !== "technician") {
+        setAllAppointments([]);
+        return;
+      }
 
       try {
         // Use the correct API endpoint - getMyJobs for technician's appointments
-        const appointments = await getMyJobs(targetId);
+        const appointments = await getMyJobs();
         setAllAppointments(appointments);
       } catch (err) {
         console.error('Failed to fetch appointments:', err);
@@ -284,7 +306,7 @@ export default function AddAppointmentModal({
     }
 
     fetchAppointments();
-  }, [mode, customerId, technicianId, selectedTechnicianId, appointmentDate]);
+  }, [mode, appointmentDate]);
 
   const jobOptions = useMemo(() => {
     if (mode === "customer") {
@@ -547,13 +569,7 @@ export default function AddAppointmentModal({
       return;
     }
 
-    const headerId = mode === "customer" ? customerId : getActualCustomerId(selectedTechnicianId);
-    if (!headerId) {
-      setError("Missing user identifier for the request.");
-      return;
-    }
-
-    const technician = mode === "customer" ? selectedTechnician : selectedTechnician || employees.find((e) => e.employeeIdentifier.employeeId === headerId);
+    const technician = selectedTechnician;
     if (!technician) {
       setError("Unable to resolve technician information.");
       return;
@@ -567,7 +583,7 @@ export default function AddAppointmentModal({
 
     const appointmentDateTime = `${appointmentDate}T${appointmentTime}:00`;
 
-    // Extract actual customer ID in case it's nested
+    // Extract actual customer ID in case it's nested - only needed for technician mode
     const actualCustomerId = mode === "technician" ? getActualCustomerId(selectedCustomerId) : undefined;
 
     const request: AppointmentRequestModel = {
@@ -583,10 +599,7 @@ export default function AddAppointmentModal({
 
     try {
       setSubmitting(true);
-      const created = await createAppointment(request, {
-        userId: headerId,
-        role: mode === "customer" ? "CUSTOMER" : "TECHNICIAN",
-      });
+      const created = await createAppointment(request);
       onCreated(created);
       onClose();
     } catch (e: unknown) {

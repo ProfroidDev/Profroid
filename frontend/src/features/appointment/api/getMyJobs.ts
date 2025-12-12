@@ -3,19 +3,11 @@ import type { AppointmentResponseModel } from "../models/AppointmentResponseMode
 
 /**
  * Get all jobs for the current technician
- * Uses X-Employee-Id and X-User-Role headers
+ * Uses JWT token for authentication - no custom headers needed
  */
-export async function getMyJobs(
-  technicianId: string
-): Promise<AppointmentResponseModel[]> {
+export async function getMyJobs(): Promise<AppointmentResponseModel[]> {
   const response = await axiosInstance.get<AppointmentResponseModel[]>(
-    "/appointments/my-jobs",
-    {
-      headers: {
-        "X-Employee-Id": technicianId,
-        "X-User-Role": "TECHNICIAN"
-      }
-    }
+    "/appointments/my-jobs"
   );
   return response.data;
 }

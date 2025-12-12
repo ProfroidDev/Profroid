@@ -3,11 +3,9 @@ import { getMyAppointments } from "../../features/appointment/api/getMyAppointme
 import type { AppointmentResponseModel } from "../../features/appointment/models/AppointmentResponseModel";
 import AddAppointmentModal from "../../features/appointment/components/AddAppointmentModal";
 import Toast from "../../shared/components/Toast";
+import useAuthStore from "../../features/authentication/store/authStore";
 import { MapPin, Clock, User, Wrench, DollarSign, AlertCircle } from "lucide-react";
 import "./MyAppointmentsPage.css";
-
-// Default test customer ID from backend
-const DEFAULT_CUSTOMER_ID = "123e4567-e89b-12d3-a456-426614174000"; // John Doe
 
 export default function MyAppointmentsPage(): React.ReactElement {
   const [appointments, setAppointments] = useState<AppointmentResponseModel[]>([]);
@@ -17,20 +15,20 @@ export default function MyAppointmentsPage(): React.ReactElement {
   const [error, setError] = useState<string | null>(null);
   const [showAddModal, setShowAddModal] = useState<boolean>(false);
   
-  // For testing: allow switching customer ID
-  const [customerId, setCustomerId] = useState<string>(DEFAULT_CUSTOMER_ID);
-  const [showIdInput, setShowIdInput] = useState<boolean>(false);
+  const { user, customerData } = useAuthStore();
 
   useEffect(() => {
-    fetchAppointments();
+    if (user) {
+      fetchAppointments();
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [customerId]);
+  }, [user]);
 
   const fetchAppointments = async () => {
     try {
       setLoading(true);
       setError(null);
-      const data = await getMyAppointments(customerId);
+      const data = await getMyAppointments();
       setAppointments(data);
     } catch (error: unknown) {
       console.error("Error fetching appointments:", error);
@@ -40,6 +38,11 @@ export default function MyAppointmentsPage(): React.ReactElement {
         const axiosError = error as { response?: { status: number; data?: { message: string } } };
         if (axiosError.response?.status === 404) {
           setError(axiosError.response?.data?.message || "Customer not found or you don't have permission to view these appointments");
+          setAppointments([]);
+          return;
+        }
+        if (axiosError.response?.status === 403) {
+          setError("You don't have permission to view appointments. Please ensure you're logged in as a customer.");
           setAppointments([]);
           return;
         }
@@ -89,39 +92,14 @@ export default function MyAppointmentsPage(): React.ReactElement {
     <div className="appointments-page-light">
       <div className="appointments-header">
         <h1 className="appointments-title-light">My Appointments</h1>
-        {appointments.length > 0 && (
-          <p className="user-name-display">Welcome, {appointments[0].customerFirstName} {appointments[0].customerLastName}</p>
+        {customerData?.firstName && customerData?.lastName && (
+          <p className="user-name-display">Welcome, {customerData.firstName} {customerData.lastName}</p>
         )}
         <p className="appointments-subtitle">View and manage your scheduled service appointments</p>
         <div className="header-actions">
           <button className="btn-primary" onClick={() => setShowAddModal(true)}>
             Book Appointment
           </button>
-        </div>
-        
-        {/* Test ID Switcher */}
-        <div className="test-switcher">
-          <button 
-            className="btn-toggle-id"
-            onClick={() => setShowIdInput(!showIdInput)}
-          >
-            Test Mode
-          </button>
-          
-          {showIdInput && (
-            <div className="id-input-container">
-              <input
-                type="text"
-                value={customerId}
-                onChange={(e) => setCustomerId(e.target.value)}
-                placeholder="Enter Customer ID"
-                className="id-input"
-              />
-              <button onClick={fetchAppointments} className="btn-refresh">
-                Refresh
-              </button>
-            </div>
-          )}
         </div>
       </div>
 
@@ -300,7 +278,6 @@ export default function MyAppointmentsPage(): React.ReactElement {
       {showAddModal && (
         <AddAppointmentModal
           mode="customer"
-          customerId={customerId}
           onClose={() => setShowAddModal(false)}
           onCreated={handleCreated}
         />
