@@ -239,8 +239,20 @@ public class CustomerControllerIntegrationTest {
 
     @Test
     void whenUpdateCustomer_withInvalidId_thenReturns422() {
+        CustomerPhoneNumber phone = new CustomerPhoneNumber();
+        phone.setType(PhoneType.HOME);
+        phone.setNumber("438-555-9999");
+
         CustomerRequestModel request = CustomerRequestModel.builder()
                 .firstName("Invalid")
+                .lastName("User")
+                .userId("invaliduser")
+                .streetAddress("999 Test St")
+                .city("Montreal")
+                .province("Quebec")
+                .country("Canada")
+                .postalCode("H1A 1A1")
+                .phoneNumbers(Collections.singletonList(phone))
                 .build();
 
         webTestClient.put()
@@ -253,8 +265,20 @@ public class CustomerControllerIntegrationTest {
 
     @Test
     void whenUpdateCustomer_withNonExistingId_thenReturns404() {
+        CustomerPhoneNumber phone = new CustomerPhoneNumber();
+        phone.setType(PhoneType.HOME);
+        phone.setNumber("438-555-9999");
+
         CustomerRequestModel request = CustomerRequestModel.builder()
                 .firstName("Invalid")
+                .lastName("User")
+                .userId("nonexistinguser")
+                .streetAddress("999 Test St")
+                .city("Montreal")
+                .province("Quebec")
+                .country("Canada")
+                .postalCode("H1A 1A1")
+                .phoneNumbers(Collections.singletonList(phone))
                 .build();
 
         webTestClient.put()

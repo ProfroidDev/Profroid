@@ -32,9 +32,12 @@ public class CellarController {
             return ResponseEntity.ok(filtered);
         }
 
-    // If caller is a customer and no ownerCustomerId provided, derive and filter via userId
-    // authentication.getName() holds JWT subject (userId)
-    List<CellarResponseModel> responseModels = cellarService.getAllCellarsForUser(authentication.getName());
+        // If caller is a customer and no ownerCustomerId provided, derive and filter via userId
+        // authentication.getName() holds JWT subject (userId)
+        if (authentication == null || authentication.getName() == null) {
+            return ResponseEntity.ok(List.of());
+        }
+        List<CellarResponseModel> responseModels = cellarService.getAllCellarsForUser(authentication.getName());
         return ResponseEntity.ok(responseModels);
     }
 
