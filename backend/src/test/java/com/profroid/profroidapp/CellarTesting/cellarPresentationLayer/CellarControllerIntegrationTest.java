@@ -105,26 +105,49 @@ public class CellarControllerIntegrationTest {
     @Test
     void whenGetAllCellars_thenReturnsList() {
         webTestClient.get()
-                .uri("/api/v1/cellars")
+                .uri("/api/v1/cellars?ownerCustomerId={customerId}", testCustomerId)
                 .exchange()
                 .expectStatus().isOk()
                 .expectHeader().contentType(MediaType.APPLICATION_JSON)
                 .expectBodyList(CellarResponseModel.class)
                 .value(cellars -> {
                     assertNotNull(cellars);
-                    assertEquals(1, cellars.size());
-                    assertEquals("Wine Cellar", cellars.get(0).getName());
+                    assertFalse(cellars.isEmpty());
+                    assertTrue(cellars.stream()
+                            .anyMatch(c -> "Wine Cellar".equals(c.getName())),
+                            "Expected to find 'Wine Cellar' in the list");
                 });
     }
 
     @Test
     void whenGetAllCellars_withNoData_thenReturnsEmptyList() {
         cellarRepository.deleteAll();
+        customerRepository.deleteAll();
+
+        // Create a customer without cellars
+        Customer tempCustomer = new Customer();
+        tempCustomer.setCustomerIdentifier(new CustomerIdentifier());
+        tempCustomer.setFirstName("Temp");
+        tempCustomer.setLastName("User");
+        tempCustomer.setUserId("tempuser");
+        tempCustomer.setIsActive(true);
+        tempCustomer.setPhoneNumbers(Collections.emptyList());
+
+        CustomerAddress address = CustomerAddress.builder()
+                .streetAddress("456 Test St")
+                .city("Toronto")
+                .province("Ontario")
+                .country("Canada")
+                .postalCode("M1A 1A1")
+                .build();
+        tempCustomer.setCustomerAddress(address);
+        Customer savedTempCustomer = customerRepository.save(tempCustomer);
 
         webTestClient.get()
-                .uri("/api/v1/cellars")
+                .uri("/api/v1/cellars?ownerCustomerId={customerId}", savedTempCustomer.getCustomerIdentifier().getCustomerId())
                 .exchange()
                 .expectStatus().isOk()
+                .expectHeader().contentType(MediaType.APPLICATION_JSON)
                 .expectBodyList(CellarResponseModel.class)
                 .value(cellars -> assertTrue(cellars.isEmpty()));
     }

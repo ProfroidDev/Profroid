@@ -12,6 +12,7 @@ import com.profroid.profroidapp.employeesubdomain.mappingLayer.employeeMappers.E
 import com.profroid.profroidapp.employeesubdomain.presentationLayer.employeePresentationLayer.EmployeeRequestModel;
 import com.profroid.profroidapp.employeesubdomain.presentationLayer.employeePresentationLayer.EmployeeResponseModel;
 import com.profroid.profroidapp.appointmentsubdomain.dataAccessLayer.AppointmentRepository;
+import com.profroid.profroidapp.customersubdomain.dataAccessLayer.CustomerRepository;
 import com.profroid.profroidapp.utils.exceptions.InvalidIdentifierException;
 import com.profroid.profroidapp.utils.exceptions.InvalidOperationException;
 import com.profroid.profroidapp.utils.exceptions.ResourceAlreadyExistsException;
@@ -38,6 +39,7 @@ public class EmployeeServiceUnitTest {
     @Mock private EmployeeResponseMapper employeeResponseMapper;
     @Mock private ScheduleRepository scheduleRepository;
     @Mock private AppointmentRepository appointmentRepository;
+    @Mock private CustomerRepository customerRepository;
 
     @InjectMocks
     private EmployeeServiceImpl employeeService;
@@ -127,18 +129,36 @@ public class EmployeeServiceUnitTest {
     @Test
     void addEmployee_uniqueUserId_succeeds() {
     when(employeeRepository.findEmployeeByUserId("johndoe")).thenReturn(null);
+    when(customerRepository.findCustomerByUserId("johndoe")).thenReturn(null);
+
     Employee toEntity = new Employee();
     toEntity.setEmployeeRole(validRequest.getEmployeeRole());
     when(employeeRequestMapper.toEntity(validRequest)).thenReturn(toEntity);
+
     Employee saved = new Employee();
     saved.setEmployeeIdentifier(new EmployeeIdentifier(VALID_EMPLOYEE_ID));
+    saved.setFirstName("John");
+    saved.setLastName("Doe");
+    saved.setUserId("johndoe");
     saved.setEmployeeRole(validRequest.getEmployeeRole());
+    saved.setIsActive(true);
     when(employeeRepository.save(any(Employee.class))).thenReturn(saved);
-    when(employeeResponseMapper.toResponseModel(saved)).thenReturn(existingEmployeeResponse);
+
+    EmployeeResponseModel expectedResponse = EmployeeResponseModel.builder()
+        .employeeIdentifier(new EmployeeIdentifier(VALID_EMPLOYEE_ID))
+        .firstName("John")
+        .lastName("Doe")
+        .userId("johndoe")
+        .employeeRole(validRequest.getEmployeeRole())
+        .isActive(true)
+        .build();
+    when(employeeResponseMapper.toResponseModel(saved)).thenReturn(expectedResponse);
 
     EmployeeResponseModel response = employeeService.addEmployee(validRequest);
     assertEquals(VALID_EMPLOYEE_ID, response.getEmployeeIdentifier().getEmployeeId());
+    assertEquals("johndoe", response.getUserId());
     verify(employeeRepository).findEmployeeByUserId("johndoe");
+    verify(customerRepository).findCustomerByUserId("johndoe");
     verify(employeeRequestMapper).toEntity(validRequest);
     verify(employeeRepository).save(any(Employee.class));
     verify(employeeResponseMapper).toResponseModel(saved);

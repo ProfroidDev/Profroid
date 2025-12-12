@@ -5,6 +5,7 @@ import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.Cascade;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -30,8 +31,9 @@ public class Employee {
     @NotNull
     private String lastName;
 
-    @ElementCollection
-    @CollectionTable(name = "employee_phonenumbers",joinColumns = @JoinColumn(name = "employee_id"))
+    @ElementCollection(fetch = FetchType.EAGER)
+    @CollectionTable(name = "employee_phonenumbers", joinColumns = @JoinColumn(name = "employee_id"))
+    @Cascade(org.hibernate.annotations.CascadeType.ALL)
     private List<EmployeePhoneNumber> phoneNumbers = new ArrayList<>();
 
     @NotNull

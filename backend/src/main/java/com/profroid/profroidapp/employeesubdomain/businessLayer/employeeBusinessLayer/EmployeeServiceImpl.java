@@ -4,11 +4,11 @@ import com.profroid.profroidapp.appointmentsubdomain.dataAccessLayer.Appointment
 import com.profroid.profroidapp.appointmentsubdomain.dataAccessLayer.AppointmentRepository;
 import com.profroid.profroidapp.appointmentsubdomain.dataAccessLayer.AppointmentStatus;
 import com.profroid.profroidapp.appointmentsubdomain.dataAccessLayer.AppointmentStatusType;
+import com.profroid.profroidapp.customersubdomain.dataAccessLayer.Customer;
+import com.profroid.profroidapp.customersubdomain.dataAccessLayer.CustomerRepository;
 import com.profroid.profroidapp.employeesubdomain.dataAccessLayer.employeeDataAccessLayer.Employee;
 import com.profroid.profroidapp.employeesubdomain.dataAccessLayer.employeeDataAccessLayer.EmployeeIdentifier;
 import com.profroid.profroidapp.employeesubdomain.dataAccessLayer.employeeDataAccessLayer.EmployeeRepository;
-import com.profroid.profroidapp.employeesubdomain.dataAccessLayer.employeeScheduleDataAccessLayer.Schedule;
-import com.profroid.profroidapp.employeesubdomain.dataAccessLayer.employeeScheduleDataAccessLayer.ScheduleRepository;
 import com.profroid.profroidapp.employeesubdomain.dataAccessLayer.employeeDataAccessLayer.EmployeeRoleType;
 import com.profroid.profroidapp.employeesubdomain.mappingLayer.employeeMappers.EmployeeRequestMapper;
 import com.profroid.profroidapp.employeesubdomain.mappingLayer.employeeMappers.EmployeeResponseMapper;
@@ -18,7 +18,6 @@ import com.profroid.profroidapp.utils.exceptions.InvalidIdentifierException;
 import com.profroid.profroidapp.utils.exceptions.ResourceAlreadyExistsException;
 import com.profroid.profroidapp.utils.exceptions.ResourceNotFoundException;
 import com.profroid.profroidapp.utils.exceptions.InvalidOperationException;
-import org.springframework.security.core.parameters.P;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -29,19 +28,19 @@ public class EmployeeServiceImpl implements EmployeeService {
     private final EmployeeRepository employeeRepository;
     private final EmployeeRequestMapper employeeRequestMapper;
     private final EmployeeResponseMapper employeeResponseMapper;
-    private final ScheduleRepository scheduleRepository;
     private final AppointmentRepository appointmentRepository;
+    private final CustomerRepository customerRepository;
 
     public EmployeeServiceImpl(EmployeeRepository employeeRepository,
                                EmployeeRequestMapper employeeRequestMapper,
                                EmployeeResponseMapper employeeResponseMapper,
-                               ScheduleRepository scheduleRepository,
-                               AppointmentRepository appointmentRepository) {
+                               AppointmentRepository appointmentRepository,
+                               CustomerRepository customerRepository) {
         this.employeeRepository = employeeRepository;
         this.employeeRequestMapper = employeeRequestMapper;
         this.employeeResponseMapper = employeeResponseMapper;
-        this.scheduleRepository = scheduleRepository;
         this.appointmentRepository = appointmentRepository;
+        this.customerRepository = customerRepository;
     }
 
     @Override
@@ -102,6 +101,12 @@ public class EmployeeServiceImpl implements EmployeeService {
             existingEmployee.setPhoneNumbers(employeeRequestModel.getPhoneNumbers());
             existingEmployee.setEmployeeRole(employeeRequestModel.getEmployeeRole());
             
+            // Delete any existing customer record for this user
+            Customer existingCustomer = customerRepository.findCustomerByUserId(userId);
+            if (existingCustomer != null) {
+                customerRepository.delete(existingCustomer);
+            }
+            
             Employee reactivatedEmployee = employeeRepository.save(existingEmployee);
             return employeeResponseMapper.toResponseModel(reactivatedEmployee);
         }
@@ -109,6 +114,12 @@ public class EmployeeServiceImpl implements EmployeeService {
         Employee employee = employeeRequestMapper.toEntity(employeeRequestModel);
 
         employee.setEmployeeIdentifier(new EmployeeIdentifier());
+
+        // Delete any existing customer record for this user
+        Customer existingCustomer = customerRepository.findCustomerByUserId(userId);
+        if (existingCustomer != null) {
+            customerRepository.delete(existingCustomer);
+        }
 
         Employee savedEmployee = employeeRepository.save(employee);
         return employeeResponseMapper.toResponseModel(savedEmployee);

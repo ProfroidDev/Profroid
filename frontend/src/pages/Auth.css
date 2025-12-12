@@ -255,6 +255,7 @@
   display: flex;
   gap: 1rem;
   align-items: flex-start;
+  padding: 0.5rem 0;
 }
 
 .info-row .label {
@@ -345,7 +346,7 @@
 }
 
 .schedule-table tbody tr:hover {
-  background-color: #824848;
+  background-color: #fafafa;
 }
 
 .schedule-table tbody tr:last-child td {
