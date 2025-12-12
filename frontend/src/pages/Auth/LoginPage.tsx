@@ -73,6 +73,12 @@ export default function LoginPage() {
             />
           </div>
 
+          <div style={{ textAlign: 'right', marginTop: '-0.5rem', marginBottom: '0.5rem' }}>
+            <Link to="/forgot-password" className="link" style={{ fontSize: '0.9rem' }}>
+              Forgot password?
+            </Link>
+          </div>
+
           {(formError || error) && (
             <div className="alert alert-error">
               {formError || error}

@@ -345,9 +345,69 @@
 }
 
 .schedule-table tbody tr:hover {
-  background-color: #fafafa;
+  background-color: #824848;
 }
 
 .schedule-table tbody tr:last-child td {
   border-bottom: none;
+}
+/* Password Reset Specific Styles */
+
+.success-message {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.password-requirements {
+  margin-top: 0.5rem;
+  padding: 0.75rem;
+  background-color: #fff3cd;
+  border: 1px solid #ffc107;
+  border-radius: 8px;
+  font-size: 0.85rem;
+}
+
+.password-requirements small {
+  display: block;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+  color: #856404;
+}
+
+.password-requirements ul {
+  margin: 0;
+  padding-left: 1.5rem;
+  list-style-type: disc;
+}
+
+.password-requirements li {
+  color: #856404;
+  margin: 0.25rem 0;
+}
+
+.requirement-error {
+  color: #dc3545;
+}
+
+.btn-secondary {
+  display: inline-block;
+  padding: 0.75rem 1rem;
+  background: white;
+  color: #7a0901;
+  border: 2px solid #7a0901;
+  border-radius: 10px;
+  font-size: 1rem;
+  font-weight: 600;
+  text-decoration: none;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.btn-secondary:hover {
+  background: #7a0901;
+  color: white;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 16px rgba(122, 9, 1, 0.12);
 }

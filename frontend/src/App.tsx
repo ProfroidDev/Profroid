@@ -15,6 +15,8 @@ import MyJobsPage from "./pages/Appointment/MyJobsPage";
 import LoginPage from "./pages/Auth/LoginPage";
 import RegisterPage from "./pages/Auth/RegisterPage";
 import ProfilePage from "./pages/Auth/ProfilePage";
+import ForgotPasswordPage from "./pages/Auth/ForgotPasswordPage";
+import ResetPasswordPage from "./pages/Auth/ResetPasswordPage";
 import { ProtectedRoute, PublicRoute } from "./features/authentication/components/ProtectedRoute";
 import useAuthStore from "./features/authentication/store/authStore";
 
@@ -60,6 +62,22 @@ function App(): React.ReactElement {
           element={
             <PublicRoute>
               <RegisterPage />
+            </PublicRoute>
+          }
+        />
+        <Route
+          path="/forgot-password"
+          element={
+            <PublicRoute>
+              <ForgotPasswordPage />
+            </PublicRoute>
+          }
+        />
+        <Route
+          path="/reset-password"
+          element={
+            <PublicRoute>
+              <ResetPasswordPage />
             </PublicRoute>
           }
         />

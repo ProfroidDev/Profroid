@@ -44,6 +44,8 @@ services:
     restart: always
     depends_on:
       - mysql
+    env_file:
+      - ./auth-service/.env
     environment:
       DATABASE_URL: mysql://root:${MYSQL_ROOT_PASSWORD}@mysql:3306/profroid_auth
       PORT: 3001
@@ -52,6 +54,11 @@ services:
       JWT_SECRET: ${JWT_SECRET}
       FRONTEND_URLS: ${FRONTEND_URLS}
       BACKEND_URL: ${BACKEND_URL}
+      SMTP_HOST: ${SMTP_HOST}
+      SMTP_PORT: ${SMTP_PORT}
+      SMTP_USER: ${SMTP_USER}
+      SMTP_PASSWORD: ${SMTP_PASSWORD}
+      SMTP_FROM: ${SMTP_FROM}
     ports:
       - "3001:3001"
     networks:

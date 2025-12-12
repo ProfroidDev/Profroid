@@ -2,6 +2,9 @@ import { Router, type Request, type Response } from "express";
 import { PrismaClient } from "@prisma/client";
 import crypto from "crypto";
 import jwt from "jsonwebtoken";
+import { sendPasswordResetEmail, sendPasswordChangedEmail } from "../services/email.service.js";
+import { ForgotPasswordSchema, ResetPasswordSchema } from "../validation/schemas.js";
+import { ZodError } from "zod";
 
 const router = Router();
 const prisma = new PrismaClient();
@@ -146,7 +149,7 @@ router.post("/sign-in", async (req: Request, res: Response) => {
 
     // Get password hash
     const account = await prisma.account.findFirst({
-      where: { userId: user.id, provider: "email" },
+      where: { userId: user!.id, provider: "email" },
     });
 
     if (!account || !verifyPassword(password, account.accessToken || "")) {
@@ -328,6 +331,192 @@ router.post("/sign-out", async (req: Request, res: Response) => {
   } catch (error) {
     console.error("Sign out error:", error);
     return res.status(500).json({ error: "Sign out failed" });
+  }
+});
+
+/**
+ * Forgot password - Request password reset
+ * POST /api/auth/forgot-password
+ */
+router.post("/forgot-password", async (req: Request, res: Response) => {
+  try {
+    // Validate request body with Zod
+    const validatedData = ForgotPasswordSchema.parse(req.body);
+    const { email } = validatedData;
+
+    // Find user by email
+    const user = await prisma.user.findUnique({
+      where: { email },
+    });
+
+    // Always return success to prevent email enumeration
+    // Don't reveal if email exists or not
+    if (!user) {
+      return res.json({
+        success: true,
+        message: "If an account with that email exists, a password reset link has been sent.",
+      });
+    }
+
+    // Generate secure reset token
+    const resetToken = crypto.randomBytes(32).toString("hex");
+    
+    // Hash the token before storing (for security)
+    const hashedToken = crypto
+      .createHash("sha256")
+      .update(resetToken)
+      .digest("hex");
+
+    // Set expiration time (1 hour from now)
+    const expiresAt = new Date();
+    expiresAt.setHours(expiresAt.getHours() + 1);
+
+    // Delete any existing password reset tokens for this user
+    await prisma.verification.deleteMany({
+      where: {
+        userId: user.id,
+        identifier: "password_reset",
+      },
+    });
+
+    // Store reset token in verification table
+    const verification = await prisma.verification.create({
+      data: {
+        id: crypto.randomUUID(),
+        identifier: "password_reset",
+        value: hashedToken,
+        expiresAt: expiresAt,
+        userId: user.id,
+      },
+    });
+
+    // Send email with the unhashed token
+    try {
+      await sendPasswordResetEmail(email, resetToken);
+    } catch (emailError) {
+      console.error("Failed to send reset email:", emailError);
+      // Clear the token entry if email fails
+      await prisma.verification.delete({ where: { id: verification.id } });
+      return res.status(500).json({ 
+        error: "Failed to send password reset email. Please try again later." 
+      });
+    }
+
+    res.json({
+      success: true,
+      message: "If an account with that email exists, a password reset link has been sent.",
+    });
+  } catch (error) {
+    if (error instanceof ZodError) {
+      return res.status(400).json({ 
+        error: "Validation failed", 
+        details: error.errors.map(e => ({ field: e.path.join('.'), message: e.message })) 
+      });
+    }
+    console.error("Forgot password error:", error);
+    return res.status(500).json({ error: "Failed to process password reset request" });
+  }
+});
+
+/**
+ * Reset password - Complete password reset with token
+ * POST /api/auth/reset-password
+ */
+router.post("/reset-password", async (req: Request, res: Response) => {
+  try {
+    // Validate request body with Zod
+    const validatedData = ResetPasswordSchema.parse(req.body);
+    const { token, newPassword } = validatedData;
+
+    // Hash the token to compare with stored hash
+    const hashedToken = crypto
+      .createHash("sha256")
+      .update(token)
+      .digest("hex");
+
+    // Find verification by token
+    const verification = await prisma.verification.findFirst({
+      where: {
+        identifier: "password_reset",
+        value: hashedToken,
+      },
+    });
+
+    if (!verification) {
+      return res.status(400).json({ 
+        error: "Invalid or expired reset token" 
+      });
+    }
+
+    // Find user by verification.userId
+    const user = await prisma.user.findUnique({
+      where: { id: verification.userId as string },
+    });
+
+    if (!user) {
+      return res.status(400).json({ 
+        error: "Invalid or expired reset token" 
+      });
+    }
+
+    // Check if token has expired
+    if (verification.expiresAt < new Date()) {
+      await prisma.verification.delete({ where: { id: verification.id } });
+      return res.status(400).json({ 
+        error: "Reset token has expired. Please request a new password reset." 
+      });
+    }
+
+    // Hash new password
+    const hashedPassword = hashPassword(newPassword);
+
+    // Update password in account table
+    const account = await prisma.account.findFirst({
+      where: { userId: user.id, provider: "email" },
+    });
+
+    if (!account) {
+      return res.status(404).json({ 
+        error: "User account not found" 
+      });
+    }
+
+    await prisma.account.update({
+      where: { id: account.id },
+      data: {
+        accessToken: hashedPassword,
+      },
+    });
+
+    // Remove used verification token
+    await prisma.verification.delete({ where: { id: verification.id } });
+
+    // Optional: Invalidate all existing sessions for security
+    await prisma.session.deleteMany({
+      where: { userId: user!.id },
+    });
+
+    // Send confirmation email
+    try {
+      await sendPasswordChangedEmail(user!.email || "");
+    } catch (emailError) {
+      console.error("Failed to send confirmation email:", emailError);
+      // Don't fail the request if confirmation email fails
+    }
+
+    res.json({
+      success: true,
+      message: "Password has been reset successfully. You can now sign in with your new password.",
+    });
+  } catch (error) {
+    if (error instanceof ZodError) {
+      return res.status(400).json({ 
+        error: "Validation failed", 
+        details: error.errors.map(e => ({ field: e.path.join('.'), message: e.message })) 
+      });
+    }
+    console.error("Reset password error:", error);
+    return res.status(500).json({ error: "Failed to reset password" });
   }
 });
 

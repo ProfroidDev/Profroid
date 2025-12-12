@@ -235,6 +235,41 @@ class AuthAPI {
   clearSession(): void {
     localStorage.removeItem('authToken');
   }
+
+  /**
+   * Request password reset
+   */
+  async forgotPassword(email: string): Promise<{ success: boolean; message?: string; error?: string }> {
+    try {
+      const response = await this.client.post<{ success: boolean; message: string }>('/forgot-password', {
+        email,
+      });
+      return response.data;
+    } catch (error: unknown) {
+      return {
+        success: false,
+        error: getErrorMessage(error),
+      };
+    }
+  }
+
+  /**
+   * Reset password with token
+   */
+  async resetPassword(token: string, newPassword: string): Promise<{ success: boolean; message?: string; error?: string }> {
+    try {
+      const response = await this.client.post<{ success: boolean; message: string }>('/reset-password', {
+        token,
+        newPassword,
+      });
+      return response.data;
+    } catch (error: unknown) {
+      return {
+        success: false,
+        error: getErrorMessage(error),
+      };
+    }
+  }
 }
 
 export default new AuthAPI();
