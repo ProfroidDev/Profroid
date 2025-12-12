@@ -345,11 +345,12 @@
 }
 
 .schedule-table tbody tr:hover {
-  background-color: #fafafa;
+  background-color: #824848;
 }
 
 .schedule-table tbody tr:last-child td {
   border-bottom: none;
+}
 /* Password Reset Specific Styles */
 
 .success-message {
@@ -409,5 +410,4 @@
   color: white;
   transform: translateY(-2px);
   box-shadow: 0 4px 16px rgba(122, 9, 1, 0.12);
-}
 }

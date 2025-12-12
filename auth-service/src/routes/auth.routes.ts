@@ -3,6 +3,8 @@ import { PrismaClient } from "@prisma/client";
 import crypto from "crypto";
 import jwt from "jsonwebtoken";
 import { sendPasswordResetEmail, sendPasswordChangedEmail } from "../services/email.service.js";
+import { ForgotPasswordSchema, ResetPasswordSchema } from "../validation/schemas.js";
+import { ZodError } from "zod";
 
 const router = Router();
 const prisma = new PrismaClient();
@@ -338,11 +340,9 @@ router.post("/sign-out", async (req: Request, res: Response) => {
  */
 router.post("/forgot-password", async (req: Request, res: Response) => {
   try {
-    const { email } = req.body;
-
-    if (!email) {
-      return res.status(400).json({ error: "Email is required" });
-    }
+    // Validate request body with Zod
+    const validatedData = ForgotPasswordSchema.parse(req.body);
+    const { email } = validatedData;
 
     // Find user by email
     const user = await prisma.user.findUnique({
@@ -371,6 +371,14 @@ router.post("/forgot-password", async (req: Request, res: Response) => {
     const expiresAt = new Date();
     expiresAt.setHours(expiresAt.getHours() + 1);
 
+    // Delete any existing password reset tokens for this user
+    await prisma.verification.deleteMany({
+      where: {
+        userId: user.id,
+        identifier: "password_reset",
+      },
+    });
+
     // Store reset token in verification table
     const verification = await prisma.verification.create({
       data: {
@@ -384,7 +392,7 @@ router.post("/forgot-password", async (req: Request, res: Response) => {
 
     // Send email with the unhashed token
     try {
-      await sendPasswordResetEmail(email, resetToken, undefined);
+      await sendPasswordResetEmail(email, resetToken);
     } catch (emailError) {
       console.error("Failed to send reset email:", emailError);
       // Clear the token entry if email fails
@@ -399,6 +407,12 @@ router.post("/forgot-password", async (req: Request, res: Response) => {
       message: "If an account with that email exists, a password reset link has been sent.",
     });
   } catch (error) {
+    if (error instanceof ZodError) {
+      return res.status(400).json({ 
+        error: "Validation failed", 
+        details: error.errors.map(e => ({ field: e.path.join('.'), message: e.message })) 
+      });
+    }
     console.error("Forgot password error:", error);
     return res.status(500).json({ error: "Failed to process password reset request" });
   }
@@ -410,24 +424,9 @@ router.post("/forgot-password", async (req: Request, res: Response) => {
  */
 router.post("/reset-password", async (req: Request, res: Response) => {
   try {
-    const { token, newPassword } = req.body;
-
-    if (!token || !newPassword) {
-      return res.status(400).json({ error: "Token and new password are required" });
-    }
-
-    // Validate password strength
-    if (newPassword.length < 8) {
-      return res.status(400).json({ 
-        error: "Password must be at least 8 characters long" 
-      });
-    }
-
-    if (!/[A-Z]/.test(newPassword) || !/[0-9]/.test(newPassword)) {
-      return res.status(400).json({ 
-        error: "Password must contain at least one uppercase letter and one number" 
-      });
-    }
+    // Validate request body with Zod
+    const validatedData = ResetPasswordSchema.parse(req.body);
+    const { token, newPassword } = validatedData;
 
     // Hash the token to compare with stored hash
     const hashedToken = crypto
@@ -499,7 +498,7 @@ router.post("/reset-password", async (req: Request, res: Response) => {
 
     // Send confirmation email
     try {
-      await sendPasswordChangedEmail(user!.email || "", undefined);
+      await sendPasswordChangedEmail(user!.email || "");
     } catch (emailError) {
       console.error("Failed to send confirmation email:", emailError);
       // Don't fail the request if confirmation email fails
@@ -510,6 +509,12 @@ router.post("/reset-password", async (req: Request, res: Response) => {
       message: "Password has been reset successfully. You can now sign in with your new password.",
     });
   } catch (error) {
+    if (error instanceof ZodError) {
+      return res.status(400).json({ 
+        error: "Validation failed", 
+        details: error.errors.map(e => ({ field: e.path.join('.'), message: e.message })) 
+      });
+    }
     console.error("Reset password error:", error);
     return res.status(500).json({ error: "Failed to reset password" });
   }
