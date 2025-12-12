@@ -127,21 +127,65 @@ export default function CustomerListPage(): React.ReactElement {
 
   async function handleCreate(e: React.FormEvent) {
     e.preventDefault();
-    setCreateLoading(true);
     setCreateError(null);
 
+    // Validate required fields - check for empty strings after trim
+    const firstNameTrimmed = firstName.trim();
+    const lastNameTrimmed = lastName.trim();
+    const streetAddressTrimmed = streetAddress.trim();
+    const cityTrimmed = city.trim();
+    const provinceTrimmed = province.trim();
+    const countryTrimmed = country.trim();
+    const postalCodeTrimmed = postalCode.trim();
+    const userIdTrimmed = userId.trim();
+
+    if (!firstNameTrimmed || firstNameTrimmed.length === 0) {
+      setCreateError("First name is required and cannot be empty");
+      return;
+    }
+    if (!lastNameTrimmed || lastNameTrimmed.length === 0) {
+      setCreateError("Last name is required and cannot be empty");
+      return;
+    }
+    if (!streetAddressTrimmed || streetAddressTrimmed.length === 0) {
+      setCreateError("Street address is required and cannot be empty");
+      return;
+    }
+    if (!cityTrimmed || cityTrimmed.length === 0) {
+      setCreateError("City is required and cannot be empty");
+      return;
+    }
+    if (!provinceTrimmed || provinceTrimmed.length === 0) {
+      setCreateError("Province is required and cannot be empty");
+      return;
+    }
+    if (!countryTrimmed || countryTrimmed.length === 0) {
+      setCreateError("Country is required and cannot be empty");
+      return;
+    }
+    if (!postalCodeTrimmed || postalCodeTrimmed.length === 0) {
+      setCreateError("Postal code is required and cannot be empty");
+      return;
+    }
+    if (!userIdTrimmed || userIdTrimmed.length === 0) {
+      setCreateError("User ID is required and cannot be empty");
+      return;
+    }
+
+    setCreateLoading(true);
+
     const req: CustomerRequestModel = {
-      firstName: firstName.trim(),
-      lastName: lastName.trim(),
-      phoneNumbers: phoneNumber
-        ? [{ type: phoneType, number: phoneNumber }]
+      firstName: firstNameTrimmed,
+      lastName: lastNameTrimmed,
+      phoneNumbers: phoneNumber.trim()
+        ? [{ type: phoneType, number: phoneNumber.trim() }]
         : [],
-      streetAddress: streetAddress.trim(),
-      city: city.trim(),
-      province: province.trim(),
-      country: country.trim(),
-      postalCode: postalCode.trim(),
-      userId: userId.trim(),
+      streetAddress: streetAddressTrimmed,
+      city: cityTrimmed,
+      province: provinceTrimmed,
+      country: countryTrimmed,
+      postalCode: postalCodeTrimmed,
+      userId: userIdTrimmed,
     };
 
     try {
@@ -172,28 +216,76 @@ export default function CustomerListPage(): React.ReactElement {
     e.preventDefault();
     if (!selectedCustomer) return;
 
+    // Validate required fields - check for empty strings after trim
+    const firstNameTrimmed = editFirstName.trim();
+    const lastNameTrimmed = editLastName.trim();
+    const streetAddressTrimmed = editStreetAddress.trim();
+    const cityTrimmed = editCity.trim();
+    const provinceTrimmed = editProvince.trim();
+    const countryTrimmed = editCountry.trim();
+    const postalCodeTrimmed = editPostalCode.trim();
+    const userIdTrimmed = editUserId.trim();
+
+    // Validation checks with immediate error reporting
+    const validationChecks = [
+      { value: firstNameTrimmed, field: "First name" },
+      { value: lastNameTrimmed, field: "Last name" },
+      { value: streetAddressTrimmed, field: "Street address" },
+      { value: cityTrimmed, field: "City" },
+      { value: provinceTrimmed, field: "Province" },
+      { value: countryTrimmed, field: "Country" },
+      { value: postalCodeTrimmed, field: "Postal code" },
+      { value: userIdTrimmed, field: "User ID" },
+    ];
+
+    const firstEmptyField = validationChecks.find(
+      (check) => !check.value || check.value.length === 0
+    );
+
+    if (firstEmptyField) {
+      setEditError(`${firstEmptyField.field} is required and cannot be empty`);
+      console.error(`Validation failed: ${firstEmptyField.field} is empty`, {
+        firstNameTrimmed,
+        lastNameTrimmed,
+        streetAddressTrimmed,
+        cityTrimmed,
+        provinceTrimmed,
+        countryTrimmed,
+        postalCodeTrimmed,
+        userIdTrimmed,
+      });
+      return;
+    }
+
+    // All validation passed
     setEditLoading(true);
     setEditError(null);
 
     const req: CustomerRequestModel = {
-      firstName: editFirstName.trim(),
-      lastName: editLastName.trim(),
-      phoneNumbers: editPhoneNumber ? [{ type: editPhoneType, number: editPhoneNumber }] : [],
-      streetAddress: editStreetAddress.trim(),
-      city: editCity.trim(),
-      province: editProvince.trim(),
-      country: editCountry.trim(),
-      postalCode: editPostalCode.trim(),
-      userId: editUserId.trim(),
+      firstName: firstNameTrimmed,
+      lastName: lastNameTrimmed,
+      phoneNumbers: editPhoneNumber.trim()
+        ? [{ type: editPhoneType, number: editPhoneNumber.trim() }]
+        : [],
+      streetAddress: streetAddressTrimmed,
+      city: cityTrimmed,
+      province: provinceTrimmed,
+      country: countryTrimmed,
+      postalCode: postalCodeTrimmed,
+      userId: userIdTrimmed,
     };
+
+    console.log("Submitting customer update with validated data:", req);
 
     try {
       const updated = await updateCustomer(selectedCustomer.customerId, req);
 
-      setCustomers((prev) => prev.map((c) => (c.customerId === updated.customerId ? updated : c)));
+      setCustomers((prev) =>
+        prev.map((c) => (c.customerId === updated.customerId ? updated : c))
+      );
       setSelectedCustomer(updated);
       setEditModalOpen(false);
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
     } catch (err) {
       setEditError("Failed to update customer. Try again.");
     } finally {
@@ -231,7 +323,10 @@ export default function CustomerListPage(): React.ReactElement {
     <div className="customers-page-light">
       <h2 className="customers-title-light">Customers</h2>
 
-      <button className="btn-view-light" onClick={() => setCreateModalOpen(true)}>
+      <button
+        className="btn-view-light"
+        onClick={() => setCreateModalOpen(true)}
+      >
         Add Customer
       </button>
 
@@ -281,24 +376,24 @@ export default function CustomerListPage(): React.ReactElement {
         )}
       </div>
 
-        <ConfirmationModal
-          isOpen={deleteModalOpen}
-          title="Delete Customer"
-          message={
-            deleteError ??
-            `Are you sure you want to delete ${
-              deleteTarget
-                ? `${deleteTarget.firstName} ${deleteTarget.lastName}`.trim()
-                : "this customer"
-            }? This action cannot be undone.`
-          }
-          confirmText="Delete"
-          cancelText="Cancel"
-          isDanger
-          isLoading={deleteLoading}
-          onConfirm={handleDeleteConfirm}
-          onCancel={closeDelete}
-        />
+      <ConfirmationModal
+        isOpen={deleteModalOpen}
+        title="Delete Customer"
+        message={
+          deleteError ??
+          `Are you sure you want to delete ${
+            deleteTarget
+              ? `${deleteTarget.firstName} ${deleteTarget.lastName}`.trim()
+              : "this customer"
+          }? This action cannot be undone.`
+        }
+        confirmText="Delete"
+        cancelText="Cancel"
+        isDanger
+        isLoading={deleteLoading}
+        onConfirm={handleDeleteConfirm}
+        onCancel={closeDelete}
+      />
 
       {/* ============================
           DETAILS MODAL
@@ -308,7 +403,9 @@ export default function CustomerListPage(): React.ReactElement {
           <div className="modal-container-light">
             <div className="modal-header-light">
               <h3>Customer Details</h3>
-              <button className="modal-close-light" onClick={closeDetails}>&#10005;</button>
+              <button className="modal-close-light" onClick={closeDetails}>
+                &#10005;
+              </button>
             </div>
 
             {detailLoading ? (
@@ -369,7 +466,6 @@ export default function CustomerListPage(): React.ReactElement {
       {createModalOpen && (
         <div className="modal-overlay-light">
           <div className="modal-container-light">
-
             <div className="modal-header-light">
               <h3>Create Customer</h3>
               <button
@@ -384,27 +480,27 @@ export default function CustomerListPage(): React.ReactElement {
             </div>
 
             <div className="modal-content-light">
-
-              {createError && <div className="error-message">{createError}</div>}
+              {createError && (
+                <div className="error-message">{createError}</div>
+              )}
 
               <form className="create-customer-form" onSubmit={handleCreate}>
-
                 <h4 className="form-section-title">Personal Details</h4>
                 <div className="form-row">
                   <div className="form-group">
-                    <label>First Name</label>
+                    <label>First Name *</label>
                     <input
                       value={firstName}
                       onChange={(e) => setFirstName(e.target.value)}
-                      required
+                      placeholder="Required"
                     />
                   </div>
                   <div className="form-group">
-                    <label>Last Name</label>
+                    <label>Last Name *</label>
                     <input
                       value={lastName}
                       onChange={(e) => setLastName(e.target.value)}
-                      required
+                      placeholder="Required"
                     />
                   </div>
                 </div>
@@ -415,7 +511,9 @@ export default function CustomerListPage(): React.ReactElement {
                     <label>Phone Type</label>
                     <select
                       value={phoneType}
-                      onChange={(e) => setPhoneType(e.target.value as PhoneType)}
+                      onChange={(e) =>
+                        setPhoneType(e.target.value as PhoneType)
+                      }
                     >
                       <option value="MOBILE">Mobile</option>
                       <option value="HOME">Home</option>
@@ -435,59 +533,69 @@ export default function CustomerListPage(): React.ReactElement {
                 <h4 className="form-section-title">Address</h4>
 
                 <div className="form-group">
-                  <label>Street Address</label>
+                  <label>Street Address *</label>
                   <input
                     value={streetAddress}
                     onChange={(e) => setStreetAddress(e.target.value)}
+                    placeholder="Required"
                   />
                 </div>
 
                 <div className="form-row">
                   <div className="form-group">
-                    <label>City</label>
+                    <label>City *</label>
                     <input
                       value={city}
                       onChange={(e) => setCity(e.target.value)}
+                      placeholder="Required"
                     />
                   </div>
 
                   <div className="form-group">
-                    <label>Province</label>
+                    <label>Province *</label>
                     <input
                       value={province}
                       onChange={(e) => setProvince(e.target.value)}
+                      placeholder="Required"
                     />
                   </div>
                 </div>
 
                 <div className="form-row">
                   <div className="form-group">
-                    <label>Country</label>
+                    <label>Country *</label>
                     <input
                       value={country}
                       onChange={(e) => setCountry(e.target.value)}
+                      placeholder="Required"
                     />
                   </div>
 
                   <div className="form-group">
-                    <label>Postal Code</label>
+                    <label>Postal Code *</label>
                     <input
                       value={postalCode}
                       onChange={(e) => setPostalCode(e.target.value)}
+                      placeholder="Required"
                     />
                   </div>
                 </div>
 
                 <div className="form-group">
-                  <label>User ID</label>
+                  <label>User ID *</label>
                   <input
                     value={userId}
                     onChange={(e) => setUserId(e.target.value)}
+                    placeholder="Required"
                   />
                 </div>
 
                 <div className="form-actions">
-                  <button className="btn-create" type="submit" disabled={createLoading}>
+                  <button
+                    className="btn-create"
+                    type="submit"
+                    disabled={createLoading}
+                  >
                     {createLoading ? "Creating..." : "Create Customer"}
                   </button>
                   <button
@@ -498,7 +606,6 @@ export default function CustomerListPage(): React.ReactElement {
                     Cancel
                   </button>
                 </div>
-
               </form>
             </div>
           </div>
@@ -511,7 +618,6 @@ export default function CustomerListPage(): React.ReactElement {
       {editModalOpen && (
         <div className="modal-overlay-light">
           <div className="modal-container-light">
-
             <div className="modal-header-light">
               <h3>Edit Customer</h3>
               <button
@@ -526,27 +632,25 @@ export default function CustomerListPage(): React.ReactElement {
             </div>
 
             <div className="modal-content-light">
-
               {editError && <div className="error-message">{editError}</div>}
 
               <form className="create-customer-form" onSubmit={handleUpdate}>
-
                 <h4 className="form-section-title">Personal Details</h4>
                 <div className="form-row">
                   <div className="form-group">
-                    <label>First Name</label>
+                    <label>First Name *</label>
                     <input
                       value={editFirstName}
                       onChange={(e) => setEditFirstName(e.target.value)}
-                      required
+                      placeholder="Required"
                     />
                   </div>
                   <div className="form-group">
-                    <label>Last Name</label>
+                    <label>Last Name *</label>
                     <input
                       value={editLastName}
                       onChange={(e) => setEditLastName(e.target.value)}
-                      required
+                      placeholder="Required"
                     />
                   </div>
                 </div>
@@ -557,7 +661,9 @@ export default function CustomerListPage(): React.ReactElement {
                     <label>Phone Type</label>
                     <select
                       value={editPhoneType}
-                      onChange={(e) => setEditPhoneType(e.target.value as PhoneType)}
+                      onChange={(e) =>
+                        setEditPhoneType(e.target.value as PhoneType)
+                      }
                     >
                       <option value="MOBILE">Mobile</option>
                       <option value="HOME">Home</option>
@@ -577,59 +683,69 @@ export default function CustomerListPage(): React.ReactElement {
                 <h4 className="form-section-title">Address</h4>
 
                 <div className="form-group">
-                  <label>Street Address</label>
+                  <label>Street Address *</label>
                   <input
                     value={editStreetAddress}
                     onChange={(e) => setEditStreetAddress(e.target.value)}
+                    placeholder="Required"
                   />
                 </div>
 
                 <div className="form-row">
                   <div className="form-group">
-                    <label>City</label>
+                    <label>City *</label>
                     <input
                       value={editCity}
                       onChange={(e) => setEditCity(e.target.value)}
+                      placeholder="Required"
                     />
                   </div>
 
                   <div className="form-group">
-                    <label>Province</label>
+                    <label>Province *</label>
                     <input
                       value={editProvince}
                       onChange={(e) => setEditProvince(e.target.value)}
+                      placeholder="Required"
                     />
                   </div>
                 </div>
 
                 <div className="form-row">
                   <div className="form-group">
-                    <label>Country</label>
+                    <label>Country *</label>
                     <input
                       value={editCountry}
                       onChange={(e) => setEditCountry(e.target.value)}
+                      placeholder="Required"
                     />
                   </div>
 
                   <div className="form-group">
-                    <label>Postal Code</label>
+                    <label>Postal Code *</label>
                     <input
                       value={editPostalCode}
                       onChange={(e) => setEditPostalCode(e.target.value)}
+                      placeholder="Required"
                     />
                   </div>
                 </div>
 
                 <div className="form-group">
-                  <label>User ID</label>
+                  <label>User ID *</label>
                   <input
                     value={editUserId}
                     onChange={(e) => setEditUserId(e.target.value)}
+                    placeholder="Required"
                   />
                 </div>
 
                 <div className="form-actions">
-                  <button className="btn-create" type="submit" disabled={editLoading}>
+                  <button
+                    className="btn-create"
+                    type="submit"
+                    disabled={editLoading}
+                  >
                     {editLoading ? "Saving..." : "Save Changes"}
                   </button>
                   <button
@@ -640,7 +756,6 @@ export default function CustomerListPage(): React.ReactElement {
                     Cancel
                   </button>
                 </div>
-
               </form>
             </div>
           </div>
