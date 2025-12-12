@@ -40,7 +40,8 @@ public class SecurityConfig {
                         .requestMatchers("/h2-console/**").permitAll()
                         .requestMatchers("/api/auth/**").permitAll()  // Auth endpoints public
                         .requestMatchers("POST", "/api/v1/customers").permitAll()  // Customer creation from auth service
-                        .requestMatchers("/api/v1/jobs").permitAll() // Jobs list is public
+                        .requestMatchers("GET", "/api/v1/jobs").permitAll() // Jobs list is public
+                        // All cellar endpoints require authentication; fine-grained roles enforced via @PreAuthorize
                         .anyRequest().authenticated()  // All other APIs require authentication
                 )
                 .formLogin(form -> form.disable())

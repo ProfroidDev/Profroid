@@ -10,6 +10,7 @@ public interface CellarService {
     List<CellarResponseModel> getAllCellars();
     CellarResponseModel getCellarById(String cellarId);
     List<CellarResponseModel> getAllCellars(String ownerCustomerId);
+    List<CellarResponseModel> getAllCellarsForUser(String userId);
 
     CellarResponseModel getCellarById(String ownerCustomerId, String cellarId);
 

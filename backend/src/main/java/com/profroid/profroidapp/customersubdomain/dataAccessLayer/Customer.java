@@ -1,9 +1,13 @@
 package com.profroid.profroidapp.customersubdomain.dataAccessLayer;
 
+import com.profroid.profroidapp.cellarsubdomain.dataAccessLayer.Cellar;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.Cascade;
+
+import java.util.ArrayList;
 import java.util.List;
 
 @Entity
@@ -27,8 +31,9 @@ public class Customer {
     private String firstName;
     private String lastName;
 
-    @ElementCollection
+    @ElementCollection(fetch = FetchType.EAGER)
     @CollectionTable(name = "customer_phonenumbers", joinColumns = @JoinColumn(name = "customer_id"))
+    @Cascade(org.hibernate.annotations.CascadeType.ALL)
     private List<CustomerPhoneNumber> phoneNumbers;
 
     @Embedded
@@ -37,4 +42,7 @@ public class Customer {
     private String userId;
 
     private Boolean isActive;
+
+    @OneToMany(mappedBy = "ownerCustomer", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Cellar> cellars = new ArrayList<>();
 }

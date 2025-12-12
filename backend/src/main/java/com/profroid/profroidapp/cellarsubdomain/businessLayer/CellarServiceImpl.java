@@ -78,6 +78,21 @@ public class CellarServiceImpl implements CellarService {
     }
 
     @Override
+    public List<CellarResponseModel> getAllCellarsForUser(String userId) {
+        if (userId == null || userId.trim().length() != 36) {
+            throw new InvalidIdentifierException("User ID must be a 36-character UUID string.");
+        }
+
+        Customer customer = customerRepository.findCustomerByUserId(userId);
+        if (customer == null) {
+            throw new ResourceNotFoundException("Customer not found for user " + userId);
+        }
+
+        List<Cellar> cellars = cellarRepository.findByOwnerCustomerIdentifier(customer.getCustomerIdentifier());
+        return cellarResponseMapper.toResponseModelList(cellars);
+    }
+
+    @Override
     public CellarResponseModel getCellarById(String ownerCustomerId, String cellarId) {
 
         if (ownerCustomerId == null || ownerCustomerId.trim().length() != 36) {
