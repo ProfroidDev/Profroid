@@ -3,25 +3,11 @@ import type { AppointmentResponseModel } from "../models/AppointmentResponseMode
 
 /**
  * Get all appointments (admin/technician view)
- * Note: This may require special permissions
+ * Uses JWT token for authentication - no custom headers needed
  */
-export async function getAllAppointments(
-  userId: string,
-  role: "CUSTOMER" | "TECHNICIAN"
-): Promise<AppointmentResponseModel[]> {
-  const headers = role === "CUSTOMER"
-    ? {
-        "X-Customer-Id": userId,
-        "X-User-Role": "CUSTOMER"
-      }
-    : {
-        "X-Employee-Id": userId,
-        "X-User-Role": "TECHNICIAN"
-      };
-
+export async function getAllAppointments(): Promise<AppointmentResponseModel[]> {
   const response = await axiosInstance.get<AppointmentResponseModel[]>(
-    "/appointments",
-    { headers }
+    "/appointments"
   );
   return response.data;
 }

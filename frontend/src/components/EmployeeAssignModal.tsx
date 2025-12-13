@@ -284,68 +284,8 @@ export default function EmployeeAssignModal({ isOpen, onClose, onSuccess }: Empl
     try {
       const token = localStorage.getItem('authToken');
 
-      // Step 1: Assign employee type in auth-service
-      const authResponse = await fetch(
-        `${import.meta.env.VITE_API_URL}/assign-employee`,
-        {
-          method: 'POST',
-          headers: {
-            'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            userId: formData.userId,
-            employeeType: formData.employeeType,
-          }),
-        }
-      );
-
-      if (!authResponse.ok) {
-        const errorData = await authResponse.json();
-        throw new Error(errorData.error || 'Failed to assign employee');
-      }
-
-      // Step 2: Update customer record with address and phone if available
-      // This saves the customer's data from the employee form
-      if (formData.streetAddress || formData.phoneNumbers.some(p => p.number)) {
-        try {
-          const customerUpdateData = {
-            userId: formData.userId,
-            firstName: formData.firstName,
-            lastName: formData.lastName,
-            streetAddress: formData.streetAddress,
-            city: formData.city,
-            province: formData.province,
-            country: formData.country,
-            postalCode: formData.postalCode,
-            phoneNumbers: formData.phoneNumbers.map(p => ({
-              number: p.number,
-              type: p.type,
-            })),
-          };
-
-          const customerResponse = await fetch(
-            `${import.meta.env.VITE_BACKEND_URL}/customers/by-user/${formData.userId}`,
-            {
-              method: 'PUT',
-              headers: {
-                'Authorization': `Bearer ${token}`,
-                'Content-Type': 'application/json',
-              },
-              body: JSON.stringify(customerUpdateData),
-            }
-          );
-
-          if (!customerResponse.ok) {
-            console.warn('Failed to update customer record, but continuing with employee assignment');
-          }
-        } catch (error) {
-          console.warn('Error updating customer record:', error);
-          // Not critical - continue with employee assignment
-        }
-      }
-
-      // Step 3: Create employee record in backend
+      // Step 1: Create employee record in backend FIRST
+      // This validates business rules (e.g., customer has no appointments)
       const employeeAddress: EmployeeAddress = {
         streetAddress: formData.streetAddress,
         city: formData.city,
@@ -381,7 +321,31 @@ export default function EmployeeAssignModal({ isOpen, onClose, onSuccess }: Empl
 
       console.log('Sending employee data to backend:', employeeData);
       await addEmployee(employeeData);
-      console.log('Employee created successfully');
+      console.log('Employee created successfully in backend');
+
+      // Step 2: Only update auth-service role AFTER backend succeeds
+      const authResponse = await fetch(
+        `${import.meta.env.VITE_API_URL}/assign-employee`,
+        {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            userId: formData.userId,
+            employeeType: formData.employeeType,
+          }),
+        }
+      );
+
+      if (!authResponse.ok) {
+        const errorData = await authResponse.json();
+        // Backend succeeded but auth failed - this is a problem but employee exists
+        console.error('Warning: Employee created but auth-service update failed:', errorData);
+        throw new Error(errorData.error || 'Employee created but failed to update auth role');
+      }
+      console.log('Auth-service role updated successfully');
 
       onClose();
       onSuccess?.();

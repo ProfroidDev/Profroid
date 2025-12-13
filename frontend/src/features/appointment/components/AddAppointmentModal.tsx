@@ -17,6 +17,9 @@ import { getEmployeeSchedule } from "../../employee/api/getEmployeeSchedule";
 import type { TimeSlotType } from "../../employee/models/EmployeeScheduleRequestModel";
 import { getPostalCodeError } from "../../../utils/postalCodeValidator";
 import { getMyJobs } from "../api/getMyJobs";
+import { getTechnicianBookedSlots, type BookedSlot } from "../api/getTechnicianBookedSlots";
+import { getAggregatedAvailability } from "../api/getAggregatedAvailability";
+import useAuthStore from "../../authentication/store/authStore";
 
 // Cache for shared data to reduce API calls when modal is opened/closed multiple times
 const dataCache: {
@@ -33,9 +36,22 @@ const dataCache: {
   loadingPromise: null,
 };
 
+// Clear cache on error or when data might be stale
+export function clearAppointmentDataCache() {
+  dataCache.jobs = null;
+  dataCache.employees = null;
+  dataCache.customers = null;
+  dataCache.cellars = null;
+  dataCache.loadingPromise = null;
+}
+
 function getCachedData(): Promise<[JobResponseModel[], EmployeeResponseModel[], CustomerResponseModel[], CellarResponseModel[]]> {
-  // If all data is already cached, return it immediately
-  if (dataCache.jobs && dataCache.employees && dataCache.customers && dataCache.cellars) {
+  // If all data is already cached AND has actual data, return it immediately
+  // Don't use cache if any array is empty (might be from a failed fetch)
+  if (dataCache.jobs && dataCache.jobs.length > 0 && 
+      dataCache.employees && 
+      dataCache.customers && 
+      dataCache.cellars) {
     return Promise.resolve([dataCache.jobs, dataCache.employees, dataCache.customers, dataCache.cellars]);
   }
 
@@ -51,15 +67,19 @@ function getCachedData(): Promise<[JobResponseModel[], EmployeeResponseModel[], 
     getCustomers(),
     getCellars(),
   ] as const).then(([jobs, employees, customers, cellars]) => {
-    // Cache the results
-    dataCache.jobs = jobs;
-    dataCache.employees = employees;
-    dataCache.customers = customers;
-    dataCache.cellars = cellars;
+    // Only cache if we got actual data (jobs should never be empty)
+    if (jobs.length > 0) {
+      dataCache.jobs = jobs;
+      dataCache.employees = employees;
+      dataCache.customers = customers;
+      dataCache.cellars = cellars;
+    }
     dataCache.loadingPromise = null;
     return [jobs, employees, customers, cellars];
   }).catch((error) => {
     dataCache.loadingPromise = null;
+    // Clear cache on error so next attempt will refetch
+    clearAppointmentDataCache();
     throw error;
   }) as Promise<[JobResponseModel[], EmployeeResponseModel[], CustomerResponseModel[], CellarResponseModel[]]>;
 
@@ -70,8 +90,6 @@ type Mode = "customer" | "technician";
 
 interface AddAppointmentModalProps {
   mode: Mode;
-  customerId?: string;
-  technicianId?: string;
   onClose: () => void;
   onCreated: (appointment: AppointmentResponseModel) => void;
 }
@@ -173,11 +191,15 @@ function labelForTime(time: string): string {
 
 export default function AddAppointmentModal({
   mode,
-  customerId,
-  technicianId,
   onClose,
   onCreated,
 }: AddAppointmentModalProps): React.ReactElement {
+  const { customerData } = useAuthStore();
+  
+  // Get customerId or employeeId from auth store
+  const customerId = customerData?.customerId;
+  const technicianId = customerData?.employeeId;
+  
   const [jobs, setJobs] = useState<JobResponseModel[]>([]);
   const [employees, setEmployees] = useState<EmployeeResponseModel[]>([]);
   const [customers, setCustomers] = useState<CustomerResponseModel[]>([]);
@@ -207,6 +229,7 @@ export default function AddAppointmentModal({
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState<boolean>(false);
   const [allAppointments, setAllAppointments] = useState<AppointmentResponseModel[]>([]);
+  const [technicianBookedSlots, setTechnicianBookedSlots] = useState<BookedSlot[]>([]);
 
   useEffect(() => {
     let isMounted = true;
@@ -264,28 +287,7 @@ export default function AddAppointmentModal({
     };
   }, [mode, customerId, technicianId, selectedTechnicianId]);
 
-  // Fetch all appointments to check for conflicts
-  useEffect(() => {
-    async function fetchAppointments() {
-      // In customer mode, we need to fetch appointments for the selected technician to check their availability
-      // In technician mode, we fetch appointments for the technician
-      const targetId = mode === "customer" ? selectedTechnicianId : technicianId;
-      if (!targetId) return;
-
-      try {
-        // Use the correct API endpoint - getMyJobs for technician's appointments
-        const appointments = await getMyJobs(targetId);
-        setAllAppointments(appointments);
-      } catch (err) {
-        console.error('Failed to fetch appointments:', err);
-        // If fetch fails, continue without filtering (backend will validate)
-        setAllAppointments([]);
-      }
-    }
-
-    fetchAppointments();
-  }, [mode, customerId, technicianId, selectedTechnicianId, appointmentDate]);
-
+  // Define computed values BEFORE useEffects that depend on them
   const jobOptions = useMemo(() => {
     if (mode === "customer") {
       return jobs.filter((j) => j.jobType === "QUOTATION");
@@ -304,6 +306,76 @@ export default function AddAppointmentModal({
     const actualCustomerId = getActualCustomerId(selectedCustomerId);
     return customers.find((c) => getActualCustomerId(c.customerId) === actualCustomerId);
   }, [customers, selectedCustomerId]);
+
+  // Fetch aggregated availability for customer mode (when no technician is selected)
+  useEffect(() => {
+    async function fetchAggregatedSlots() {
+      // Only fetch in customer mode when we have a date and job selected
+      if (mode !== "customer" || !appointmentDate || !selectedJobId) {
+        setTechnicianBookedSlots([]);
+        return;
+      }
+
+      try {
+        const selectedJobToUse = jobOptions.find((j) => j.jobId === selectedJobId);
+        if (!selectedJobToUse) {
+          return;
+        }
+
+        const response = await getAggregatedAvailability(appointmentDate, selectedJobToUse.jobName);
+        setTechnicianBookedSlots(response.bookedSlots || []);
+      } catch (err) {
+        console.error('Failed to fetch aggregated availability:', err);
+        setTechnicianBookedSlots([]);
+      }
+    }
+
+    fetchAggregatedSlots();
+  }, [mode, appointmentDate, selectedJobId, jobOptions]);
+
+  // Fetch technician's booked slots for technician mode
+  useEffect(() => {
+    async function fetchBookedSlots() {
+      // Only fetch in technician mode when we have a technician and date selected
+      if (mode !== "technician" || !selectedTechnicianId || !appointmentDate) {
+        setTechnicianBookedSlots([]);
+        return;
+      }
+
+      try {
+        const response = await getTechnicianBookedSlots(selectedTechnicianId, appointmentDate);
+        setTechnicianBookedSlots(response.bookedSlots || []);
+      } catch (err) {
+        console.error('Failed to fetch technician booked slots:', err);
+        setTechnicianBookedSlots([]);
+      }
+    }
+
+    fetchBookedSlots();
+  }, [mode, selectedTechnicianId, appointmentDate]);
+
+  // Fetch all appointments to check for conflicts (technician mode only)
+  useEffect(() => {
+    async function fetchAppointments() {
+      // Only fetch in technician mode - the technician can see their own jobs
+      if (mode !== "technician") {
+        setAllAppointments([]);
+        return;
+      }
+
+      try {
+        // Use the correct API endpoint - getMyJobs for technician's appointments
+        const appointments = await getMyJobs();
+        setAllAppointments(appointments);
+      } catch (err) {
+        console.error('Failed to fetch appointments:', err);
+        // If fetch fails, continue without filtering (backend will validate)
+        setAllAppointments([]);
+      }
+    }
+
+    fetchAppointments();
+  }, [mode, appointmentDate]);
 
   const filteredCustomers = useMemo(() => {
     if (!customerSearch.trim()) return customers;
@@ -438,6 +510,43 @@ export default function AddAppointmentModal({
 
   const availableSlots = useMemo(() => {
     if (!selectedJob || !appointmentDate || isWeekend(appointmentDate)) return [];
+
+    // For customer mode: use aggregated availability
+    if (mode === "customer") {
+      const slots: string[] = [];
+      const jobDuration = selectedJob.estimatedDurationMinutes || 120;
+
+      // technicianBookedSlots is an array of BookedSlot objects with startTime/endTime as "HH:MM:SS" or "HH:MM"
+      if (Array.isArray(technicianBookedSlots)) {
+        technicianBookedSlots.forEach((slot: any) => {
+          const startTimeRaw = slot.startTime;
+          if (!startTimeRaw) return;
+
+          // Extract HH:MM from HH:MM:SS format or use as-is if already HH:MM
+          const time = startTimeRaw.includes(':') 
+            ? startTimeRaw.substring(0, 5)  // Take first 5 chars: "09:00" from "09:00:00"
+            : startTimeRaw;
+
+          if (isPast(appointmentDate, time)) return;
+          if (!passesBookingDeadline(appointmentDate, time)) return;
+
+          // Calculate end time for this slot
+          const slotStart = new Date(`${appointmentDate}T${time}:00`);
+          const slotEnd = new Date(slotStart.getTime() + jobDuration * 60 * 1000);
+
+          // Check if slotEnd goes past working hours (6:00 PM)
+          const lastSlotEnd = new Date(`${appointmentDate}T18:00:00`);
+          if (slotEnd > lastSlotEnd) return;
+
+          // Add the time
+          slots.push(time);
+        });
+      }
+
+      return Array.from(new Set(slots)); // Remove duplicates
+    }
+
+    // For technician mode: use schedule slots and check for conflicts
     if (!selectedTechnician) return [];
 
     const slotSet = new Set(scheduleSlots);
@@ -460,7 +569,20 @@ export default function AddAppointmentModal({
       const lastSlotEnd = new Date(`${appointmentDate}T17:00:00`);
       if (slotEnd > lastSlotEnd) return;
 
-      // Overlap detection
+      // Check for conflicts with booked slots (for technician mode when checking against specific tech)
+      const hasBookedConflict = technicianBookedSlots.some((bookedSlot) => {
+        if (!bookedSlot.startTime || !bookedSlot.endTime) return false;
+        
+        const bookedStart = new Date(`${appointmentDate}T${bookedSlot.startTime}`);
+        const bookedEnd = new Date(`${appointmentDate}T${bookedSlot.endTime}`);
+        
+        // Overlap check: slotStart < bookedEnd AND slotEnd > bookedStart
+        return slotStart < bookedEnd && slotEnd > bookedStart;
+      });
+
+      if (hasBookedConflict) return;
+
+      // Overlap detection with allAppointments (for technician mode)
       const hasConflict = allAppointments.some((apt) => {
         const aptDate = new Date(apt.appointmentDate).toISOString().split('T')[0];
         if (aptDate !== appointmentDate) return false;
@@ -497,7 +619,7 @@ export default function AddAppointmentModal({
     });
 
     return slots;
-  }, [appointmentDate, scheduleSlots, selectedJob, allAppointments, selectedTechnician]);
+  }, [appointmentDate, scheduleSlots, selectedJob, allAppointments, selectedTechnician, technicianBookedSlots]);
 
   useEffect(() => {
     if (!appointmentTime && availableSlots.length > 0) {
@@ -547,18 +669,6 @@ export default function AddAppointmentModal({
       return;
     }
 
-    const headerId = mode === "customer" ? customerId : getActualCustomerId(selectedTechnicianId);
-    if (!headerId) {
-      setError("Missing user identifier for the request.");
-      return;
-    }
-
-    const technician = mode === "customer" ? selectedTechnician : selectedTechnician || employees.find((e) => e.employeeIdentifier.employeeId === headerId);
-    if (!technician) {
-      setError("Unable to resolve technician information.");
-      return;
-    }
-
     const cellar = customerCellars.find((c) => c.cellarId === selectedCellarId);
     if (!cellar) {
       setError("Select a cellar for this appointment.");
@@ -567,13 +677,15 @@ export default function AddAppointmentModal({
 
     const appointmentDateTime = `${appointmentDate}T${appointmentTime}:00`;
 
-    // Extract actual customer ID in case it's nested
+    // Extract actual customer ID in case it's nested - only needed for technician mode
     const actualCustomerId = mode === "technician" ? getActualCustomerId(selectedCustomerId) : undefined;
 
     const request: AppointmentRequestModel = {
       customerId: actualCustomerId,
-      technicianFirstName: technician.firstName,
-      technicianLastName: technician.lastName,
+      ...(mode === "technician" && selectedTechnician ? {
+        technicianFirstName: selectedTechnician.firstName,
+        technicianLastName: selectedTechnician.lastName,
+      } : {}),
       jobName: selectedJob.jobName,
       cellarName: cellar.name,
       appointmentDate: appointmentDateTime,
@@ -583,10 +695,7 @@ export default function AddAppointmentModal({
 
     try {
       setSubmitting(true);
-      const created = await createAppointment(request, {
-        userId: headerId,
-        role: mode === "customer" ? "CUSTOMER" : "TECHNICIAN",
-      });
+      const created = await createAppointment(request);
       onCreated(created);
       onClose();
     } catch (e: unknown) {
@@ -609,7 +718,7 @@ export default function AddAppointmentModal({
   };
 
   const disableCustomerSearch = mode === "technician" && !selectedJobId;
-  const disableDatePicker = mode === "customer" ? !selectedTechnicianId : false;
+  const disableDatePicker = mode === "customer" ? !selectedJobId : false;
   const disableTimePicker = disableDatePicker || !appointmentDate;
 
   return (
@@ -651,21 +760,16 @@ export default function AddAppointmentModal({
               </label>
 
               <label className="field">
-                <span>{mode === "customer" ? "Technician" : "Customer"}</span>
+                <span>{mode === "customer" ? "Available Technicians" : "Customer"}</span>
                 <div className="input-with-icon">
                   <Users size={16} />
                   {mode === "customer" ? (
-                    <select
-                      value={selectedTechnicianId}
-                      onChange={(e) => setSelectedTechnicianId(e.target.value)}
-                      required
-                    >
-                      {employees.map((tech) => (
-                        <option key={tech.employeeIdentifier.employeeId} value={tech.employeeIdentifier.employeeId}>
-                          {tech.firstName} {tech.lastName}
-                        </option>
-                      ))}
-                    </select>
+                    <input
+                      type="text"
+                      placeholder="Will be auto-assigned from available technicians"
+                      disabled
+                      value="Auto-assigned"
+                    />
                   ) : (
                     <input
                       type="text"
@@ -699,6 +803,9 @@ export default function AddAppointmentModal({
                     )}
                   </div>
                 )}
+                {mode === "customer" && (
+                  <small className="hint">Technician will be automatically assigned from available staff.</small>
+                )}
               </label>
             </div>
 
@@ -716,7 +823,7 @@ export default function AddAppointmentModal({
                     required
                   />
                 </div>
-                <small className="hint">Weekdays only. Slots depend on technician schedule.</small>
+                <small className="hint">Weekdays only. {mode === "customer" ? "Slots available from any technician." : "Slots depend on technician schedule."}</small>
               </label>
 
               <label className="field">
@@ -744,7 +851,7 @@ export default function AddAppointmentModal({
                 )}
                 {availableSlots.length === 0 && appointmentDate && !isWeekend(appointmentDate) && (
                   <small className="error">
-                    {scheduleError || "No valid slots for this date/service with the selected technician."}
+                    {scheduleError || (mode === "customer" ? "No available slots from any technician for this date/service." : "No valid slots for this date/service with the selected technician.")}
                   </small>
                 )}
               </label>

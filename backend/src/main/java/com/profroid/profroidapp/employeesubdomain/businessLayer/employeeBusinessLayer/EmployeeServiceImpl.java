@@ -19,6 +19,7 @@ import com.profroid.profroidapp.utils.exceptions.ResourceAlreadyExistsException;
 import com.profroid.profroidapp.utils.exceptions.ResourceNotFoundException;
 import com.profroid.profroidapp.utils.exceptions.InvalidOperationException;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -92,6 +93,18 @@ public class EmployeeServiceImpl implements EmployeeService {
             );
         }
         
+        // Check if customer has any appointments BEFORE making any changes
+        Customer existingCustomer = customerRepository.findCustomerByUserId(userId);
+        if (existingCustomer != null) {
+            List<Appointment> customerAppointments = appointmentRepository.findAllByCustomer(existingCustomer);
+            if (!customerAppointments.isEmpty()) {
+                throw new InvalidOperationException(
+                    "Cannot convert customer to employee: This customer has " + customerAppointments.size() + 
+                    " appointment(s). Please cancel or reassign all appointments before converting to employee."
+                );
+            }
+        }
+        
         // If inactive employee exists, reactivate and update it instead of creating new
         if (existingEmployee != null && !existingEmployee.getIsActive()) {
             existingEmployee.setIsActive(true);
@@ -101,8 +114,7 @@ public class EmployeeServiceImpl implements EmployeeService {
             existingEmployee.setPhoneNumbers(employeeRequestModel.getPhoneNumbers());
             existingEmployee.setEmployeeRole(employeeRequestModel.getEmployeeRole());
             
-            // Delete any existing customer record for this user
-            Customer existingCustomer = customerRepository.findCustomerByUserId(userId);
+            // Delete customer record (already validated no appointments exist)
             if (existingCustomer != null) {
                 customerRepository.delete(existingCustomer);
             }
@@ -115,8 +127,7 @@ public class EmployeeServiceImpl implements EmployeeService {
 
         employee.setEmployeeIdentifier(new EmployeeIdentifier());
 
-        // Delete any existing customer record for this user
-        Customer existingCustomer = customerRepository.findCustomerByUserId(userId);
+        // Delete customer record (already validated no appointments exist)
         if (existingCustomer != null) {
             customerRepository.delete(existingCustomer);
         }

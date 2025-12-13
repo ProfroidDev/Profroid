@@ -6,6 +6,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -20,6 +21,16 @@ public class CellarController {
         this.cellarService = cellarService;
     }
 
+    /**
+     * Helper to check if user has a specific role
+     */
+    private boolean hasRole(Authentication authentication, String role) {
+        if (authentication == null) return false;
+        return authentication.getAuthorities().stream()
+                .map(GrantedAuthority::getAuthority)
+                .anyMatch(auth -> auth.equals("ROLE_" + role));
+    }
+
     @GetMapping
     @PreAuthorize("hasAnyRole('CUSTOMER','TECHNICIAN','ADMIN')")
     public ResponseEntity<List<CellarResponseModel>> getAllCellars(
@@ -32,11 +43,17 @@ public class CellarController {
             return ResponseEntity.ok(filtered);
         }
 
-        // If caller is a customer and no ownerCustomerId provided, derive and filter via userId
-        // authentication.getName() holds JWT subject (userId)
         if (authentication == null || authentication.getName() == null) {
             return ResponseEntity.ok(List.of());
         }
+
+        // For TECHNICIAN or ADMIN, return all cellars (they need to see all for scheduling)
+        if (hasRole(authentication, "TECHNICIAN") || hasRole(authentication, "ADMIN")) {
+            List<CellarResponseModel> allCellars = cellarService.getAllCellars();
+            return ResponseEntity.ok(allCellars);
+        }
+
+        // For CUSTOMER, get only their cellars based on userId
         List<CellarResponseModel> responseModels = cellarService.getAllCellarsForUser(authentication.getName());
         return ResponseEntity.ok(responseModels);
     }

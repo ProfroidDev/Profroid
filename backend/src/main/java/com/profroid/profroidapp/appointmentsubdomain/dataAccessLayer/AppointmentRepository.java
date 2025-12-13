@@ -105,5 +105,12 @@ public interface AppointmentRepository extends JpaRepository<Appointment, Intege
         @Param("postalCode") String postalCode,
         @Param("date") LocalDate date
     );
+    
+    // Find appointments by technician within a date range (for availability checking)
+    List<Appointment> findByTechnicianAndAppointmentDateBetween(
+        Employee technician,
+        LocalDateTime startDateTime,
+        LocalDateTime endDateTime
+    );
 }
 

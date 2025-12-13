@@ -3,26 +3,13 @@ import type { AppointmentResponseModel } from "../models/AppointmentResponseMode
 
 /**
  * Get a single appointment by ID
- * Uses appropriate headers based on user role
+ * Uses JWT token for authentication - no custom headers needed
  */
 export async function getAppointmentById(
-  appointmentId: string,
-  userId: string,
-  userRole: "CUSTOMER" | "TECHNICIAN"
+  appointmentId: string
 ): Promise<AppointmentResponseModel> {
-  const headers: Record<string, string> = {
-    "X-User-Role": userRole
-  };
-  
-  if (userRole === "CUSTOMER") {
-    headers["X-Customer-Id"] = userId;
-  } else {
-    headers["X-Employee-Id"] = userId;
-  }
-  
   const response = await axiosInstance.get<AppointmentResponseModel>(
-    `/appointments/${appointmentId}`,
-    { headers }
+    `/appointments/${appointmentId}`
   );
   return response.data;
 }

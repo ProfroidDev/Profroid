@@ -6,6 +6,7 @@ import com.profroid.profroidapp.appointmentsubdomain.mappingLayer.AppointmentRes
 import com.profroid.profroidapp.appointmentsubdomain.presentationLayer.AppointmentRequestModel;
 import com.profroid.profroidapp.appointmentsubdomain.presentationLayer.AppointmentResponseModel;
 import com.profroid.profroidapp.appointmentsubdomain.presentationLayer.AppointmentStatusChangeRequestModel;
+import com.profroid.profroidapp.appointmentsubdomain.presentationLayer.TechnicianBookedSlotsResponseModel;
 import com.profroid.profroidapp.appointmentsubdomain.utils.AppointmentValidationUtils;
 import com.profroid.profroidapp.cellarsubdomain.dataAccessLayer.Cellar;
 import com.profroid.profroidapp.cellarsubdomain.dataAccessLayer.CellarRepository;
@@ -16,6 +17,7 @@ import com.profroid.profroidapp.employeesubdomain.dataAccessLayer.employeeDataAc
 import com.profroid.profroidapp.employeesubdomain.dataAccessLayer.employeeDataAccessLayer.EmployeeRoleType;
 import com.profroid.profroidapp.employeesubdomain.dataAccessLayer.employeeScheduleDataAccessLayer.Schedule;
 import com.profroid.profroidapp.employeesubdomain.dataAccessLayer.employeeScheduleDataAccessLayer.ScheduleRepository;
+import com.profroid.profroidapp.employeesubdomain.dataAccessLayer.employeeScheduleDataAccessLayer.TimeSlotType;
 import com.profroid.profroidapp.employeesubdomain.mappingLayer.employeeMappers.EmployeeResponseMapper;
 import com.profroid.profroidapp.jobssubdomain.dataAccessLayer.Job;
 import com.profroid.profroidapp.jobssubdomain.dataAccessLayer.JobRepository;
@@ -121,28 +123,42 @@ public class AppointmentServiceImpl implements AppointmentService {
             }
         }
         
-        // Find technician by name
-        List<Employee> technicianCandidates = employeeRepository.findByFirstNameAndLastName(
-            requestModel.getTechnicianFirstName(), 
-            requestModel.getTechnicianLastName()
-        );
-        
-        if (technicianCandidates.isEmpty()) {
-            throw new ResourceNotFoundException(
-                "Technician not found: " + requestModel.getTechnicianFirstName() + 
-                " " + requestModel.getTechnicianLastName()
+        // Find technician by name (or auto-assign if customer booking and not specified)
+        if (requestModel.getTechnicianFirstName() == null || requestModel.getTechnicianFirstName().isBlank() ||
+            requestModel.getTechnicianLastName() == null || requestModel.getTechnicianLastName().isBlank()) {
+            
+            // Technician not specified - auto-assign for customer bookings
+            if ("CUSTOMER".equals(userRole)) {
+                technician = autoAssignTechnician(requestModel.getAppointmentDate(), requestModel.getJobName());
+            } else {
+                throw new InvalidOperationException(
+                    "Technician must be specified when booking from non-customer role."
+                );
+            }
+        } else {
+            // Technician specified - find by name
+            List<Employee> technicianCandidates = employeeRepository.findByFirstNameAndLastName(
+                requestModel.getTechnicianFirstName(), 
+                requestModel.getTechnicianLastName()
             );
+            
+            if (technicianCandidates.isEmpty()) {
+                throw new ResourceNotFoundException(
+                    "Technician not found: " + requestModel.getTechnicianFirstName() + 
+                    " " + requestModel.getTechnicianLastName()
+                );
+            }
+            
+            // Filter for active technicians with TECHNICIAN role
+            technician = technicianCandidates.stream()
+                .filter(Employee::getIsActive)
+                .filter(e -> e.getEmployeeRole().getEmployeeRoleType() == EmployeeRoleType.TECHNICIAN)
+                .findFirst()
+                .orElseThrow(() -> new ResourceNotFoundException(
+                    "No active technician found with the name: " + requestModel.getTechnicianFirstName() + 
+                    " " + requestModel.getTechnicianLastName()
+                ));
         }
-        
-        // Filter for active technicians with TECHNICIAN role
-        technician = technicianCandidates.stream()
-            .filter(Employee::getIsActive)
-            .filter(e -> e.getEmployeeRole().getEmployeeRoleType() == EmployeeRoleType.TECHNICIAN)
-            .findFirst()
-            .orElseThrow(() -> new ResourceNotFoundException(
-                "No active technician found with the name: " + requestModel.getTechnicianFirstName() + 
-                " " + requestModel.getTechnicianLastName()
-            ));
         
         // Find job by name
         Job job = jobRepository.findJobByJobName(requestModel.getJobName());
@@ -154,16 +170,19 @@ public class AppointmentServiceImpl implements AppointmentService {
             throw new InvalidOperationException("Job " + requestModel.getJobName() + " is not active.");
         }
         
-        // Find cellar by name
-        Cellar cellar = cellarRepository.findCellarByName(requestModel.getCellarName());
+        // Find cellar by name and owner (prevents duplicate name issues)
+        Cellar cellar = cellarRepository.findCellarByNameAndOwnerCustomerIdentifier_CustomerId(
+            requestModel.getCellarName(), 
+            customer.getCustomerIdentifier().getCustomerId()
+        );
         if (cellar == null) {
-            throw new ResourceNotFoundException("Cellar not found: " + requestModel.getCellarName());
+            throw new ResourceNotFoundException("Cellar not found: " + requestModel.getCellarName() + " for this customer");
         }
         validationUtils.validateCellarOwnership(cellar, customer);
         validationUtils.validateTechnicianSchedule(technician, appointmentDateTime);
         validationUtils.validateServiceTypeRestrictions(job.getJobType(), userRole);
         validationUtils.validateQuotationCompleted(job.getJobType(), requestModel, customer, appointmentDateTime);
-        validationUtils.validateDuplicateQuotation(job.getJobType(), requestModel, appointmentDateTime.toLocalDate(), customer);
+        validationUtils.validateDuplicateQuotation(job.getJobType(), requestModel, appointmentDateTime.toLocalDate(), appointmentDateTime, customer);
         validationUtils.validateDuplicateServiceAddressAndDay(job.getJobType(), requestModel, appointmentDateTime.toLocalDate());
         validationUtils.validateTimeSlotAvailability(technician, appointmentDateTime, job);
         
@@ -353,10 +372,13 @@ public class AppointmentServiceImpl implements AppointmentService {
                 throw new InvalidOperationException("Job " + appointmentRequest.getJobName() + " is not active.");
             }
 
-            // Find cellar by name
-            Cellar cellar = cellarRepository.findCellarByName(appointmentRequest.getCellarName());
+            // Find cellar by name and owner (prevents duplicate name issues)
+            Cellar cellar = cellarRepository.findCellarByNameAndOwnerCustomerIdentifier_CustomerId(
+                appointmentRequest.getCellarName(), 
+                customer.getCustomerIdentifier().getCustomerId()
+            );
             if (cellar == null) {
-                throw new ResourceNotFoundException("Cellar not found: " + appointmentRequest.getCellarName());
+                throw new ResourceNotFoundException("Cellar not found: " + appointmentRequest.getCellarName() + " for this customer");
             }
 
             // Validate rules (same as POST)
@@ -373,7 +395,7 @@ public class AppointmentServiceImpl implements AppointmentService {
             validationUtils.validateTechnicianSchedule(technician, appointmentDateTime);
             validationUtils.validateServiceTypeRestrictions(job.getJobType(), effectiveRole);
             validationUtils.validateQuotationCompleted(job.getJobType(), appointmentRequest, customer, appointmentDateTime);
-            validationUtils.validateDuplicateQuotation(job.getJobType(), appointmentRequest, appointmentDateTime.toLocalDate(), customer);
+            validationUtils.validateDuplicateQuotation(job.getJobType(), appointmentRequest, appointmentDateTime.toLocalDate(), appointmentDateTime, customer);
             // Prevent duplicate service for same address/day/technician except for the current appointment
             validationUtils.validateDuplicateServiceAddressAndDayExcludeCurrent(job.getJobType(), appointmentRequest, appointmentDateTime.toLocalDate(), appointment.getAppointmentIdentifier().getAppointmentId());
             validationUtils.validateTimeSlotAvailability(technician, appointmentDateTime, job);
@@ -440,5 +462,341 @@ public class AppointmentServiceImpl implements AppointmentService {
 
             Appointment updatedAppointment = appointmentRepository.save(appointment);
             return appointmentResponseMapper.toResponseModel(updatedAppointment);
+        }
+        
+        @Override
+        public TechnicianBookedSlotsResponseModel getTechnicianBookedSlots(String technicianId, LocalDate date) {
+            // Validate technician exists
+            Employee technician = employeeRepository.findEmployeeByEmployeeIdentifier_EmployeeId(technicianId);
+            if (technician == null) {
+                throw new ResourceNotFoundException("Technician not found: " + technicianId);
+            }
+            
+            // Find all appointments for this technician on the given date
+            LocalDateTime startOfDay = date.atStartOfDay();
+            LocalDateTime endOfDay = date.plusDays(1).atStartOfDay();
+            
+            List<Appointment> appointments = appointmentRepository.findByTechnicianAndAppointmentDateBetween(
+                    technician, startOfDay, endOfDay);
+            
+            // Filter out cancelled appointments and build booked slots
+            List<TechnicianBookedSlotsResponseModel.BookedSlot> bookedSlots = appointments.stream()
+                    .filter(apt -> apt.getAppointmentStatus() != null && 
+                            apt.getAppointmentStatus().getAppointmentStatusType() != AppointmentStatusType.CANCELLED)
+                    .map(apt -> {
+                        // Extract start time from appointmentDate
+                        LocalTime startTime = apt.getAppointmentDate().toLocalTime();
+                        
+                        // Calculate end time based on job duration (default 60 mins if job is null)
+                        int durationMinutes = apt.getJob() != null ? apt.getJob().getEstimatedDurationMinutes() : 60;
+                        LocalTime endTime = startTime.plusMinutes(durationMinutes);
+                        
+                        return TechnicianBookedSlotsResponseModel.BookedSlot.builder()
+                                .startTime(startTime)
+                                .endTime(endTime)
+                                .build();
+                    })
+                    .toList();
+            
+            return TechnicianBookedSlotsResponseModel.builder()
+                    .technicianId(technicianId)
+                    .date(date)
+                    .bookedSlots(bookedSlots)
+                    .build();
+        }
+        
+        @Override
+        public TechnicianBookedSlotsResponseModel getAggregatedAvailability(LocalDate date, String jobName) {
+            // Get the job to determine duration
+            Job job = jobRepository.findJobByJobName(jobName);
+            int jobDurationMinutes = (job != null && job.getEstimatedDurationMinutes() > 0) 
+                    ? job.getEstimatedDurationMinutes() 
+                    : 120; // Default 2 hours
+            
+            // Get all active technicians
+            List<Employee> technicians = employeeRepository.findAll().stream()
+                    .filter(Employee::getIsActive)
+                    .filter(e -> e.getEmployeeRole().getEmployeeRoleType() == EmployeeRoleType.TECHNICIAN)
+                    .toList();
+            
+            if (technicians.isEmpty()) {
+                return TechnicianBookedSlotsResponseModel.builder()
+                        .technicianId("all") // Aggregated across all technicians
+                        .date(date)
+                        .bookedSlots(new ArrayList<>())
+                        .build();
+            }
+            
+            // Define available time slots for the day (9 AM, 11 AM, 1 PM, 3 PM, 5 PM)
+            LocalTime[] timeSlots = {
+                    LocalTime.of(9, 0),
+                    LocalTime.of(11, 0),
+                    LocalTime.of(13, 0),
+                    LocalTime.of(15, 0),
+                    LocalTime.of(17, 0)
+            };
+            
+            List<TechnicianBookedSlotsResponseModel.BookedSlot> bookedSlots = new ArrayList<>();
+            LocalDateTime dayStart = date.atStartOfDay();
+            LocalDateTime dayEnd = date.plusDays(1).atStartOfDay();
+            
+            // For each time slot, check if ANY technician is available
+            for (LocalTime slotTime : timeSlots) {
+                LocalTime slotEnd = slotTime.plusMinutes(jobDurationMinutes);
+                
+                // Skip slots that would end after 6 PM
+                if (slotEnd.isAfter(LocalTime.of(18, 0))) {
+                    continue;
+                }
+                
+                boolean hasAvailableTechnician = false;
+                
+                // Check if at least one technician is available for this slot
+                for (Employee technician : technicians) {
+                    // Get the technician's schedules using their employee ID
+                    String techId = technician.getEmployeeIdentifier().getEmployeeId();
+                    List<Schedule> schedules = scheduleRepository.findAllByEmployee_EmployeeIdentifier_EmployeeId(techId);
+                    
+                    // Determine what schedule to check (date-specific or weekly)
+                    List<Schedule> relevantSchedules = new ArrayList<>();
+                    
+                    // Check for date-specific schedule first
+                    List<Schedule> dateSpecific = scheduleRepository.findAllByEmployee_EmployeeIdentifier_EmployeeIdAndSpecificDate(techId, date);
+                    
+                    if (!dateSpecific.isEmpty()) {
+                        relevantSchedules = dateSpecific;
+                    } else {
+                        // Fall back to weekly schedule - get the day name from LocalDate
+                        java.time.DayOfWeek dayOfWeek = date.getDayOfWeek();
+                        String dayName = dayOfWeek.toString(); // Returns like "MONDAY", "TUESDAY", etc.
+                        
+                        relevantSchedules = schedules.stream()
+                                .filter(s -> s.getSpecificDate() == null && s.getDayOfWeek() != null && 
+                                        s.getDayOfWeek().getDayOfWeek() != null &&
+                                        s.getDayOfWeek().getDayOfWeek().name().equals(dayName))
+                                .toList();
+                    }
+                    
+                    // Check if technician has this time slot scheduled
+                    boolean hasScheduleForSlot = false;
+                    for (Schedule schedule : relevantSchedules) {
+                        if (schedule.getTimeSlot() != null && 
+                            schedule.getTimeSlot().getTimeslot() != null) {
+                            TimeSlotType scheduledSlot = schedule.getTimeSlot().getTimeslot();
+                            
+                            // Map LocalTime to TimeSlotType and check if it matches
+                            if ((slotTime.getHour() == 9 && scheduledSlot == TimeSlotType.NINE_AM) ||
+                                (slotTime.getHour() == 11 && scheduledSlot == TimeSlotType.ELEVEN_AM) ||
+                                (slotTime.getHour() == 13 && scheduledSlot == TimeSlotType.ONE_PM) ||
+                                (slotTime.getHour() == 15 && scheduledSlot == TimeSlotType.THREE_PM) ||
+                                (slotTime.getHour() == 17 && scheduledSlot == TimeSlotType.FIVE_PM)) {
+                                hasScheduleForSlot = true;
+                                break;
+                            }
+                        }
+                    }
+                    
+                    // If technician doesn't have this slot in their schedule, skip them
+                    if (!hasScheduleForSlot) {
+                        continue;
+                    }
+                    
+                    // Now check if they have any conflicting appointments
+                    List<Appointment> appointmentsOnDay = appointmentRepository.findByTechnicianAndAppointmentDateBetween(
+                            technician, dayStart, dayEnd).stream()
+                            .filter(apt -> apt.getAppointmentStatus() != null && 
+                                    apt.getAppointmentStatus().getAppointmentStatusType() != AppointmentStatusType.CANCELLED)
+                            .toList();
+                    
+                    boolean technicianAvailable = true;
+                    for (Appointment apt : appointmentsOnDay) {
+                        LocalTime aptStart = apt.getAppointmentDate().toLocalTime();
+                        LocalTime aptEnd = aptStart.plusMinutes(
+                                apt.getJob() != null ? apt.getJob().getEstimatedDurationMinutes() : 120
+                        );
+                        
+                        // Check for overlap with requested slot
+                        if (!(slotEnd.isBefore(aptStart) || slotTime.isAfter(aptEnd))) {
+                            technicianAvailable = false;
+                            break;
+                        }
+                    }
+                    
+                    if (technicianAvailable) {
+                        hasAvailableTechnician = true;
+                        break; // Found at least one available technician
+                    }
+                }
+                
+                // Only add slot if at least one technician is available
+                if (hasAvailableTechnician) {
+                    bookedSlots.add(TechnicianBookedSlotsResponseModel.BookedSlot.builder()
+                            .startTime(slotTime)
+                            .endTime(slotEnd)
+                            .build());
+                }
+            }
+            
+            return TechnicianBookedSlotsResponseModel.builder()
+                    .technicianId("all")
+                    .date(date)
+                    .bookedSlots(bookedSlots)
+                    .build();
+        }
+        
+        /**
+         * Auto-assign a technician based on:
+         * 1. Availability at the requested time
+         * 2. Least booked hours during the current week
+         * 3. Random selection if all have equal hours
+         */
+        private Employee autoAssignTechnician(LocalDateTime appointmentDateTime, String jobName) {
+            LocalDate appointmentDate = appointmentDateTime.toLocalDate();
+            LocalTime appointmentTime = appointmentDateTime.toLocalTime();
+            
+            // Get the job to determine duration
+            Job job = jobRepository.findJobByJobName(jobName);
+            int jobDurationMinutes = (job != null && job.getEstimatedDurationMinutes() > 0) 
+                    ? job.getEstimatedDurationMinutes() 
+                    : 120;
+            LocalTime appointmentEnd = appointmentTime.plusMinutes(jobDurationMinutes);
+            
+            // Get all active technicians
+            List<Employee> technicians = employeeRepository.findAll().stream()
+                    .filter(Employee::getIsActive)
+                    .filter(e -> e.getEmployeeRole().getEmployeeRoleType() == EmployeeRoleType.TECHNICIAN)
+                    .toList();
+            
+            if (technicians.isEmpty()) {
+                throw new ResourceNotFoundException("No active technicians available for assignment.");
+            }
+            
+            // Filter for technicians available at the requested time
+            List<Employee> availableTechnicians = new ArrayList<>();
+            LocalDateTime dayStart = appointmentDate.atStartOfDay();
+            LocalDateTime dayEnd = appointmentDate.plusDays(1).atStartOfDay();
+            
+            for (Employee tech : technicians) {
+                // FIRST: Check if technician has this time slot in their schedule
+                String techId = tech.getEmployeeIdentifier().getEmployeeId();
+                List<Schedule> schedules = scheduleRepository.findAllByEmployee_EmployeeIdentifier_EmployeeId(techId);
+                
+                // Check for date-specific schedule first
+                List<Schedule> dateSpecific = scheduleRepository.findAllByEmployee_EmployeeIdentifier_EmployeeIdAndSpecificDate(techId, appointmentDate);
+                List<Schedule> relevantSchedules;
+                
+                if (!dateSpecific.isEmpty()) {
+                    relevantSchedules = dateSpecific;
+                } else {
+                    // Fall back to weekly schedule
+                    java.time.DayOfWeek dayOfWeek = appointmentDate.getDayOfWeek();
+                    String dayName = dayOfWeek.toString();
+                    
+                    relevantSchedules = schedules.stream()
+                            .filter(s -> s.getSpecificDate() == null && s.getDayOfWeek() != null && 
+                                    s.getDayOfWeek().getDayOfWeek() != null &&
+                                    s.getDayOfWeek().getDayOfWeek().name().equals(dayName))
+                            .toList();
+                }
+                
+                // Check if technician has the requested time slot scheduled
+                boolean hasScheduleForSlot = false;
+                for (Schedule schedule : relevantSchedules) {
+                    if (schedule.getTimeSlot() != null && 
+                        schedule.getTimeSlot().getTimeslot() != null) {
+                        TimeSlotType scheduledSlot = schedule.getTimeSlot().getTimeslot();
+                        
+                        // Map LocalTime to TimeSlotType and check if it matches
+                        if ((appointmentTime.getHour() == 9 && scheduledSlot == TimeSlotType.NINE_AM) ||
+                            (appointmentTime.getHour() == 11 && scheduledSlot == TimeSlotType.ELEVEN_AM) ||
+                            (appointmentTime.getHour() == 13 && scheduledSlot == TimeSlotType.ONE_PM) ||
+                            (appointmentTime.getHour() == 15 && scheduledSlot == TimeSlotType.THREE_PM) ||
+                            (appointmentTime.getHour() == 17 && scheduledSlot == TimeSlotType.FIVE_PM)) {
+                            hasScheduleForSlot = true;
+                            break;
+                        }
+                    }
+                }
+                
+                // If technician doesn't have this slot in their schedule, skip them
+                if (!hasScheduleForSlot) {
+                    continue;
+                }
+                
+                // SECOND: Check for appointment conflicts at this time
+                List<Appointment> appointmentsOnDay = appointmentRepository.findByTechnicianAndAppointmentDateBetween(
+                        tech, dayStart, dayEnd).stream()
+                        .filter(apt -> apt.getAppointmentStatus() != null && 
+                                apt.getAppointmentStatus().getAppointmentStatusType() != AppointmentStatusType.CANCELLED)
+                        .toList();
+                
+                // Check if technician is available for the requested slot
+                boolean available = true;
+                for (Appointment apt : appointmentsOnDay) {
+                    LocalTime aptStart = apt.getAppointmentDate().toLocalTime();
+                    LocalTime aptEnd = aptStart.plusMinutes(
+                            apt.getJob() != null ? apt.getJob().getEstimatedDurationMinutes() : 120
+                    );
+                    
+                    // Check for overlap
+                    if (!(appointmentEnd.isBefore(aptStart) || appointmentTime.isAfter(aptEnd))) {
+                        available = false;
+                        break;
+                    }
+                }
+                
+                if (available) {
+                    availableTechnicians.add(tech);
+                }
+            }
+            
+            if (availableTechnicians.isEmpty()) {
+                throw new InvalidOperationException(
+                    "No technicians available for the requested time slot: " + appointmentDateTime
+                );
+            }
+            
+            // Find the least-booked technician during the current week
+            LocalDate weekStart = appointmentDate.with(java.time.temporal.TemporalAdjusters.previousOrSame(java.time.DayOfWeek.MONDAY));
+            LocalDate weekEnd = weekStart.plusDays(6);
+            LocalDateTime weekStartDT = weekStart.atStartOfDay();
+            LocalDateTime weekEndDT = weekEnd.plusDays(1).atStartOfDay();
+            
+            Employee leastBookedTechnician = null;
+            int minHours = Integer.MAX_VALUE;
+            java.util.Random random = new java.util.Random();
+            
+            for (Employee tech : availableTechnicians) {
+                List<Appointment> weekAppointments = appointmentRepository.findByTechnicianAndAppointmentDateBetween(
+                        tech, weekStartDT, weekEndDT).stream()
+                        .filter(apt -> apt.getAppointmentStatus() != null && 
+                                apt.getAppointmentStatus().getAppointmentStatusType() != AppointmentStatusType.CANCELLED)
+                        .toList();
+                
+                int totalMinutes = 0;
+                for (Appointment apt : weekAppointments) {
+                    if (apt.getJob() != null && apt.getJob().getEstimatedDurationMinutes() > 0) {
+                        totalMinutes += apt.getJob().getEstimatedDurationMinutes();
+                    } else {
+                        totalMinutes += 120;
+                    }
+                }
+                
+                // If this technician has fewer hours, or same hours with random chance, select them
+                if (totalMinutes < minHours) {
+                    minHours = totalMinutes;
+                    leastBookedTechnician = tech;
+                } else if (totalMinutes == minHours && random.nextBoolean()) {
+                    // Equal workload - randomly select between them
+                    leastBookedTechnician = tech;
+                }
+            }
+            
+            if (leastBookedTechnician == null) {
+                // Fallback - just pick the first available
+                leastBookedTechnician = availableTechnicians.get(0);
+            }
+            
+            return leastBookedTechnician;
         }
 }

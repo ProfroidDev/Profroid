@@ -67,10 +67,10 @@ public class AppointmentServiceUnitTest {
         responseModel = mock(AppointmentResponseModel.class);
         appointment = mock(Appointment.class);
 
-        // Mock cellar lookup
-        // Mock cellar lookup
+        // Mock cellar lookup - the service uses findCellarByNameAndOwnerCustomerIdentifier_CustomerId
         lenient().when(requestModel.getCellarName()).thenReturn("Main Cellar"); // Use a cellar name from data.sql
         mockCellar = mock(com.profroid.profroidapp.cellarsubdomain.dataAccessLayer.Cellar.class);
+        lenient().when(cellarRepository.findCellarByNameAndOwnerCustomerIdentifier_CustomerId(anyString(), anyString())).thenReturn(mockCellar);
         lenient().when(cellarRepository.findCellarByName(anyString())).thenReturn(mockCellar);
 
         // Mock technician name lookup
@@ -516,7 +516,7 @@ public class AppointmentServiceUnitTest {
         doNothing().when(validationUtils).validateTechnicianSchedule(any(), any());
         doNothing().when(validationUtils).validateServiceTypeRestrictions(any(), anyString());
         doNothing().when(validationUtils).validateQuotationCompleted(any(), any(), any(), any());
-        doNothing().when(validationUtils).validateDuplicateQuotation(any(), any(), any(), any());
+        doNothing().when(validationUtils).validateDuplicateQuotation(any(), any(), any(), any(), any());
         doNothing().when(validationUtils).validateDuplicateServiceAddressAndDayExcludeCurrent(any(), any(), any(), any());
         doNothing().when(validationUtils).validateTimeSlotAvailability(any(), any(), any());
         doNothing().when(validationUtils).validateBookingDeadline(any(), any());
@@ -572,7 +572,7 @@ public class AppointmentServiceUnitTest {
         doNothing().when(validationUtils).validateTechnicianSchedule(any(), any());
         doNothing().when(validationUtils).validateServiceTypeRestrictions(any(), anyString());
         doNothing().when(validationUtils).validateQuotationCompleted(any(), any(), any(), any());
-        doNothing().when(validationUtils).validateDuplicateQuotation(any(), any(), any(), any());
+        doNothing().when(validationUtils).validateDuplicateQuotation(any(), any(), any(), any(), any());
         doNothing().when(validationUtils).validateDuplicateServiceAddressAndDayExcludeCurrent(any(), any(), any(), any());
         doNothing().when(validationUtils).validateTimeSlotAvailability(any(), any(), any());
         doNothing().when(validationUtils).validateBookingDeadline(any(), any());
@@ -709,6 +709,10 @@ public class AppointmentServiceUnitTest {
         lenient().when(mockAppointment.getTechnician()).thenReturn(currentTechnician);
         Customer mockCustomer = mock(Customer.class);
         lenient().when(mockCustomer.getId()).thenReturn(1);
+        // Mock the getCustomerIdentifier() chain for the cellar lookup
+        CustomerIdentifier mockCustomerIdentifier = mock(CustomerIdentifier.class);
+        lenient().when(mockCustomerIdentifier.getCustomerId()).thenReturn("123e4567-e89b-12d3-a456-426614174000");
+        lenient().when(mockCustomer.getCustomerIdentifier()).thenReturn(mockCustomerIdentifier);
         lenient().when(mockAppointment.getCustomer()).thenReturn(mockCustomer);
         lenient().when(mockAppointment.getJob()).thenReturn(mockJob);
         lenient().when(mockAppointment.getCellar()).thenReturn(mockCellar);
@@ -725,7 +729,7 @@ public class AppointmentServiceUnitTest {
         when(jobRepository.findJobByJobName("Installation")).thenReturn(activeJob);
 
         when(requestModel.getCellarName()).thenReturn("NonExistentCellar");
-        when(cellarRepository.findCellarByName("NonExistentCellar")).thenReturn(null); // Cellar not found -> Throws Exception here
+        when(cellarRepository.findCellarByNameAndOwnerCustomerIdentifier_CustomerId(eq("NonExistentCellar"), anyString())).thenReturn(null); // Cellar not found -> Throws Exception here
 
         assertThrows(ResourceNotFoundException.class, () ->
                 appointmentService.updateAppointment("appt-id", requestModel, "tech-id", "TECHNICIAN")

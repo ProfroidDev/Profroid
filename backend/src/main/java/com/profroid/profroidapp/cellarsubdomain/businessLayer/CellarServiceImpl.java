@@ -140,16 +140,27 @@ public class CellarServiceImpl implements CellarService {
             throw new EntityNotFoundException("Customer not found: " + ownerCustomerId);
         }
 
-        // 2. Create new CellarIdentifier
+        // 2. Check for duplicate cellar name for this owner
+        Cellar existingCellar = cellarRepository.findCellarByNameAndOwnerCustomerIdentifier_CustomerId(
+            cellarRequestModel.getName(), 
+            ownerCustomerId
+        );
+        if (existingCellar != null) {
+            throw new InvalidOperationException(
+                "A cellar with the name '" + cellarRequestModel.getName() + "' already exists for this customer."
+            );
+        }
+
+        // 3. Create new CellarIdentifier
         CellarIdentifier cellarIdentifier = new CellarIdentifier();
 
-        // 3. Map request model to entity
+        // 4. Map request model to entity
         Cellar cellar = cellarRequestMapper.toEntity(cellarRequestModel, cellarIdentifier);
 
-        // 4. Save to database
+        // 5. Save to database
         Cellar savedCellar = cellarRepository.save(cellar);
 
-        // 5. Map to response model and return
+        // 6. Map to response model and return
         return cellarResponseMapper.toResponseModel(savedCellar);
     }
 
@@ -185,7 +196,20 @@ public class CellarServiceImpl implements CellarService {
             );
         }
 
-        // 6. Update all cellar fields
+        // 6. Check for duplicate cellar name (if name is being changed)
+        if (!foundCellar.getName().equals(cellarRequestModel.getName())) {
+            Cellar existingCellar = cellarRepository.findCellarByNameAndOwnerCustomerIdentifier_CustomerId(
+                cellarRequestModel.getName(), 
+                ownerCustomerId
+            );
+            if (existingCellar != null) {
+                throw new InvalidOperationException(
+                    "A cellar with the name '" + cellarRequestModel.getName() + "' already exists for this customer."
+                );
+            }
+        }
+
+        // 7. Update all cellar fields
         foundCellar.setName(cellarRequestModel.getName());
         foundCellar.setHeight(cellarRequestModel.getHeight());
         foundCellar.setWidth(cellarRequestModel.getWidth());

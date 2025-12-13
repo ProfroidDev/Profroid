@@ -46,12 +46,20 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 if (claims != null) {
                     String userId = claims.getSubject();
                     String role = claims.get("role", String.class);
+                    String employeeType = claims.get("employeeType", String.class);
                     
                     // Create authorities list with the role
                     List<SimpleGrantedAuthority> authorities = new ArrayList<>();
                     if (role != null && !role.isEmpty()) {
+                        // For employees, use employeeType as the role (TECHNICIAN, ADMIN, etc.)
+                        // This allows @PreAuthorize("hasRole('TECHNICIAN')") to work
+                        String effectiveRole = role;
+                        if ("employee".equalsIgnoreCase(role) && employeeType != null && !employeeType.isEmpty()) {
+                            effectiveRole = employeeType;
+                        }
+                        
                         // Ensure role has ROLE_ prefix for Spring Security
-                        String grantedRole = role.startsWith("ROLE_") ? role : "ROLE_" + role.toUpperCase();
+                        String grantedRole = effectiveRole.startsWith("ROLE_") ? effectiveRole : "ROLE_" + effectiveRole.toUpperCase();
                         authorities.add(new SimpleGrantedAuthority(grantedRole));
                     }
                     

@@ -5,6 +5,7 @@ import com.profroid.profroidapp.customersubdomain.dataAccessLayer.CustomerIdenti
 import jakarta.persistence.*;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import lombok.ToString;
 
 @Entity
 @Table(name = "cellars")
@@ -33,6 +34,7 @@ public class Cellar {
             insertable = false,
             updatable = false
     )
+    @ToString.Exclude
     private Customer ownerCustomer;
 
 

@@ -1,11 +1,21 @@
 package com.profroid.profroidapp.appointmentsubdomain.presentationLayer;
 
 import com.profroid.profroidapp.appointmentsubdomain.businessLayer.AppointmentService;
+import com.profroid.profroidapp.customersubdomain.dataAccessLayer.Customer;
+import com.profroid.profroidapp.customersubdomain.dataAccessLayer.CustomerRepository;
+import com.profroid.profroidapp.employeesubdomain.dataAccessLayer.employeeDataAccessLayer.Employee;
+import com.profroid.profroidapp.employeesubdomain.dataAccessLayer.employeeDataAccessLayer.EmployeeRepository;
+import com.profroid.profroidapp.utils.exceptions.ResourceNotFoundException;
 import jakarta.validation.Valid;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDate;
 import java.util.List;
 
 @RestController
@@ -13,174 +23,188 @@ import java.util.List;
 public class AppointmentController {
 
     private final AppointmentService appointmentService;
-    
+    private final CustomerRepository customerRepository;
+    private final EmployeeRepository employeeRepository;
 
-    private static final String DEFAULT_TEST_CUSTOMER_ID = "123e4567-e89b-12d3-a456-426614174000"; // John Doe
-    private static final String DEFAULT_TEST_TECHNICIAN_ID = "a9e6d3f2-1c0a-4b5c-9d8e-7a6f5e4d3c2b"; // Bob Williams
-
-    public AppointmentController(AppointmentService appointmentService) {
+    public AppointmentController(AppointmentService appointmentService,
+                                  CustomerRepository customerRepository,
+                                  EmployeeRepository employeeRepository) {
         this.appointmentService = appointmentService;
+        this.customerRepository = customerRepository;
+        this.employeeRepository = employeeRepository;
     }
 
+    /**
+     * Helper to extract user role from Authentication
+     */
+    private String extractRole(Authentication authentication) {
+        if (authentication == null) return null;
+        return authentication.getAuthorities().stream()
+                .map(GrantedAuthority::getAuthority)
+                .filter(auth -> auth.startsWith("ROLE_"))
+                .map(auth -> auth.substring(5)) // Remove "ROLE_" prefix
+                .findFirst()
+                .orElse(null);
+    }
+
+    /**
+     * Get customerId from JWT userId
+     */
+    private String getCustomerIdFromUserId(String userId) {
+        Customer customer = customerRepository.findCustomerByUserId(userId);
+        if (customer == null) {
+            throw new ResourceNotFoundException("Customer not found for user: " + userId);
+        }
+        return customer.getCustomerIdentifier().getCustomerId();
+    }
+
+    /**
+     * Get employeeId from JWT userId
+     */
+    private String getEmployeeIdFromUserId(String userId) {
+        Employee employee = employeeRepository.findEmployeeByUserId(userId);
+        if (employee == null) {
+            throw new ResourceNotFoundException("Employee not found for user: " + userId);
+        }
+        return employee.getEmployeeIdentifier().getEmployeeId();
+    }
 
     @GetMapping("/my-appointments")
-    public ResponseEntity<List<AppointmentResponseModel>> getMyAppointments(
-            @RequestHeader(value = "X-Customer-Id", required = false) String customerId,
-            @RequestHeader(value = "X-User-Role", required = false) String userRole) {
-        
-        // Use default test customer if no header provided
-        String actualCustomerId = (customerId != null && !customerId.isEmpty()) 
-            ? customerId 
-            : DEFAULT_TEST_CUSTOMER_ID;
-        
-        String actualRole = (userRole != null && !userRole.isEmpty()) 
-            ? userRole 
-            : "CUSTOMER";
-        
-        // Only CUSTOMER role can access their own appointments
-        if (!"CUSTOMER".equals(actualRole)) {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
-        }
-        
-        List<AppointmentResponseModel> appointments = appointmentService.getCustomerAppointments(actualCustomerId);
+    @PreAuthorize("hasRole('CUSTOMER')")
+    public ResponseEntity<List<AppointmentResponseModel>> getMyAppointments(Authentication authentication) {
+        String userId = authentication.getName();
+        String customerId = getCustomerIdFromUserId(userId);
+        List<AppointmentResponseModel> appointments = appointmentService.getCustomerAppointments(customerId);
         return ResponseEntity.ok(appointments);
     }
-
 
     @GetMapping("/my-jobs")
-    public ResponseEntity<List<AppointmentResponseModel>> getMyJobs(
-            @RequestHeader(value = "X-Employee-Id", required = false) String technicianId,
-            @RequestHeader(value = "X-User-Role", required = false) String userRole) {
-        
-        // Use default test technician if no header provided
-        String actualTechnicianId = (technicianId != null && !technicianId.isEmpty()) 
-            ? technicianId 
-            : DEFAULT_TEST_TECHNICIAN_ID;
-        
-        String actualRole = (userRole != null && !userRole.isEmpty()) 
-            ? userRole 
-            : "TECHNICIAN";
-
-        if (!"TECHNICIAN".equals(actualRole)) {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
-        }
-        
-        List<AppointmentResponseModel> appointments = appointmentService.getTechnicianAppointments(actualTechnicianId);
+    @PreAuthorize("hasRole('TECHNICIAN')")
+    public ResponseEntity<List<AppointmentResponseModel>> getMyJobs(Authentication authentication) {
+        String userId = authentication.getName();
+        String employeeId = getEmployeeIdFromUserId(userId);
+        List<AppointmentResponseModel> appointments = appointmentService.getTechnicianAppointments(employeeId);
         return ResponseEntity.ok(appointments);
     }
 
-    
+    /**
+     * Get booked time slots for a technician on a specific date.
+     * Used by customers to check technician availability when booking appointments.
+     * Returns only time slots, not full appointment details for privacy.
+     */
+    @GetMapping("/technician/{technicianId}/booked-slots")
+    @PreAuthorize("hasAnyRole('CUSTOMER', 'TECHNICIAN', 'ADMIN')")
+    public ResponseEntity<TechnicianBookedSlotsResponseModel> getTechnicianBookedSlots(
+            @PathVariable String technicianId,
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date) {
+        TechnicianBookedSlotsResponseModel bookedSlots = appointmentService.getTechnicianBookedSlots(technicianId, date);
+        return ResponseEntity.ok(bookedSlots);
+    }
+
+    /**
+     * Get aggregated available time slots across all technicians for a given date.
+     * Shows times when at least one technician is available.
+     * Used by customers to see overall availability without selecting a technician first.
+     */
+    @GetMapping("/availability/aggregated")
+    @PreAuthorize("hasAnyRole('CUSTOMER', 'TECHNICIAN', 'ADMIN')")
+    public ResponseEntity<TechnicianBookedSlotsResponseModel> getAggregatedAvailability(
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date,
+            @RequestParam String jobName) {
+        TechnicianBookedSlotsResponseModel availability = appointmentService.getAggregatedAvailability(date, jobName);
+        return ResponseEntity.ok(availability);
+    }
+
     @GetMapping("/{appointmentId}")
+    @PreAuthorize("hasAnyRole('CUSTOMER', 'TECHNICIAN', 'ADMIN')")
     public ResponseEntity<AppointmentResponseModel> getAppointmentById(
             @PathVariable String appointmentId,
-            @RequestHeader(value = "X-Customer-Id", required = false) String customerId,
-            @RequestHeader(value = "X-Employee-Id", required = false) String employeeId,
-            @RequestHeader(value = "X-User-Role", required = false) String userRole) {
-    
-        String userId;
-        String effectiveRole;
+            Authentication authentication) {
         
-        // Priority: explicit headers > role auto-detection > defaults
-        if (customerId != null && !customerId.isEmpty()) {
-            userId = customerId;
-            effectiveRole = "CUSTOMER";
-        } else if (employeeId != null && !employeeId.isEmpty()) {
-            userId = employeeId;
-            effectiveRole = "TECHNICIAN";
-        } else if (userRole != null && !userRole.isEmpty()) {
-            // Use provided role with default customer
-            userId = DEFAULT_TEST_CUSTOMER_ID;
-            effectiveRole = userRole;
+        String userId = authentication.getName();
+        String role = extractRole(authentication);
+        
+        // Get the appropriate ID based on role
+        String entityId;
+        if ("CUSTOMER".equals(role)) {
+            entityId = getCustomerIdFromUserId(userId);
+        } else if ("TECHNICIAN".equals(role)) {
+            entityId = getEmployeeIdFromUserId(userId);
         } else {
-            // Use defaults
-            userId = DEFAULT_TEST_CUSTOMER_ID;
-            effectiveRole = "CUSTOMER";
+            // Admin - use userId directly (service will handle)
+            entityId = userId;
         }
         
-        AppointmentResponseModel appointment = appointmentService.getAppointmentById(appointmentId, userId, effectiveRole);
+        AppointmentResponseModel appointment = appointmentService.getAppointmentById(appointmentId, entityId, role);
         return ResponseEntity.ok(appointment);
     }
 
     @PostMapping
+    @PreAuthorize("hasAnyRole('CUSTOMER', 'TECHNICIAN', 'ADMIN')")
     public ResponseEntity<AppointmentResponseModel> createAppointment(
             @Valid @RequestBody AppointmentRequestModel appointmentRequest,
-            @RequestHeader(value = "X-Customer-Id", required = false) String customerId,
-            @RequestHeader(value = "X-Employee-Id", required = false) String employeeId,
-            @RequestHeader(value = "X-User-Role", required = false) String userRole) {
+            Authentication authentication) {
         
-        // Determine userId and role
-        String userId;
-        String effectiveRole;
+        String userId = authentication.getName();
+        String role = extractRole(authentication);
         
-        if (customerId != null && !customerId.isEmpty()) {
-            userId = customerId;
-            effectiveRole = "CUSTOMER";
-        } else if (employeeId != null && !employeeId.isEmpty()) {
-            userId = employeeId;
-            effectiveRole = (userRole != null && !userRole.isEmpty()) ? userRole : "TECHNICIAN";
-        } else if (userRole != null && !userRole.isEmpty()) {
-            // Use default based on role
-            userId = "CUSTOMER".equals(userRole) ? DEFAULT_TEST_CUSTOMER_ID : DEFAULT_TEST_TECHNICIAN_ID;
-            effectiveRole = userRole;
+        // Get the appropriate ID based on role
+        String entityId;
+        if ("CUSTOMER".equals(role)) {
+            entityId = getCustomerIdFromUserId(userId);
+        } else if ("TECHNICIAN".equals(role)) {
+            entityId = getEmployeeIdFromUserId(userId);
         } else {
-            // Default to customer
-            userId = DEFAULT_TEST_CUSTOMER_ID;
-            effectiveRole = "CUSTOMER";
+            entityId = userId;
         }
         
-        AppointmentResponseModel createdAppointment = appointmentService.addAppointment(appointmentRequest, userId, effectiveRole);
+        AppointmentResponseModel createdAppointment = appointmentService.addAppointment(appointmentRequest, entityId, role);
         return ResponseEntity.status(HttpStatus.CREATED).body(createdAppointment);
     }
 
-        @PutMapping("/{appointmentId}")
-        public ResponseEntity<AppointmentResponseModel> updateAppointment(
-                @PathVariable String appointmentId,
-                @Valid @RequestBody AppointmentRequestModel appointmentRequest,
-                @RequestHeader(value = "X-Customer-Id", required = false) String customerId,
-                @RequestHeader(value = "X-Employee-Id", required = false) String employeeId,
-                @RequestHeader(value = "X-User-Role", required = false) String userRole) {
-            String userId;
-            String effectiveRole;
-            if (customerId != null && !customerId.isEmpty()) {
-                userId = customerId;
-                effectiveRole = "CUSTOMER";
-            } else if (employeeId != null && !employeeId.isEmpty()) {
-                userId = employeeId;
-                effectiveRole = (userRole != null && !userRole.isEmpty()) ? userRole : "TECHNICIAN";
-            } else if (userRole != null && !userRole.isEmpty()) {
-                userId = "CUSTOMER".equals(userRole) ? DEFAULT_TEST_CUSTOMER_ID : DEFAULT_TEST_TECHNICIAN_ID;
-                effectiveRole = userRole;
-            } else {
-                userId = DEFAULT_TEST_CUSTOMER_ID;
-                effectiveRole = "CUSTOMER";
-            }
-            AppointmentResponseModel updatedAppointment = appointmentService.updateAppointment(appointmentId, appointmentRequest, userId, effectiveRole);
-            return ResponseEntity.ok(updatedAppointment);
+    @PutMapping("/{appointmentId}")
+    @PreAuthorize("hasAnyRole('CUSTOMER', 'TECHNICIAN', 'ADMIN')")
+    public ResponseEntity<AppointmentResponseModel> updateAppointment(
+            @PathVariable String appointmentId,
+            @Valid @RequestBody AppointmentRequestModel appointmentRequest,
+            Authentication authentication) {
+        
+        String userId = authentication.getName();
+        String role = extractRole(authentication);
+        
+        String entityId;
+        if ("CUSTOMER".equals(role)) {
+            entityId = getCustomerIdFromUserId(userId);
+        } else if ("TECHNICIAN".equals(role)) {
+            entityId = getEmployeeIdFromUserId(userId);
+        } else {
+            entityId = userId;
         }
+        
+        AppointmentResponseModel updatedAppointment = appointmentService.updateAppointment(appointmentId, appointmentRequest, entityId, role);
+        return ResponseEntity.ok(updatedAppointment);
+    }
 
-        @PatchMapping("/{appointmentId}/status")
-        public ResponseEntity<AppointmentResponseModel> patchAppointmentStatus(
-                @PathVariable String appointmentId,
-                @Valid @RequestBody AppointmentStatusChangeRequestModel statusRequest,
-                @RequestHeader(value = "X-Customer-Id", required = false) String customerId,
-                @RequestHeader(value = "X-Employee-Id", required = false) String employeeId,
-                @RequestHeader(value = "X-User-Role", required = false) String userRole) {
-            String userId;
-            String effectiveRole;
-            if (customerId != null && !customerId.isEmpty()) {
-                userId = customerId;
-                effectiveRole = "CUSTOMER";
-            } else if (employeeId != null && !employeeId.isEmpty()) {
-                userId = employeeId;
-                effectiveRole = (userRole != null && !userRole.isEmpty()) ? userRole : "TECHNICIAN";
-            } else if (userRole != null && !userRole.isEmpty()) {
-                userId = "CUSTOMER".equals(userRole) ? DEFAULT_TEST_CUSTOMER_ID : DEFAULT_TEST_TECHNICIAN_ID;
-                effectiveRole = userRole;
-            } else {
-                userId = DEFAULT_TEST_CUSTOMER_ID;
-                effectiveRole = "CUSTOMER";
-            }
-            AppointmentResponseModel patchedAppointment = appointmentService.patchAppointmentStatus(appointmentId, statusRequest, userId, effectiveRole);
-            return ResponseEntity.ok(patchedAppointment);
+    @PatchMapping("/{appointmentId}/status")
+    @PreAuthorize("hasAnyRole('CUSTOMER', 'TECHNICIAN', 'ADMIN')")
+    public ResponseEntity<AppointmentResponseModel> patchAppointmentStatus(
+            @PathVariable String appointmentId,
+            @Valid @RequestBody AppointmentStatusChangeRequestModel statusRequest,
+            Authentication authentication) {
+        
+        String userId = authentication.getName();
+        String role = extractRole(authentication);
+        
+        String entityId;
+        if ("CUSTOMER".equals(role)) {
+            entityId = getCustomerIdFromUserId(userId);
+        } else if ("TECHNICIAN".equals(role)) {
+            entityId = getEmployeeIdFromUserId(userId);
+        } else {
+            entityId = userId;
         }
+        
+        AppointmentResponseModel patchedAppointment = appointmentService.patchAppointmentStatus(appointmentId, statusRequest, entityId, role);
+        return ResponseEntity.ok(patchedAppointment);
+    }
 }
