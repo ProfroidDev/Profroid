@@ -152,7 +152,7 @@ public class JobServiceImpl implements JobService {
 
                 int otherDuration = resolveDurationMinutes(other.getJob());
                 int otherSlots = calculateRequiredSlots(otherDuration);
-                int otherStartHour = other.getAppointmentDate().getHour();
+                int otherStartHour = other.getAppointmentDate().toLocalTime().getHour();
 
                 if (timeSlotsOverlap(startHour, updatedSlots, otherStartHour, otherSlots)) {
                     throw new InvalidOperationException(

@@ -104,16 +104,58 @@
 
 .service-content {
   flex: 1 1 auto;
+  min-width: 0;
+  max-width: 100%;
 }
 
 .service-title {
   margin: 0 0 6px 0;
   font-size: 1.1rem;
+  word-break: break-word;
+}
+
+.service-description-wrapper {
+  position: relative;
 }
 
 .service-desc {
   margin: 0;
   color: #444;
+  line-height: 1.4;
+  overflow: hidden;
+  transition: max-height 0.3s ease;
+  word-break: break-word;
+  white-space: normal;
+}
+
+.service-desc.collapsed {
+  max-height: 60px;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.service-desc.expanded {
+  max-height: none;
+}
+
+.description-expand-btn {
+  background: none;
+  border: none;
+  color: #5a2a27;
+  cursor: pointer;
+  font-size: 0.9rem;
+  padding: 4px 0;
+  margin-top: 4px;
+  font-weight: 600;
+  transition: color 0.2s ease;
+}
+
+.description-expand-btn:hover {
+  color: #8e0a03;
 }
 
 .service-actions {
