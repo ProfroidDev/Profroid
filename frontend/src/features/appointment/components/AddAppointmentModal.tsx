@@ -18,6 +18,7 @@ import type { TimeSlotType } from "../../employee/models/EmployeeScheduleRequest
 import { getPostalCodeError } from "../../../utils/postalCodeValidator";
 import { getMyJobs } from "../api/getMyJobs";
 import { getTechnicianBookedSlots, type BookedSlot } from "../api/getTechnicianBookedSlots";
+import { getAggregatedAvailability } from "../api/getAggregatedAvailability";
 import useAuthStore from "../../authentication/store/authStore";
 
 // Cache for shared data to reduce API calls when modal is opened/closed multiple times
@@ -286,11 +287,57 @@ export default function AddAppointmentModal({
     };
   }, [mode, customerId, technicianId, selectedTechnicianId]);
 
-  // Fetch technician's booked slots for customer mode (availability checking)
+  // Define computed values BEFORE useEffects that depend on them
+  const jobOptions = useMemo(() => {
+    if (mode === "customer") {
+      return jobs.filter((j) => j.jobType === "QUOTATION");
+    }
+    return jobs;
+  }, [jobs, mode]);
+
+  const selectedJob = useMemo(() => jobOptions.find((j) => j.jobId === selectedJobId), [jobOptions, selectedJobId]);
+
+  const selectedTechnician = useMemo(
+    () => employees.find((e) => e.employeeIdentifier.employeeId === selectedTechnicianId),
+    [employees, selectedTechnicianId]
+  );
+
+  const selectedCustomer = useMemo(() => {
+    const actualCustomerId = getActualCustomerId(selectedCustomerId);
+    return customers.find((c) => getActualCustomerId(c.customerId) === actualCustomerId);
+  }, [customers, selectedCustomerId]);
+
+  // Fetch aggregated availability for customer mode (when no technician is selected)
+  useEffect(() => {
+    async function fetchAggregatedSlots() {
+      // Only fetch in customer mode when we have a date and job selected
+      if (mode !== "customer" || !appointmentDate || !selectedJobId) {
+        setTechnicianBookedSlots([]);
+        return;
+      }
+
+      try {
+        const selectedJobToUse = jobOptions.find((j) => j.jobId === selectedJobId);
+        if (!selectedJobToUse) {
+          return;
+        }
+
+        const response = await getAggregatedAvailability(appointmentDate, selectedJobToUse.jobName);
+        setTechnicianBookedSlots(response.bookedSlots || []);
+      } catch (err) {
+        console.error('Failed to fetch aggregated availability:', err);
+        setTechnicianBookedSlots([]);
+      }
+    }
+
+    fetchAggregatedSlots();
+  }, [mode, appointmentDate, selectedJobId, jobOptions]);
+
+  // Fetch technician's booked slots for technician mode
   useEffect(() => {
     async function fetchBookedSlots() {
-      // Only fetch in customer mode when we have a technician and date selected
-      if (mode !== "customer" || !selectedTechnicianId || !appointmentDate) {
+      // Only fetch in technician mode when we have a technician and date selected
+      if (mode !== "technician" || !selectedTechnicianId || !appointmentDate) {
         setTechnicianBookedSlots([]);
         return;
       }
@@ -329,25 +376,6 @@ export default function AddAppointmentModal({
 
     fetchAppointments();
   }, [mode, appointmentDate]);
-
-  const jobOptions = useMemo(() => {
-    if (mode === "customer") {
-      return jobs.filter((j) => j.jobType === "QUOTATION");
-    }
-    return jobs;
-  }, [jobs, mode]);
-
-  const selectedJob = useMemo(() => jobOptions.find((j) => j.jobId === selectedJobId), [jobOptions, selectedJobId]);
-
-  const selectedTechnician = useMemo(
-    () => employees.find((e) => e.employeeIdentifier.employeeId === selectedTechnicianId),
-    [employees, selectedTechnicianId]
-  );
-
-  const selectedCustomer = useMemo(() => {
-    const actualCustomerId = getActualCustomerId(selectedCustomerId);
-    return customers.find((c) => getActualCustomerId(c.customerId) === actualCustomerId);
-  }, [customers, selectedCustomerId]);
 
   const filteredCustomers = useMemo(() => {
     if (!customerSearch.trim()) return customers;
@@ -482,6 +510,43 @@ export default function AddAppointmentModal({
 
   const availableSlots = useMemo(() => {
     if (!selectedJob || !appointmentDate || isWeekend(appointmentDate)) return [];
+
+    // For customer mode: use aggregated availability
+    if (mode === "customer") {
+      const slots: string[] = [];
+      const jobDuration = selectedJob.estimatedDurationMinutes || 120;
+
+      // technicianBookedSlots is an array of BookedSlot objects with startTime/endTime as "HH:MM:SS" or "HH:MM"
+      if (Array.isArray(technicianBookedSlots)) {
+        technicianBookedSlots.forEach((slot: any) => {
+          const startTimeRaw = slot.startTime;
+          if (!startTimeRaw) return;
+
+          // Extract HH:MM from HH:MM:SS format or use as-is if already HH:MM
+          const time = startTimeRaw.includes(':') 
+            ? startTimeRaw.substring(0, 5)  // Take first 5 chars: "09:00" from "09:00:00"
+            : startTimeRaw;
+
+          if (isPast(appointmentDate, time)) return;
+          if (!passesBookingDeadline(appointmentDate, time)) return;
+
+          // Calculate end time for this slot
+          const slotStart = new Date(`${appointmentDate}T${time}:00`);
+          const slotEnd = new Date(slotStart.getTime() + jobDuration * 60 * 1000);
+
+          // Check if slotEnd goes past working hours (6:00 PM)
+          const lastSlotEnd = new Date(`${appointmentDate}T18:00:00`);
+          if (slotEnd > lastSlotEnd) return;
+
+          // Add the time
+          slots.push(time);
+        });
+      }
+
+      return Array.from(new Set(slots)); // Remove duplicates
+    }
+
+    // For technician mode: use schedule slots and check for conflicts
     if (!selectedTechnician) return [];
 
     const slotSet = new Set(scheduleSlots);
@@ -504,7 +569,7 @@ export default function AddAppointmentModal({
       const lastSlotEnd = new Date(`${appointmentDate}T17:00:00`);
       if (slotEnd > lastSlotEnd) return;
 
-      // Check for conflicts with booked slots (for customer mode)
+      // Check for conflicts with booked slots (for technician mode when checking against specific tech)
       const hasBookedConflict = technicianBookedSlots.some((bookedSlot) => {
         if (!bookedSlot.startTime || !bookedSlot.endTime) return false;
         
@@ -604,12 +669,6 @@ export default function AddAppointmentModal({
       return;
     }
 
-    const technician = selectedTechnician;
-    if (!technician) {
-      setError("Unable to resolve technician information.");
-      return;
-    }
-
     const cellar = customerCellars.find((c) => c.cellarId === selectedCellarId);
     if (!cellar) {
       setError("Select a cellar for this appointment.");
@@ -623,8 +682,10 @@ export default function AddAppointmentModal({
 
     const request: AppointmentRequestModel = {
       customerId: actualCustomerId,
-      technicianFirstName: technician.firstName,
-      technicianLastName: technician.lastName,
+      ...(mode === "technician" && selectedTechnician ? {
+        technicianFirstName: selectedTechnician.firstName,
+        technicianLastName: selectedTechnician.lastName,
+      } : {}),
       jobName: selectedJob.jobName,
       cellarName: cellar.name,
       appointmentDate: appointmentDateTime,
@@ -657,7 +718,7 @@ export default function AddAppointmentModal({
   };
 
   const disableCustomerSearch = mode === "technician" && !selectedJobId;
-  const disableDatePicker = mode === "customer" ? !selectedTechnicianId : false;
+  const disableDatePicker = mode === "customer" ? !selectedJobId : false;
   const disableTimePicker = disableDatePicker || !appointmentDate;
 
   return (
@@ -699,21 +760,16 @@ export default function AddAppointmentModal({
               </label>
 
               <label className="field">
-                <span>{mode === "customer" ? "Technician" : "Customer"}</span>
+                <span>{mode === "customer" ? "Available Technicians" : "Customer"}</span>
                 <div className="input-with-icon">
                   <Users size={16} />
                   {mode === "customer" ? (
-                    <select
-                      value={selectedTechnicianId}
-                      onChange={(e) => setSelectedTechnicianId(e.target.value)}
-                      required
-                    >
-                      {employees.map((tech) => (
-                        <option key={tech.employeeIdentifier.employeeId} value={tech.employeeIdentifier.employeeId}>
-                          {tech.firstName} {tech.lastName}
-                        </option>
-                      ))}
-                    </select>
+                    <input
+                      type="text"
+                      placeholder="Will be auto-assigned from available technicians"
+                      disabled
+                      value="Auto-assigned"
+                    />
                   ) : (
                     <input
                       type="text"
@@ -747,6 +803,9 @@ export default function AddAppointmentModal({
                     )}
                   </div>
                 )}
+                {mode === "customer" && (
+                  <small className="hint">Technician will be automatically assigned from available staff.</small>
+                )}
               </label>
             </div>
 
@@ -764,7 +823,7 @@ export default function AddAppointmentModal({
                     required
                   />
                 </div>
-                <small className="hint">Weekdays only. Slots depend on technician schedule.</small>
+                <small className="hint">Weekdays only. {mode === "customer" ? "Slots available from any technician." : "Slots depend on technician schedule."}</small>
               </label>
 
               <label className="field">
@@ -792,7 +851,7 @@ export default function AddAppointmentModal({
                 )}
                 {availableSlots.length === 0 && appointmentDate && !isWeekend(appointmentDate) && (
                   <small className="error">
-                    {scheduleError || "No valid slots for this date/service with the selected technician."}
+                    {scheduleError || (mode === "customer" ? "No available slots from any technician for this date/service." : "No valid slots for this date/service with the selected technician.")}
                   </small>
                 )}
               </label>

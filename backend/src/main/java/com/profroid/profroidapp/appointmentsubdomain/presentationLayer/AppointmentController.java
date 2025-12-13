@@ -101,6 +101,20 @@ public class AppointmentController {
         return ResponseEntity.ok(bookedSlots);
     }
 
+    /**
+     * Get aggregated available time slots across all technicians for a given date.
+     * Shows times when at least one technician is available.
+     * Used by customers to see overall availability without selecting a technician first.
+     */
+    @GetMapping("/availability/aggregated")
+    @PreAuthorize("hasAnyRole('CUSTOMER', 'TECHNICIAN', 'ADMIN')")
+    public ResponseEntity<TechnicianBookedSlotsResponseModel> getAggregatedAvailability(
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date,
+            @RequestParam String jobName) {
+        TechnicianBookedSlotsResponseModel availability = appointmentService.getAggregatedAvailability(date, jobName);
+        return ResponseEntity.ok(availability);
+    }
+
     @GetMapping("/{appointmentId}")
     @PreAuthorize("hasAnyRole('CUSTOMER', 'TECHNICIAN', 'ADMIN')")
     public ResponseEntity<AppointmentResponseModel> getAppointmentById(

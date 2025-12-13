@@ -34,4 +34,11 @@ public interface AppointmentService {
      * Used by customers to check technician availability when booking.
      */
     TechnicianBookedSlotsResponseModel getTechnicianBookedSlots(String technicianId, LocalDate date);
+    
+    /**
+     * Get aggregated available time slots across all technicians for a given date.
+     * Shows times when at least one technician is available.
+     * Used by customers to see overall availability without selecting a technician first.
+     */
+    TechnicianBookedSlotsResponseModel getAggregatedAvailability(LocalDate date, String jobName);
 }
