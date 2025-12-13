@@ -10,9 +10,15 @@ import "./ServicesPage.css";
 import { updateJob } from "../../features/jobs/api/updateJob";
 import ConfirmationModal from "../../components/ConfirmationModal";
 import Toast from "../../shared/components/Toast";
+import useAuthStore from "../../features/authentication/store/authStore";
 
 export default function ServicesPage(): React.ReactElement {
+  const { user } = useAuthStore();
+  const isAdmin = user?.role === "admin";
   const [jobs, setJobs] = useState<JobResponseModel[]>([]);
+  const [expandedDescriptions, setExpandedDescriptions] = useState<Set<string>>(
+    new Set()
+  );
   const [loading, setLoading] = useState<boolean>(false);
   const [selectedJob, setSelectedJob] = useState<JobResponseModel | null>(null);
   const [modalOpen, setModalOpen] = useState<boolean>(false);
@@ -65,8 +71,12 @@ export default function ServicesPage(): React.ReactElement {
       try {
         const data = await getJobs();
         setJobs(data);
-      } catch {
-        // handle error
+      } catch (error) {
+        console.error("Error loading jobs:", error);
+        setToast({
+          message: "Failed to load services",
+          type: "error",
+        });
       } finally {
         setLoading(false);
       }
@@ -81,8 +91,12 @@ export default function ServicesPage(): React.ReactElement {
     try {
       const data = await getJobById(jobId);
       setSelectedJob(data);
-    } catch {
-      // handle
+    } catch (error) {
+      console.error("Error loading job details:", error);
+      setToast({
+        message: "Failed to load service details",
+        type: "error",
+      });
     } finally {
       setDetailLoading(false);
     }
@@ -214,7 +228,9 @@ export default function ServicesPage(): React.ReactElement {
       // Try to extract backend error message if available
       let errorMsg = "Failed to update service";
       if (error && typeof error === "object" && "response" in error) {
-        const axiosError = error as { response?: { data?: { message?: string }, status?: number } };
+        const axiosError = error as {
+          response?: { data?: { message?: string }; status?: number };
+        };
         if (axiosError.response?.data?.message) {
           errorMsg = axiosError.response.data.message;
         } else if (axiosError.response?.status) {
@@ -357,13 +373,31 @@ export default function ServicesPage(): React.ReactElement {
     }
   }
 
+  function toggleDescriptionExpanded(jobId: string) {
+    setExpandedDescriptions((prev) => {
+      const newSet = new Set(prev);
+      if (newSet.has(jobId)) {
+        newSet.delete(jobId);
+      } else {
+        newSet.add(jobId);
+      }
+      return newSet;
+    });
+  }
+
+  function isDescriptionTruncated(description: string): boolean {
+    return description.length > 150;
+  }
+
   return (
     <div className="services-page">
       <div className="services-header">
         <h2>Services</h2>
-        <button className="btn-add-service" onClick={openCreateModal}>
-          + Add Service
-        </button>
+        {isAdmin && (
+          <button className="btn-add-service" onClick={openCreateModal}>
+            + Add Service
+          </button>
+        )}
       </div>
 
       {loading ? (
@@ -389,54 +423,78 @@ export default function ServicesPage(): React.ReactElement {
                       <span className="inactive-badge"> (Inactive)</span>
                     )}
                   </h3>
-                  <p className="service-desc">{j.jobDescription}</p>
+                  <div className="service-description-wrapper">
+                    <p
+                      className={`service-desc ${
+                        expandedDescriptions.has(j.jobId)
+                          ? "expanded"
+                          : "collapsed"
+                      }`}
+                    >
+                      {j.jobDescription}
+                    </p>
+                    {isDescriptionTruncated(j.jobDescription) && !isAdmin && (
+                      <button
+                        className="description-expand-btn"
+                        onClick={() => toggleDescriptionExpanded(j.jobId)}
+                        aria-expanded={expandedDescriptions.has(j.jobId)}
+                      >
+                        {expandedDescriptions.has(j.jobId) ? "▲" : "▼"}
+                      </button>
+                    )}
+                  </div>
                 </div>
 
                 <div className="service-actions">
                   <div className="service-rate">
                     ${j.hourlyRate?.toFixed(2)}
                   </div>
-                  <button
-                    className="btn-view-light"
-                    onClick={() => void openDetails(j.jobId)}
-                    disabled={!j.active}
-                  >
-                    View Details
-                  </button>
-                  <button
-                    className="btn-view-light"
-                    onClick={() => void openUpdateModal(j.jobId)}
-                    disabled={!j.active}
-                  >
-                    Modify
-                  </button>
-                  {j.active ? (
-                    <button
-                      className="btn-view-light"
-                      style={{
-                        marginLeft: 8,
-                        backgroundColor: "#ff6b6b",
-                        color: "white",
-                      }}
-                      onClick={() => handleDeactivateJob(j)}
-                      disabled={deactivateLoading}
-                    >
-                      Deactivate
-                    </button>
-                  ) : (
-                    <button
-                      className="btn-view-light"
-                      style={{
-                        marginLeft: 8,
-                        backgroundColor: "#51cf66",
-                        color: "white",
-                      }}
-                      onClick={() => handleReactivateJob(j)}
-                      disabled={deactivateLoading}
-                    >
-                      Reactivate
-                    </button>
-                  )}
+
+                  {isAdmin ? (
+                    <>
+                      <button
+                        className="btn-view-light"
+                        onClick={() => void openDetails(j.jobId)}
+                        disabled={!j.active}
+                      >
+                        View Details
+                      </button>
+                      <button
+                        className="btn-view-light"
+                        onClick={() => void openUpdateModal(j.jobId)}
+                        disabled={!j.active}
+                      >
+                        Modify
+                      </button>
+                      {j.active ? (
+                        <button
+                          className="btn-view-light"
+                          style={{
+                            marginLeft: 8,
+                            backgroundColor: "#ff6b6b",
+                            color: "white",
+                          }}
+                          onClick={() => handleDeactivateJob(j)}
+                          disabled={deactivateLoading}
+                        >
+                          Deactivate
+                        </button>
+                      ) : (
+                        <button
+                          className="btn-view-light"
+                          style={{
+                            marginLeft: 8,
+                            backgroundColor: "#51cf66",
+                            color: "white",
+                          }}
+                          onClick={() => handleReactivateJob(j)}
+                          disabled={deactivateLoading}
+                        >
+                          Reactivate
+                        </button>
+                      )}
+                    </>
+                  ) : null}
                 </div>
               </div>
             </div>

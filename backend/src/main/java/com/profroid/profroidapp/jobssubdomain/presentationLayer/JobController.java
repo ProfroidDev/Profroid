@@ -4,6 +4,7 @@ import com.profroid.profroidapp.jobssubdomain.businessLayer.JobService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -29,22 +30,26 @@ public class JobController {
     }
 
     @PostMapping
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<JobResponseModel> createJob(@Valid @RequestBody JobRequestModel requestModel){
         return ResponseEntity.status(HttpStatus.CREATED).body(jobService.createJob(requestModel));
     }
 
     @PutMapping("/{jobId}")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<JobResponseModel> updateJob(@PathVariable String jobId, @Valid @RequestBody JobRequestModel requestModel){
         return ResponseEntity.ok(jobService.updateJob(jobId, requestModel));
     }
 
     @DeleteMapping("/{jobId}/deactivate")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<JobResponseModel> deactivateJob(@PathVariable String jobId){
         JobResponseModel deactivated = jobService.deactivateJob(jobId);
         return ResponseEntity.status(HttpStatus.OK).body(deactivated);
     }
 
     @PatchMapping("/{jobId}/reactivate")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<JobResponseModel> reactivateJob(@PathVariable String jobId){
         JobResponseModel reactivated = jobService.reactivateJob(jobId);
         return ResponseEntity.status(HttpStatus.OK).body(reactivated);

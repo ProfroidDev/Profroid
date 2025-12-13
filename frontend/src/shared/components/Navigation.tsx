@@ -24,14 +24,14 @@ export default function Navigation(): React.ReactElement {
 
   // Check if user is admin
   const isAdmin = user?.role === "admin";
-  
+
   // Check if user is technician employee
-  const isTechnician = user?.role === "employee" && user?.employeeType === "TECHNICIAN";
+  const isTechnician =
+    user?.role === "employee" && user?.employeeType === "TECHNICIAN";
 
   return (
     <nav className="nav-container">
       <div className="nav-inner">
-
         {/* Logo */}
         <div className="nav-logo">
           <Wine className="nav-logo-icon" />
@@ -46,13 +46,19 @@ export default function Navigation(): React.ReactElement {
               <a href="/parts">Parts</a>
               <a href="/customers">Customers</a>
               <a href="/employees">Employees</a>
+              <a href="/services">Services</a>
             </>
           )}
 
           {/* Employee Links - only visible to TECHNICIAN employees */}
-          {isTechnician && <a href="/my-jobs">My Jobs</a>}
+          {isTechnician && (
+            <>
+              <a href="/my-jobs">My Jobs</a>
+              <a href="/services">Services</a>
+            </>
+          )}
 
-          {/* Customer Links - visible to customers and employees */}
+          {/* Customer Links - visible to customers */}
           {user?.role === "customer" && (
             <>
               <a href="/services">Services</a>
@@ -103,18 +109,23 @@ export default function Navigation(): React.ReactElement {
       {/* Mobile Menu */}
       {open && (
         <div className="nav-mobile-menu">
-
           {/* Admin Links - only visible to admins */}
           {isAdmin && (
             <>
               <a href="/parts">Parts</a>
               <a href="/customers">Customers</a>
               <a href="/employees">Employees</a>
+              <a href="/services">Services</a>
             </>
           )}
 
           {/* Employee Links - only visible to TECHNICIAN employees */}
-          {isTechnician && <a href="/my-jobs">My Jobs</a>}
+          {isTechnician && (
+            <>
+              <a href="/my-jobs">My Jobs</a>
+              <a href="/services">Services</a>
+            </>
+          )}
 
           {/* Customer Links - visible to customers */}
           {user?.role === "customer" && (
