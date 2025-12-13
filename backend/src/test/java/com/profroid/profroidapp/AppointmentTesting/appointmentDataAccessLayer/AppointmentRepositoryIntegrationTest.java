@@ -12,6 +12,8 @@ import com.profroid.profroidapp.employeesubdomain.dataAccessLayer.employeeDataAc
 import com.profroid.profroidapp.employeesubdomain.dataAccessLayer.employeeDataAccessLayer.EmployeeRepository;
 import com.profroid.profroidapp.jobssubdomain.dataAccessLayer.Job;
 import com.profroid.profroidapp.jobssubdomain.dataAccessLayer.JobRepository;
+import com.profroid.profroidapp.jobssubdomain.dataAccessLayer.JobIdentifier;
+import com.profroid.profroidapp.jobssubdomain.dataAccessLayer.JobType;
 import com.profroid.profroidapp.employeesubdomain.dataAccessLayer.employeeDataAccessLayer.EmployeeIdentifier;
 import com.profroid.profroidapp.employeesubdomain.dataAccessLayer.employeeDataAccessLayer.EmployeeAddress;
 import com.profroid.profroidapp.employeesubdomain.dataAccessLayer.employeeDataAccessLayer.EmployeeRole;
@@ -117,7 +119,13 @@ public class AppointmentRepositoryIntegrationTest {
 
         // Persist Job
         Job job = new Job();
+        job.setJobIdentifier(new JobIdentifier());
         job.setJobName("Repair");
+        job.setJobDescription("Test repair job");
+        job.setHourlyRate(50.0);
+        job.setEstimatedDurationMinutes(60);
+        job.setJobType(JobType.REPARATION);
+        job.setActive(true);
         job = jobRepository.save(job);
         appointment.setJob(job);
 
