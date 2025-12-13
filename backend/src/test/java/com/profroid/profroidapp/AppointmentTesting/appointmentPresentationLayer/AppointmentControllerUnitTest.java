@@ -3,17 +3,31 @@ package com.profroid.profroidapp.AppointmentTesting.appointmentPresentationLayer
 
 import com.profroid.profroidapp.appointmentsubdomain.presentationLayer.AppointmentController;
 import com.profroid.profroidapp.appointmentsubdomain.businessLayer.AppointmentService;
+import com.profroid.profroidapp.appointmentsubdomain.presentationLayer.AppointmentRequestModel;
 import com.profroid.profroidapp.appointmentsubdomain.presentationLayer.AppointmentResponseModel;
+import com.profroid.profroidapp.appointmentsubdomain.presentationLayer.AppointmentStatusChangeRequestModel;
+import com.profroid.profroidapp.customersubdomain.dataAccessLayer.Customer;
+import com.profroid.profroidapp.customersubdomain.dataAccessLayer.CustomerIdentifier;
+import com.profroid.profroidapp.customersubdomain.dataAccessLayer.CustomerRepository;
+import com.profroid.profroidapp.employeesubdomain.dataAccessLayer.employeeDataAccessLayer.Employee;
+import com.profroid.profroidapp.employeesubdomain.dataAccessLayer.employeeDataAccessLayer.EmployeeIdentifier;
+import com.profroid.profroidapp.employeesubdomain.dataAccessLayer.employeeDataAccessLayer.EmployeeRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.lenient;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -27,8 +41,19 @@ public class AppointmentControllerUnitTest {
     @Mock
     private AppointmentService appointmentService;
 
+    @Mock
+    private CustomerRepository customerRepository;
+
+    @Mock
+    private EmployeeRepository employeeRepository;
+
     private AppointmentResponseModel res1;
     private AppointmentResponseModel res2;
+
+    private static final String CUSTOMER_USER_ID = "user-customer-123";
+    private static final String CUSTOMER_ID = "123e4567-e89b-12d3-a456-426614174000";
+    private static final String TECHNICIAN_USER_ID = "user-tech-456";
+    private static final String TECHNICIAN_ID = "a9e6d3f2-1c0a-4b5c-9d8e-7a6f5e4d3c2b";
 
     @BeforeEach
     void setup() {
@@ -36,391 +61,305 @@ public class AppointmentControllerUnitTest {
         res2 = AppointmentResponseModel.builder().appointmentId("appt-2").build();
     }
 
+    private Authentication createAuthentication(String userId, String role) {
+        Authentication auth = mock(Authentication.class);
+        when(auth.getName()).thenReturn(userId);
+        Collection<GrantedAuthority> authorities = Collections.singletonList(
+            new SimpleGrantedAuthority("ROLE_" + role)
+        );
+        lenient().doReturn(authorities).when(auth).getAuthorities();
+        return auth;
+    }
+
+    private void setupCustomerLookup() {
+        Customer customer = mock(Customer.class);
+        CustomerIdentifier customerIdentifier = mock(CustomerIdentifier.class);
+        when(customerIdentifier.getCustomerId()).thenReturn(CUSTOMER_ID);
+        when(customer.getCustomerIdentifier()).thenReturn(customerIdentifier);
+        when(customerRepository.findCustomerByUserId(CUSTOMER_USER_ID)).thenReturn(customer);
+    }
+
+    private void setupEmployeeLookup() {
+        Employee employee = mock(Employee.class);
+        EmployeeIdentifier employeeIdentifier = mock(EmployeeIdentifier.class);
+        when(employeeIdentifier.getEmployeeId()).thenReturn(TECHNICIAN_ID);
+        when(employee.getEmployeeIdentifier()).thenReturn(employeeIdentifier);
+        when(employeeRepository.findEmployeeByUserId(TECHNICIAN_USER_ID)).thenReturn(employee);
+    }
+
     // ===== GET MY APPOINTMENTS =====
     // [Appointment][Unit Test][Positive] Get my appointments with valid customer role -> returns list
     @Test
     void whenGetMyAppointments_withValidCustomerRole_thenReturnList() {
-        String customerId = "123e4567-e89b-12d3-a456-426614174000";
-        String userRole = "CUSTOMER";
-        when(appointmentService.getCustomerAppointments(customerId))
+        setupCustomerLookup();
+        Authentication auth = createAuthentication(CUSTOMER_USER_ID, "CUSTOMER");
+        when(appointmentService.getCustomerAppointments(CUSTOMER_ID))
             .thenReturn(Arrays.asList(res1, res2));
 
-        ResponseEntity<List<AppointmentResponseModel>> response = appointmentController.getMyAppointments(customerId, userRole);
+        ResponseEntity<List<AppointmentResponseModel>> response = appointmentController.getMyAppointments(auth);
 
         assertNotNull(response);
         assertEquals(HttpStatus.OK, response.getStatusCode());
         assertNotNull(response.getBody());
         assertEquals(2, response.getBody().size());
-        verify(appointmentService, times(1)).getCustomerAppointments(customerId);
-    }
-
-    // [Appointment][Unit Test][Negative] Get my appointments with non-customer role -> returns forbidden
-    @Test
-    void whenGetMyAppointments_withNonCustomerRole_thenReturnForbidden() {
-        String customerId = "123e4567-e89b-12d3-a456-426614174000";
-        String userRole = "TECHNICIAN";
-
-        ResponseEntity<List<AppointmentResponseModel>> response = appointmentController.getMyAppointments(customerId, userRole);
-
-        assertNotNull(response);
-        assertEquals(HttpStatus.FORBIDDEN, response.getStatusCode());
-        assertNull(response.getBody());
-        verify(appointmentService, never()).getCustomerAppointments(anyString());
+        verify(appointmentService, times(1)).getCustomerAppointments(CUSTOMER_ID);
     }
 
     // ===== GET MY JOBS =====
     // [Appointment][Unit Test][Positive] Get my jobs with valid technician role -> returns list
     @Test
     void whenGetMyJobs_withValidTechnicianRole_thenReturnList() {
-        String technicianId = "a9e6d3f2-1c0a-4b5c-9d8e-7a6f5e4d3c2b";
-        String userRole = "TECHNICIAN";
-        when(appointmentService.getTechnicianAppointments(technicianId))
+        setupEmployeeLookup();
+        Authentication auth = createAuthentication(TECHNICIAN_USER_ID, "TECHNICIAN");
+        when(appointmentService.getTechnicianAppointments(TECHNICIAN_ID))
             .thenReturn(Arrays.asList(res1, res2));
 
-        ResponseEntity<List<AppointmentResponseModel>> response = appointmentController.getMyJobs(technicianId, userRole);
+        ResponseEntity<List<AppointmentResponseModel>> response = appointmentController.getMyJobs(auth);
 
         assertNotNull(response);
         assertEquals(HttpStatus.OK, response.getStatusCode());
         assertNotNull(response.getBody());
         assertEquals(2, response.getBody().size());
-        verify(appointmentService, times(1)).getTechnicianAppointments(technicianId);
-    }
-
-    // [Appointment][Unit Test][Negative] Get my jobs with non-technician role -> returns forbidden
-    @Test
-    void whenGetMyJobs_withNonTechnicianRole_thenReturnForbidden() {
-        String technicianId = "a9e6d3f2-1c0a-4b5c-9d8e-7a6f5e4d3c2b";
-        String userRole = "CUSTOMER";
-
-        ResponseEntity<List<AppointmentResponseModel>> response = appointmentController.getMyJobs(technicianId, userRole);
-
-        assertNotNull(response);
-        assertEquals(HttpStatus.FORBIDDEN, response.getStatusCode());
-        assertNull(response.getBody());
-        verify(appointmentService, never()).getTechnicianAppointments(anyString());
+        verify(appointmentService, times(1)).getTechnicianAppointments(TECHNICIAN_ID);
     }
 
     // ===== GET APPOINTMENT BY ID =====
-    // [Appointment][Unit Test][Positive] Get appointment by ID with valid customer header -> returns appointment
+    // [Appointment][Unit Test][Positive] Get appointment by ID with valid customer role -> returns appointment
     @Test
-    void whenGetAppointmentById_withCustomerHeader_thenReturnAppointment() {
+    void whenGetAppointmentById_withCustomerRole_thenReturnAppointment() {
         String appointmentId = "appt-1";
-        String customerId = "123e4567-e89b-12d3-a456-426614174000";
-        String userRole = "CUSTOMER";
+        setupCustomerLookup();
+        Authentication auth = createAuthentication(CUSTOMER_USER_ID, "CUSTOMER");
         AppointmentResponseModel expected = AppointmentResponseModel.builder().appointmentId(appointmentId).build();
-        when(appointmentService.getAppointmentById(appointmentId, customerId, "CUSTOMER"))
+        when(appointmentService.getAppointmentById(appointmentId, CUSTOMER_ID, "CUSTOMER"))
             .thenReturn(expected);
 
-        ResponseEntity<AppointmentResponseModel> response = appointmentController.getAppointmentById(appointmentId, customerId, null, userRole);
+        ResponseEntity<AppointmentResponseModel> response = appointmentController.getAppointmentById(appointmentId, auth);
 
         assertNotNull(response);
         assertEquals(HttpStatus.OK, response.getStatusCode());
         assertNotNull(response.getBody());
         assertEquals(appointmentId, response.getBody().getAppointmentId());
-        verify(appointmentService, times(1)).getAppointmentById(appointmentId, customerId, "CUSTOMER");
+        verify(appointmentService, times(1)).getAppointmentById(appointmentId, CUSTOMER_ID, "CUSTOMER");
     }
 
-        // [Appointment][Unit Test][Positive] Get appointment by ID with valid employee header -> returns appointment
-        @Test
-        void whenGetAppointmentById_withEmployeeHeader_thenReturnAppointment() {
-            String appointmentId = "appt-2";
-            String employeeId = "a9e6d3f2-1c0a-4b5c-9d8e-7a6f5e4d3c2b";
-            String userRole = "TECHNICIAN";
-            AppointmentResponseModel expected = AppointmentResponseModel.builder().appointmentId(appointmentId).build();
-            when(appointmentService.getAppointmentById(appointmentId, employeeId, "TECHNICIAN"))
-                .thenReturn(expected);
-
-            ResponseEntity<AppointmentResponseModel> response = appointmentController.getAppointmentById(appointmentId, null, employeeId, userRole);
-
-            assertNotNull(response);
-            assertEquals(HttpStatus.OK, response.getStatusCode());
-            assertNotNull(response.getBody());
-            assertEquals(appointmentId, response.getBody().getAppointmentId());
-            verify(appointmentService, times(1)).getAppointmentById(appointmentId, employeeId, "TECHNICIAN");
-        }
-
-        // [Appointment][Unit Test][Positive] Get appointment by ID with only userRole CUSTOMER -> returns appointment with default test customer
-        @Test
-        void whenGetAppointmentById_withOnlyUserRoleCustomer_thenReturnDefaultCustomerAppointment() {
-            String appointmentId = "appt-3";
-            String userRole = "CUSTOMER";
-            String defaultCustomerId = "123e4567-e89b-12d3-a456-426614174000";
-            AppointmentResponseModel expected = AppointmentResponseModel.builder().appointmentId(appointmentId).build();
-            when(appointmentService.getAppointmentById(appointmentId, defaultCustomerId, "CUSTOMER"))
-                .thenReturn(expected);
-
-            ResponseEntity<AppointmentResponseModel> response = appointmentController.getAppointmentById(appointmentId, null, null, userRole);
-
-            assertNotNull(response);
-            assertEquals(HttpStatus.OK, response.getStatusCode());
-            assertNotNull(response.getBody());
-            assertEquals(appointmentId, response.getBody().getAppointmentId());
-            verify(appointmentService, times(1)).getAppointmentById(appointmentId, defaultCustomerId, "CUSTOMER");
-        }
-
-        // [Appointment][Unit Test][Positive] Get appointment by ID with only userRole TECHNICIAN -> returns appointment with default test technician
-        @Test
-        void whenGetAppointmentById_withOnlyUserRoleTechnician_thenReturnDefaultTechnicianAppointment() {
-        String appointmentId = "appt-4";
-        String userRole = "TECHNICIAN";
-        String defaultCustomerId = "123e4567-e89b-12d3-a456-426614174000";
+    // [Appointment][Unit Test][Positive] Get appointment by ID with valid technician role -> returns appointment
+    @Test
+    void whenGetAppointmentById_withTechnicianRole_thenReturnAppointment() {
+        String appointmentId = "appt-2";
+        setupEmployeeLookup();
+        Authentication auth = createAuthentication(TECHNICIAN_USER_ID, "TECHNICIAN");
         AppointmentResponseModel expected = AppointmentResponseModel.builder().appointmentId(appointmentId).build();
-        when(appointmentService.getAppointmentById(eq(appointmentId), eq(defaultCustomerId), eq("TECHNICIAN")))
+        when(appointmentService.getAppointmentById(appointmentId, TECHNICIAN_ID, "TECHNICIAN"))
             .thenReturn(expected);
 
-        ResponseEntity<AppointmentResponseModel> response = appointmentController.getAppointmentById(appointmentId, null, null, userRole);
+        ResponseEntity<AppointmentResponseModel> response = appointmentController.getAppointmentById(appointmentId, auth);
 
         assertNotNull(response);
         assertEquals(HttpStatus.OK, response.getStatusCode());
         assertNotNull(response.getBody());
         assertEquals(appointmentId, response.getBody().getAppointmentId());
-        verify(appointmentService, times(1)).getAppointmentById(eq(appointmentId), eq(defaultCustomerId), eq("TECHNICIAN"));
-        }
+        verify(appointmentService, times(1)).getAppointmentById(appointmentId, TECHNICIAN_ID, "TECHNICIAN");
+    }
 
-        // [Appointment][Unit Test][Positive] Get appointment by ID with no headers -> returns appointment with default test customer
-        @Test
-        void whenGetAppointmentById_withNoHeaders_thenReturnDefaultCustomerAppointment() {
-            String appointmentId = "appt-5";
-            String defaultCustomerId = "123e4567-e89b-12d3-a456-426614174000";
-            AppointmentResponseModel expected = AppointmentResponseModel.builder().appointmentId(appointmentId).build();
-            when(appointmentService.getAppointmentById(appointmentId, defaultCustomerId, "CUSTOMER"))
-                .thenReturn(expected);
+    // [Appointment][Unit Test][Positive] Get appointment by ID with admin role -> returns appointment
+    @Test
+    void whenGetAppointmentById_withAdminRole_thenReturnAppointment() {
+        String appointmentId = "appt-3";
+        String adminUserId = "admin-user-id";
+        Authentication auth = createAuthentication(adminUserId, "ADMIN");
+        AppointmentResponseModel expected = AppointmentResponseModel.builder().appointmentId(appointmentId).build();
+        when(appointmentService.getAppointmentById(appointmentId, adminUserId, "ADMIN"))
+            .thenReturn(expected);
 
-            ResponseEntity<AppointmentResponseModel> response = appointmentController.getAppointmentById(appointmentId, null, null, null);
+        ResponseEntity<AppointmentResponseModel> response = appointmentController.getAppointmentById(appointmentId, auth);
 
-            assertNotNull(response);
-            assertEquals(HttpStatus.OK, response.getStatusCode());
-            assertNotNull(response.getBody());
-            assertEquals(appointmentId, response.getBody().getAppointmentId());
-            verify(appointmentService, times(1)).getAppointmentById(appointmentId, defaultCustomerId, "CUSTOMER");
-        }
+        assertNotNull(response);
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        assertNotNull(response.getBody());
+        assertEquals(appointmentId, response.getBody().getAppointmentId());
+        verify(appointmentService, times(1)).getAppointmentById(appointmentId, adminUserId, "ADMIN");
+    }
 
      // ===== CREATE APPOINTMENT =====
-    // [Appointment][Unit Test][Positive] Create appointment with valid customer header -> returns created appointment
+    // [Appointment][Unit Test][Positive] Create appointment with customer role -> returns created appointment
     @Test
-    void whenCreateAppointment_withCustomerHeader_thenReturnCreatedAppointment() {
+    void whenCreateAppointment_withCustomerRole_thenReturnCreatedAppointment() {
         var appointmentRequest = mock(com.profroid.profroidapp.appointmentsubdomain.presentationLayer.AppointmentRequestModel.class);
-        String customerId = "123e4567-e89b-12d3-a456-426614174000";
-        String userRole = "CUSTOMER";
+        setupCustomerLookup();
+        Authentication auth = createAuthentication(CUSTOMER_USER_ID, "CUSTOMER");
         AppointmentResponseModel created = AppointmentResponseModel.builder().appointmentId("appt-3").build();
-        when(appointmentService.addAppointment(appointmentRequest, customerId, "CUSTOMER"))
+        when(appointmentService.addAppointment(appointmentRequest, CUSTOMER_ID, "CUSTOMER"))
             .thenReturn(created);
 
-        ResponseEntity<AppointmentResponseModel> response = appointmentController.createAppointment(appointmentRequest, customerId, null, userRole);
+        ResponseEntity<AppointmentResponseModel> response = appointmentController.createAppointment(appointmentRequest, auth);
 
         assertNotNull(response);
         assertEquals(HttpStatus.CREATED, response.getStatusCode());
         assertNotNull(response.getBody());
         assertEquals("appt-3", response.getBody().getAppointmentId());
-        verify(appointmentService, times(1)).addAppointment(appointmentRequest, customerId, "CUSTOMER");
+        verify(appointmentService, times(1)).addAppointment(appointmentRequest, CUSTOMER_ID, "CUSTOMER");
     }
-            // [Appointment][Unit Test][Positive] Create appointment with only employeeId -> returns created appointment with employeeId and TECHNICIAN role
-        @Test
-        void whenCreateAppointment_withOnlyEmployeeId_thenReturnTechnicianCreatedAppointment() {
-            var appointmentRequest = mock(com.profroid.profroidapp.appointmentsubdomain.presentationLayer.AppointmentRequestModel.class);
-            String employeeId = "a9e6d3f2-1c0a-4b5c-9d8e-7a6f5e4d3c2b";
-            AppointmentResponseModel created = AppointmentResponseModel.builder().appointmentId("appt-12").build();
-            when(appointmentService.addAppointment(eq(appointmentRequest), eq(employeeId), eq("TECHNICIAN")))
-                .thenReturn(created);
 
-            ResponseEntity<AppointmentResponseModel> response = appointmentController.createAppointment(appointmentRequest, null, employeeId, null);
+    // [Appointment][Unit Test][Positive] Create appointment with technician role -> returns created appointment
+    @Test
+    void whenCreateAppointment_withTechnicianRole_thenReturnCreatedAppointment() {
+        var appointmentRequest = mock(com.profroid.profroidapp.appointmentsubdomain.presentationLayer.AppointmentRequestModel.class);
+        setupEmployeeLookup();
+        Authentication auth = createAuthentication(TECHNICIAN_USER_ID, "TECHNICIAN");
+        AppointmentResponseModel created = AppointmentResponseModel.builder().appointmentId("appt-12").build();
+        when(appointmentService.addAppointment(eq(appointmentRequest), eq(TECHNICIAN_ID), eq("TECHNICIAN")))
+            .thenReturn(created);
 
-            assertNotNull(response);
-            assertEquals(HttpStatus.CREATED, response.getStatusCode());
-            assertNotNull(response.getBody());
-            assertEquals("appt-12", response.getBody().getAppointmentId());
-            verify(appointmentService, times(1)).addAppointment(eq(appointmentRequest), eq(employeeId), eq("TECHNICIAN"));
-        }
-        @Test
-        void whenCreateAppointment_withOnlyUserRoleCustomer_thenReturnDefaultCustomerCreatedAppointment() {
-            var appointmentRequest = mock(com.profroid.profroidapp.appointmentsubdomain.presentationLayer.AppointmentRequestModel.class);
-            String userRole = "CUSTOMER";
-            String defaultCustomerId = "123e4567-e89b-12d3-a456-426614174000";
-            AppointmentResponseModel created = AppointmentResponseModel.builder().appointmentId("appt-9").build();
-            when(appointmentService.addAppointment(eq(appointmentRequest), eq(defaultCustomerId), eq("CUSTOMER")))
-                .thenReturn(created);
+        ResponseEntity<AppointmentResponseModel> response = appointmentController.createAppointment(appointmentRequest, auth);
 
-            ResponseEntity<AppointmentResponseModel> response = appointmentController.createAppointment(appointmentRequest, null, null, userRole);
+        assertNotNull(response);
+        assertEquals(HttpStatus.CREATED, response.getStatusCode());
+        assertNotNull(response.getBody());
+        assertEquals("appt-12", response.getBody().getAppointmentId());
+        verify(appointmentService, times(1)).addAppointment(eq(appointmentRequest), eq(TECHNICIAN_ID), eq("TECHNICIAN"));
+    }
 
-            assertNotNull(response);
-            assertEquals(HttpStatus.CREATED, response.getStatusCode());
-            assertNotNull(response.getBody());
-            assertEquals("appt-9", response.getBody().getAppointmentId());
-            verify(appointmentService, times(1)).addAppointment(eq(appointmentRequest), eq(defaultCustomerId), eq("CUSTOMER"));
-        }
+    // [Appointment][Unit Test][Positive] Create appointment with admin role -> returns created appointment
+    @Test
+    void whenCreateAppointment_withAdminRole_thenReturnCreatedAppointment() {
+        var appointmentRequest = mock(com.profroid.profroidapp.appointmentsubdomain.presentationLayer.AppointmentRequestModel.class);
+        String adminUserId = "admin-user-id";
+        Authentication auth = createAuthentication(adminUserId, "ADMIN");
+        AppointmentResponseModel created = AppointmentResponseModel.builder().appointmentId("appt-9").build();
+        when(appointmentService.addAppointment(eq(appointmentRequest), eq(adminUserId), eq("ADMIN")))
+            .thenReturn(created);
 
-        // [Appointment][Unit Test][Positive] Create appointment with only userRole TECHNICIAN -> returns created appointment with default customer
-        @Test
-        void whenCreateAppointment_withOnlyUserRoleTechnician_thenReturnDefaultTechnicianCreatedAppointment() {
-            var appointmentRequest = mock(com.profroid.profroidapp.appointmentsubdomain.presentationLayer.AppointmentRequestModel.class);
-            String userRole = "TECHNICIAN";
-            String defaultTechnicianId = "a9e6d3f2-1c0a-4b5c-9d8e-7a6f5e4d3c2b";
-            AppointmentResponseModel created = AppointmentResponseModel.builder().appointmentId("appt-7").build();
-            when(appointmentService.addAppointment(eq(appointmentRequest), eq(defaultTechnicianId), eq("TECHNICIAN")))
-                .thenReturn(created);
+        ResponseEntity<AppointmentResponseModel> response = appointmentController.createAppointment(appointmentRequest, auth);
 
-            ResponseEntity<AppointmentResponseModel> response = appointmentController.createAppointment(appointmentRequest, null, null, userRole);
-
-            assertNotNull(response);
-            assertEquals(HttpStatus.CREATED, response.getStatusCode());
-            assertNotNull(response.getBody());
-            assertEquals("appt-7", response.getBody().getAppointmentId());
-            verify(appointmentService, times(1)).addAppointment(eq(appointmentRequest), eq(defaultTechnicianId), eq("TECHNICIAN"));
-        }
+        assertNotNull(response);
+        assertEquals(HttpStatus.CREATED, response.getStatusCode());
+        assertNotNull(response.getBody());
+        assertEquals("appt-9", response.getBody().getAppointmentId());
+        verify(appointmentService, times(1)).addAppointment(eq(appointmentRequest), eq(adminUserId), eq("ADMIN"));
+    }
 
     // ===== UPDATE APPOINTMENT =====
-    // [Appointment][Unit Test][Positive] Update appointment with valid customer header -> returns updated appointment
+    // [Appointment][Unit Test][Positive] Update appointment with customer role -> returns updated appointment
     @Test
-    void whenUpdateAppointment_withCustomerHeader_thenReturnUpdatedAppointment() {
+    void whenUpdateAppointment_withCustomerRole_thenReturnUpdatedAppointment() {
         var appointmentRequest = mock(com.profroid.profroidapp.appointmentsubdomain.presentationLayer.AppointmentRequestModel.class);
         String appointmentId = "appt-4";
-        String customerId = "123e4567-e89b-12d3-a456-426614174000";
-        String userRole = "CUSTOMER";
+        setupCustomerLookup();
+        Authentication auth = createAuthentication(CUSTOMER_USER_ID, "CUSTOMER");
         AppointmentResponseModel updated = AppointmentResponseModel.builder().appointmentId(appointmentId).build();
-        when(appointmentService.updateAppointment(appointmentId, appointmentRequest, customerId, "CUSTOMER"))
+        when(appointmentService.updateAppointment(appointmentId, appointmentRequest, CUSTOMER_ID, "CUSTOMER"))
             .thenReturn(updated);
 
-        ResponseEntity<AppointmentResponseModel> response = appointmentController.updateAppointment(appointmentId, appointmentRequest, customerId, null, userRole);
+        ResponseEntity<AppointmentResponseModel> response = appointmentController.updateAppointment(appointmentId, appointmentRequest, auth);
 
         assertNotNull(response);
         assertEquals(HttpStatus.OK, response.getStatusCode());
         assertNotNull(response.getBody());
         assertEquals(appointmentId, response.getBody().getAppointmentId());
-        verify(appointmentService, times(1)).updateAppointment(appointmentId, appointmentRequest, customerId, "CUSTOMER");
+        verify(appointmentService, times(1)).updateAppointment(appointmentId, appointmentRequest, CUSTOMER_ID, "CUSTOMER");
     }
-            // [Appointment][Unit Test][Positive] Update appointment with only employeeId -> returns updated appointment with employeeId and TECHNICIAN role
-        @Test
-        void whenUpdateAppointment_withOnlyEmployeeId_thenReturnTechnicianUpdatedAppointment() {
-            var appointmentRequest = mock(com.profroid.profroidapp.appointmentsubdomain.presentationLayer.AppointmentRequestModel.class);
-            String appointmentId = "appt-13";
-            String employeeId = "a9e6d3f2-1c0a-4b5c-9d8e-7a6f5e4d3c2b";
-            AppointmentResponseModel updated = AppointmentResponseModel.builder().appointmentId(appointmentId).build();
-            when(appointmentService.updateAppointment(eq(appointmentId), eq(appointmentRequest), eq(employeeId), eq("TECHNICIAN")))
-                .thenReturn(updated);
 
-            ResponseEntity<AppointmentResponseModel> response = appointmentController.updateAppointment(appointmentId, appointmentRequest, null, employeeId, null);
+    // [Appointment][Unit Test][Positive] Update appointment with technician role -> returns updated appointment
+    @Test
+    void whenUpdateAppointment_withTechnicianRole_thenReturnUpdatedAppointment() {
+        var appointmentRequest = mock(com.profroid.profroidapp.appointmentsubdomain.presentationLayer.AppointmentRequestModel.class);
+        String appointmentId = "appt-13";
+        setupEmployeeLookup();
+        Authentication auth = createAuthentication(TECHNICIAN_USER_ID, "TECHNICIAN");
+        AppointmentResponseModel updated = AppointmentResponseModel.builder().appointmentId(appointmentId).build();
+        when(appointmentService.updateAppointment(eq(appointmentId), eq(appointmentRequest), eq(TECHNICIAN_ID), eq("TECHNICIAN")))
+            .thenReturn(updated);
 
-            assertNotNull(response);
-            assertEquals(HttpStatus.OK, response.getStatusCode());
-            assertNotNull(response.getBody());
-            assertEquals(appointmentId, response.getBody().getAppointmentId());
-            verify(appointmentService, times(1)).updateAppointment(eq(appointmentId), eq(appointmentRequest), eq(employeeId), eq("TECHNICIAN"));
-        }
-        @Test
-        void whenUpdateAppointment_withOnlyUserRoleCustomer_thenReturnDefaultCustomerUpdatedAppointment() {
-            var appointmentRequest = mock(com.profroid.profroidapp.appointmentsubdomain.presentationLayer.AppointmentRequestModel.class);
-            String appointmentId = "appt-10";
-            String userRole = "CUSTOMER";
-            String defaultCustomerId = "123e4567-e89b-12d3-a456-426614174000";
-            AppointmentResponseModel updated = AppointmentResponseModel.builder().appointmentId(appointmentId).build();
-            when(appointmentService.updateAppointment(eq(appointmentId), eq(appointmentRequest), eq(defaultCustomerId), eq("CUSTOMER")))
-                .thenReturn(updated);
+        ResponseEntity<AppointmentResponseModel> response = appointmentController.updateAppointment(appointmentId, appointmentRequest, auth);
 
-            ResponseEntity<AppointmentResponseModel> response = appointmentController.updateAppointment(appointmentId, appointmentRequest, null, null, userRole);
+        assertNotNull(response);
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        assertNotNull(response.getBody());
+        assertEquals(appointmentId, response.getBody().getAppointmentId());
+        verify(appointmentService, times(1)).updateAppointment(eq(appointmentId), eq(appointmentRequest), eq(TECHNICIAN_ID), eq("TECHNICIAN"));
+    }
 
-            assertNotNull(response);
-            assertEquals(HttpStatus.OK, response.getStatusCode());
-            assertNotNull(response.getBody());
-            assertEquals(appointmentId, response.getBody().getAppointmentId());
-            verify(appointmentService, times(1)).updateAppointment(eq(appointmentId), eq(appointmentRequest), eq(defaultCustomerId), eq("CUSTOMER"));
-        }
+    // [Appointment][Unit Test][Positive] Update appointment with admin role -> returns updated appointment
+    @Test
+    void whenUpdateAppointment_withAdminRole_thenReturnUpdatedAppointment() {
+        var appointmentRequest = mock(com.profroid.profroidapp.appointmentsubdomain.presentationLayer.AppointmentRequestModel.class);
+        String appointmentId = "appt-10";
+        String adminUserId = "admin-user-id";
+        Authentication auth = createAuthentication(adminUserId, "ADMIN");
+        AppointmentResponseModel updated = AppointmentResponseModel.builder().appointmentId(appointmentId).build();
+        when(appointmentService.updateAppointment(eq(appointmentId), eq(appointmentRequest), eq(adminUserId), eq("ADMIN")))
+            .thenReturn(updated);
 
-        // [Appointment][Unit Test][Positive] Update appointment with only userRole TECHNICIAN -> returns updated appointment with default customer
-        @Test
-        void whenUpdateAppointment_withOnlyUserRoleTechnician_thenReturnDefaultTechnicianUpdatedAppointment() {
-            var appointmentRequest = mock(com.profroid.profroidapp.appointmentsubdomain.presentationLayer.AppointmentRequestModel.class);
-            String appointmentId = "appt-8";
-            String userRole = "TECHNICIAN";
-            String defaultTechnicianId = "a9e6d3f2-1c0a-4b5c-9d8e-7a6f5e4d3c2b";
-            AppointmentResponseModel updated = AppointmentResponseModel.builder().appointmentId(appointmentId).build();
-            when(appointmentService.updateAppointment(eq(appointmentId), eq(appointmentRequest), eq(defaultTechnicianId), eq("TECHNICIAN")))
-                .thenReturn(updated);
+        ResponseEntity<AppointmentResponseModel> response = appointmentController.updateAppointment(appointmentId, appointmentRequest, auth);
 
-            ResponseEntity<AppointmentResponseModel> response = appointmentController.updateAppointment(appointmentId, appointmentRequest, null, null, userRole);
-
-            assertNotNull(response);
-            assertEquals(HttpStatus.OK, response.getStatusCode());
-            assertNotNull(response.getBody());
-            assertEquals(appointmentId, response.getBody().getAppointmentId());
-            verify(appointmentService, times(1)).updateAppointment(eq(appointmentId), eq(appointmentRequest), eq(defaultTechnicianId), eq("TECHNICIAN"));
-        }
+        assertNotNull(response);
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        assertNotNull(response.getBody());
+        assertEquals(appointmentId, response.getBody().getAppointmentId());
+        verify(appointmentService, times(1)).updateAppointment(eq(appointmentId), eq(appointmentRequest), eq(adminUserId), eq("ADMIN"));
+    }
 
     // ===== PATCH APPOINTMENT STATUS =====
-    // [Appointment][Unit Test][Positive] Patch appointment status with valid customer header -> returns patched appointment
+    // [Appointment][Unit Test][Positive] Patch appointment status with customer role -> returns patched appointment
     @Test
-    void whenPatchAppointmentStatus_withCustomerHeader_thenReturnPatchedAppointment() {
+    void whenPatchAppointmentStatus_withCustomerRole_thenReturnPatchedAppointment() {
         var statusRequest = mock(com.profroid.profroidapp.appointmentsubdomain.presentationLayer.AppointmentStatusChangeRequestModel.class);
         String appointmentId = "appt-5";
-        String customerId = "123e4567-e89b-12d3-a456-426614174000";
-        String userRole = "CUSTOMER";
+        setupCustomerLookup();
+        Authentication auth = createAuthentication(CUSTOMER_USER_ID, "CUSTOMER");
         AppointmentResponseModel patched = AppointmentResponseModel.builder().appointmentId(appointmentId).status("COMPLETED").build();
-        when(appointmentService.patchAppointmentStatus(appointmentId, statusRequest, customerId, "CUSTOMER"))
+        when(appointmentService.patchAppointmentStatus(appointmentId, statusRequest, CUSTOMER_ID, "CUSTOMER"))
             .thenReturn(patched);
 
-        ResponseEntity<AppointmentResponseModel> response = appointmentController.patchAppointmentStatus(appointmentId, statusRequest, customerId, null, userRole);
+        ResponseEntity<AppointmentResponseModel> response = appointmentController.patchAppointmentStatus(appointmentId, statusRequest, auth);
 
         assertNotNull(response);
         assertEquals(HttpStatus.OK, response.getStatusCode());
         assertNotNull(response.getBody());
         assertEquals("COMPLETED", response.getBody().getStatus());
-        verify(appointmentService, times(1)).patchAppointmentStatus(appointmentId, statusRequest, customerId, "CUSTOMER");
+        verify(appointmentService, times(1)).patchAppointmentStatus(appointmentId, statusRequest, CUSTOMER_ID, "CUSTOMER");
     }
-            // [Appointment][Unit Test][Positive] Patch appointment status with only employeeId -> returns patched appointment with employeeId and TECHNICIAN role
-        @Test
-        void whenPatchAppointmentStatus_withOnlyEmployeeId_thenReturnTechnicianPatchedAppointment() {
-            var statusRequest = mock(com.profroid.profroidapp.appointmentsubdomain.presentationLayer.AppointmentStatusChangeRequestModel.class);
-            String appointmentId = "appt-14";
-            String employeeId = "a9e6d3f2-1c0a-4b5c-9d8e-7a6f5e4d3c2b";
-            AppointmentResponseModel patched = AppointmentResponseModel.builder().appointmentId(appointmentId).status("COMPLETED").build();
-            when(appointmentService.patchAppointmentStatus(eq(appointmentId), eq(statusRequest), eq(employeeId), eq("TECHNICIAN")))
-                .thenReturn(patched);
 
-            ResponseEntity<AppointmentResponseModel> response = appointmentController.patchAppointmentStatus(appointmentId, statusRequest, null, employeeId, null);
+    // [Appointment][Unit Test][Positive] Patch appointment status with technician role -> returns patched appointment
+    @Test
+    void whenPatchAppointmentStatus_withTechnicianRole_thenReturnPatchedAppointment() {
+        var statusRequest = mock(com.profroid.profroidapp.appointmentsubdomain.presentationLayer.AppointmentStatusChangeRequestModel.class);
+        String appointmentId = "appt-14";
+        setupEmployeeLookup();
+        Authentication auth = createAuthentication(TECHNICIAN_USER_ID, "TECHNICIAN");
+        AppointmentResponseModel patched = AppointmentResponseModel.builder().appointmentId(appointmentId).status("COMPLETED").build();
+        when(appointmentService.patchAppointmentStatus(eq(appointmentId), eq(statusRequest), eq(TECHNICIAN_ID), eq("TECHNICIAN")))
+            .thenReturn(patched);
 
-            assertNotNull(response);
-            assertEquals(HttpStatus.OK, response.getStatusCode());
-            assertNotNull(response.getBody());
-            assertEquals("COMPLETED", response.getBody().getStatus());
-            verify(appointmentService, times(1)).patchAppointmentStatus(eq(appointmentId), eq(statusRequest), eq(employeeId), eq("TECHNICIAN"));
-        }
-        @Test
-        void whenPatchAppointmentStatus_withOnlyUserRoleCustomer_thenReturnDefaultCustomerPatchedAppointment() {
-            var statusRequest = mock(com.profroid.profroidapp.appointmentsubdomain.presentationLayer.AppointmentStatusChangeRequestModel.class);
-            String appointmentId = "appt-11";
-            String userRole = "CUSTOMER";
-            String defaultCustomerId = "123e4567-e89b-12d3-a456-426614174000";
-            AppointmentResponseModel patched = AppointmentResponseModel.builder().appointmentId(appointmentId).status("COMPLETED").build();
-            when(appointmentService.patchAppointmentStatus(eq(appointmentId), eq(statusRequest), eq(defaultCustomerId), eq("CUSTOMER")))
-                .thenReturn(patched);
+        ResponseEntity<AppointmentResponseModel> response = appointmentController.patchAppointmentStatus(appointmentId, statusRequest, auth);
 
-            ResponseEntity<AppointmentResponseModel> response = appointmentController.patchAppointmentStatus(appointmentId, statusRequest, null, null, userRole);
+        assertNotNull(response);
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        assertNotNull(response.getBody());
+        assertEquals("COMPLETED", response.getBody().getStatus());
+        verify(appointmentService, times(1)).patchAppointmentStatus(eq(appointmentId), eq(statusRequest), eq(TECHNICIAN_ID), eq("TECHNICIAN"));
+    }
 
-            assertNotNull(response);
-            assertEquals(HttpStatus.OK, response.getStatusCode());
-            assertNotNull(response.getBody());
-            assertEquals("COMPLETED", response.getBody().getStatus());
-            verify(appointmentService, times(1)).patchAppointmentStatus(eq(appointmentId), eq(statusRequest), eq(defaultCustomerId), eq("CUSTOMER"));
-        }
+    // [Appointment][Unit Test][Positive] Patch appointment status with admin role -> returns patched appointment
+    @Test
+    void whenPatchAppointmentStatus_withAdminRole_thenReturnPatchedAppointment() {
+        var statusRequest = mock(com.profroid.profroidapp.appointmentsubdomain.presentationLayer.AppointmentStatusChangeRequestModel.class);
+        String appointmentId = "appt-11";
+        String adminUserId = "admin-user-id";
+        Authentication auth = createAuthentication(adminUserId, "ADMIN");
+        AppointmentResponseModel patched = AppointmentResponseModel.builder().appointmentId(appointmentId).status("COMPLETED").build();
+        when(appointmentService.patchAppointmentStatus(eq(appointmentId), eq(statusRequest), eq(adminUserId), eq("ADMIN")))
+            .thenReturn(patched);
 
-        // [Appointment][Unit Test][Positive] Patch appointment status with only userRole TECHNICIAN -> returns patched appointment with default customer
-        @Test
-        void whenPatchAppointmentStatus_withOnlyUserRoleTechnician_thenReturnDefaultTechnicianPatchedAppointment() {
-            var statusRequest = mock(com.profroid.profroidapp.appointmentsubdomain.presentationLayer.AppointmentStatusChangeRequestModel.class);
-            String appointmentId = "appt-6";
-            String userRole = "TECHNICIAN";
-            String defaultTechnicianId = "a9e6d3f2-1c0a-4b5c-9d8e-7a6f5e4d3c2b";
-            AppointmentResponseModel patched = AppointmentResponseModel.builder().appointmentId(appointmentId).status("COMPLETED").build();
-            when(appointmentService.patchAppointmentStatus(eq(appointmentId), eq(statusRequest), eq(defaultTechnicianId), eq("TECHNICIAN")))
-                .thenReturn(patched);
+        ResponseEntity<AppointmentResponseModel> response = appointmentController.patchAppointmentStatus(appointmentId, statusRequest, auth);
 
-            ResponseEntity<AppointmentResponseModel> response = appointmentController.patchAppointmentStatus(appointmentId, statusRequest, null, null, userRole);
-
-            assertNotNull(response);
-            assertEquals(HttpStatus.OK, response.getStatusCode());
-            assertNotNull(response.getBody());
-            assertEquals("COMPLETED", response.getBody().getStatus());
-            verify(appointmentService, times(1)).patchAppointmentStatus(eq(appointmentId), eq(statusRequest), eq(defaultTechnicianId), eq("TECHNICIAN"));
-        }
+        assertNotNull(response);
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        assertNotNull(response.getBody());
+        assertEquals("COMPLETED", response.getBody().getStatus());
+        verify(appointmentService, times(1)).patchAppointmentStatus(eq(appointmentId), eq(statusRequest), eq(adminUserId), eq("ADMIN"));
+    }
 
     
 }
