@@ -516,7 +516,7 @@ public class AppointmentServiceUnitTest {
         doNothing().when(validationUtils).validateTechnicianSchedule(any(), any());
         doNothing().when(validationUtils).validateServiceTypeRestrictions(any(), anyString());
         doNothing().when(validationUtils).validateQuotationCompleted(any(), any(), any(), any());
-        doNothing().when(validationUtils).validateDuplicateQuotation(any(), any(), any(), any());
+        doNothing().when(validationUtils).validateDuplicateQuotation(any(), any(), any(), any(), any());
         doNothing().when(validationUtils).validateDuplicateServiceAddressAndDayExcludeCurrent(any(), any(), any(), any());
         doNothing().when(validationUtils).validateTimeSlotAvailability(any(), any(), any());
         doNothing().when(validationUtils).validateBookingDeadline(any(), any());
@@ -572,7 +572,7 @@ public class AppointmentServiceUnitTest {
         doNothing().when(validationUtils).validateTechnicianSchedule(any(), any());
         doNothing().when(validationUtils).validateServiceTypeRestrictions(any(), anyString());
         doNothing().when(validationUtils).validateQuotationCompleted(any(), any(), any(), any());
-        doNothing().when(validationUtils).validateDuplicateQuotation(any(), any(), any(), any());
+        doNothing().when(validationUtils).validateDuplicateQuotation(any(), any(), any(), any(), any());
         doNothing().when(validationUtils).validateDuplicateServiceAddressAndDayExcludeCurrent(any(), any(), any(), any());
         doNothing().when(validationUtils).validateTimeSlotAvailability(any(), any(), any());
         doNothing().when(validationUtils).validateBookingDeadline(any(), any());

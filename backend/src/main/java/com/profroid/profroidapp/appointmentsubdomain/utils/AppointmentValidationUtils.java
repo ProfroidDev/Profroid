@@ -110,6 +110,7 @@ public class AppointmentValidationUtils {
             JobType jobType,
             AppointmentRequestModel requestModel,
             LocalDate appointmentDate,
+            LocalDateTime appointmentDateTime,
             Customer customer) {
         
         // Only validate if the current job is a quotation
@@ -140,6 +141,7 @@ public class AppointmentValidationUtils {
             .toList();
         
         if (!blockingQuotations.isEmpty()) {
+            // Block ANY new quotation at this address on this day - only one quotation per address per day
             Appointment blocking = blockingQuotations.get(0);
             
             throw new InvalidOperationException(
@@ -167,53 +169,44 @@ public class AppointmentValidationUtils {
         AppointmentAddress address = requestModel.getAppointmentAddress();
         LocalDate serviceDate = appointmentDateTime.toLocalDate();
         
-        // Find all quotations for this customer at this address
-        List<Appointment> quotations = appointmentRepository.findQuotationsByCustomerAndAddress(
-            customer,
+        // Find all quotations at this address on this day (regardless of customer)
+        List<Appointment> quotationsOnSameDay = appointmentRepository.findQuotationsByAddressAndDate(
             address.getStreetAddress(),
             address.getCity(),
             address.getProvince(),
-            address.getPostalCode()
+            address.getPostalCode(),
+            serviceDate
         );
         
-        // If no quotation exists, technician already knows the issue - allow service
-        if (quotations.isEmpty()) {
+        // If no quotation exists at this address on this day, allow service
+        if (quotationsOnSameDay.isEmpty()) {
             return;
         }
         
-        // Check for SCHEDULED quotations ON THE SAME DAY ONLY
-        List<Appointment> scheduledQuotationsOnSameDay = quotations.stream()
-            .filter(apt -> apt.getAppointmentStatus().getAppointmentStatusType() == AppointmentStatusType.SCHEDULED)
-            .filter(apt -> apt.getAppointmentDate().toLocalDate().equals(serviceDate))
-            .toList();
-
-        if (!scheduledQuotationsOnSameDay.isEmpty()) {
-            // Block if the service is after any scheduled quotation on that same day
-            for (Appointment scheduledQuotation : scheduledQuotationsOnSameDay) {
-                LocalDateTime quotationDateTime = scheduledQuotation.getAppointmentDate();
-
-                if (appointmentDateTime.isAfter(quotationDateTime)) {
+        // Check for SCHEDULED quotations only - services cannot be scheduled AFTER them
+        // COMPLETED quotations allow services to be scheduled after
+        for (Appointment quotation : quotationsOnSameDay) {
+            if (quotation.getAppointmentStatus().getAppointmentStatusType() == AppointmentStatusType.SCHEDULED) {
+                LocalDateTime quotationDateTime = quotation.getAppointmentDate();
+                
+                // Block if service is scheduled AT or AFTER a SCHEDULED quotation time
+                if (appointmentDateTime.isAfter(quotationDateTime) || appointmentDateTime.isEqual(quotationDateTime)) {
+                    String quotationCustomerId = quotation.getCustomer().getCustomerIdentifier().getCustomerId();
                     throw new InvalidOperationException(
                         "Cannot schedule " + jobType + " service at " + appointmentDateTime.toLocalTime() +
                         " on " + serviceDate + ". " +
                         "There is a SCHEDULED quotation at " + quotationDateTime.toLocalTime() +
-                        " on the same day that must be completed first. " +
-                        "You can either: 1) Complete the quotation first, or 2) Schedule the service before the quotation time. " +
+                        " on the same day (Customer: " + quotationCustomerId + "). " +
+                        "Services cannot be scheduled after a scheduled quotation. " +
+                        "Please schedule the service before " + quotationDateTime.toLocalTime() + 
+                        ", wait for the quotation to be completed, or choose a different date. " +
                         "Address: " + address.getStreetAddress() + ", " + address.getCity()
                     );
                 }
             }
         }
-
-        // If no blocking scheduled quotations on the same day, allow service when a quotation is already completed
-        boolean hasCompletedQuotation = quotations.stream()
-            .anyMatch(apt -> apt.getAppointmentStatus().getAppointmentStatusType() == AppointmentStatusType.COMPLETED);
-
-        if (hasCompletedQuotation) {
-            return; // Quotation completed, allow service
-        }
-
-        // Otherwise, proceed (no quotation or only future-time scheduled quotation on that day)
+        
+        // Service is before all scheduled quotations OR quotations are completed, allow it
     }
 
     public void validateTimeSlotAvailability(Employee technician, LocalDateTime appointmentDateTime, Job job) {

@@ -155,16 +155,19 @@ public class AppointmentServiceImpl implements AppointmentService {
             throw new InvalidOperationException("Job " + requestModel.getJobName() + " is not active.");
         }
         
-        // Find cellar by name
-        Cellar cellar = cellarRepository.findCellarByName(requestModel.getCellarName());
+        // Find cellar by name and owner (prevents duplicate name issues)
+        Cellar cellar = cellarRepository.findCellarByNameAndOwnerCustomerIdentifier_CustomerId(
+            requestModel.getCellarName(), 
+            customer.getCustomerIdentifier().getCustomerId()
+        );
         if (cellar == null) {
-            throw new ResourceNotFoundException("Cellar not found: " + requestModel.getCellarName());
+            throw new ResourceNotFoundException("Cellar not found: " + requestModel.getCellarName() + " for this customer");
         }
         validationUtils.validateCellarOwnership(cellar, customer);
         validationUtils.validateTechnicianSchedule(technician, appointmentDateTime);
         validationUtils.validateServiceTypeRestrictions(job.getJobType(), userRole);
         validationUtils.validateQuotationCompleted(job.getJobType(), requestModel, customer, appointmentDateTime);
-        validationUtils.validateDuplicateQuotation(job.getJobType(), requestModel, appointmentDateTime.toLocalDate(), customer);
+        validationUtils.validateDuplicateQuotation(job.getJobType(), requestModel, appointmentDateTime.toLocalDate(), appointmentDateTime, customer);
         validationUtils.validateDuplicateServiceAddressAndDay(job.getJobType(), requestModel, appointmentDateTime.toLocalDate());
         validationUtils.validateTimeSlotAvailability(technician, appointmentDateTime, job);
         
@@ -354,10 +357,13 @@ public class AppointmentServiceImpl implements AppointmentService {
                 throw new InvalidOperationException("Job " + appointmentRequest.getJobName() + " is not active.");
             }
 
-            // Find cellar by name
-            Cellar cellar = cellarRepository.findCellarByName(appointmentRequest.getCellarName());
+            // Find cellar by name and owner (prevents duplicate name issues)
+            Cellar cellar = cellarRepository.findCellarByNameAndOwnerCustomerIdentifier_CustomerId(
+                appointmentRequest.getCellarName(), 
+                customer.getCustomerIdentifier().getCustomerId()
+            );
             if (cellar == null) {
-                throw new ResourceNotFoundException("Cellar not found: " + appointmentRequest.getCellarName());
+                throw new ResourceNotFoundException("Cellar not found: " + appointmentRequest.getCellarName() + " for this customer");
             }
 
             // Validate rules (same as POST)
@@ -374,7 +380,7 @@ public class AppointmentServiceImpl implements AppointmentService {
             validationUtils.validateTechnicianSchedule(technician, appointmentDateTime);
             validationUtils.validateServiceTypeRestrictions(job.getJobType(), effectiveRole);
             validationUtils.validateQuotationCompleted(job.getJobType(), appointmentRequest, customer, appointmentDateTime);
-            validationUtils.validateDuplicateQuotation(job.getJobType(), appointmentRequest, appointmentDateTime.toLocalDate(), customer);
+            validationUtils.validateDuplicateQuotation(job.getJobType(), appointmentRequest, appointmentDateTime.toLocalDate(), appointmentDateTime, customer);
             // Prevent duplicate service for same address/day/technician except for the current appointment
             validationUtils.validateDuplicateServiceAddressAndDayExcludeCurrent(job.getJobType(), appointmentRequest, appointmentDateTime.toLocalDate(), appointment.getAppointmentIdentifier().getAppointmentId());
             validationUtils.validateTimeSlotAvailability(technician, appointmentDateTime, job);
