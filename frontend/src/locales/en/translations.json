@@ -59,7 +59,9 @@
     "resetPasswordSuccess": "Your password has been reset successfully",
     "invalidCredentials": "Invalid email or password",
     "emailAlreadyExists": "This email is already registered",
-    "passwordMismatch": "Passwords do not match"
+    "passwordMismatch": "Passwords do not match",
+    "completeRegistration": "Please complete your customer registration",
+    "registrationFailed": "Failed to complete registration"
   },
   "pages": {
     "home": {
@@ -106,7 +108,24 @@
       "country": "Country",
       "technician": "Technician",
       "manager": "Manager",
-      "noEmployees": "No employees found"
+      "noEmployees": "No employees found",
+      "searchUser": "Search User",
+      "step1": "Step 1: Select User and Employee Type",
+      "step2": "Step 2",
+      "personalInformation": "Personal Information",
+      "firstName": "First Name",
+      "lastName": "Last Name",
+      "userId": "User ID",
+      "streetAddress": "Street Address",
+      "phoneNumbers": "Phone Numbers",
+      "phoneNumber": "Phone Number",
+      "phoneType": "Type",
+      "searchByNameOrEmail": "Search by name or email...",
+      "next": "Next",
+      "createEmployee": "Create Employee",
+      "assigningMessage": "Assigning: {{name}} ({{email}}) as {{employeeType}}",
+      "typeAtLeast2Characters": "Type at least 2 characters to search",
+      "noUsersFound": "No users found matching \"{{query}}\""
     },
     "services": {
       "title": "Services",
@@ -191,6 +210,7 @@
   "validation": {
     "emailInvalid": "Please enter a valid email address",
     "postalCodeInvalid": "Please enter a valid postal code",
+    "postalCodeMismatch": "Postal code does not match {{city}}, {{province}}",
     "phoneInvalid": "Please enter a valid phone number",
     "passwordTooShort": "Password must be at least 8 characters",
     "required": "This field is required",

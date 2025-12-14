@@ -59,7 +59,9 @@
     "resetPasswordSuccess": "Votre mot de passe a été réinitialisé avec succès",
     "invalidCredentials": "Email ou mot de passe invalide",
     "emailAlreadyExists": "Cet email est déjà enregistré",
-    "passwordMismatch": "Les mots de passe ne correspondent pas"
+    "passwordMismatch": "Les mots de passe ne correspondent pas",
+    "completeRegistration": "Veuillez compléter votre inscription en tant que client",
+    "registrationFailed": "Impossible de terminer l'inscription"
   },
   "pages": {
     "home": {
@@ -106,7 +108,24 @@
       "country": "Pays",
       "technician": "Technicien",
       "manager": "Gestionnaire",
-      "noEmployees": "Aucun employé trouvé"
+      "noEmployees": "Aucun employé trouvé",
+      "searchUser": "Chercher utilisateur",
+      "step1": "Étape 1: Sélectionnez l'utilisateur et le type d'employé",
+      "step2": "Étape 2",
+      "personalInformation": "Informations personnelles",
+      "firstName": "Prénom",
+      "lastName": "Nom de famille",
+      "userId": "ID utilisateur",
+      "streetAddress": "Adresse postale",
+      "phoneNumbers": "Numéros de téléphone",
+      "phoneNumber": "Numéro de téléphone",
+      "phoneType": "Type",
+      "searchByNameOrEmail": "Rechercher par nom ou email...",
+      "next": "Suivant",
+      "createEmployee": "Créer un employé",
+      "assigningMessage": "Attribution: {{name}} ({{email}}) en tant que {{employeeType}}",
+      "typeAtLeast2Characters": "Tapez au moins 2 caractères pour rechercher",
+      "noUsersFound": "Aucun utilisateur trouvé correspondant à \"{{query}}\""
     },
     "services": {
       "title": "Services",
@@ -191,6 +210,7 @@
   "validation": {
     "emailInvalid": "Veuillez entrer une adresse e-mail valide",
     "postalCodeInvalid": "Veuillez entrer un code postal valide",
+    "postalCodeMismatch": "Le code postal ne correspond pas à {{city}}, {{province}}",
     "phoneInvalid": "Veuillez entrer un numéro de téléphone valide",
     "passwordTooShort": "Le mot de passe doit contenir au moins 8 caractères",
     "required": "Ce champ est obligatoire",

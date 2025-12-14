@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { Loader2, CalendarClock, ClipboardList, Users } from "lucide-react";
 import "./AddAppointmentModal.css";
 import { createAppointment } from "../api/createAppointment";
@@ -194,6 +195,7 @@ export default function AddAppointmentModal({
   onClose,
   onCreated,
 }: AddAppointmentModalProps): React.ReactElement {
+  const { t } = useTranslation();
   const { customerData } = useAuthStore();
   
   // Get customerId or employeeId from auth store
@@ -663,9 +665,10 @@ export default function AddAppointmentModal({
       return;
     }
 
-    const postalError = getPostalCodeError(address.postalCode, address.city, address.province);
-    if (postalError) {
-      setError(postalError);
+    const postalErrorKey = getPostalCodeError(address.postalCode, address.city, address.province);
+    if (postalErrorKey) {
+      const translatedError = t(postalErrorKey, { city: address.city, province: address.province });
+      setError(translatedError);
       return;
     }
 

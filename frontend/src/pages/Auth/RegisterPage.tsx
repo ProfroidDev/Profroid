@@ -16,6 +16,11 @@ export default function RegisterPage() {
   const [step, setStep] = useState<1 | 2>(1);
   const [userId, setUserId] = useState('');
   
+  // Clear auth error when RegisterPage loads
+  useEffect(() => {
+    clearError();
+  }, [clearError]);
+  
   // Check if coming from login with requiresCompletion
   useEffect(() => {
     const state = location.state as { completionMode?: boolean; userId?: string; email?: string } | null;
@@ -47,6 +52,22 @@ export default function RegisterPage() {
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [submitting, setSubmitting] = useState(false);
 
+  const translateBackendMessage = (message: string | undefined | null): string => {
+    if (!message) return t('messages.error');
+    
+    const lowerMessage = message.toLowerCase();
+    
+    // Map backend messages to translation keys
+    if (lowerMessage.includes('complete') || lowerMessage.includes('registration')) {
+      return t('auth.completeRegistration');
+    }
+    if (lowerMessage.includes('already') || lowerMessage.includes('exists') || lowerMessage.includes('user')) {
+      return t('auth.emailAlreadyExists');
+    }
+    
+    return message; // Return original message if no translation found
+  };
+
   const handleStep1Submit = async (e: React.FormEvent) => {
     e.preventDefault();
     setFormError('');
@@ -74,10 +95,10 @@ export default function RegisterPage() {
         setUserId(response.userId);
         setStep(2);
       } else {
-        setFormError(response.error || t('messages.error'));
+        setFormError(translateBackendMessage(response.error));
       }
     } catch (err) {
-      setFormError(err instanceof Error ? err.message : t('messages.error'));
+      setFormError(translateBackendMessage(err instanceof Error ? err.message : undefined));
     } finally {
       setSubmitting(false);
     }
@@ -96,8 +117,11 @@ export default function RegisterPage() {
     }
     
     if (name === 'postalCode') {
-      const error = getPostalCodeError(value, customerData.city, customerData.province);
-      if (error) setErrors(prev => ({ ...prev, postalCode: error }));
+      const errorKey = getPostalCodeError(value, customerData.city, customerData.province);
+      if (errorKey) {
+        const translatedError = t(errorKey, { city: customerData.city, province: customerData.province });
+        setErrors(prev => ({ ...prev, postalCode: translatedError }));
+      }
     }
   };
 
@@ -130,8 +154,10 @@ export default function RegisterPage() {
     if (!customerData.city.trim()) newErrors.city = 'City is required';
     if (!customerData.postalCode.trim()) newErrors.postalCode = 'Postal code is required';
     else {
-      const postalError = getPostalCodeError(customerData.postalCode, customerData.city, customerData.province);
-      if (postalError) newErrors.postalCode = postalError;
+      const postalErrorKey = getPostalCodeError(customerData.postalCode, customerData.city, customerData.province);
+      if (postalErrorKey) {
+        newErrors.postalCode = t(postalErrorKey, { city: customerData.city, province: customerData.province });
+      }
     }
     
     if (customerData.phoneNumbers.some(p => !p.number.trim())) {
@@ -168,10 +194,10 @@ export default function RegisterPage() {
 
         navigate('/');
       } else {
-        setFormError(response.error || 'Failed to complete registration');
+        setFormError(translateBackendMessage(response.error));
       }
     } catch (err) {
-      setFormError(err instanceof Error ? err.message : 'Failed to complete registration');
+      setFormError(translateBackendMessage(err instanceof Error ? err.message : undefined));
     } finally {
       setSubmitting(false);
     }
@@ -228,7 +254,7 @@ export default function RegisterPage() {
 
           {(formError || error) && (
             <div className="alert alert-error">
-              {formError || error}
+              {formError || translateBackendMessage(error)}
             </div>
           )}
 
@@ -381,7 +407,7 @@ export default function RegisterPage() {
 
           {(formError || error) && (
             <div className="alert alert-error">
-              {formError || error}
+              {formError || translateBackendMessage(error)}
             </div>
           )}
 
