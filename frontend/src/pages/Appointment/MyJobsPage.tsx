@@ -9,7 +9,7 @@ import { MapPin, Clock, User, Wrench, DollarSign, Phone, AlertCircle } from "luc
 import "./MyJobsPage.css";
 
 export default function MyJobsPage(): React.ReactElement {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const [jobs, setJobs] = useState<AppointmentResponseModel[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
   const [selectedJob, setSelectedJob] = useState<AppointmentResponseModel | null>(null);
@@ -68,7 +68,8 @@ export default function MyJobsPage(): React.ReactElement {
 
   const formatDate = (dateString: string): string => {
     const date = new Date(dateString);
-    return date.toLocaleDateString("en-US", {
+    const locale = i18n.language === 'fr' ? 'fr-FR' : 'en-US';
+    return date.toLocaleDateString(locale, {
       weekday: "long",
       year: "numeric",
       month: "long",
@@ -158,7 +159,7 @@ export default function MyJobsPage(): React.ReactElement {
               <div className="job-info-row">
                 <User size={18} />
                 <span>
-                  Customer: {job.customerFirstName} {job.customerLastName}
+                  {t('pages.jobs.customer')}: {job.customerFirstName} {job.customerLastName}
                 </span>
               </div>
 
@@ -173,7 +174,7 @@ export default function MyJobsPage(): React.ReactElement {
               {/* Cellar */}
               <div className="job-info-row">
                 <Wrench size={18} />
-                <span>Cellar: {job.cellarName}</span>
+                <span>{t('pages.jobs.cellar')}: {job.cellarName}</span>
               </div>
 
               {/* Address */}
@@ -187,7 +188,7 @@ export default function MyJobsPage(): React.ReactElement {
               {/* Hourly Rate */}
               <div className="job-info-row highlight-rate">
                 <DollarSign size={18} />
-                <span>${job.hourlyRate.toFixed(2)}/hour</span>
+                <span>${job.hourlyRate.toFixed(2)}{t('pages.jobs.hour')}</span>
               </div>
 
               {/* Description */}
@@ -201,7 +202,7 @@ export default function MyJobsPage(): React.ReactElement {
                 className="btn-view-details"
                 onClick={() => setSelectedJob(job)}
               >
-                View Full Details
+                {t('pages.jobs.viewFullDetails')}
               </button>
             </div>
           ))}
@@ -213,7 +214,7 @@ export default function MyJobsPage(): React.ReactElement {
         <div className="modal-overlay-light" onClick={() => setSelectedJob(null)}>
           <div className="modal-container-light" onClick={(e) => e.stopPropagation()}>
             <div className="modal-header-light">
-              <h2>Job Details</h2>
+              <h2>{t('pages.jobs.jobDetails')}</h2>
               <button className="modal-close-light" onClick={() => setSelectedJob(null)}>
                 &#10005;
               </button>
@@ -221,50 +222,50 @@ export default function MyJobsPage(): React.ReactElement {
 
             <div className="modal-content-light">
               <div className="detail-section">
-                <h3>Service Information</h3>
-                <p><strong>Job:</strong> {selectedJob.jobName}</p>
-                <p><strong>Type:</strong> {selectedJob.jobType}</p>
-                <p><strong>Rate:</strong> ${selectedJob.hourlyRate.toFixed(2)}/hour</p>
-                <p><strong>Status:</strong> <span className={`modal-status-badge ${getStatusBadge(selectedJob.status)}`}>{selectedJob.status}</span></p>
+                <h3>{t('pages.jobs.serviceInformation')}</h3>
+                <p><strong>{t('pages.jobs.job')}:</strong> {selectedJob.jobName}</p>
+                <p><strong>{t('pages.jobs.type')}:</strong> {selectedJob.jobType}</p>
+                <p><strong>{t('pages.jobs.rate')}:</strong> ${selectedJob.hourlyRate.toFixed(2)}/hour</p>
+                <p><strong>{t('pages.jobs.status')}:</strong> <span className={`modal-status-badge ${getStatusBadge(selectedJob.status)}`}>{selectedJob.status}</span></p>
               </div>
 
               <div className="detail-section">
-                <h3>Scheduled Time</h3>
+                <h3>{t('pages.jobs.scheduledTime')}</h3>
                 <p>
                   {formatDate(selectedJob.appointmentDate)}
                   {selectedJob.appointmentStartTime && selectedJob.appointmentEndTime && (
                     <>
                       <br />
-                      <strong>Start:</strong> {selectedJob.appointmentStartTime}
+                      <strong>{t('pages.jobs.start')}:</strong> {selectedJob.appointmentStartTime}
                       {" | "}
-                      <strong>End:</strong> {selectedJob.appointmentEndTime}
+                      <strong>{t('pages.jobs.end')}:</strong> {selectedJob.appointmentEndTime}
                     </>
                   )}
                 </p>
               </div>
 
               <div className="detail-section customer-highlight">
-                <h3>Customer Information</h3>
-                <p><strong>Name:</strong> {selectedJob.customerFirstName} {selectedJob.customerLastName}</p>
+                <h3>{t('pages.jobs.customerInformation')}</h3>
+                <p><strong>{t('pages.jobs.name')}:</strong> {selectedJob.customerFirstName} {selectedJob.customerLastName}</p>
                 {selectedJob.customerPhoneNumbers.map((phone, idx) => (
                   <p key={idx}><strong>{phone.type}:</strong> {phone.number}</p>
                 ))}
               </div>
 
               <div className="detail-section">
-                <h3>Cellar</h3>
+                <h3>{t('pages.jobs.cellar')}</h3>
                 <p>{selectedJob.cellarName}</p>
               </div>
 
               <div className="detail-section">
-                <h3>Service Location</h3>
+                <h3>{t('pages.jobs.serviceLocation')}</h3>
                 <p>{selectedJob.appointmentAddress.streetAddress}</p>
                 <p>{selectedJob.appointmentAddress.city}, {selectedJob.appointmentAddress.province}</p>
                 <p>{selectedJob.appointmentAddress.country} {selectedJob.appointmentAddress.postalCode}</p>
               </div>
 
               <div className="detail-section">
-                <h3>Work Description</h3>
+                <h3>{t('pages.jobs.workDescription')}</h3>
                 <p>{selectedJob.description}</p>
               </div>
             </div>
