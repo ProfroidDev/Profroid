@@ -71,6 +71,7 @@
       "addCustomer": "Ajouter un client",
       "editCustomer": "Modifier le client",
       "deleteCustomer": "Supprimer le client",
+      "viewDetails": "Afficher les détails",
       "name": "Nom",
       "email": "E-mail",
       "phone": "Téléphone",
@@ -79,7 +80,14 @@
       "postalCode": "Code postal",
       "province": "Province",
       "country": "Pays",
-      "noCustomers": "Aucun client trouvé"
+      "noCustomers": "Aucun client trouvé",
+      "customerDetails": "Détails du client",
+      "customerId": "ID du client",
+      "phoneNumbers": "Numéros de téléphone",
+      "userId": "ID utilisateur",
+      "streetAddress": "Adresse postale",
+      "firstName": "Prénom",
+      "lastName": "Nom de famille"
     },
     "employees": {
       "title": "Employés",

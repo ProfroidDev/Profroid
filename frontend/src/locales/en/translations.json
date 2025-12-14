@@ -71,6 +71,7 @@
       "addCustomer": "Add Customer",
       "editCustomer": "Edit Customer",
       "deleteCustomer": "Delete Customer",
+      "viewDetails": "View Details",
       "name": "Name",
       "email": "Email",
       "phone": "Phone",
@@ -79,7 +80,14 @@
       "postalCode": "Postal Code",
       "province": "Province",
       "country": "Country",
-      "noCustomers": "No customers found"
+      "noCustomers": "No customers found",
+      "customerDetails": "Customer Details",
+      "customerId": "Customer ID",
+      "phoneNumbers": "Phone Numbers",
+      "userId": "User ID",
+      "streetAddress": "Street Address",
+      "firstName": "First Name",
+      "lastName": "Last Name"
     },
     "employees": {
       "title": "Employees",
