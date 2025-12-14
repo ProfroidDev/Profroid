@@ -27,17 +27,24 @@ function getAvailableSlots(isTechnician: boolean): TimeSlotType[] {
     : AVAILABLE_SLOTS;
 }
 
-const SLOT_LABELS: Record<TimeSlotType, string> = {
-  NINE_AM: '9:00 AM',
-  ELEVEN_AM: '11:00 AM',
-  ONE_PM: '1:00 PM',
-  THREE_PM: '3:00 PM',
-  FIVE_PM: '5:00 PM',
+const SLOT_KEYS: Record<TimeSlotType, string> = {
+  NINE_AM: 'common.timeSlot.nineAm',
+  ELEVEN_AM: 'common.timeSlot.elevenAm',
+  ONE_PM: 'common.timeSlot.onePm',
+  THREE_PM: 'common.timeSlot.threePm',
+  FIVE_PM: 'common.timeSlot.fivePm',
 };
 
 // Helper to convert display time to TimeSlotType enum
 function toTimeSlotEnum(displayTime: string): TimeSlotType | null {
-  const entry = Object.entries(SLOT_LABELS).find(([, label]) => label === displayTime);
+  const slotLabels: Record<TimeSlotType, string> = {
+    NINE_AM: '9:00 AM',
+    ELEVEN_AM: '11:00 AM',
+    ONE_PM: '1:00 PM',
+    THREE_PM: '3:00 PM',
+    FIVE_PM: '5:00 PM',
+  };
+  const entry = Object.entries(slotLabels).find(([, label]) => label === displayTime);
   return entry ? (entry[0] as TimeSlotType) : null;
 }
 
@@ -108,11 +115,15 @@ export default function UpdateDayScheduleModal({
         .sort((a, b) => toMinutes(a) - toMinutes(b));
 
       if (enumSlots.length >= 2) {
+        const endSlot = enumSlots[1];
+        let endTime = '17:00';
+        if (endSlot === 'ELEVEN_AM') endTime = '11:00';
+        else if (endSlot === 'ONE_PM') endTime = '13:00';
+        else if (endSlot === 'THREE_PM') endTime = '15:00';
+        
         setNonTechSlot({
           start: '09:00',
-          end: SLOT_LABELS[enumSlots[1]].includes('11') ? '11:00' :
-               SLOT_LABELS[enumSlots[1]].includes('1') ? '13:00' :
-               SLOT_LABELS[enumSlots[1]].includes('3') ? '15:00' : '17:00'
+          end: endTime
         });
       }
     } else {
@@ -160,7 +171,7 @@ export default function UpdateDayScheduleModal({
         return t('error.schedule.addAtLeastOneTimeSlot');
       }
       if (techSlots.length > 4) {
-        return t('error.schedule.technicianMaxHoursPerDay', { day: t(`common.dayOfWeek.${selectedDate ? new Date(selectedDate).toLocaleDateString('en-US', { weekday: 'long' }).toUpperCase() : 'UNKNOWN'}`.toLowerCase()) });
+        return t('error.schedule.technicianMaxHoursPerDay', { day: t(getDayLabelTranslationKey(dayOfWeek)) });
       }
       const sortedMinutes = techSlots.map(toMinutes).sort((a, b) => a - b);
       for (let i = 1; i < sortedMinutes.length; i++) {
@@ -338,7 +349,7 @@ export default function UpdateDayScheduleModal({
                           }
                         }}
                       >
-                        {SLOT_LABELS[slot]}
+                        {t(SLOT_KEYS[slot])}
                       </button>
                     );
                   })}

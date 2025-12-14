@@ -21,7 +21,7 @@ import UpdateDayScheduleModal from "../../features/employee/components/UpdateDay
 import "./EmployeeListPage.css";
 
 export default function EmployeeListPage(): React.ReactElement {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const [employees, setEmployees] = useState<EmployeeResponseModel[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
   const [selectedEmployee, setSelectedEmployee] =
@@ -437,7 +437,7 @@ export default function EmployeeListPage(): React.ReactElement {
                     <Calendar
                       onChange={(date) => setSelectedDate(date as Date | null)}
                       value={selectedDate}
-                      locale="fr-FR"
+                      locale={i18n.language === 'fr' ? 'fr-FR' : 'en-US'}
                     />
                   </div>
                 </div>
@@ -635,7 +635,10 @@ export default function EmployeeListPage(): React.ReactElement {
                 console.error('Error refreshing date schedule:', error);
               }
               setUpdateDayScheduleOpen(false);
-              setToast({ message: t('pages.employees.scheduleUpdatedForDate', { date: selectedDate.toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' }) }), type: 'success' });
+              const dayOfWeek = selectedDate.toLocaleDateString('en-US', { weekday: 'long' }).toUpperCase() as 'MONDAY' | 'TUESDAY' | 'WEDNESDAY' | 'THURSDAY' | 'FRIDAY';
+              const dayName = t(`common.dayOfWeek.${dayOfWeek.toLowerCase()}`);
+              const monthDay = selectedDate.toLocaleDateString(i18n.language === 'fr' ? 'fr-FR' : 'en-US', { month: 'short', day: 'numeric' });
+              setToast({ message: t('pages.employees.scheduleUpdatedForDate', { date: `${dayName}, ${monthDay}` }), type: 'success' });
             }
           }}
           onError={(message: string) => {
