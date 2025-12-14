@@ -62,7 +62,7 @@ export default function MyAppointmentsPage(): React.ReactElement {
   const handleCreated = () => {
     setShowAddModal(false);
     fetchAppointments();
-    setToast({ message: "Appointment created", type: "success" });
+    setToast({ message: t('pages.appointments.appointmentCreated'), type: "success" });
   };
 
   const formatDate = (dateString: string): string => {

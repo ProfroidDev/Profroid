@@ -242,6 +242,7 @@
       "bookAppointment": "Book Appointment",
       "date": "Date",
       "time": "Time",
+      "timeSlot": "Time Slot",
       "service": "Service",
       "technician": "Technician",
       "status": "Status",
@@ -272,7 +273,31 @@
       "job": "Job",
       "type": "Type",
       "rate": "Rate",
-      "status": "Status"
+      "status": "Status",
+      "availableTechnicians": "Available Technicians",
+      "streetAddress": "Street Address",
+      "city": "City",
+      "province": "Province",
+      "country": "Country",
+      "postalCode": "Postal Code",
+      "createAppointment": "Create Appointment",
+      "weekdaysOnly": "Weekdays only",
+      "selectService": "Select a service",
+      "autoAssignedTechnician": "Will be auto-assigned from available technicians",
+      "selectTechnician": "Select a technician",
+      "autoAssignedFromStaff": "Technician will be automatically assigned from available staff",
+      "slotsFromAnyTechnician": "Slots available from any technician",
+      "slotsDependOnSchedule": "Slots depend on technician schedule",
+      "checkingSchedule": "Checking schedule",
+      "selectTime": "Select a time",
+      "weekendBookingsBlocked": "Weekend bookings are blocked",
+      "noAvailableSlotsCustomer": "No available slots from any technician for this date/service",
+      "noAvailableSlotsEmployee": "No valid slots for this date/service with the selected technician",
+      "noCellarsForCustomer": "No cellars for this customer",
+      "pickServiceFirst": "Pick a service before choosing a customer",
+      "searchCustomerByName": "Search customer by name",
+      "selectServiceFirst": "Select a service first",
+      "appointmentCreated": "Appointment created"
     },
     "jobs": {
       "myJobs": "My Jobs",
@@ -353,6 +378,14 @@
     },
     "employee": {
       "cannotConvertCustomerWithAppointments": "Cannot convert customer to employee: This customer has {{count}} appointment(s). Please cancel or reassign all appointments before converting to employee."
+    },
+    "appointment": {
+      "quotationAlreadyExists": "A quotation already exists for this address. Only one quotation per address per day is allowed. Please choose a different date or cancel the existing quotation.",
+      "quotationScheduledAfter": "A scheduled quotation exists on this date. Services cannot be scheduled after a quotation. Please schedule before the quotation time or choose a different date.",
+      "serviceAlreadyExists": "A service appointment already exists for this address on this day. Only one service per address per day is allowed. Please choose a different date or cancel the existing service.",
+      "appointmentEndsAfterClosing": "Appointment cannot end after 5:00 PM. Please choose an earlier time slot or shorter duration.",
+      "weekendNotAllowed": "Weekend bookings are not allowed. Please select a weekday.",
+      "noAvailableSlots": "No available time slots for this date. Please choose a different date or time."
     }
   }
 }

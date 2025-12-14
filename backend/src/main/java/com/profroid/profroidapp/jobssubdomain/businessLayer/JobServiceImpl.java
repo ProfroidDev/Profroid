@@ -139,6 +139,15 @@ public class JobServiceImpl implements JobService {
                 );
             }
 
+            // Check if appointment would end after 5 PM
+            LocalTime appointmentEnd = startTime.plusMinutes(updatedDurationMinutes);
+            if (appointmentEnd.isAfter(LocalTime.of(17, 0))) {
+                throw new InvalidOperationException(
+                    "Job duration update would cause appointment to end at " + appointmentEnd + 
+                    ", which exceeds the 5:00 PM working limit. Choose a shorter duration."
+                );
+            }
+
             // Fetch all scheduled/completed appointments for the same technician and date
             List<Appointment> sameDayAppointments = appointmentRepository.findByTechnicianAndDateAndScheduled(
                 target.getTechnician(),
@@ -151,13 +160,12 @@ public class JobServiceImpl implements JobService {
                 }
 
                 int otherDuration = resolveDurationMinutes(other.getJob());
-                int otherSlots = calculateRequiredSlots(otherDuration);
-                int otherStartHour = other.getAppointmentDate().toLocalTime().getHour();
+                LocalTime otherStartTime = other.getAppointmentDate().toLocalTime();
 
-                if (timeSlotsOverlap(startHour, updatedSlots, otherStartHour, otherSlots)) {
+                if (timeSlotsOverlap(startTime, updatedDurationMinutes, otherStartTime, otherDuration)) {
                     throw new InvalidOperationException(
                         "Job duration update causes overlap: appointment at " + startTime + " now conflicts with " +
-                        other.getAppointmentDate().toLocalTime() + " on " + date + ". Adjust existing appointments or choose a shorter duration."
+                        otherStartTime + " on " + date + ". Adjust existing appointments or choose a shorter duration."
                     );
                 }
             }
@@ -183,21 +191,27 @@ public class JobServiceImpl implements JobService {
         if (durationMinutes <= 90) {
             return 1;
         }
-        return (int) Math.ceil(durationMinutes / 60.0);
+        // Business rule: 
+        // - <=90 minutes fits in the current slot (1 slot)
+        // - >90 minutes: 1 slot + ceil((duration - 90) / 60) additional slots
+        // Examples:
+        // - 90 min = 1 slot (9-11 AM covers it)
+        // - 91-150 min = 2 slots (9-11 AM + 11-1 PM = 4 hours covers anything up to 150 min)
+        // - 151-210 min = 3 slots
+        if (durationMinutes <= 90) {
+            return 1;
+        }
+        return 1 + (int) Math.ceil((durationMinutes - 90) / 60.0);
     }
 
-    private boolean timeSlotsOverlap(int startHour1, int slots1, int startHour2, int slots2) {
-        int[] occupied1 = getOccupiedSlotIndices(startHour1, slots1);
-        int[] occupied2 = getOccupiedSlotIndices(startHour2, slots2);
-
-        for (int a : occupied1) {
-            for (int b : occupied2) {
-                if (a == b) {
-                    return true;
-                }
-            }
-        }
-        return false;
+    private boolean timeSlotsOverlap(LocalTime startTime1, int durationMinutes1, LocalTime startTime2, int durationMinutes2) {
+        // Calculate end times
+        LocalTime endTime1 = startTime1.plusMinutes(durationMinutes1);
+        LocalTime endTime2 = startTime2.plusMinutes(durationMinutes2);
+        
+        // Check for overlap: two time ranges overlap if one starts before the other ends
+        // and the other starts before the first ends
+        return startTime1.isBefore(endTime2) && startTime2.isBefore(endTime1);
     }
 
     private int[] getOccupiedSlotIndices(int startHour, int slots) {

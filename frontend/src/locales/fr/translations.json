@@ -242,6 +242,7 @@
       "bookAppointment": "Réserver un Rendez-vous",
       "date": "Date",
       "time": "Heure",
+      "timeSlot": "Créneau horaire",
       "service": "Service",
       "technician": "Technicien",
       "status": "Statut",
@@ -272,7 +273,31 @@
       "job": "Travail",
       "type": "Type",
       "rate": "Tarif",
-      "status": "Statut"
+      "status": "Statut",
+      "availableTechnicians": "Techniciens disponibles",
+      "streetAddress": "Adresse",
+      "city": "Ville",
+      "province": "Province",
+      "country": "Pays",
+      "postalCode": "Code postal",
+      "createAppointment": "Créer un rendez-vous",
+      "weekdaysOnly": "Jours de semaine uniquement",
+      "selectService": "Sélectionnez un service",
+      "autoAssignedTechnician": "Sera attribué automatiquement à partir des techniciens disponibles",
+      "selectTechnician": "Sélectionnez un technicien",
+      "autoAssignedFromStaff": "Le technicien sera automatiquement assigné à partir du personnel disponible",
+      "slotsFromAnyTechnician": "Les créneaux sont disponibles auprès de n'importe quel technicien",
+      "slotsDependOnSchedule": "Les créneaux dépendent de l'horaire du technicien",
+      "checkingSchedule": "Vérification de l'horaire",
+      "selectTime": "Sélectionnez une heure",
+      "weekendBookingsBlocked": "Les réservations le week-end sont bloquées",
+      "noAvailableSlotsCustomer": "Aucun créneau disponible auprès d'un technicien pour cette date/service",
+      "noAvailableSlotsEmployee": "Aucun créneau valide pour cette date/service avec le technicien sélectionné",
+      "noCellarsForCustomer": "Pas de cave pour ce client",
+      "pickServiceFirst": "Sélectionnez d'abord un service avant de choisir un client",
+      "searchCustomerByName": "Rechercher le client par nom",
+      "selectServiceFirst": "Sélectionnez d'abord un service",
+      "appointmentCreated": "Rendez-vous créé"
     },
     "jobs": {
       "myJobs": "Mes Emplois",
@@ -353,6 +378,14 @@
     },
     "employee": {
       "cannotConvertCustomerWithAppointments": "Impossible de convertir le client en employé: Ce client a {{count}} rendez-vous. Veuillez annuler ou réaffecter tous les rendez-vous avant de convertir en employé."
+    },
+    "appointment": {
+      "quotationAlreadyExists": "Un devis existe déjà pour cette adresse. Un seul devis par adresse par jour est autorisé. Veuillez choisir une date différente ou annuler le devis existant.",
+      "quotationScheduledAfter": "Un devis programmé existe à cette date. Les services ne peuvent pas être programmés après un devis. Veuillez programmer avant l'heure du devis ou choisir une date différente.",
+      "serviceAlreadyExists": "Un rendez-vous de service existe déjà pour cette adresse ce jour. Un seul service par adresse par jour est autorisé. Veuillez choisir une date différente ou annuler le service existant.",
+      "appointmentEndsAfterClosing": "Le rendez-vous ne peut pas se terminer après 17h00. Veuillez choisir un créneau horaire antérieur ou une durée plus courte.",
+      "weekendNotAllowed": "Les réservations le week-end ne sont pas autorisées. Veuillez sélectionner un jour de semaine.",
+      "noAvailableSlots": "Aucun créneau horaire disponible pour cette date. Veuillez choisir une date ou une heure différente."
     }
   }
 }

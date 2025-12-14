@@ -63,7 +63,7 @@ export default function MyJobsPage(): React.ReactElement {
   const handleCreated = () => {
     setShowAddModal(false);
     fetchJobs();
-    setToast({ message: "Appointment created", type: "success" });
+    setToast({ message: t('pages.appointments.appointmentCreated'), type: "success" });
   };
 
   const formatDate = (dateString: string): string => {

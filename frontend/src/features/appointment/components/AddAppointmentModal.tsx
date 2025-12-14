@@ -8,6 +8,7 @@ import type { AppointmentResponseModel } from "../models/AppointmentResponseMode
 import { getJobs } from "../../jobs/api/getAllJobs";
 import type { JobResponseModel } from "../../jobs/models/JobResponseModel";
 import { getEmployees } from "../../employee/api/getAllEmployees";
+import { translateAppointmentError } from "../../../utils/appointmentErrorTranslator";
 import type { EmployeeResponseModel } from "../../employee/models/EmployeeResponseModel";
 import { getCustomers } from "../../customer/api/getAllCustomers";
 import type { CustomerResponseModel } from "../../customer/models/CustomerResponseModel";
@@ -195,7 +196,7 @@ export default function AddAppointmentModal({
   onClose,
   onCreated,
 }: AddAppointmentModalProps): React.ReactElement {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const { customerData } = useAuthStore();
   
   // Get customerId or employeeId from auth store
@@ -714,7 +715,9 @@ export default function AddAppointmentModal({
           }
         }
       }
-      setError(message);
+      // Translate appointment-specific error codes
+      const translatedMessage = translateAppointmentError(message);
+      setError(translatedMessage);
     } finally {
       setSubmitting(false);
     }
@@ -744,7 +747,7 @@ export default function AddAppointmentModal({
           <form className="appointment-form" onSubmit={handleSubmit}>
             <div className="grid two">
               <label className="field">
-                <span>Service</span>
+                <span>{t('pages.appointments.service')}</span>
                 <div className="input-with-icon">
                   <ClipboardList size={16} />
                   <select
@@ -752,7 +755,7 @@ export default function AddAppointmentModal({
                     onChange={(e) => setSelectedJobId(e.target.value)}
                     required
                   >
-                    <option value="" disabled>Select a service</option>
+                    <option value="" disabled>{t('pages.appointments.selectService')}</option>
                     {jobOptions.map((job) => (
                       <option key={job.jobId} value={job.jobId}>
                         {job.jobName} ({job.jobType})
@@ -763,20 +766,20 @@ export default function AddAppointmentModal({
               </label>
 
               <label className="field">
-                <span>{mode === "customer" ? "Available Technicians" : "Customer"}</span>
+                <span>{mode === "customer" ? t('pages.appointments.availableTechnicians') : t('pages.appointments.customer')}</span>
                 <div className="input-with-icon">
                   <Users size={16} />
                   {mode === "customer" ? (
                     <input
                       type="text"
-                      placeholder="Will be auto-assigned from available technicians"
+                      placeholder={t('pages.appointments.autoAssignedTechnician')}
                       disabled
                       value="Auto-assigned"
                     />
                   ) : (
                     <input
                       type="text"
-                      placeholder={disableCustomerSearch ? "Select a service first" : "Search customer by name"}
+                      placeholder={disableCustomerSearch ? t('pages.appointments.selectServiceFirst') : t('pages.appointments.searchCustomerByName')}
                       value={customerSearch}
                       onChange={(e) => setCustomerSearch(e.target.value)}
                       disabled={disableCustomerSearch}
@@ -786,7 +789,7 @@ export default function AddAppointmentModal({
                 {mode === "technician" && (
                   <div className="customer-results">
                     {disableCustomerSearch ? (
-                      <small className="hint">Pick a service before choosing a customer.</small>
+                      <small className="hint">{t('pages.appointments.pickServiceFirst')}</small>
                     ) : (
                       filteredCustomers.slice(0, 8).map((cust, idx) => {
                         const custId = getActualCustomerId(cust.customerId);
@@ -807,18 +810,19 @@ export default function AddAppointmentModal({
                   </div>
                 )}
                 {mode === "customer" && (
-                  <small className="hint">Technician will be automatically assigned from available staff.</small>
+                  <small className="hint">{t('pages.appointments.autoAssignedFromStaff')}</small>
                 )}
               </label>
             </div>
 
             <div className="grid two">
               <label className="field">
-                <span>Date</span>
+                <span>{t('pages.appointments.date')}</span>
                 <div className="input-with-icon">
                   <CalendarClock size={16} />
                   <input
                     type="date"
+                    lang={i18n.language === 'fr' ? 'fr-FR' : 'en-US'}
                     value={appointmentDate}
                     onChange={(e) => setAppointmentDate(e.target.value)}
                     min={new Date().toISOString().split("T")[0]}
@@ -826,11 +830,11 @@ export default function AddAppointmentModal({
                     required
                   />
                 </div>
-                <small className="hint">Weekdays only. {mode === "customer" ? "Slots available from any technician." : "Slots depend on technician schedule."}</small>
+                <small className="hint">{t('pages.appointments.weekdaysOnly')} {mode === "customer" ? t('pages.appointments.slotsFromAnyTechnician') : t('pages.appointments.slotsDependOnSchedule')}</small>
               </label>
 
               <label className="field">
-                <span>Time Slot</span>
+                <span>{t('pages.appointments.timeSlot')}</span>
                 <div className="input-with-icon">
                   <CalendarClock size={16} />
                   <select
@@ -840,7 +844,7 @@ export default function AddAppointmentModal({
                     required
                   >
                     <option value="" disabled>
-                      {scheduleLoading ? "Checking schedule…" : "Select a time"}
+                      {scheduleLoading ? t('pages.appointments.checkingSchedule') : t('pages.appointments.selectTime')}
                     </option>
                     {availableSlots.map((slot) => (
                       <option key={slot} value={slot}>
@@ -850,25 +854,25 @@ export default function AddAppointmentModal({
                   </select>
                 </div>
                 {appointmentDate && isWeekend(appointmentDate) && (
-                  <small className="error">Weekend bookings are blocked.</small>
+                  <small className="error">{t('pages.appointments.weekendBookingsBlocked')}</small>
                 )}
                 {availableSlots.length === 0 && appointmentDate && !isWeekend(appointmentDate) && (
                   <small className="error">
-                    {scheduleError || (mode === "customer" ? "No available slots from any technician for this date/service." : "No valid slots for this date/service with the selected technician.")}
+                    {scheduleError || (mode === "customer" ? t('pages.appointments.noAvailableSlotsCustomer') : t('pages.appointments.noAvailableSlotsEmployee'))}
                   </small>
                 )}
               </label>
             </div>
 
             <label className="field">
-              <span>Cellar</span>
+              <span>{t('pages.appointments.cellar')}</span>
               <select
                 value={selectedCellarId}
                 onChange={(e) => setSelectedCellarId(e.target.value)}
                 disabled={customerCellars.length === 0}
                 required
               >
-                {customerCellars.length === 0 && <option value="">No cellars for this customer</option>}
+                {customerCellars.length === 0 && <option value="">{t('pages.appointments.noCellarsForCustomer')}</option>}
                 {customerCellars.map((cellar) => (
                   <option key={cellar.cellarId} value={cellar.cellarId}>
                     {cellar.name}
@@ -879,7 +883,7 @@ export default function AddAppointmentModal({
 
             <div className="grid two">
               <label className="field">
-                <span>Street Address</span>
+                <span>{t('pages.appointments.streetAddress')}</span>
                 <input
                   type="text"
                   value={address.streetAddress}
@@ -888,7 +892,7 @@ export default function AddAppointmentModal({
                 />
               </label>
               <label className="field">
-                <span>City</span>
+                <span>{t('pages.appointments.city')}</span>
                 <input
                   type="text"
                   value={address.city}
@@ -900,7 +904,7 @@ export default function AddAppointmentModal({
 
             <div className="grid three">
               <label className="field">
-                <span>Province</span>
+                <span>{t('pages.appointments.province')}</span>
                 <input
                   type="text"
                   value={address.province}
@@ -909,7 +913,7 @@ export default function AddAppointmentModal({
                 />
               </label>
               <label className="field">
-                <span>Country</span>
+                <span>{t('pages.appointments.country')}</span>
                 <input
                   type="text"
                   value={address.country}
@@ -918,7 +922,7 @@ export default function AddAppointmentModal({
                 />
               </label>
               <label className="field">
-                <span>Postal Code</span>
+                <span>{t('pages.appointments.postalCode')}</span>
                 <input
                   type="text"
                   value={address.postalCode}
@@ -929,12 +933,12 @@ export default function AddAppointmentModal({
             </div>
 
             <label className="field">
-              <span>Description</span>
+              <span>{t('pages.appointments.description')}</span>
               <textarea
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
                 rows={3}
-                placeholder="Describe the issue or work to be done"
+                placeholder={t('pages.appointments.description')}
                 required
               />
             </label>
@@ -942,9 +946,9 @@ export default function AddAppointmentModal({
             {error && <div className="banner banner--error">{error}</div>}
 
             <footer className="modal-actions">
-              <button type="button" className="ghost" onClick={onClose} disabled={submitting}>Cancel</button>
+              <button type="button" className="ghost" onClick={onClose} disabled={submitting}>{t('common.cancel')}</button>
               <button type="submit" className="primary" disabled={submitting || loading}>
-                {submitting ? <Loader2 className="spin" size={16} /> : "Create Appointment"}
+                {submitting ? <Loader2 className="spin" size={16} /> : t('pages.appointments.createAppointment')}
               </button>
             </footer>
           </form>
