@@ -1,9 +1,11 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams, Link } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import authClient from '../../features/authentication/api/authClient';
 import '../Auth.css';
 
 export default function ResetPasswordPage() {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const token = searchParams.get('token');
@@ -17,15 +19,15 @@ export default function ResetPasswordPage() {
 
   useEffect(() => {
     if (!token) {
-      setError('Invalid or missing reset token. Please request a new password reset link.');
+      setError(t('validation.passwordTooShort'));
     }
-  }, [token]);
+  }, [token, t]);
 
   const validatePassword = (pwd: string): string[] => {
     const errors: string[] = [];
     
     if (pwd.length < 8) {
-      errors.push('Password must be at least 8 characters long');
+      errors.push(t('validation.passwordTooShort'));
     }
     
     if (!/[A-Z]/.test(pwd)) {
@@ -54,12 +56,12 @@ export default function ResetPasswordPage() {
     setError('');
 
     if (!token) {
-      setError('Invalid reset token');
+      setError(t('common.error'));
       return;
     }
 
     if (!password || !confirmPassword) {
-      setError('Please fill in all fields');
+      setError(t('common.required'));
       return;
     }
 
@@ -71,7 +73,7 @@ export default function ResetPasswordPage() {
     }
 
     if (password !== confirmPassword) {
-      setError('Passwords do not match');
+      setError(t('auth.passwordMismatch'));
       return;
     }
 
@@ -87,10 +89,10 @@ export default function ResetPasswordPage() {
           navigate('/login');
         }, 3000);
       } else {
-        setError(response.error || 'Failed to reset password. Please try again.');
+        setError(response.error || t('messages.error'));
       }
     } catch {
-      setError('An unexpected error occurred. Please try again.');
+      setError(t('messages.error'));
     } finally {
       setIsLoading(false);
     }
@@ -101,14 +103,14 @@ export default function ResetPasswordPage() {
       <div className="auth-container">
         <div className="auth-card">
           <div className="auth-header">
-            <h1>Invalid Reset Link</h1>
+            <h1>{t('common.error')}</h1>
           </div>
           <div className="alert alert-error">
-            The password reset link is invalid or has expired.
+            {t('validation.passwordTooShort')}
           </div>
           <div className="auth-footer" style={{ marginTop: '1.5rem' }}>
             <Link to="/forgot-password" className="btn-primary">
-              Request New Reset Link
+              {t('auth.resetPassword')}
             </Link>
           </div>
         </div>
@@ -120,25 +122,25 @@ export default function ResetPasswordPage() {
     <div className="auth-container">
       <div className="auth-card">
         <div className="auth-header">
-          <h1>Reset Password</h1>
-          <p>Enter your new password</p>
+          <h1>{t('auth.resetPassword')}</h1>
+          <p>{t('auth.passwordReset')}</p>
         </div>
 
         {success ? (
           <div className="success-message">
             <div className="alert alert-success">
-              <strong>✓ Password Reset Successfully!</strong>
+              <strong>✓ {t('auth.resetPasswordSuccess')}</strong>
               <p>
-                Your password has been changed. You can now sign in with your new password.
+                {t('auth.resetPasswordSuccess')}
               </p>
               <p style={{ marginTop: '1rem', fontSize: '0.9rem' }}>
-                Redirecting to login page...
+                {t('common.loading')}
               </p>
             </div>
             
             <div className="auth-footer" style={{ marginTop: '1.5rem' }}>
               <Link to="/login" className="btn-primary">
-                Go to Sign In
+                {t('auth.login')}
               </Link>
             </div>
           </div>
@@ -146,7 +148,7 @@ export default function ResetPasswordPage() {
           <>
             <form onSubmit={handleSubmit} className="auth-form">
               <div className="form-group">
-                <label htmlFor="password">New Password</label>
+                <label htmlFor="password">{t('common.password')}</label>
                 <input
                   id="password"
                   type="password"
@@ -158,7 +160,7 @@ export default function ResetPasswordPage() {
                 />
                 {validationErrors.length > 0 && password && (
                   <div className="password-requirements">
-                    <small>Password requirements:</small>
+                    <small>{t('validation.required')}:</small>
                     <ul>
                       {validationErrors.map((err, idx) => (
                         <li key={idx} className="requirement-error">{err}</li>
@@ -169,7 +171,7 @@ export default function ResetPasswordPage() {
               </div>
 
               <div className="form-group">
-                <label htmlFor="confirmPassword">Confirm New Password</label>
+                <label htmlFor="confirmPassword">{t('common.confirmPassword')}</label>
                 <input
                   id="confirmPassword"
                   type="password"
@@ -192,15 +194,15 @@ export default function ResetPasswordPage() {
                 disabled={isLoading || validationErrors.length > 0}
                 className="btn-primary"
               >
-                {isLoading ? 'Resetting Password...' : 'Reset Password'}
+                {isLoading ? t('common.loading') : t('auth.resetPassword')}
               </button>
             </form>
 
             <div className="auth-footer">
               <p>
-                Remember your password?{' '}
+                {t('auth.alreadyHaveAccount')}{' '}
                 <Link to="/login" className="link">
-                  Sign in
+                  {t('auth.login')}
                 </Link>
               </p>
             </div>

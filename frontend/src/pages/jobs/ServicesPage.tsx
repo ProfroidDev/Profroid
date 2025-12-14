@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { getJobs } from "../../features/jobs/api/getAllJobs";
 import { getJobById } from "../../features/jobs/api/getJobById";
 import { createJob } from "../../features/jobs/api/createJob";
@@ -13,6 +14,7 @@ import Toast from "../../shared/components/Toast";
 import useAuthStore from "../../features/authentication/store/authStore";
 
 export default function ServicesPage(): React.ReactElement {
+  const { t } = useTranslation();
   const { user } = useAuthStore();
   const isAdmin = user?.role === "admin";
   const [jobs, setJobs] = useState<JobResponseModel[]>([]);
@@ -392,16 +394,16 @@ export default function ServicesPage(): React.ReactElement {
   return (
     <div className="services-page">
       <div className="services-header">
-        <h2>Services</h2>
+        <h2>{t('pages.services.title')}</h2>
         {isAdmin && (
           <button className="btn-add-service" onClick={openCreateModal}>
-            + Add Service
+            {t('pages.services.addService')}
           </button>
         )}
       </div>
 
       {loading ? (
-        <div>Loading services...</div>
+        <div>{t('common.loading')}</div>
       ) : (
         <div className="services-list">
           {jobs.map((j) => (
@@ -506,7 +508,7 @@ export default function ServicesPage(): React.ReactElement {
         <div className="modal-overlay" role="dialog" aria-modal>
           <div className="modal">
             <div className="modal-header">
-              <h3>Service Details</h3>
+              <h3>{t('pages.services.serviceDetails')}</h3>
               <button
                 className="modal-close-light"
                 aria-label="Close"
@@ -516,38 +518,38 @@ export default function ServicesPage(): React.ReactElement {
               </button>
             </div>
 
-            {detailLoading && <div>Loading details...</div>}
+            {detailLoading && <div>{t('common.loading')}</div>}
 
             {!detailLoading && selectedJob && (
               <div className="service-details">
                 <p>
-                  <strong>Job ID:</strong> {selectedJob.jobId}
+                  <strong>{t('pages.services.jobId')}:</strong> {selectedJob.jobId}
                 </p>
                 <p>
-                  <strong>Name:</strong> {selectedJob.jobName}
+                  <strong>{t('pages.services.name')}:</strong> {selectedJob.jobName}
                 </p>
                 <p>
-                  <strong>Description:</strong> {selectedJob.jobDescription}
+                  <strong>{t('pages.services.description')}:</strong> {selectedJob.jobDescription}
                 </p>
                 <p>
-                  <strong>Hourly Rate:</strong> $
+                  <strong>{t('pages.services.hourlyRate')}:</strong> $
                   {selectedJob.hourlyRate?.toFixed(2)}
                 </p>
                 <p>
-                  <strong>Estimated Duration (mins):</strong>{" "}
+                  <strong>{t('pages.services.estimatedDuration')}:</strong>{" "}
                   {selectedJob.estimatedDurationMinutes}
                 </p>
                 <p>
-                  <strong>Type:</strong> {selectedJob.jobType}
+                  <strong>{t('pages.services.type')}:</strong> {selectedJob.jobType}
                 </p>
                 <p>
-                  <strong>Active:</strong> {selectedJob.active ? "Yes" : "No"}
+                  <strong>{t('common.active')}:</strong> {selectedJob.active ? t('common.yes') : t('common.no')}
                 </p>
               </div>
             )}
 
             {!detailLoading && !selectedJob && (
-              <div className="service-details">No details available.</div>
+              <div className="service-details">{t('messages.noDetailsAvailable')}</div>
             )}
           </div>
         </div>
@@ -557,7 +559,7 @@ export default function ServicesPage(): React.ReactElement {
         <div className="modal-overlay" role="dialog" aria-modal>
           <div className="modal">
             <div className="modal-header">
-              <h3>Create New Service</h3>
+              <h3>{t('pages.services.createNewService')}</h3>
               <button
                 className="modal-close-light"
                 aria-label="Close"
@@ -578,26 +580,26 @@ export default function ServicesPage(): React.ReactElement {
               }}
             >
               <div className="form-group">
-                <label htmlFor="jobName">Job Name *</label>
+                <label htmlFor="jobName">{t('pages.services.name')} *</label>
                 <input
                   id="jobName"
                   type="text"
                   name="jobName"
                   value={formData.jobName}
                   onChange={handleFormChange}
-                  placeholder="Enter job name"
+                  placeholder={t('common.enterPlaceholder', { field: t('pages.services.name') })}
                   disabled={createLoading}
                 />
               </div>
 
               <div className="form-group">
-                <label htmlFor="jobDescription">Description *</label>
+                <label htmlFor="jobDescription">{t('pages.services.description')} *</label>
                 <textarea
                   id="jobDescription"
                   name="jobDescription"
                   value={formData.jobDescription}
                   onChange={handleFormChange}
-                  placeholder="Enter job description"
+                  placeholder={t('common.enterPlaceholder', { field: t('pages.services.description') })}
                   disabled={createLoading}
                   rows={3}
                 />
@@ -605,7 +607,7 @@ export default function ServicesPage(): React.ReactElement {
 
               <div className="form-row">
                 <div className="form-group">
-                  <label htmlFor="hourlyRate">Hourly Rate ($) *</label>
+                  <label htmlFor="hourlyRate">{t('pages.services.hourlyRate')} ($) *</label>
                   <input
                     id="hourlyRate"
                     type="number"
@@ -620,7 +622,7 @@ export default function ServicesPage(): React.ReactElement {
 
                 <div className="form-group">
                   <label htmlFor="estimatedDurationMinutes">
-                    Duration (mins) *
+                    {t('pages.services.duration')} ({t('pages.services.minutes')}) *
                   </label>
                   <input
                     id="estimatedDurationMinutes"
@@ -636,7 +638,7 @@ export default function ServicesPage(): React.ReactElement {
 
               <div className="form-row">
                 <div className="form-group">
-                  <label htmlFor="jobType">Job Type *</label>
+                  <label htmlFor="jobType">{t('pages.services.type')} *</label>
                   <select
                     id="jobType"
                     name="jobType"
@@ -644,10 +646,10 @@ export default function ServicesPage(): React.ReactElement {
                     onChange={handleFormChange}
                     disabled={createLoading}
                   >
-                    <option value="QUOTATION">Quotation</option>
-                    <option value="INSTALLATION">Installation</option>
-                    <option value="REPARATION">Reparation</option>
-                    <option value="MAINTENANCE">Maintenance</option>
+                    <option value="QUOTATION">{t('pages.services.quotation')}</option>
+                    <option value="INSTALLATION">{t('pages.services.installation')}</option>
+                    <option value="REPARATION">{t('pages.services.reparation')}</option>
+                    <option value="MAINTENANCE">{t('pages.services.maintenance')}</option>
                   </select>
                 </div>
 
@@ -661,7 +663,7 @@ export default function ServicesPage(): React.ReactElement {
                       onChange={handleFormChange}
                       disabled={createLoading}
                     />
-                    Active
+                    {t('common.active')}
                   </label>
                 </div>
               </div>
@@ -673,14 +675,14 @@ export default function ServicesPage(): React.ReactElement {
                   onClick={closeCreateModal}
                   disabled={createLoading}
                 >
-                  Cancel
+                  {t('common.cancel')}
                 </button>
                 <button
                   type="submit"
                   className="btn-create"
                   disabled={createLoading}
                 >
-                  {createLoading ? "Creating..." : "Create Service"}
+                  {createLoading ? t('common.creating') : t('pages.services.createService')}
                 </button>
               </div>
             </form>
@@ -697,7 +699,7 @@ export default function ServicesPage(): React.ReactElement {
         >
           <div className="modal" onClick={(e) => e.stopPropagation()}>
             <div className="modal-header">
-              <h3>Modify Service</h3>
+              <h3>{t('pages.services.modifyService')}</h3>
               <button
                 className="modal-close-light"
                 aria-label="Close"
@@ -718,26 +720,26 @@ export default function ServicesPage(): React.ReactElement {
               }}
             >
               <div className="form-group">
-                <label htmlFor="updateJobName">Job Name *</label>
+                <label htmlFor="updateJobName">{t('pages.services.name')} *</label>
                 <input
                   id="updateJobName"
                   type="text"
                   name="jobName"
                   value={updateFormData.jobName}
                   onChange={handleUpdateFormChange}
-                  placeholder="Enter job name"
+                  placeholder={t('common.enterPlaceholder', { field: t('pages.services.name') })}
                   disabled={updateLoading}
                 />
               </div>
 
               <div className="form-group">
-                <label htmlFor="updateJobDescription">Description *</label>
+                <label htmlFor="updateJobDescription">{t('pages.services.description')} *</label>
                 <textarea
                   id="updateJobDescription"
                   name="jobDescription"
                   value={updateFormData.jobDescription}
                   onChange={handleUpdateFormChange}
-                  placeholder="Enter job description"
+                  placeholder={t('common.enterPlaceholder', { field: t('pages.services.description') })}
                   disabled={updateLoading}
                   rows={3}
                 />
@@ -745,7 +747,7 @@ export default function ServicesPage(): React.ReactElement {
 
               <div className="form-row">
                 <div className="form-group">
-                  <label htmlFor="updateHourlyRate">Hourly Rate ($) *</label>
+                  <label htmlFor="updateHourlyRate">{t('pages.services.hourlyRate')} ($) *</label>
                   <input
                     id="updateHourlyRate"
                     type="number"
@@ -760,7 +762,7 @@ export default function ServicesPage(): React.ReactElement {
 
                 <div className="form-group">
                   <label htmlFor="updateEstimatedDurationMinutes">
-                    Duration (mins) *
+                    {t('pages.services.duration')} ({t('pages.services.minutes')}) *
                   </label>
                   <input
                     id="updateEstimatedDurationMinutes"
@@ -776,7 +778,7 @@ export default function ServicesPage(): React.ReactElement {
 
               <div className="form-row">
                 <div className="form-group">
-                  <label htmlFor="updateJobType">Job Type *</label>
+                  <label htmlFor="updateJobType">{t('pages.services.type')} *</label>
                   <select
                     id="updateJobType"
                     name="jobType"
@@ -784,10 +786,10 @@ export default function ServicesPage(): React.ReactElement {
                     onChange={handleUpdateFormChange}
                     disabled={updateLoading}
                   >
-                    <option value="QUOTATION">Quotation</option>
-                    <option value="INSTALLATION">Installation</option>
-                    <option value="REPARATION">Reparation</option>
-                    <option value="MAINTENANCE">Maintenance</option>
+                    <option value="QUOTATION">{t('pages.services.quotation')}</option>
+                    <option value="INSTALLATION">{t('pages.services.installation')}</option>
+                    <option value="REPARATION">{t('pages.services.reparation')}</option>
+                    <option value="MAINTENANCE">{t('pages.services.maintenance')}</option>
                   </select>
                 </div>
 
@@ -801,7 +803,7 @@ export default function ServicesPage(): React.ReactElement {
                       onChange={handleUpdateFormChange}
                       disabled={updateLoading}
                     />
-                    Active
+                    {t('common.active')}
                   </label>
                 </div>
               </div>
@@ -813,14 +815,14 @@ export default function ServicesPage(): React.ReactElement {
                   onClick={closeUpdateModal}
                   disabled={updateLoading}
                 >
-                  Cancel
+                  {t('common.cancel')}
                 </button>
                 <button
                   type="submit"
                   className="btn-create"
                   disabled={updateLoading}
                 >
-                  {updateLoading ? "Updating..." : "Update Service"}
+                  {updateLoading ? t('common.updating') : t('pages.services.updateService')}
                 </button>
               </div>
             </form>
@@ -832,18 +834,18 @@ export default function ServicesPage(): React.ReactElement {
         isOpen={confirmationModal.isOpen}
         title={
           confirmationModal.type === "deactivate"
-            ? "Deactivate Service"
-            : "Reactivate Service"
+            ? t('pages.services.deactivateService')
+            : t('pages.services.reactivateService')
         }
         message={
           confirmationModal.type === "deactivate"
-            ? `Are you sure you want to deactivate "${confirmationModal.job?.jobName}"? This service will no longer be available for appointments.`
-            : `Are you sure you want to reactivate "${confirmationModal.job?.jobName}"? This service will become available again.`
+            ? t('pages.services.deactivateConfirmMessage', { serviceName: confirmationModal.job?.jobName })
+            : t('pages.services.reactivateConfirmMessage', { serviceName: confirmationModal.job?.jobName })
         }
         confirmText={
-          confirmationModal.type === "deactivate" ? "Deactivate" : "Reactivate"
+          confirmationModal.type === "deactivate" ? t('pages.services.deactivate') : t('pages.services.reactivate')
         }
-        cancelText="Cancel"
+        cancelText={t('common.cancel')}
         isDanger={confirmationModal.type === "deactivate"}
         isLoading={deactivateLoading}
         onConfirm={

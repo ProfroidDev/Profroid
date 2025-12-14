@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import { useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import useAuthStore from "../../features/authentication/store/authStore";
 import "../Auth.css";
 import "../jobs/ServicesPage.css"; // Import ServicesPage styles for modal
@@ -38,6 +39,7 @@ type CustomerData = {
 
 export default function ProfilePage() {
   const navigate = useNavigate();
+  const { t } = useTranslation();
   const {
     user,
     changePassword,
@@ -797,7 +799,7 @@ export default function ProfilePage() {
       )}
       <div className="profile-card">
         <div className="profile-header">
-          <h1>My Profile</h1>
+          <h1>{t('pages.profile.title')}</h1>
           <div style={{ display: "flex", gap: "0.5rem" }}>
             <button
               onClick={() => {
@@ -811,14 +813,14 @@ export default function ProfilePage() {
               className="btn-secondary"
               disabled={isLoading}
             >
-              Refresh
+              {t('pages.profile.refresh')}
             </button>
             <button
               onClick={handleLogout}
               className="btn-secondary"
               disabled={isLoading}
             >
-              Logout
+              {t('common.logout')}
             </button>
           </div>
         </div>

@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { getCustomers } from "../../features/customer/api/getAllCustomers";
 import { getCustomer } from "../../features/customer/api/getCustomerById";
 import { createCustomer } from "../../features/customer/api/createCustomer";
@@ -13,6 +14,7 @@ import type { CustomerResponseModel } from "../../features/customer/models/Custo
 import "./CustomerListPage.css";
 
 export default function CustomerListPage(): React.ReactElement {
+  const { t } = useTranslation();
   const [customers, setCustomers] = useState<CustomerResponseModel[]>([]);
   const [loading, setLoading] = useState(false);
 
@@ -321,24 +323,24 @@ export default function CustomerListPage(): React.ReactElement {
 
   return (
     <div className="customers-page-light">
-      <h2 className="customers-title-light">Customers</h2>
+      <h2 className="customers-title-light">{t('pages.customers.title')}</h2>
 
       <button
         className="btn-view-light"
         onClick={() => setCreateModalOpen(true)}
       >
-        Add Customer
+        {t('pages.customers.addCustomer')}
       </button>
 
       <div className="customers-card-light">
         {loading ? (
-          <div className="loading-light">Loading...</div>
+          <div className="loading-light">{t('common.loading')}</div>
         ) : (
           <table className="customers-table-light">
             <thead>
               <tr>
-                <th>Customer</th>
-                <th>Actions</th>
+                <th>{t('pages.customers.name')}</th>
+                <th>{t('common.edit')}</th>
               </tr>
             </thead>
             <tbody>
@@ -359,14 +361,14 @@ export default function CustomerListPage(): React.ReactElement {
                       onClick={() => openEditFromList(c.customerId)}
                       style={{ marginLeft: 8 }}
                     >
-                      Edit
+                      {t('common.edit')}
                     </button>
                     <button
                       className="btn-view-light"
                       onClick={() => openDelete(c)}
                       style={{ marginLeft: 8 }}
                     >
-                      Delete
+                      {t('common.delete')}
                     </button>
                   </td>
                 </tr>
@@ -378,17 +380,13 @@ export default function CustomerListPage(): React.ReactElement {
 
       <ConfirmationModal
         isOpen={deleteModalOpen}
-        title="Delete Customer"
+        title={t('pages.customers.deleteCustomer')}
         message={
           deleteError ??
-          `Are you sure you want to delete ${
-            deleteTarget
-              ? `${deleteTarget.firstName} ${deleteTarget.lastName}`.trim()
-              : "this customer"
-          }? This action cannot be undone.`
+          `${t('messages.confirmDelete')}`
         }
-        confirmText="Delete"
-        cancelText="Cancel"
+        confirmText={t('common.delete')}
+        cancelText={t('common.cancel')}
         isDanger
         isLoading={deleteLoading}
         onConfirm={handleDeleteConfirm}

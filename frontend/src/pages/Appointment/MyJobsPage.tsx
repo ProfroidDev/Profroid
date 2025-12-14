@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { getMyJobs } from "../../features/appointment/api/getMyJobs";
 import type { AppointmentResponseModel } from "../../features/appointment/models/AppointmentResponseModel";
 import AddAppointmentModal from "../../features/appointment/components/AddAppointmentModal";
@@ -8,6 +9,7 @@ import { MapPin, Clock, User, Wrench, DollarSign, Phone, AlertCircle } from "luc
 import "./MyJobsPage.css";
 
 export default function MyJobsPage(): React.ReactElement {
+  const { t } = useTranslation();
   const [jobs, setJobs] = useState<AppointmentResponseModel[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
   const [selectedJob, setSelectedJob] = useState<AppointmentResponseModel | null>(null);
@@ -94,14 +96,14 @@ export default function MyJobsPage(): React.ReactElement {
   return (
     <div className="jobs-page-light">
       <div className="jobs-header">
-        <h1 className="jobs-title-light">My Jobs</h1>
+        <h1 className="jobs-title-light">{t('pages.jobs.myJobs')}</h1>
         {customerData?.firstName && customerData?.lastName && (
-          <p className="user-name-display">Welcome, {customerData.firstName} {customerData.lastName}</p>
+          <p className="user-name-display">{t('common.welcome')}, {customerData.firstName} {customerData.lastName}</p>
         )}
-        <p className="jobs-subtitle">Your assigned service appointments and work schedule</p>
+        <p className="jobs-subtitle">{t('pages.jobs.yourAssignedJobs')}</p>
         <div className="header-actions">
           <button className="btn-primary" onClick={() => setShowAddModal(true)}>
-            Add Appointment
+            {t('pages.appointments.bookAppointment')}
           </button>
         </div>
       </div>
@@ -109,17 +111,17 @@ export default function MyJobsPage(): React.ReactElement {
       {loading ? (
         <div className="loading-container">
           <div className="spinner"></div>
-          <p>Loading your jobs...</p>
+          <p>{t('common.loading')}</p>
         </div>
       ) : error ? (
         <div className="error-state">
-          <h3>Access Denied</h3>
+          <h3>{t('messages.error')}</h3>
           <p>{error}</p>
         </div>
       ) : jobs.length === 0 ? (
         <div className="empty-state">
-          <h3>No Jobs Assigned</h3>
-          <p>You don't have any jobs scheduled at the moment.</p>
+          <h3>{t('pages.jobs.noJobsAssigned')}</h3>
+          <p>{t('pages.jobs.noJobsScheduled')}</p>
         </div>
       ) : (
         <div className="jobs-grid">

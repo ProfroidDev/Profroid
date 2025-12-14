@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { getEmployees } from "../../features/employee/api/getAllEmployees";
 import { getEmployee } from "../../features/employee/api/getEmployeeById";
 import { deactivateEmployee } from "../../features/employee/api/deactivateEmployee";
@@ -20,6 +21,7 @@ import UpdateDayScheduleModal from "../../features/employee/components/UpdateDay
 import "./EmployeeListPage.css";
 
 export default function EmployeeListPage(): React.ReactElement {
+  const { t } = useTranslation();
   const [employees, setEmployees] = useState<EmployeeResponseModel[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
   const [selectedEmployee, setSelectedEmployee] =
@@ -244,7 +246,7 @@ export default function EmployeeListPage(): React.ReactElement {
 
   return (
     <div className="employees-page-light">
-      <h2 className="employees-title-light">Employees</h2>
+      <h2 className="employees-title-light">{t('pages.employees.title')}</h2>
 
       <div className="employees-card-light">
         <div style={{ marginBottom: '20px' }}>
@@ -252,19 +254,19 @@ export default function EmployeeListPage(): React.ReactElement {
             className="btn-add-employee" 
             onClick={() => setAssignModalOpen(true)}
           >
-            + Add Employee
+            + {t('pages.employees.addEmployee')}
           </button>
         </div>
 
         {loading ? (
-          <div className="loading-light">Loading employees...</div>
+          <div className="loading-light">{t('common.loading')}</div>
         ) : (
           <table className="employees-table-light">
             <thead>
               <tr>
-                <th>Name</th>
-                <th>First Name</th>
-                <th>Actions</th>
+                <th>{t('pages.employees.name')}</th>
+                <th>{t('auth.firstName')}</th>
+                <th>{t('common.edit')}</th>
               </tr>
             </thead>
 
@@ -304,7 +306,7 @@ export default function EmployeeListPage(): React.ReactElement {
                         onClick={() => handleDeactivateEmployee(e)}
                         disabled={deactivateLoading}
                       >
-                        Deactivate
+                        {t('common.delete')}
                       </button>
                     ) : (
                       <button
@@ -313,7 +315,7 @@ export default function EmployeeListPage(): React.ReactElement {
                         onClick={() => handleReactivateEmployee(e)}
                         disabled={deactivateLoading}
                       >
-                        Reactivate
+                        {t('common.edit')}
                       </button>
                     )}
                   </td>
@@ -328,14 +330,14 @@ export default function EmployeeListPage(): React.ReactElement {
         <div className="modal-overlay-light">
           <div className="modal-container-light">
             <div className="modal-header-light">
-              <h3>Employee Details</h3>
+              <h3>{t('pages.employees.title')}</h3>
               <button className="modal-close-light" onClick={closeModal}>
                 &#10005;
               </button>
             </div>
 
             {detailLoading && (
-              <div className="loading-light">Loading details...</div>
+              <div className="loading-light">{t('common.loading')}</div>
             )}
 
             {!detailLoading && selectedEmployee && (

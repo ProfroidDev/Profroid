@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, useLocation, Link } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import useAuthStore, { type AuthUser } from '../../features/authentication/store/authStore';
 import authClient from '../../features/authentication/api/authClient';
 import { getPostalCodeError } from '../../utils/postalCodeValidator';
@@ -8,6 +9,7 @@ import '../Auth.css';
 const provinces = ['Ontario', 'Quebec', 'British Columbia', 'Alberta', 'Manitoba', 'Saskatchewan', 'Nova Scotia'];
 
 export default function RegisterPage() {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const location = useLocation();
   const { error, isLoading, clearError, setUser, setAuthenticated, fetchCustomerData } = useAuthStore();
@@ -51,17 +53,17 @@ export default function RegisterPage() {
     clearError();
 
     if (!email || !password || !confirmPassword) {
-      setFormError('Please fill in all fields');
+      setFormError(t('common.required'));
       return;
     }
 
     if (password !== confirmPassword) {
-      setFormError('Passwords do not match');
+      setFormError(t('auth.passwordMismatch'));
       return;
     }
 
     if (password.length < 6) {
-      setFormError('Password must be at least 6 characters');
+      setFormError(t('validation.passwordTooShort'));
       return;
     }
 
@@ -72,10 +74,10 @@ export default function RegisterPage() {
         setUserId(response.userId);
         setStep(2);
       } else {
-        setFormError(response.error || 'Registration failed');
+        setFormError(response.error || t('messages.error'));
       }
     } catch (err) {
-      setFormError(err instanceof Error ? err.message : 'Registration failed');
+      setFormError(err instanceof Error ? err.message : t('messages.error'));
     } finally {
       setSubmitting(false);
     }
@@ -179,27 +181,27 @@ export default function RegisterPage() {
     <div className="auth-container">
       <div className="auth-card">
         <div className="auth-header">
-          <h1>{step === 1 ? 'Create Account' : (location.state as { completionMode?: boolean } | null)?.completionMode ? 'Complete Your Registration' : 'Complete Your Profile'}</h1>
-          <p>{step === 1 ? 'Join us today' : 'Step 2 of 2'}</p>
+          <h1>{step === 1 ? t('auth.register') : (location.state as { completionMode?: boolean } | null)?.completionMode ? t('pages.profile.personalInfo') : t('pages.profile.updateProfile')}</h1>
+          <p>{step === 1 ? t('auth.signUpWith') : t('messages.success')}</p>
         </div>
 
         {step === 1 ? (
         <form onSubmit={handleStep1Submit} className="auth-form">
           <div className="form-group">
-            <label htmlFor="email">Email</label>
+            <label htmlFor="email">{t('common.email')}</label>
             <input
               id="email"
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              placeholder="user@example.com"
+              placeholder={t('auth.enterEmail')}
               disabled={submitting}
               required
             />
           </div>
 
           <div className="form-group">
-            <label htmlFor="password">Password</label>
+            <label htmlFor="password">{t('common.password')}</label>
             <input
               id="password"
               type="password"
@@ -212,7 +214,7 @@ export default function RegisterPage() {
           </div>
 
           <div className="form-group">
-            <label htmlFor="confirmPassword">Confirm Password</label>
+            <label htmlFor="confirmPassword">{t('common.confirmPassword')}</label>
             <input
               id="confirmPassword"
               type="password"
@@ -235,13 +237,13 @@ export default function RegisterPage() {
             disabled={submitting}
             className="btn-primary"
           >
-            {submitting ? 'Creating account...' : 'Continue'}
+            {submitting ? t('common.loading') : t('common.save')}
           </button>
         </form>
         ) : (
         <form onSubmit={handleStep2Submit} className="auth-form">
           <div className="form-group">
-            <label htmlFor="firstName">First Name *</label>
+            <label htmlFor="firstName">{t('auth.firstName')} *</label>
             <input
               id="firstName"
               name="firstName"
@@ -256,7 +258,7 @@ export default function RegisterPage() {
           </div>
 
           <div className="form-group">
-            <label htmlFor="lastName">Last Name *</label>
+            <label htmlFor="lastName">{t('auth.lastName')} *</label>
             <input
               id="lastName"
               name="lastName"
@@ -271,7 +273,7 @@ export default function RegisterPage() {
           </div>
 
           <div className="form-group">
-            <label htmlFor="streetAddress">Street Address *</label>
+            <label htmlFor="streetAddress">{t('pages.customers.address')} *</label>
             <input
               id="streetAddress"
               name="streetAddress"
@@ -286,7 +288,7 @@ export default function RegisterPage() {
           </div>
 
           <div className="form-group">
-            <label htmlFor="city">City *</label>
+            <label htmlFor="city">{t('pages.customers.city')} *</label>
             <input
               id="city"
               name="city"
@@ -301,7 +303,7 @@ export default function RegisterPage() {
           </div>
 
           <div className="form-group">
-            <label htmlFor="province">Province *</label>
+            <label htmlFor="province">{t('pages.customers.province')} *</label>
             <select
               id="province"
               name="province"
@@ -315,7 +317,7 @@ export default function RegisterPage() {
           </div>
 
           <div className="form-group">
-            <label htmlFor="postalCode">Postal Code *</label>
+            <label htmlFor="postalCode">{t('pages.customers.postalCode')} *</label>
             <input
               id="postalCode"
               name="postalCode"
@@ -330,7 +332,7 @@ export default function RegisterPage() {
           </div>
 
           <div className="form-group">
-            <label>Phone Numbers *</label>
+            <label>{t('auth.phone')} *</label>
             {customerData.phoneNumbers.map((phone, index) => (
               <div key={index} style={{ display: 'flex', gap: '8px', marginBottom: '8px' }}>
                 <input
@@ -373,7 +375,7 @@ export default function RegisterPage() {
               className="btn-secondary"
               style={{ marginTop: '8px' }}
             >
-              + Add Phone
+              + {t('pages.customers.phone')}
             </button>
           </div>
 
@@ -388,7 +390,7 @@ export default function RegisterPage() {
             disabled={submitting}
             className="btn-primary"
           >
-            {submitting ? 'Completing...' : 'Complete Registration'}
+            {submitting ? t('common.loading') : t('auth.createAccount')}
           </button>
           
           <button
@@ -398,16 +400,16 @@ export default function RegisterPage() {
             className="btn-secondary"
             style={{ marginTop: '8px' }}
           >
-            Back
+            {t('common.back')}
           </button>
         </form>
         )}
 
         <div className="auth-footer">
           <p>
-            Already have an account?{' '}
+            {t('auth.alreadyHaveAccount')}{' '}
             <Link to="/login" className="link">
-              Sign in
+              {t('auth.login')}
             </Link>
           </p>
         </div>

@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { getMyAppointments } from "../../features/appointment/api/getMyAppointments";
 import type { AppointmentResponseModel } from "../../features/appointment/models/AppointmentResponseModel";
 import AddAppointmentModal from "../../features/appointment/components/AddAppointmentModal";
@@ -8,6 +9,7 @@ import { MapPin, Clock, User, Wrench, DollarSign, AlertCircle } from "lucide-rea
 import "./MyAppointmentsPage.css";
 
 export default function MyAppointmentsPage(): React.ReactElement {
+  const { t } = useTranslation();
   const [appointments, setAppointments] = useState<AppointmentResponseModel[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
   const [selectedAppointment, setSelectedAppointment] = useState<AppointmentResponseModel | null>(null);
@@ -91,14 +93,14 @@ export default function MyAppointmentsPage(): React.ReactElement {
   return (
     <div className="appointments-page-light">
       <div className="appointments-header">
-        <h1 className="appointments-title-light">My Appointments</h1>
+        <h1 className="appointments-title-light">{t('pages.appointments.myAppointments')}</h1>
         {customerData?.firstName && customerData?.lastName && (
-          <p className="user-name-display">Welcome, {customerData.firstName} {customerData.lastName}</p>
+          <p className="user-name-display">{t('common.welcome')}, {customerData.firstName} {customerData.lastName}</p>
         )}
-        <p className="appointments-subtitle">View and manage your scheduled service appointments</p>
+        <p className="appointments-subtitle">{t('pages.appointments.viewAndManageAppointments')}</p>
         <div className="header-actions">
           <button className="btn-primary" onClick={() => setShowAddModal(true)}>
-            Book Appointment
+            {t('pages.appointments.bookAppointment')}
           </button>
         </div>
       </div>
@@ -106,17 +108,17 @@ export default function MyAppointmentsPage(): React.ReactElement {
       {loading ? (
         <div className="loading-container">
           <div className="spinner"></div>
-          <p>Loading your appointments...</p>
+          <p>{t('common.loading')}</p>
         </div>
       ) : error ? (
         <div className="error-state">
-          <h3>Access Denied</h3>
+          <h3>{t('messages.error')}</h3>
           <p>{error}</p>
         </div>
       ) : appointments.length === 0 ? (
         <div className="empty-state">
-          <h3>No Appointments Found</h3>
-          <p>You don't have any scheduled appointments yet.</p>
+          <h3>{t('pages.appointments.noAppointments')}</h3>
+          <p>{t('pages.appointments.noAppointmentsYet')}</p>
         </div>
       ) : (
         <div className="appointments-grid">

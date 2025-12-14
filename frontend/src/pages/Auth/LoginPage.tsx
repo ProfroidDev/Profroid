@@ -1,10 +1,12 @@
 import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import useAuthStore from '../../features/authentication/store/authStore';
 import authClient from '../../features/authentication/api/authClient';
 import '../Auth.css';
 
 export default function LoginPage() {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const { error, isLoading, clearError, login, fetchCustomerData } = useAuthStore();
   const [email, setEmail] = useState('');
@@ -17,7 +19,7 @@ export default function LoginPage() {
     clearError();
 
     if (!email || !password) {
-      setFormError('Please fill in all fields');
+      setFormError(t('common.required'));
       return;
     }
 
@@ -42,26 +44,26 @@ export default function LoginPage() {
     <div className="auth-container">
       <div className="auth-card">
         <div className="auth-header">
-          <h1>Welcome Back</h1>
-          <p>Sign in to your account</p>
+          <h1>{t('auth.login')}</h1>
+          <p>{t('auth.signInWith')}</p>
         </div>
 
         <form onSubmit={handleSubmit} className="auth-form">
           <div className="form-group">
-            <label htmlFor="email">Email</label>
+            <label htmlFor="email">{t('common.email')}</label>
             <input
               id="email"
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              placeholder="user@example.com"
+              placeholder={t('auth.enterEmail')}
               disabled={isLoading}
               required
             />
           </div>
 
           <div className="form-group">
-            <label htmlFor="password">Password</label>
+            <label htmlFor="password">{t('common.password')}</label>
             <input
               id="password"
               type="password"
@@ -75,7 +77,7 @@ export default function LoginPage() {
 
           <div style={{ textAlign: 'right', marginTop: '-0.5rem', marginBottom: '0.5rem' }}>
             <Link to="/forgot-password" className="link" style={{ fontSize: '0.9rem' }}>
-              Forgot password?
+              {t('auth.forgotPassword')}
             </Link>
           </div>
 
@@ -90,15 +92,15 @@ export default function LoginPage() {
             disabled={isLoading}
             className="btn-primary"
           >
-            {isLoading ? 'Signing in...' : 'Sign In'}
+            {isLoading ? t('common.loading') : t('auth.login')}
           </button>
         </form>
 
         <div className="auth-footer">
           <p>
-            Don't have an account?{' '}
+            {t('auth.noAccount')}{' '}
             <Link to="/register" className="link">
-              Sign up
+              {t('auth.register')}
             </Link>
           </p>
         </div>

@@ -1,9 +1,11 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import authClient from '../../features/authentication/api/authClient';
 import '../Auth.css';
 
 export default function ForgotPasswordPage() {
+  const { t } = useTranslation();
   const [email, setEmail] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
@@ -15,14 +17,14 @@ export default function ForgotPasswordPage() {
     setSuccess(false);
 
     if (!email) {
-      setError('Please enter your email address');
+      setError(t('common.required'));
       return;
     }
 
     // Basic email validation
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(email)) {
-      setError('Please enter a valid email address');
+      setError(t('validation.emailInvalid'));
       return;
     }
 
@@ -35,10 +37,10 @@ export default function ForgotPasswordPage() {
         setSuccess(true);
         setEmail(''); // Clear the form
       } else {
-        setError(response.error || 'Failed to send reset email. Please try again.');
+        setError(response.error || t('messages.error'));
       }
     } catch {
-      setError('An unexpected error occurred. Please try again.');
+      setError(t('messages.error'));
     } finally {
       setIsLoading(false);
     }
@@ -48,25 +50,25 @@ export default function ForgotPasswordPage() {
     <div className="auth-container">
       <div className="auth-card">
         <div className="auth-header">
-          <h1>Forgot Password?</h1>
-          <p>Enter your email to receive a password reset link</p>
+          <h1>{t('auth.forgotPassword')}</h1>
+          <p>{t('auth.passwordReset')}</p>
         </div>
 
         {success ? (
           <div className="success-message">
             <div className="alert alert-success">
-              <strong>✓ Check your email!</strong>
+              <strong>✓ {t('auth.checkEmail')}</strong>
               <p>
-                If an account exists with that email address, you'll receive a password reset link shortly.
+                {t('auth.checkEmail')}
               </p>
               <p style={{ marginTop: '1rem', fontSize: '0.9rem' }}>
-                Please check your spam folder if you don't see the email within a few minutes.
+                {t('messages.success')}
               </p>
             </div>
             
             <div className="auth-footer" style={{ marginTop: '1.5rem' }}>
               <Link to="/login" className="btn-secondary">
-                Back to Sign In
+                {t('auth.login')}
               </Link>
             </div>
           </div>
@@ -74,13 +76,13 @@ export default function ForgotPasswordPage() {
           <>
             <form onSubmit={handleSubmit} className="auth-form">
               <div className="form-group">
-                <label htmlFor="email">Email Address</label>
+                <label htmlFor="email">{t('common.email')}</label>
                 <input
                   id="email"
                   type="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  placeholder="user@example.com"
+                  placeholder={t('auth.enterEmail')}
                   disabled={isLoading}
                   required
                 />
@@ -97,15 +99,15 @@ export default function ForgotPasswordPage() {
                 disabled={isLoading}
                 className="btn-primary"
               >
-                {isLoading ? 'Sending...' : 'Send Reset Link'}
+                {isLoading ? t('common.loading') : t('auth.resetPassword')}
               </button>
             </form>
 
             <div className="auth-footer">
               <p>
-                Remember your password?{' '}
+                {t('auth.alreadyHaveAccount')}{' '}
                 <Link to="/login" className="link">
-                  Sign in
+                  {t('auth.login')}
                 </Link>
               </p>
             </div>
