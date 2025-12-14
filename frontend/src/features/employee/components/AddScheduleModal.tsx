@@ -194,7 +194,7 @@ export default function AddScheduleModal({ employeeId, isTechnician, onClose, on
               {!isTechnician ? (
                 <div className="slot">
                   <label>
-                    <span>Start</span>
+                    <span>{t('pages.employees.start')}</span>
                     <input
                       type="time"
                       value={nonTechSlots[day].start}
@@ -203,17 +203,17 @@ export default function AddScheduleModal({ employeeId, isTechnician, onClose, on
                     />
                   </label>
                   <label>
-                    <span>End (hour only)</span>
+                    <span>{t('pages.employees.end')}</span>
                     <select
                       value={nonTechSlots[day].end}
                       onChange={e => updateNonTechSlot(day, 'end', e.target.value)}
                       className="hour-select"
                     >
-                      <option value="">Select hour</option>
-                      <option value="11:00">11:00 AM</option>
-                      <option value="13:00">1:00 PM</option>
-                      <option value="15:00">3:00 PM</option>
-                      <option value="17:00">5:00 PM</option>
+                      <option value="">{t('pages.employees.selectHour')}</option>
+                      <option value="11:00">{t('common.timeSlot.elevenAm')}</option>
+                      <option value="13:00">{t('common.timeSlot.onePm')}</option>
+                      <option value="15:00">{t('common.timeSlot.threePm')}</option>
+                      <option value="17:00">{t('common.timeSlot.fivePm')}</option>
                     </select>
                   </label>
                 </div>
