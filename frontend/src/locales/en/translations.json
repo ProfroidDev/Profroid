@@ -303,7 +303,12 @@
       "technicianSlotsTwoHoursApart": "Technician time slots must be at least 2 hours apart.",
       "technicianMaxHoursPerDay": "Technician cannot exceed 8 hours in a single day (max 4 slots of 2h each). Day: {{day}}",
       "employeeMaxHoursPerWeek": "Employee cannot exceed 40 hours in a 5-day week. Requested: {{hours}} hours.",
-      "dayAndEndTimesRequired": "Day {{day}}: start and end times are required."
+      "dayAndEndTimesRequired": "Day {{day}}: start and end times are required.",
+      "selectEndTime": "Please select an end time for this day.",
+      "invalidTimeSelection": "Invalid time selection.",
+      "endTimeAfterStart": "End time must be after start time.",
+      "nonTechnicianMaxHours": "Non-technician employees cannot work more than 8 hours per day.",
+      "addAtLeastOneTimeSlot": "Please add at least one time slot."
     },
     "employee": {
       "cannotConvertCustomerWithAppointments": "Cannot convert customer to employee: This customer has {{count}} appointment(s). Please cancel or reassign all appointments before converting to employee."

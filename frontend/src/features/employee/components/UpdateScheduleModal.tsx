@@ -188,29 +188,29 @@ export default function UpdateScheduleModal({ employeeId, isTechnician, existing
     for (const day of DAYS) {
       if (!isTechnician) {
         const slot = nonTechSlots[day];
-        if (!slot.start || !slot.end) return `Day ${day}: start and end times are required.`;
-        if (slot.start !== '09:00') return 'Non-technicians must start at NINE_AM (09:00).';
+        if (!slot.start || !slot.end) return t('error.schedule.dayAndEndTimesRequired', { day: t(`common.dayOfWeek.${day.toLowerCase()}`) });
+        if (slot.start !== '09:00') return t('error.schedule.nonTechnicianMustStartNineAm');
         const startMinutes = parseTime(slot.start);
         const endMinutes = parseTime(slot.end);
-        if (startMinutes >= endMinutes) return `Day ${day}: start must be before end.`;
+        if (startMinutes >= endMinutes) return t('error.schedule.startBeforeEnd', { day: t(`common.dayOfWeek.${day.toLowerCase()}`) });
         const dailyHours = (endMinutes - startMinutes) / 60;
-        if (dailyHours > 8) return `Non-technicians cannot work more than 8 hours per day. Day: ${day}, Hours: ${dailyHours}`;
+        if (dailyHours > 8) return t('error.schedule.nonTechnicianMaxHoursPerDay', { day: t(`common.dayOfWeek.${day.toLowerCase()}`), hours: dailyHours.toFixed(1) });
         weeklyHours += dailyHours;
       } else {
         const slots = techSlots[day];
         if (!slots || slots.length === 0) {
-          return `Day ${day} must have at least one time slot.`;
+          return t('error.schedule.dayMustHaveTimeSlot', { day: t(`common.dayOfWeek.${day.toLowerCase()}`) });
         }
         const minutesStarts = slots.map(toMinutes).sort((a,b)=>a-b);
         for (let i=1;i<minutesStarts.length;i++) {
-          if (minutesStarts[i] - minutesStarts[i-1] < 120) return 'Technician time slots must be at least 2 hours apart.';
+          if (minutesStarts[i] - minutesStarts[i-1] < 120) return t('error.schedule.technicianSlotsTwoHoursApart');
         }
-        if (slots.length > 4) return `Technician cannot exceed 8 hours in a single day (max 4 slots of 2h each). Day: ${day}`;
+        if (slots.length > 4) return t('error.schedule.technicianMaxHoursPerDay', { day: t(`common.dayOfWeek.${day.toLowerCase()}`) });
         weeklyHours += slots.length * 2;
       }
     }
 
-    if (weeklyHours > 40) return `Employee cannot exceed 40 hours in a 5-day week. Requested: ${weeklyHours} hours.`;
+    if (weeklyHours > 40) return t('error.schedule.employeeMaxHoursPerWeek', { hours: weeklyHours.toFixed(1) });
     return null;
   }
 

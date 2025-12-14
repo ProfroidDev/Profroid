@@ -141,31 +141,31 @@ export default function UpdateDayScheduleModal({
   function validate(): string | null {
     if (!isTechnician) {
       if (!nonTechSlot.end) {
-        return 'Please select an end time for this day.';
+        return t('error.schedule.selectEndTime');
       }
       const start = timeStringToEnum(nonTechSlot.start);
       const end = timeStringToEnum(nonTechSlot.end);
       if (!start || !end) {
-        return 'Invalid time selection.';
+        return t('error.schedule.invalidTimeSelection');
       }
       if (toMinutes(end) <= toMinutes(start)) {
-        return 'End time must be after start time.';
+        return t('error.schedule.endTimeAfterStart');
       }
       const dailyHours = (toMinutes(end) - toMinutes(start)) / 60;
       if (dailyHours > 8) {
-        return 'Non-technician employees cannot work more than 8 hours per day.';
+        return t('error.schedule.nonTechnicianMaxHours');
       }
     } else {
       if (techSlots.length === 0) {
-        return 'Please add at least one time slot.';
+        return t('error.schedule.addAtLeastOneTimeSlot');
       }
       if (techSlots.length > 4) {
-        return 'Technician cannot exceed 8 hours in a single day (max 4 slots of 2h each).';
+        return t('error.schedule.technicianMaxHoursPerDay', { day: t(`common.dayOfWeek.${selectedDate ? new Date(selectedDate).toLocaleDateString('en-US', { weekday: 'long' }).toUpperCase() : 'UNKNOWN'}`.toLowerCase()) });
       }
       const sortedMinutes = techSlots.map(toMinutes).sort((a, b) => a - b);
       for (let i = 1; i < sortedMinutes.length; i++) {
         if (sortedMinutes[i] - sortedMinutes[i - 1] < 120) {
-          return 'Technician time slots must be at least 2 hours apart.';
+          return t('error.schedule.technicianSlotsTwoHoursApart');
         }
       }
     }
