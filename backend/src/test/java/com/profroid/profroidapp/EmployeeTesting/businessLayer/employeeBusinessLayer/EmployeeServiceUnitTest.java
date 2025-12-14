@@ -174,6 +174,119 @@ public class EmployeeServiceUnitTest {
     verify(employeeRepository, never()).save(any());
     }
 
+    // [Employee-Service][Unit Test][Negative] Add employee when customer has appointments -> throws InvalidOperationException
+    @Test
+    void addEmployee_customerHasAppointments_throwsInvalidOperation() {
+    com.profroid.profroidapp.customersubdomain.dataAccessLayer.Customer existingCustomer = 
+        mock(com.profroid.profroidapp.customersubdomain.dataAccessLayer.Customer.class);
+    
+    when(employeeRepository.findEmployeeByUserId("johndoe")).thenReturn(null);
+    when(customerRepository.findCustomerByUserId("johndoe")).thenReturn(existingCustomer);
+    
+    // Mock customer has 2 appointments
+    com.profroid.profroidapp.appointmentsubdomain.dataAccessLayer.Appointment apt1 = 
+        mock(com.profroid.profroidapp.appointmentsubdomain.dataAccessLayer.Appointment.class);
+    com.profroid.profroidapp.appointmentsubdomain.dataAccessLayer.Appointment apt2 = 
+        mock(com.profroid.profroidapp.appointmentsubdomain.dataAccessLayer.Appointment.class);
+    when(appointmentRepository.findAllByCustomer(existingCustomer))
+        .thenReturn(Arrays.asList(apt1, apt2));
+    
+    assertThrows(InvalidOperationException.class,
+        () -> employeeService.addEmployee(validRequest));
+    verify(employeeRepository).findEmployeeByUserId("johndoe");
+    verify(customerRepository).findCustomerByUserId("johndoe");
+    verify(appointmentRepository).findAllByCustomer(existingCustomer);
+    verify(employeeRepository, never()).save(any());
+    verify(customerRepository, never()).delete(any());
+    }
+
+    // [Employee-Service][Unit Test][Positive] Add employee when customer has no appointments -> succeeds and deletes customer
+    @Test
+    void addEmployee_customerExistsNoAppointments_succeeds() {
+    com.profroid.profroidapp.customersubdomain.dataAccessLayer.Customer existingCustomer = 
+        mock(com.profroid.profroidapp.customersubdomain.dataAccessLayer.Customer.class);
+    
+    when(employeeRepository.findEmployeeByUserId("johndoe")).thenReturn(null);
+    when(customerRepository.findCustomerByUserId("johndoe")).thenReturn(existingCustomer);
+    when(appointmentRepository.findAllByCustomer(existingCustomer)).thenReturn(Collections.emptyList());
+
+    Employee toEntity = new Employee();
+    toEntity.setEmployeeRole(validRequest.getEmployeeRole());
+    when(employeeRequestMapper.toEntity(validRequest)).thenReturn(toEntity);
+
+    Employee saved = new Employee();
+    saved.setEmployeeIdentifier(new EmployeeIdentifier(VALID_EMPLOYEE_ID));
+    saved.setFirstName("John");
+    saved.setLastName("Doe");
+    saved.setUserId("johndoe");
+    saved.setEmployeeRole(validRequest.getEmployeeRole());
+    saved.setIsActive(true);
+    when(employeeRepository.save(any(Employee.class))).thenReturn(saved);
+
+    EmployeeResponseModel expectedResponse = EmployeeResponseModel.builder()
+        .employeeIdentifier(new EmployeeIdentifier(VALID_EMPLOYEE_ID))
+        .firstName("John")
+        .lastName("Doe")
+        .userId("johndoe")
+        .employeeRole(validRequest.getEmployeeRole())
+        .isActive(true)
+        .build();
+    when(employeeResponseMapper.toResponseModel(saved)).thenReturn(expectedResponse);
+
+    EmployeeResponseModel response = employeeService.addEmployee(validRequest);
+    assertEquals(VALID_EMPLOYEE_ID, response.getEmployeeIdentifier().getEmployeeId());
+    verify(employeeRepository).findEmployeeByUserId("johndoe");
+    verify(customerRepository).findCustomerByUserId("johndoe");
+    verify(appointmentRepository).findAllByCustomer(existingCustomer);
+    verify(customerRepository).delete(existingCustomer);
+    verify(employeeRepository).save(any(Employee.class));
+    }
+
+    // [Employee-Service][Unit Test][Positive] Reactivate inactive employee when customer has no appointments -> succeeds and deletes customer
+    @Test
+    void addEmployee_reactivateInactiveEmployeeCustomerNoAppointments_succeeds() {
+    Employee inactiveEmployee = new Employee();
+    inactiveEmployee.setEmployeeIdentifier(new EmployeeIdentifier(VALID_EMPLOYEE_ID));
+    inactiveEmployee.setIsActive(false);
+    inactiveEmployee.setFirstName("Old");
+    inactiveEmployee.setLastName("Name");
+    
+    com.profroid.profroidapp.customersubdomain.dataAccessLayer.Customer existingCustomer = 
+        mock(com.profroid.profroidapp.customersubdomain.dataAccessLayer.Customer.class);
+    
+    when(employeeRepository.findEmployeeByUserId("johndoe")).thenReturn(inactiveEmployee);
+    when(customerRepository.findCustomerByUserId("johndoe")).thenReturn(existingCustomer);
+    when(appointmentRepository.findAllByCustomer(existingCustomer)).thenReturn(Collections.emptyList());
+
+    Employee reactivated = new Employee();
+    reactivated.setEmployeeIdentifier(new EmployeeIdentifier(VALID_EMPLOYEE_ID));
+    reactivated.setFirstName("John");
+    reactivated.setLastName("Doe");
+    reactivated.setUserId("johndoe");
+    reactivated.setEmployeeRole(validRequest.getEmployeeRole());
+    reactivated.setIsActive(true);
+    when(employeeRepository.save(any(Employee.class))).thenReturn(reactivated);
+
+    EmployeeResponseModel reactivatedResponse = EmployeeResponseModel.builder()
+        .employeeIdentifier(new EmployeeIdentifier(VALID_EMPLOYEE_ID))
+        .firstName("John")
+        .lastName("Doe")
+        .userId("johndoe")
+        .employeeRole(validRequest.getEmployeeRole())
+        .isActive(true)
+        .build();
+    when(employeeResponseMapper.toResponseModel(reactivated)).thenReturn(reactivatedResponse);
+
+    EmployeeResponseModel response = employeeService.addEmployee(validRequest);
+    assertEquals(VALID_EMPLOYEE_ID, response.getEmployeeIdentifier().getEmployeeId());
+    assertTrue(response.getIsActive());
+    verify(employeeRepository).findEmployeeByUserId("johndoe");
+    verify(customerRepository).findCustomerByUserId("johndoe");
+    verify(appointmentRepository).findAllByCustomer(existingCustomer);
+    verify(customerRepository).delete(existingCustomer);
+    verify(employeeRepository).save(any(Employee.class));
+    }
+
     // [Employee-Service][Unit Test][Negative] Update employee with invalid ID -> throws InvalidIdentifierException
     @Test
     void updateEmployee_invalidId_throwsInvalidIdentifier() {

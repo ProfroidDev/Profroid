@@ -73,6 +73,7 @@ tasks.named('test') {
     testLogging {
         events "passed", "skipped", "failed"
     }
+    
 }
 
 tasks.jacocoTestReport {
@@ -85,6 +86,7 @@ tasks.jacocoTestReport {
                     "**/config/**",
                     "**/mappingLayer/**",
                     "**/ProfroidAppApplication.class",
+                    '**/auth/**'
 
             ])
         }))

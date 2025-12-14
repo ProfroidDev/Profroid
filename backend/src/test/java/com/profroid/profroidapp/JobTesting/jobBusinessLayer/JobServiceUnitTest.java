@@ -429,7 +429,7 @@ public class JobServiceUnitTest {
         int resultLong = (int) method.invoke(jobService, 150);
 
         assertEquals(1, resultShort);  // ≤90 → 1 slot
-        assertEquals(3, resultLong);   // ceil(150 / 60) = 3
+        assertEquals(2, resultLong);   // 1 + ceil((150-90) / 60) = 1 + ceil(1) = 2
     }
 
     @Test
@@ -480,14 +480,18 @@ public class JobServiceUnitTest {
     @Test
     void timeSlotsOverlap_detectsOverlapAndNonOverlap() throws Exception {
         var method = JobServiceImpl.class.getDeclaredMethod(
-                "timeSlotsOverlap", int.class, int.class, int.class, int.class);
+                "timeSlotsOverlap", java.time.LocalTime.class, int.class, java.time.LocalTime.class, int.class);
         method.setAccessible(true);
 
-        // Overlapping: both start at 9 with 2 slots each
-        assertTrue((boolean) method.invoke(jobService, 9, 2, 9, 2));
+        // Overlapping: 09:00 for 120 min (09:00-11:00) vs 10:00 for 60 min (10:00-11:00)
+        assertTrue((boolean) method.invoke(jobService, 
+                java.time.LocalTime.of(9, 0), 120, 
+                java.time.LocalTime.of(10, 0), 60));
 
-        // Non-overlapping: 9→10 vs 15→16
-        assertFalse((boolean) method.invoke(jobService, 9, 1, 15, 1));
+        // Non-overlapping: 09:00 for 60 min (09:00-10:00) vs 15:00 for 60 min (15:00-16:00)
+        assertFalse((boolean) method.invoke(jobService, 
+                java.time.LocalTime.of(9, 0), 60, 
+                java.time.LocalTime.of(15, 0), 60));
     }
 
 

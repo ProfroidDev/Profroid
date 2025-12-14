@@ -668,7 +668,7 @@ public class AppointmentServiceImpl implements AppointmentService {
          * 2. Least booked hours during the current week
          * 3. Random selection if all have equal hours
          */
-        private Employee autoAssignTechnician(LocalDateTime appointmentDateTime, String jobName) {
+        public Employee autoAssignTechnician(LocalDateTime appointmentDateTime, String jobName) {
             LocalDate appointmentDate = appointmentDateTime.toLocalDate();
             LocalTime appointmentTime = appointmentDateTime.toLocalTime();
             
