@@ -38,7 +38,7 @@ const dataCache: {
 };
 
 // Clear cache on error or when data might be stale
-export function clearAppointmentDataCache() {
+function clearAppointmentDataCache() {
   dataCache.jobs = null;
   dataCache.employees = null;
   dataCache.customers = null;
@@ -520,7 +520,7 @@ export default function AddAppointmentModal({
 
       // technicianBookedSlots is an array of BookedSlot objects with startTime/endTime as "HH:MM:SS" or "HH:MM"
       if (Array.isArray(technicianBookedSlots)) {
-        technicianBookedSlots.forEach((slot: any) => {
+        technicianBookedSlots.forEach((slot: BookedSlot) => {
           const startTimeRaw = slot.startTime;
           if (!startTimeRaw) return;
 

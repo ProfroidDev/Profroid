@@ -1720,6 +1720,7 @@ export default function ProfilePage() {
                     <Calendar
                       onChange={(date) => setSelectedDate(date as Date | null)}
                       value={selectedDate}
+                      locale="fr-FR"
                     />
                   </div>
                 </div>

@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import './AddScheduleModal.css'; // Reuse same styles
 import { updateEmployeeSchedule } from '../../employee/api/updateEmployeeSchedule';
 import type { UpdateEmployeeScheduleRequest } from '../../employee/api/updateEmployeeSchedule';
@@ -18,18 +19,30 @@ type NonTechSlot = { start: string; end: string };
 type TechSlot = TimeSlotType;
 
 const DAYS: DayOfWeekType[] = ['MONDAY', 'TUESDAY', 'WEDNESDAY', 'THURSDAY', 'FRIDAY'];
+
+function getDayLabelTranslationKey(day: DayOfWeekType): string {
+  switch (day) {
+    case 'MONDAY': return 'common.dayOfWeek.monday';
+    case 'TUESDAY': return 'common.dayOfWeek.tuesday';
+    case 'WEDNESDAY': return 'common.dayOfWeek.wednesday';
+    case 'THURSDAY': return 'common.dayOfWeek.thursday';
+    case 'FRIDAY': return 'common.dayOfWeek.friday';
+    default: return '';
+  }
+}
+
 function getAvailableSlots(isTechnician: boolean): TimeSlotType[] {
   return isTechnician
     ? ['NINE_AM', 'ELEVEN_AM', 'ONE_PM', 'THREE_PM']
     : ['NINE_AM', 'ELEVEN_AM', 'ONE_PM', 'THREE_PM', 'FIVE_PM'];
 }
 
-const SLOT_LABELS: Record<TimeSlotType, string> = {
-  NINE_AM: '9:00 AM',
-  ELEVEN_AM: '11:00 AM',
-  ONE_PM: '1:00 PM',
-  THREE_PM: '3:00 PM',
-  FIVE_PM: '5:00 PM',
+const SLOT_KEYS: Record<TimeSlotType, string> = {
+  NINE_AM: 'common.timeSlot.nineAm',
+  ELEVEN_AM: 'common.timeSlot.elevenAm',
+  ONE_PM: 'common.timeSlot.onePm',
+  THREE_PM: 'common.timeSlot.threePm',
+  FIVE_PM: 'common.timeSlot.fivePm',
 };
 
 function toTimeSlotEnum(time: string): TimeSlotType | null {
@@ -80,6 +93,7 @@ function toMinutes(slot: TimeSlotType): number {
 }
 
 export default function UpdateScheduleModal({ employeeId, isTechnician, existingSchedule, onClose, onUpdated, onError }: Props) {
+  const { t } = useTranslation();
   const [submitting, setSubmitting] = useState(false);
   
   const [nonTechSlots, setNonTechSlots] = useState<Record<DayOfWeekType, NonTechSlot>>(() => ({
@@ -261,6 +275,11 @@ export default function UpdateScheduleModal({ employeeId, isTechnician, existing
         }
       }
       
+      // Translate known error messages
+      if (message === 'Cannot edit schedule; there is an appointment on this date at a time slot you are removing.') {
+        message = t('error.schedule.cannotEditScheduleAppointmentConflict');
+      }
+      
       // Use toast callback if provided, otherwise fallback to alert
       if (onError) {
         onError(message);
@@ -276,20 +295,20 @@ export default function UpdateScheduleModal({ employeeId, isTechnician, existing
     <div className="add-schedule-modal-backdrop">
       <div className="add-schedule-modal">
         <div className="header">
-          <h2>Update Weekly Schedule</h2>
+          <h2>{t('pages.employees.updateWeeklySchedule')}</h2>
           <button className="close" onClick={onClose} aria-label="Close">×</button>
         </div>
         <div className="content">
           {DAYS.map(day => (
             <div key={day} className="day-block">
               <div className="day-header">
-                <span>{day.charAt(0) + day.slice(1).toLowerCase()}</span>
+                <span>{t(getDayLabelTranslationKey(day))}</span>
               </div>
               
               {!isTechnician ? (
                 <div className="slot">
                   <label>
-                    <span>Start</span>
+                    <span>{t('pages.employees.start')}</span>
                     <input
                       type="time"
                       value={nonTechSlots[day].start}
@@ -298,13 +317,13 @@ export default function UpdateScheduleModal({ employeeId, isTechnician, existing
                     />
                   </label>
                   <label>
-                    <span>End (hour only)</span>
+                    <span>{t('pages.employees.end')}</span>
                     <select
                       value={nonTechSlots[day].end}
                       onChange={e => updateNonTechSlot(day, 'end', e.target.value)}
                       className="hour-select"
                     >
-                      <option value="">Select hour</option>
+                      <option value="">{t('pages.employees.selectHour')}</option>
                       <option value="11:00">11:00 AM</option>
                       <option value="13:00">1:00 PM</option>
                       <option value="15:00">3:00 PM</option>
@@ -320,8 +339,8 @@ export default function UpdateScheduleModal({ employeeId, isTechnician, existing
                       const originalIdx = techSlots[day].indexOf(slot);
                       return (
                         <div className="slot" key={`${day}-${slot}-${idx}`}>
-                          <span className="slot-label">{SLOT_LABELS[slot]}</span>
-                          <button className="remove" onClick={() => removeTechSlot(day, originalIdx)} type="button">Remove</button>
+                          <span className="slot-label">{t(SLOT_KEYS[slot])}</span>
+                          <button className="remove" onClick={() => removeTechSlot(day, originalIdx)} type="button">{t('pages.employees.remove')}</button>
                         </div>
                       );
                     })}
@@ -333,7 +352,7 @@ export default function UpdateScheduleModal({ employeeId, isTechnician, existing
                         onClick={() => addTechSlot(day, slotType)}
                         type="button"
                       >
-                        {SLOT_LABELS[slotType]}
+                        {t(SLOT_KEYS[slotType])}
                       </button>
                     ))}
                   </div>
@@ -343,8 +362,8 @@ export default function UpdateScheduleModal({ employeeId, isTechnician, existing
           ))}
         </div>
         <div className="footer">
-          <button className="secondary" onClick={onClose} disabled={submitting}>Cancel</button>
-          <button className="primary" onClick={submit} disabled={submitting}>Update Schedule</button>
+          <button className="secondary" onClick={onClose} disabled={submitting}>{t('pages.employees.cancel')}</button>
+          <button className="primary" onClick={submit} disabled={submitting}>{t('pages.employees.updateSchedule')}</button>
         </div>
       </div>
     </div>

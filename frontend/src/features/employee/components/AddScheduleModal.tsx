@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import './AddScheduleModal.css';
 import { addEmployeeSchedule } from '../../employee/api/addEmployeeSchedule';
 import type { AddEmployeeScheduleRequest } from '../../employee/api/addEmployeeSchedule';
@@ -18,12 +19,12 @@ type TechSlot = TimeSlotType;
 const DAYS: DayOfWeekType[] = ['MONDAY', 'TUESDAY', 'WEDNESDAY', 'THURSDAY', 'FRIDAY'];
 const AVAILABLE_SLOTS: TimeSlotType[] = ['NINE_AM', 'ELEVEN_AM', 'ONE_PM', 'THREE_PM', 'FIVE_PM'];
 
-const SLOT_LABELS: Record<TimeSlotType, string> = {
-  NINE_AM: '9:00 AM',
-  ELEVEN_AM: '11:00 AM',
-  ONE_PM: '1:00 PM',
-  THREE_PM: '3:00 PM',
-  FIVE_PM: '5:00 PM',
+const SLOT_KEYS: Record<TimeSlotType, string> = {
+  NINE_AM: 'common.timeSlot.nineAm',
+  ELEVEN_AM: 'common.timeSlot.elevenAm',
+  ONE_PM: 'common.timeSlot.onePm',
+  THREE_PM: 'common.timeSlot.threePm',
+  FIVE_PM: 'common.timeSlot.fivePm',
 };
 
 function toTimeSlotEnum(time: string): TimeSlotType | null {
@@ -53,6 +54,7 @@ function toMinutes(slot: TimeSlotType): number {
 }
 
 export default function AddScheduleModal({ employeeId, isTechnician, onClose, onAdded, onError }: Props) {
+  const { t } = useTranslation();
   const [submitting, setSubmitting] = useState(false);
   
   // Non-tech: one slot per day with start/end times
@@ -91,29 +93,29 @@ export default function AddScheduleModal({ employeeId, isTechnician, onClose, on
     for (const day of DAYS) {
       if (!isTechnician) {
         const slot = nonTechSlots[day];
-        if (!slot.start || !slot.end) return `Day ${day}: start and end times are required.`;
-        if (slot.start !== '09:00') return 'Non-technicians must start at NINE_AM (09:00).';
+        if (!slot.start || !slot.end) return t('error.schedule.dayAndEndTimesRequired', { day: t(`common.dayOfWeek.${day.toLowerCase()}`) });
+        if (slot.start !== '09:00') return t('error.schedule.nonTechnicianMustStartNineAm');
         const startMinutes = parseTime(slot.start);
         const endMinutes = parseTime(slot.end);
-        if (startMinutes >= endMinutes) return `Day ${day}: start must be before end.`;
+        if (startMinutes >= endMinutes) return t('error.schedule.startBeforeEnd', { day: t(`common.dayOfWeek.${day.toLowerCase()}`) });
         const dailyHours = (endMinutes - startMinutes) / 60;
-        if (dailyHours > 8) return `Non-technicians cannot work more than 8 hours per day. Day: ${day}, Hours: ${dailyHours}`;
+        if (dailyHours > 8) return t('error.schedule.nonTechnicianMaxHoursPerDay', { day: t(`common.dayOfWeek.${day.toLowerCase()}`), hours: dailyHours.toFixed(1) });
         weeklyHours += dailyHours;
       } else {
         const slots = techSlots[day];
         if (!slots || slots.length === 0) {
-          return `Day ${day} must have at least one time slot.`;
+          return t('error.schedule.dayMustHaveTimeSlot', { day: t(`common.dayOfWeek.${day.toLowerCase()}`) });
         }
         const minutesStarts = slots.map(toMinutes).sort((a,b)=>a-b);
         for (let i=1;i<minutesStarts.length;i++) {
-          if (minutesStarts[i] - minutesStarts[i-1] < 120) return 'Technician time slots must be at least 2 hours apart.';
+          if (minutesStarts[i] - minutesStarts[i-1] < 120) return t('error.schedule.technicianSlotsTwoHoursApart');
         }
-        if (slots.length > 4) return `Technician cannot exceed 8 hours in a single day (max 4 slots of 2h each). Day: ${day}`;
+        if (slots.length > 4) return t('error.schedule.technicianMaxHoursPerDay', { day: t(`common.dayOfWeek.${day.toLowerCase()}`) });
         weeklyHours += slots.length * 2;
       }
     }
 
-    if (weeklyHours > 40) return `Employee cannot exceed 40 hours in a 5-day week. Requested: ${weeklyHours} hours.`;
+    if (weeklyHours > 40) return t('error.schedule.employeeMaxHoursPerWeek', { hours: weeklyHours.toFixed(1) });
     return null;
   }
 
@@ -177,14 +179,16 @@ export default function AddScheduleModal({ employeeId, isTechnician, onClose, on
     <div className="add-schedule-modal-backdrop">
       <div className="add-schedule-modal">
         <div className="header">
-          <h2>Add Weekly Schedule</h2>
+          <h2>{t('pages.employees.addWeeklySchedule')}</h2>
           <button className="close" onClick={onClose} aria-label="Close">×</button>
         </div>
         <div className="content">
           {DAYS.map(day => (
             <div key={day} className="day-block">
               <div className="day-header">
-                <span>{day.charAt(0) + day.slice(1).toLowerCase()}</span>
+                <span>
+                  {t(`common.dayOfWeek.${day.toLowerCase()}`)}
+                </span>
               </div>
               
               {!isTechnician ? (
@@ -221,8 +225,8 @@ export default function AddScheduleModal({ employeeId, isTechnician, onClose, on
                       const originalIdx = techSlots[day].indexOf(slot);
                       return (
                         <div className="slot" key={`${day}-${slot}-${idx}`}>
-                          <span className="slot-label">{SLOT_LABELS[slot]}</span>
-                          <button className="remove" onClick={() => removeTechSlot(day, originalIdx)} type="button">Remove</button>
+                          <span className="slot-label">{t(SLOT_KEYS[slot])}</span>
+                          <button className="remove" onClick={() => removeTechSlot(day, originalIdx)} type="button">{t('pages.employees.remove')}</button>
                         </div>
                       );
                     })}
@@ -235,7 +239,7 @@ export default function AddScheduleModal({ employeeId, isTechnician, onClose, on
                         type="button"
                         disabled={techSlots[day].includes(slotType)}
                       >
-                        {SLOT_LABELS[slotType]}
+                        {t(SLOT_KEYS[slotType])}
                       </button>
                     ))}
                   </div>
@@ -245,8 +249,8 @@ export default function AddScheduleModal({ employeeId, isTechnician, onClose, on
           ))}
         </div>
         <div className="footer">
-          <button className="secondary" onClick={onClose} disabled={submitting}>Cancel</button>
-          <button className="primary" onClick={submit} disabled={submitting}>Save Schedule</button>
+          <button className="secondary" onClick={onClose} disabled={submitting}>{t('common.cancel')}</button>
+          <button className="primary" onClick={submit} disabled={submitting}>{t('pages.employees.saveSchedule')}</button>
         </div>
       </div>
     </div>

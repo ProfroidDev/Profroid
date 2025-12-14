@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import './AddScheduleModal.css'; // Reuse same styles
 import { patchDateSchedule } from '../../employee/api/patchDateSchedule';
 import type { PatchDateScheduleRequest } from '../../employee/api/patchDateSchedule';
@@ -71,10 +72,22 @@ export default function UpdateDayScheduleModal({
   onUpdated, 
   onError 
 }: Props) {
+  const { t } = useTranslation();
   const [submitting, setSubmitting] = useState(false);
   
   const dayOfWeek = selectedDate.toLocaleDateString('en-US', { weekday: 'long' }).toUpperCase() as DayOfWeekType;
   const formattedDate = selectedDate.toISOString().split('T')[0]; // YYYY-MM-DD
+  
+  function getDayLabelTranslationKey(day: DayOfWeekType): string {
+    switch (day) {
+      case 'MONDAY': return 'common.dayOfWeek.monday';
+      case 'TUESDAY': return 'common.dayOfWeek.tuesday';
+      case 'WEDNESDAY': return 'common.dayOfWeek.wednesday';
+      case 'THURSDAY': return 'common.dayOfWeek.thursday';
+      case 'FRIDAY': return 'common.dayOfWeek.friday';
+      default: return '';
+    }
+  }
   
   const [nonTechSlot, setNonTechSlot] = useState<NonTechSlot>({ start: '09:00', end: '' });
   const [techSlots, setTechSlots] = useState<TechSlot[]>([]);
@@ -218,6 +231,11 @@ export default function UpdateDayScheduleModal({
         }
       }
       
+      // Translate known error messages
+      if (message === 'Cannot edit schedule; there is an appointment on this date at a time slot you are removing.') {
+        message = t('error.schedule.cannotEditScheduleAppointmentConflict');
+      }
+      
       // Restore slots from current schedule after backend rejection
       if (currentSchedule?.timeSlots && isTechnician) {
         const enumSlots = currentSchedule.timeSlots
@@ -240,19 +258,19 @@ export default function UpdateDayScheduleModal({
     <div className="add-schedule-modal-backdrop">
       <div className="add-schedule-modal">
         <div className="header">
-          <h2>Update Schedule for {selectedDate.toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' })}</h2>
+          <h2>{t('pages.employees.updateScheduleForDate', { date: `${t(getDayLabelTranslationKey(dayOfWeek))}, ${selectedDate.toLocaleDateString('fr-FR', { month: 'short', day: 'numeric' })}` })}</h2>
           <button className="close" onClick={onClose} aria-label="Close">×</button>
         </div>
         <div className="content">
           <div className="day-block">
             <div className="day-header">
-              <span>{dayOfWeek.charAt(0) + dayOfWeek.slice(1).toLowerCase()}</span>
+              <span>{t(getDayLabelTranslationKey(dayOfWeek))}</span>
             </div>
             
             {!isTechnician ? (
               <div className="slot">
                 <label>
-                  <span>Start</span>
+                  <span>{t('pages.employees.start')}</span>
                   <input
                     type="time"
                     value={nonTechSlot.start}
@@ -261,13 +279,13 @@ export default function UpdateDayScheduleModal({
                   />
                 </label>
                 <label>
-                  <span>End (hour only)</span>
+                  <span>{t('pages.employees.end')}</span>
                   <select
                     value={nonTechSlot.end}
                     onChange={e => updateNonTechSlot('end', e.target.value)}
                     className="hour-select"
                   >
-                    <option value="">Select hour</option>
+                    <option value="">{t('pages.employees.selectHour')}</option>
                     <option value="11:00">11:00 AM</option>
                     <option value="13:00">1:00 PM</option>
                     <option value="15:00">3:00 PM</option>
@@ -381,7 +399,7 @@ export default function UpdateDayScheduleModal({
               }
             }}
           >
-            {submitting ? 'Updating...' : 'Update This Day'}
+            {submitting ? t('common.updating') : t('pages.employees.updateThisDay')}
           </button>
         </div>
       </div>

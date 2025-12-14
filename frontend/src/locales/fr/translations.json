@@ -23,7 +23,21 @@
     "no": "Non",
     "creating": "Création en cours...",
     "updating": "Mise à jour en cours...",
-    "enterPlaceholder": "Entrez {{field}}"
+    "enterPlaceholder": "Entrez {{field}}",
+    "dayOfWeek": {
+      "monday": "Lundi",
+      "tuesday": "Mardi",
+      "wednesday": "Mercredi",
+      "thursday": "Jeudi",
+      "friday": "Vendredi"
+    },
+    "timeSlot": {
+      "nineAm": "9h00",
+      "elevenAm": "11h00",
+      "onePm": "13h00",
+      "threePm": "15h00",
+      "fivePm": "17h00"
+    }
   },
   "navigation": {
     "parts": "Pièces",
@@ -94,8 +108,11 @@
     "employees": {
       "title": "Employés",
       "addEmployee": "Ajouter un employé",
+      "addWeeklySchedule": "Ajouter un horaire hebdomadaire",
       "editEmployee": "Modifier l'employé",
       "deleteEmployee": "Supprimer l'employé",
+      "remove": "Supprimer",
+      "saveSchedule": "Enregistrer l'horaire",
       "name": "Nom",
       "email": "E-mail",
       "phone": "Téléphone",
@@ -125,7 +142,57 @@
       "createEmployee": "Créer un employé",
       "assigningMessage": "Attribution: {{name}} ({{email}}) en tant que {{employeeType}}",
       "typeAtLeast2Characters": "Tapez au moins 2 caractères pour rechercher",
-      "noUsersFound": "Aucun utilisateur trouvé correspondant à \"{{query}}\""
+      "noUsersFound": "Aucun utilisateur trouvé correspondant à \"{{query}}\"",
+      "viewDetails": "Afficher les détails",
+      "viewSchedule": "Afficher l'horaire",
+      "employeeDetails": "Détails de l'employé",
+      "employeeId": "ID de l'employé",
+      "employeeSchedule": "Horaire de l'employé",
+      "selectDate": "Sélectionnez une date",
+      "timeSlots": "Créneaux horaires",
+      "noScheduleFound": "Aucun horaire trouvé.",
+      "addSchedule": "Ajouter un horaire",
+      "updateThisDay": "Mettre à jour ce jour",
+      "updateFullWeek": "Mettre à jour la semaine complète",
+      "employeeInactive": "Employé inactif",
+      "employeeInactiveMessage": "Cet employé est actuellement désactivé. Vous ne pouvez pas ajouter ou modifier son horaire jusqu'à ce qu'il soit réactivé.",
+      "loadingSchedule": "Chargement de l'horaire...",
+      "selectADate": "Sélectionnez une date",
+      "noScheduleForDate": "Aucun horaire pour cette date",
+      "assignedSuccessfully": "Employé assigné avec succès!",
+      "scheduleAddedSuccessfully": "Horaire ajouté avec succès!",
+      "updatedSuccessfully": "Employé mis à jour avec succès!",
+      "scheduleUpdatedSuccessfully": "Horaire mis à jour avec succès!",
+      "scheduleUpdatedForDate": "Horaire mis à jour pour {{date}}!",
+      "employeeDeactivated": "{{firstName}} {{lastName}} a été désactivé. Vous pouvez le réactiver à tout moment.",
+      "failedToDeactivate": "Impossible de désactiver l'employé",
+      "employeeReactivated": "{{firstName}} {{lastName}} a été réactivé avec succès!",
+      "failedToReactivate": "Impossible de réactiver l'employé",
+      "editEmployee": "Modifier l'employé",
+      "personalInformation": "Informations personnelles",
+      "address": "Adresse",
+      "updateWeeklySchedule": "Mettre à jour l'horaire hebdomadaire",
+      "updateScheduleForDate": "Mettre à jour l'horaire pour {{date}}",
+      "start": "Début",
+      "end": "Fin (heure uniquement)",
+      "selectHour": "Sélectionnez l'heure",
+      "cancel": "Annuler",
+      "updateSchedule": "Mettre à jour l'horaire",
+      "technicianCannotChange": "Le technicien ne peut pas changer en ADMIN/SUPPORT/VENTES.",
+      "nonTechnicianCanSwitch": "ADMIN/SUPPORT/VENTES peuvent basculer entre eux; ne peuvent pas devenir TECHNICIEN.",
+      "streetAddress": "Adresse postale",
+      "postalCode": "Code postal",
+      "country": "Pays",
+      "province": "Province",
+      "city": "Ville",
+      "phoneNumber": "Numéro de téléphone",
+      "phoneType": "Type",
+      "deactivateEmployee": "Désactiver l'employé",
+      "deactivateConfirmMessage": "Êtes-vous sûr de vouloir désactiver {{firstName}} {{lastName}}? Ils seront marqués comme inactifs mais peuvent être réactivés à tout moment.",
+      "reactivateEmployee": "Réactiver l'employé",
+      "reactivateConfirmMessage": "Êtes-vous sûr de vouloir réactiver {{firstName}} {{lastName}}? Ils seront marqués comme actifs.",
+      "deactivate": "Désactiver",
+      "reactivate": "Réactiver"
     },
     "services": {
       "title": "Services",
@@ -225,5 +292,21 @@
     "confirmDelete": "Êtes-vous sûr de vouloir supprimer cet élément?",
     "confirmLogout": "Êtes-vous sûr de vouloir vous déconnecter?",
     "noDetailsAvailable": "Aucun détail disponible."
+  },
+  "error": {
+    "schedule": {
+      "cannotEditScheduleAppointmentConflict": "Impossible de modifier l'horaire; il y a un rendez-vous à cette date dans un créneau horaire que vous supprimez.",
+      "dayMustHaveTimeSlot": "{{day}} doit avoir au moins un créneau horaire.",
+      "nonTechnicianMustStartNineAm": "Les non-techniciens doivent commencer à NINE_AM (09h00).",
+      "startBeforeEnd": "{{day}}: l'heure de début doit être avant l'heure de fin.",
+      "nonTechnicianMaxHoursPerDay": "Les non-techniciens ne peuvent pas travailler plus de 8 heures par jour. Jour: {{day}}, Heures: {{hours}}",
+      "technicianSlotsTwoHoursApart": "Les créneaux horaires des techniciens doivent être espacés d'au moins 2 heures.",
+      "technicianMaxHoursPerDay": "Les techniciens ne peuvent pas dépasser 8 heures par jour (4 créneaux max de 2h chacun). Jour: {{day}}",
+      "employeeMaxHoursPerWeek": "L'employé ne peut pas dépasser 40 heures par semaine de 5 jours. Demandé: {{hours}} heures.",
+      "dayAndEndTimesRequired": "Jour {{day}}: les heures de début et de fin sont requises."
+    },
+    "employee": {
+      "cannotConvertCustomerWithAppointments": "Impossible de convertir le client en employé: Ce client a {{count}} rendez-vous. Veuillez annuler ou réaffecter tous les rendez-vous avant de convertir en employé."
+    }
   }
 }

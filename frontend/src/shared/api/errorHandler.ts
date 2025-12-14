@@ -1,5 +1,5 @@
 import axios from 'axios';
-
+import i18next from 'i18next';
 
 export class APIError extends Error {
   statusCode?: number;
@@ -72,13 +72,13 @@ export function handleAPIError(error: unknown): APIError {
 export function getErrorMessage(error: unknown): string {
   // Check if it's our custom APIError first
   if (error instanceof APIError) {
-    return error.message;
+    return translateErrorMessage(error.message);
   }
   
   // Handles both Axios errors and generic errors
   if (typeof error === 'string') {
     // Direct string error (rare, but possible)
-    return error;
+    return translateErrorMessage(error);
   }
   if (axios.isAxiosError(error)) {
     const response = error.response;
@@ -86,21 +86,36 @@ export function getErrorMessage(error: unknown): string {
       if (response.data) {
         if (typeof response.data === 'string') {
           // Plain string error from backend
-          return response.data;
+          return translateErrorMessage(response.data);
         } else if (typeof response.data === 'object' && response.data.message) {
           // JSON error with message property
-          return response.data.message;
+          return translateErrorMessage(response.data.message);
         }
       }
       // Fallback to status text if no message
-      return response.statusText || 'An error occurred';
+      return translateErrorMessage(response.statusText || 'An error occurred');
     }
     // Fallback to error.message if no response
-    return error.message || 'An error occurred';
+    return translateErrorMessage(error.message || 'An error occurred');
   }
 
   if (error instanceof Error && error.message) {
-    return error.message;
+    return translateErrorMessage(error.message);
   }
   return 'An error occurred';
+}
+
+function translateErrorMessage(message: string): string {
+  const t = i18next.t.bind(i18next);
+  
+  // Check for known error patterns and translate them
+  if (message.includes('Cannot convert customer to employee') && message.includes('appointment')) {
+    // Extract the appointment count from the message
+    const match = message.match(/(\d+)\s+appointment/);
+    const count = match ? parseInt(match[1], 10) : 1;
+    return t('error.employee.cannotConvertCustomerWithAppointments', { count });
+  }
+  
+  // Return original message if no translation pattern matched
+  return message;
 }

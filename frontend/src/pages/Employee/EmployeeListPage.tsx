@@ -194,7 +194,7 @@ export default function EmployeeListPage(): React.ReactElement {
       const employeeId = (confirmationModal.employee.employeeIdentifier as EmployeeResponseModel['employeeIdentifier'] & Record<string, unknown>)?.employeeId;
       if (employeeId) {
         const updatedEmployee = await deactivateEmployee(String(employeeId));
-        setToast({ message: `${confirmationModal.employee.firstName} ${confirmationModal.employee.lastName} has been deactivated. You can reactivate them at any time.`, type: 'warning' });
+        setToast({ message: t('pages.employees.employeeDeactivated', { firstName: confirmationModal.employee.firstName, lastName: confirmationModal.employee.lastName }), type: 'warning' });
         // Update the employee in the list to show deactivated state
         setEmployees(employees.map(e => 
           (e.employeeIdentifier as EmployeeResponseModel['employeeIdentifier'] & Record<string, unknown>)?.employeeId === employeeId 
@@ -204,7 +204,7 @@ export default function EmployeeListPage(): React.ReactElement {
       }
     } catch (error) {
       console.error("Error deactivating employee:", error);
-      setToast({ message: 'Failed to deactivate employee', type: 'error' });
+      setToast({ message: t('pages.employees.failedToDeactivate'), type: 'error' });
     } finally {
       setDeactivateLoading(false);
       setConfirmationModal({ isOpen: false, type: null, employee: null });
@@ -227,7 +227,7 @@ export default function EmployeeListPage(): React.ReactElement {
       const employeeId = (confirmationModal.employee.employeeIdentifier as EmployeeResponseModel['employeeIdentifier'] & Record<string, unknown>)?.employeeId;
       if (employeeId) {
         const updatedEmployee = await reactivateEmployee(String(employeeId));
-        setToast({ message: `${confirmationModal.employee.firstName} ${confirmationModal.employee.lastName} has been reactivated successfully!`, type: 'success' });
+        setToast({ message: t('pages.employees.employeeReactivated', { firstName: confirmationModal.employee.firstName, lastName: confirmationModal.employee.lastName }), type: 'success' });
         // Update the employee in the list to show reactivated state
         setEmployees(employees.map(e => 
           (e.employeeIdentifier as EmployeeResponseModel['employeeIdentifier'] & Record<string, unknown>)?.employeeId === employeeId 
@@ -237,7 +237,7 @@ export default function EmployeeListPage(): React.ReactElement {
       }
     } catch (error) {
       console.error("Error reactivating employee:", error);
-      setToast({ message: 'Failed to reactivate employee', type: 'error' });
+      setToast({ message: t('pages.employees.failedToReactivate'), type: 'error' });
     } finally {
       setDeactivateLoading(false);
       setConfirmationModal({ isOpen: false, type: null, employee: null });
@@ -281,7 +281,7 @@ export default function EmployeeListPage(): React.ReactElement {
                       onClick={() => openDetails(e)}
                       disabled={!e.isActive}
                     >
-                      View Details
+                      {t('pages.employees.viewDetails')}
                     </button>
                     <button
                       className="btn-view-light"
@@ -289,7 +289,7 @@ export default function EmployeeListPage(): React.ReactElement {
                       onClick={() => openEditModal(e)}
                       disabled={!e.isActive}
                     >
-                      Edit
+                      {t('common.edit')}
                     </button>
                     <button
                       className="btn-view-light"
@@ -297,7 +297,7 @@ export default function EmployeeListPage(): React.ReactElement {
                       onClick={() => openSchedule(e)}
                       disabled={!e.isActive}
                     >
-                      View Schedule
+                      {t('pages.employees.viewSchedule')}
                     </button>
                     {e.isActive ? (
                       <button
@@ -315,7 +315,7 @@ export default function EmployeeListPage(): React.ReactElement {
                         onClick={() => handleReactivateEmployee(e)}
                         disabled={deactivateLoading}
                       >
-                        {t('common.edit')}
+                        {t('pages.employees.reactivate')}
                       </button>
                     )}
                   </td>
@@ -330,7 +330,7 @@ export default function EmployeeListPage(): React.ReactElement {
         <div className="modal-overlay-light">
           <div className="modal-container-light">
             <div className="modal-header-light">
-              <h3>{t('pages.employees.title')}</h3>
+              <h3>{t('pages.employees.employeeDetails')}</h3>
               <button className="modal-close-light" onClick={closeModal}>
                 &#10005;
               </button>
@@ -344,14 +344,14 @@ export default function EmployeeListPage(): React.ReactElement {
               <div className="modal-content-light">
                 {/* Section: Identity */}
                 <div className="modal-section">
-                  <h4 className="modal-label">Employee ID</h4>
+                  <h4 className="modal-label">{t('pages.employees.employeeId')}</h4>
                   <p className="modal-value">
                     {((selectedEmployee.employeeIdentifier as EmployeeResponseModel['employeeIdentifier'] & Record<string, unknown>) || {})?.employeeId || "N/A"}
                   </p>
                 </div>
 
                 <div className="modal-section">
-                  <h4 className="modal-label">Name</h4>
+                  <h4 className="modal-label">{t('pages.employees.name')}</h4>
                   <p className="modal-value">
                     {selectedEmployee.firstName} {selectedEmployee.lastName}
                   </p>
@@ -359,7 +359,7 @@ export default function EmployeeListPage(): React.ReactElement {
 
                 {/* Section: Role */}
                 <div className="modal-section">
-                  <h4 className="modal-label">Role</h4>
+                  <h4 className="modal-label">{t('pages.employees.role')}</h4>
                   <p className="modal-value">
                     {String((selectedEmployee.employeeRole as unknown as Record<string, string>)?.employeeRoleType || "N/A")}
                   </p>
@@ -367,7 +367,7 @@ export default function EmployeeListPage(): React.ReactElement {
 
                 {/* Section: Phones */}
                 <div className="modal-section">
-                  <h4 className="modal-label">Phone Numbers</h4>
+                  <h4 className="modal-label">{t('pages.employees.phoneNumbers')}</h4>
                   <ul className="modal-list">
                     {selectedEmployee.phoneNumbers?.map((p, i) => (
                       <li key={i} className="modal-list-item">
@@ -382,7 +382,7 @@ export default function EmployeeListPage(): React.ReactElement {
 
                 {/* Section: Address */}
                 <div className="modal-section">
-                  <h4 className="modal-label">Address</h4>
+                  <h4 className="modal-label">{t('pages.employees.address')}</h4>
                   <p className="modal-value">
                     {selectedEmployee.employeeAddress?.streetAddress}
                     {selectedEmployee.employeeAddress?.city && `, ${selectedEmployee.employeeAddress.city}`}
@@ -394,7 +394,7 @@ export default function EmployeeListPage(): React.ReactElement {
                 </div>
 
                 <div className="modal-section">
-                  <h4 className="modal-label">UserId</h4>
+                  <h4 className="modal-label">{t('pages.employees.userId')}</h4>
                   <p className="modal-value">
                     {selectedEmployee.userId}
                   </p>
@@ -409,21 +409,21 @@ export default function EmployeeListPage(): React.ReactElement {
         <div className="modal-overlay-light">
           <div className="modal-container-light">
             <div className="modal-header-light">
-              <h3>Employee Schedule</h3>
+              <h3>{t('pages.employees.employeeSchedule')}</h3>
               <button className="modal-close-light" onClick={closeModal}>
                 &#10005;
               </button>
             </div>
             {scheduleLoading && (
-              <div className="loading-light">Loading schedule...</div>
+              <div className="loading-light">{t('pages.employees.loadingSchedule')}</div>
             )}
             
             {!scheduleLoading && !scheduleEmployeeData?.isActive && (
               <div className="modal-content-light">
                 <div className="modal-section">
-                  <h4 className="modal-label" style={{ color: '#ff6b6b' }}>Employee Inactive</h4>
+                  <h4 className="modal-label" style={{ color: '#ff6b6b' }}>{t('pages.employees.employeeInactive')}</h4>
                   <p className="modal-value">
-                    This employee is currently deactivated. You cannot add or modify their schedule until they are reactivated.
+                    {t('pages.employees.employeeInactiveMessage')}
                   </p>
                 </div>
               </div>
@@ -432,19 +432,20 @@ export default function EmployeeListPage(): React.ReactElement {
             {!scheduleLoading && scheduleEmployeeData?.isActive && employeeSchedule.length > 0 && (
               <div className="modal-content-light">
                 <div className="modal-section schedule-calendar-section">
-                  <h4 className="modal-label">Select Date</h4>
+                  <h4 className="modal-label">{t('pages.employees.selectDate')}</h4>
                   <div className="calendar-center">
                     <Calendar
                       onChange={(date) => setSelectedDate(date as Date | null)}
                       value={selectedDate}
+                      locale="fr-FR"
                     />
                   </div>
                 </div>
                 <div className="modal-section">
-                  <h4 className="modal-label">Time Slots</h4>
+                  <h4 className="modal-label">{t('pages.employees.timeSlots')}</h4>
                   <ul className="modal-list">
                     {(() => {
-                      if (!selectedDate) return <li className="modal-list-item">Select a date</li>;
+                      if (!selectedDate) return <li className="modal-list-item">{t('pages.employees.selectADate')}</li>;
                       
                       // Use selectedDateSchedule which includes date-specific overrides
                       const sched = selectedDateSchedule;
@@ -457,7 +458,7 @@ export default function EmployeeListPage(): React.ReactElement {
                             <li key={i} className="modal-list-item">{slot}</li>
                           ));
                         }
-                        return <li className="modal-list-item">No schedule for this date</li>;
+                      return <li className="modal-list-item">{t('pages.employees.noScheduleForDate')}</li>;
                       }
                       return sched.timeSlots.map((slot: string, i: number) => (
                         <li key={i} className="modal-list-item">{slot}</li>
@@ -471,17 +472,17 @@ export default function EmployeeListPage(): React.ReactElement {
                     onClick={() => setUpdateDayScheduleOpen(true)}
                     disabled={!selectedDate}
                   >
-                    Update This Day
+                    {t('pages.employees.updateThisDay')}
                   </button>
-                  <button className="btn-view-light" onClick={() => setUpdateScheduleOpen(true)}>Update Full Week</button>
+                  <button className="btn-view-light" onClick={() => setUpdateScheduleOpen(true)}>{t('pages.employees.updateFullWeek')}</button>
                 </div>
               </div>
             )}
             {!scheduleLoading && scheduleEmployeeData?.isActive && employeeSchedule.length === 0 && (
               <div className="modal-content-light">
                 <div className="modal-section">
-                  <h4 className="modal-label">No schedule found.</h4>
-                  <button className="btn-view-light" onClick={() => setAddScheduleOpen(true)}>Add Schedule</button>
+                  <h4 className="modal-label">{t('pages.employees.noScheduleFound')}</h4>
+                  <button className="btn-view-light" onClick={() => setAddScheduleOpen(true)}>{t('pages.employees.addSchedule')}</button>
                 </div>
               </div>
             )}
@@ -494,7 +495,7 @@ export default function EmployeeListPage(): React.ReactElement {
         onClose={() => setAssignModalOpen(false)}
         onSuccess={() => {
           setAssignModalOpen(false);
-          setToast({ message: 'Employee assigned successfully!', type: 'success' });
+          setToast({ message: t('pages.employees.assignedSuccessfully'), type: 'success' });
           // Refresh employee list
           async function load() {
             setLoading(true);
@@ -516,7 +517,7 @@ export default function EmployeeListPage(): React.ReactElement {
         onClose={() => setAssignModalOpen(false)}
         onSuccess={() => {
           setAssignModalOpen(false);
-          setToast({ message: 'Employee assigned successfully!', type: 'success' });
+          setToast({ message: t('pages.employees.assignedSuccessfully'), type: 'success' });
           // Refresh employee list
           async function load() {
             setLoading(true);
@@ -551,7 +552,7 @@ export default function EmployeeListPage(): React.ReactElement {
               setEmployeeSchedule(scheduleData);
               setAddScheduleOpen(false);
               setAddScheduleEmployeeId(null);
-              setToast({ message: 'Schedule added successfully!', type: 'success' });
+              setToast({ message: t('pages.employees.scheduleAddedSuccessfully'), type: 'success' });
             }
           }}
           onError={(message: string) => {
@@ -569,7 +570,7 @@ export default function EmployeeListPage(): React.ReactElement {
             setEditEmployee(null);
           }}
           onSuccess={() => {
-            setToast({ message: 'Employee updated successfully!', type: 'success' });
+            setToast({ message: t('pages.employees.updatedSuccessfully'), type: 'success' });
             // Refresh employee list
             async function load() {
               setLoading(true);
@@ -599,7 +600,7 @@ export default function EmployeeListPage(): React.ReactElement {
               const scheduleData = await getEmployeeSchedule(employeeId);
               setEmployeeSchedule(scheduleData);
               setUpdateScheduleOpen(false);
-              setToast({ message: 'Schedule updated successfully!', type: 'success' });
+              setToast({ message: t('pages.employees.scheduleUpdatedSuccessfully'), type: 'success' });
             }
           }}
           onError={(message: string) => {
@@ -634,7 +635,7 @@ export default function EmployeeListPage(): React.ReactElement {
                 console.error('Error refreshing date schedule:', error);
               }
               setUpdateDayScheduleOpen(false);
-              setToast({ message: `Schedule updated for ${selectedDate.toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' })}!`, type: 'success' });
+              setToast({ message: t('pages.employees.scheduleUpdatedForDate', { date: selectedDate.toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' }) }), type: 'success' });
             }
           }}
           onError={(message: string) => {
@@ -645,14 +646,14 @@ export default function EmployeeListPage(): React.ReactElement {
 
       <ConfirmationModal
         isOpen={confirmationModal.isOpen}
-        title={confirmationModal.type === 'deactivate' ? 'Deactivate Employee' : 'Reactivate Employee'}
+        title={confirmationModal.type === 'deactivate' ? t('pages.employees.deactivateEmployee') : t('pages.employees.reactivateEmployee')}
         message={
           confirmationModal.type === 'deactivate'
-            ? `Are you sure you want to deactivate ${confirmationModal.employee?.firstName} ${confirmationModal.employee?.lastName}? They will be marked as inactive but can be reactivated at any time.`
-            : `Are you sure you want to reactivate ${confirmationModal.employee?.firstName} ${confirmationModal.employee?.lastName}? They will be marked as active again.`
+            ? t('pages.employees.deactivateConfirmMessage', { firstName: confirmationModal.employee?.firstName, lastName: confirmationModal.employee?.lastName })
+            : t('pages.employees.reactivateConfirmMessage', { firstName: confirmationModal.employee?.firstName, lastName: confirmationModal.employee?.lastName })
         }
-        confirmText={confirmationModal.type === 'deactivate' ? 'Deactivate' : 'Reactivate'}
-        cancelText="Cancel"
+        confirmText={confirmationModal.type === 'deactivate' ? t('pages.employees.deactivate') : t('pages.employees.reactivate')}
+        cancelText={t('common.cancel')}
         isDanger={confirmationModal.type === 'deactivate'}
         isLoading={deactivateLoading}
         onConfirm={confirmationModal.type === 'deactivate' ? confirmDeactivate : confirmReactivate}

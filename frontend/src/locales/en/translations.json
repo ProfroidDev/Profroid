@@ -23,7 +23,21 @@
     "no": "No",
     "creating": "Creating...",
     "updating": "Updating...",
-    "enterPlaceholder": "Enter {{field}}"
+    "enterPlaceholder": "Enter {{field}}",
+    "dayOfWeek": {
+      "monday": "Monday",
+      "tuesday": "Tuesday",
+      "wednesday": "Wednesday",
+      "thursday": "Thursday",
+      "friday": "Friday"
+    },
+    "timeSlot": {
+      "nineAm": "9:00 AM",
+      "elevenAm": "11:00 AM",
+      "onePm": "1:00 PM",
+      "threePm": "3:00 PM",
+      "fivePm": "5:00 PM"
+    }
   },
   "navigation": {
     "parts": "Parts",
@@ -94,8 +108,11 @@
     "employees": {
       "title": "Employees",
       "addEmployee": "Add Employee",
+      "addWeeklySchedule": "Add Weekly Schedule",
       "editEmployee": "Edit Employee",
       "deleteEmployee": "Delete Employee",
+      "remove": "Remove",
+      "saveSchedule": "Save Schedule",
       "name": "Name",
       "email": "Email",
       "phone": "Phone",
@@ -125,7 +142,57 @@
       "createEmployee": "Create Employee",
       "assigningMessage": "Assigning: {{name}} ({{email}}) as {{employeeType}}",
       "typeAtLeast2Characters": "Type at least 2 characters to search",
-      "noUsersFound": "No users found matching \"{{query}}\""
+      "noUsersFound": "No users found matching \"{{query}}\"",
+      "viewDetails": "View Details",
+      "viewSchedule": "View Schedule",
+      "employeeDetails": "Employee Details",
+      "employeeId": "Employee ID",
+      "employeeSchedule": "Employee Schedule",
+      "selectDate": "Select Date",
+      "timeSlots": "Time Slots",
+      "noScheduleFound": "No schedule found.",
+      "addSchedule": "Add Schedule",
+      "updateThisDay": "Update This Day",
+      "updateFullWeek": "Update Full Week",
+      "employeeInactive": "Employee Inactive",
+      "employeeInactiveMessage": "This employee is currently deactivated. You cannot add or modify their schedule until they are reactivated.",
+      "loadingSchedule": "Loading schedule...",
+      "selectADate": "Select a date",
+      "noScheduleForDate": "No schedule for this date",
+      "assignedSuccessfully": "Employee assigned successfully!",
+      "scheduleAddedSuccessfully": "Schedule added successfully!",
+      "updatedSuccessfully": "Employee updated successfully!",
+      "scheduleUpdatedSuccessfully": "Schedule updated successfully!",
+      "scheduleUpdatedForDate": "Schedule updated for {{date}}!",
+      "employeeDeactivated": "{{firstName}} {{lastName}} has been deactivated. You can reactivate them at any time.",
+      "failedToDeactivate": "Failed to deactivate employee",
+      "employeeReactivated": "{{firstName}} {{lastName}} has been reactivated successfully!",
+      "failedToReactivate": "Failed to reactivate employee",
+      "editEmployee": "Edit Employee",
+      "personalInformation": "Personal Information",
+      "address": "Address",
+      "updateWeeklySchedule": "Update Weekly Schedule",
+      "updateScheduleForDate": "Update Schedule for {{date}}",
+      "start": "Start",
+      "end": "End (hour only)",
+      "selectHour": "Select hour",
+      "cancel": "Cancel",
+      "updateSchedule": "Update Schedule",
+      "technicianCannotChange": "Technician cannot change to ADMIN/SUPPORT/SALES.",
+      "nonTechnicianCanSwitch": "ADMIN/SUPPORT/SALES can switch between each other; cannot become TECHNICIAN.",
+      "streetAddress": "Street Address",
+      "postalCode": "Postal Code",
+      "country": "Country",
+      "province": "Province",
+      "city": "City",
+      "phoneNumber": "Phone Number",
+      "phoneType": "Type",
+      "deactivateEmployee": "Deactivate Employee",
+      "deactivateConfirmMessage": "Are you sure you want to deactivate {{firstName}} {{lastName}}? They will be marked as inactive but can be reactivated at any time.",
+      "reactivateEmployee": "Reactivate Employee",
+      "reactivateConfirmMessage": "Are you sure you want to reactivate {{firstName}} {{lastName}}? They will be marked as active again.",
+      "deactivate": "Deactivate",
+      "reactivate": "Reactivate"
     },
     "services": {
       "title": "Services",
@@ -225,5 +292,21 @@
     "confirmDelete": "Are you sure you want to delete this item?",
     "confirmLogout": "Are you sure you want to logout?",
     "noDetailsAvailable": "No details available."
+  },
+  "error": {
+    "schedule": {
+      "cannotEditScheduleAppointmentConflict": "Cannot edit schedule; there is an appointment on this date at a time slot you are removing.",
+      "dayMustHaveTimeSlot": "{{day}} must have at least one time slot.",
+      "nonTechnicianMustStartNineAm": "Non-technicians must start at NINE_AM (09:00).",
+      "startBeforeEnd": "{{day}}: start must be before end.",
+      "nonTechnicianMaxHoursPerDay": "Non-technicians cannot work more than 8 hours per day. Day: {{day}}, Hours: {{hours}}",
+      "technicianSlotsTwoHoursApart": "Technician time slots must be at least 2 hours apart.",
+      "technicianMaxHoursPerDay": "Technician cannot exceed 8 hours in a single day (max 4 slots of 2h each). Day: {{day}}",
+      "employeeMaxHoursPerWeek": "Employee cannot exceed 40 hours in a 5-day week. Requested: {{hours}} hours.",
+      "dayAndEndTimesRequired": "Day {{day}}: start and end times are required."
+    },
+    "employee": {
+      "cannotConvertCustomerWithAppointments": "Cannot convert customer to employee: This customer has {{count}} appointment(s). Please cancel or reassign all appointments before converting to employee."
+    }
   }
 }
