@@ -1,7 +1,8 @@
-import { test, expect } from "../../fixtures/basePage";
+import { adminTest as test, expect } from "../../fixtures/authFixtures";
 
 test.describe("Services Page - Deactivate Service", () => {
-  test.beforeEach(async ({ jobPage }) => {
+  test.beforeEach(async ({ loggedInAdminHomePage, jobPage }) => {
+    await loggedInAdminHomePage.goToServices();
     await jobPage.goto();
   });
 

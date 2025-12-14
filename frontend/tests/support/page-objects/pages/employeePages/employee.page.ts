@@ -118,7 +118,9 @@ export class EmployeePage {
     city?: string;
     province?: string;
     postalCode?: string;
+    role?: string;
   }) {
+    if (data.role) await this.roleSelect().selectOption(data.role);
     if (data.firstName) await this.firstNameInput().fill(data.firstName);
     if (data.lastName) await this.lastNameInput().fill(data.lastName);
     if (data.phoneType) await this.phoneTypeSelect().selectOption(data.phoneType);
