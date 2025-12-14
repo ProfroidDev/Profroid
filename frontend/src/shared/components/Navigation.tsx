@@ -41,13 +41,16 @@ export default function Navigation(): React.ReactElement {
     <nav className="nav-container">
       <div className="nav-inner">
         {/* Logo */}
-        <div className="nav-logo">
+        <a href="/" className="nav-logo">
           <Wine className="nav-logo-icon" />
           <span className="nav-logo-text">{t('common.appName')}</span>
-        </div>
+        </a>
 
         {/* Desktop Menu */}
         <div className="nav-links">
+          {/* Home Link - always visible */}
+          <a href="/">{t('navigation.home')}</a>
+
           {/* Admin Links - only visible to admins */}
           {isAdmin && (
             <>
@@ -174,6 +177,9 @@ export default function Navigation(): React.ReactElement {
       {/* Mobile Menu */}
       {open && (
         <div className="nav-mobile-menu">
+          {/* Home Link - always visible */}
+          <a href="/">{t('navigation.home')}</a>
+
           {/* Admin Links - only visible to admins */}
           {isAdmin && (
             <>
