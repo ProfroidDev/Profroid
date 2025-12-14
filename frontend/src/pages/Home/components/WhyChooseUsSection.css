@@ -1,0 +1,37 @@
+.why-choose-us-section {
+  background-color: #fdfbf7;
+}
+
+.features-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 40px;
+  margin-top: 50px;
+  text-align: center;
+}
+
+.feature-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 20px;
+}
+
+.feature-icon {
+  color: #722f37; /* Wine red */
+  margin-bottom: 24px;
+}
+
+.feature-title {
+  font-size: 1.5rem;
+  font-weight: 600;
+  margin-bottom: 16px;
+  color: #2c1810;
+  font-family: serif;
+}
+
+.feature-description {
+  color: #666;
+  line-height: 1.6;
+  max-width: 300px;
+}
