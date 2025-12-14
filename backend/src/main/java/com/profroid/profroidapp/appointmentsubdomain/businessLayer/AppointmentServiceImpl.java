@@ -29,6 +29,8 @@ import org.springframework.stereotype.Service;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -72,7 +74,8 @@ public class AppointmentServiceImpl implements AppointmentService {
 
     @Override
     public AppointmentResponseModel addAppointment(AppointmentRequestModel requestModel, String userId, String userRole) {
-        LocalDateTime now = LocalDateTime.now();
+        // Use Canada/Eastern timezone for accurate time comparisons
+        LocalDateTime now = LocalDateTime.now(ZoneId.of("America/Toronto"));
         LocalDateTime appointmentDateTime = requestModel.getAppointmentDate();
 
         if (appointmentDateTime.isBefore(now)) {
@@ -186,6 +189,13 @@ public class AppointmentServiceImpl implements AppointmentService {
         validationUtils.validateDuplicateServiceAddressAndDay(job.getJobType(), requestModel, appointmentDateTime.toLocalDate());
         validationUtils.validateTimeSlotAvailability(technician, appointmentDateTime, job);
         
+        // Validate that appointment doesn't exceed 5 PM (17:00)
+        LocalTime appointmentStart = appointmentDateTime.toLocalTime();
+        int durationMinutes = job.getEstimatedDurationMinutes();
+        LocalTime appointmentEnd = appointmentStart.plusMinutes(durationMinutes);
+        if (appointmentEnd.isAfter(LocalTime.of(17, 0))) {
+            throw new InvalidOperationException("ERROR_APPOINTMENT_ENDS_AFTER_CLOSING");
+        }
 
         Appointment appointment = appointmentRequestMapper.toEntity(requestModel);
         appointment.setCustomer(customer);
@@ -382,7 +392,7 @@ public class AppointmentServiceImpl implements AppointmentService {
             }
 
             // Validate rules (same as POST)
-            LocalDateTime now = LocalDateTime.now();
+            LocalDateTime now = LocalDateTime.now(ZoneId.of("America/Toronto"));
             LocalDateTime appointmentDateTime = appointmentRequest.getAppointmentDate();
             if (appointmentDateTime.isBefore(now)) {
                 throw new InvalidOperationException("Cannot book an appointment in the past. Appointment time: " + appointmentDateTime + ", Current time: " + now);
@@ -399,6 +409,14 @@ public class AppointmentServiceImpl implements AppointmentService {
             // Prevent duplicate service for same address/day/technician except for the current appointment
             validationUtils.validateDuplicateServiceAddressAndDayExcludeCurrent(job.getJobType(), appointmentRequest, appointmentDateTime.toLocalDate(), appointment.getAppointmentIdentifier().getAppointmentId());
             validationUtils.validateTimeSlotAvailability(technician, appointmentDateTime, job);
+            
+            // Validate that appointment doesn't exceed 5 PM (17:00)
+            LocalTime appointmentStart = appointmentDateTime.toLocalTime();
+            int durationMinutes = job.getEstimatedDurationMinutes();
+            LocalTime appointmentEnd = appointmentStart.plusMinutes(durationMinutes);
+            if (appointmentEnd.isAfter(LocalTime.of(17, 0))) {
+                throw new InvalidOperationException("ERROR_APPOINTMENT_ENDS_AFTER_CLOSING");
+            }
 
             // Update appointment fields (technician cannot be changed)
             appointment.setCustomer(customer);
@@ -650,7 +668,7 @@ public class AppointmentServiceImpl implements AppointmentService {
          * 2. Least booked hours during the current week
          * 3. Random selection if all have equal hours
          */
-        private Employee autoAssignTechnician(LocalDateTime appointmentDateTime, String jobName) {
+        public Employee autoAssignTechnician(LocalDateTime appointmentDateTime, String jobName) {
             LocalDate appointmentDate = appointmentDateTime.toLocalDate();
             LocalTime appointmentTime = appointmentDateTime.toLocalTime();
             

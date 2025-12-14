@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import type { EmployeeRequestModel } from '../features/employee/models/EmployeeRequestModel';
 import type { EmployeeResponseModel } from '../features/employee/models/EmployeeResponseModel';
 import type { EmployeePhoneNumber } from '../features/employee/models/EmployeePhoneNumber';
@@ -22,6 +23,7 @@ const roles: EmployeeRoleType[] = ['ADMIN', 'TECHNICIAN', 'SUPPORT', 'SALES'];
 const phoneTypes = ['MOBILE', 'HOME', 'WORK'];
 
 export default function EmployeeEditModal({ isOpen, employee, onClose, onSuccess }: EmployeeEditModalProps) {
+  const { t } = useTranslation();
   const [formData, setFormData] = useState({
     firstName: '',
     lastName: '',
@@ -102,9 +104,10 @@ export default function EmployeeEditModal({ isOpen, employee, onClose, onSuccess
 
     // Validate postal code on change
     if (name === 'postalCode') {
-      const error = getPostalCodeError(value, formData.city, formData.province);
-      if (error) {
-        setErrors(prev => ({ ...prev, postalCode: error }));
+      const errorKey = getPostalCodeError(value, formData.city, formData.province);
+      if (errorKey) {
+        const translatedError = t(errorKey, { city: formData.city, province: formData.province });
+        setErrors(prev => ({ ...prev, postalCode: translatedError }));
       }
     }
   };
@@ -125,8 +128,10 @@ export default function EmployeeEditModal({ isOpen, employee, onClose, onSuccess
     if (!formData.city.trim()) newErrors.city = 'City is required';
     if (!formData.postalCode.trim()) newErrors.postalCode = 'Postal code is required';
     else {
-      const postalError = getPostalCodeError(formData.postalCode, formData.city, formData.province);
-      if (postalError) newErrors.postalCode = postalError;
+      const postalErrorKey = getPostalCodeError(formData.postalCode, formData.city, formData.province);
+      if (postalErrorKey) {
+        newErrors.postalCode = t(postalErrorKey, { city: formData.city, province: formData.province });
+      }
     }
 
     if (formData.phoneNumbers.some(p => !p.number.trim())) {
@@ -195,7 +200,7 @@ export default function EmployeeEditModal({ isOpen, employee, onClose, onSuccess
     <div className="modal-overlay-light">
       <div className="modal-container-light employee-modal">
         <div className="modal-header-light">
-          <h3>Edit Employee</h3>
+          <h3>{t('pages.employees.editEmployee')}</h3>
           <button className="modal-close-light" onClick={onClose}>
             &#10005;
           </button>
@@ -206,9 +211,9 @@ export default function EmployeeEditModal({ isOpen, employee, onClose, onSuccess
 
           {/* Personal Information */}
           <div className="form-section">
-            <h4 className="form-section-title">Personal Information</h4>
+            <h4 className="form-section-title">{t('pages.employees.personalInformation')}</h4>
             <div className="form-group">
-              <label htmlFor="firstName">First Name *</label>
+              <label htmlFor="firstName">{t('auth.firstName')} *</label>
               <input
                 type="text"
                 id="firstName"
@@ -223,7 +228,7 @@ export default function EmployeeEditModal({ isOpen, employee, onClose, onSuccess
             </div>
 
             <div className="form-group">
-              <label htmlFor="lastName">Last Name *</label>
+              <label htmlFor="lastName">{t('auth.lastName')} *</label>
               <input
                 type="text"
                 id="lastName"
@@ -238,7 +243,7 @@ export default function EmployeeEditModal({ isOpen, employee, onClose, onSuccess
             </div>
 
             <div className="form-group">
-              <label htmlFor="role">Role *</label>
+              <label htmlFor="role">{t('pages.employees.role')} *</label>
               <select
                 id="role"
                 name="role"
@@ -253,17 +258,17 @@ export default function EmployeeEditModal({ isOpen, employee, onClose, onSuccess
               </select>
               <span className="field-info" style={{ fontSize: '0.85rem', color: '#6b6b6b' }}>
                 {originalRole === 'TECHNICIAN'
-                  ? 'Technician cannot change to ADMIN/SUPPORT/SALES.'
-                  : 'ADMIN/SUPPORT/SALES can switch between each other; cannot become TECHNICIAN.'}
+                  ? t('pages.employees.technicianCannotChange')
+                  : t('pages.employees.nonTechnicianCanSwitch')}
               </span>
             </div>
           </div>
 
           {/* Address Information */}
           <div className="form-section">
-            <h4 className="form-section-title">Address</h4>
+            <h4 className="form-section-title">{t('pages.employees.address')}</h4>
             <div className="form-group">
-              <label htmlFor="streetAddress">Street Address *</label>
+              <label htmlFor="streetAddress">{t('pages.employees.streetAddress')} *</label>
               <input
                 type="text"
                 id="streetAddress"
@@ -279,7 +284,7 @@ export default function EmployeeEditModal({ isOpen, employee, onClose, onSuccess
 
             <div className="form-row">
               <div className="form-group">
-                <label htmlFor="province">Province *</label>
+                <label htmlFor="province">{t('pages.employees.province')} *</label>
                 <select
                   id="province"
                   name="province"
@@ -296,7 +301,7 @@ export default function EmployeeEditModal({ isOpen, employee, onClose, onSuccess
               </div>
 
               <div className="form-group">
-                <label htmlFor="city">City *</label>
+                <label htmlFor="city">{t('pages.employees.city')} *</label>
                 <input
                   type="text"
                   id="city"
@@ -312,7 +317,7 @@ export default function EmployeeEditModal({ isOpen, employee, onClose, onSuccess
             </div>
 
             <div className="form-group">
-              <label htmlFor="postalCode">Postal Code *</label>
+              <label htmlFor="postalCode">{t('pages.employees.postalCode')} *</label>
               <input
                 type="text"
                 id="postalCode"
@@ -327,7 +332,7 @@ export default function EmployeeEditModal({ isOpen, employee, onClose, onSuccess
             </div>
 
             <div className="form-group">
-              <label htmlFor="country">Country *</label>
+              <label htmlFor="country">{t('pages.employees.country')} *</label>
               <input
                 type="text"
                 id="country"
@@ -341,12 +346,12 @@ export default function EmployeeEditModal({ isOpen, employee, onClose, onSuccess
 
           {/* Phone Numbers */}
           <div className="form-section">
-            <h4 className="form-section-title">Phone Numbers</h4>
+            <h4 className="form-section-title">{t('pages.employees.phoneNumbers')}</h4>
             {formData.phoneNumbers.map((phone, index) => (
               <div key={index} className="phone-group">
                 <div className="form-row">
                   <div className="form-group">
-                    <label htmlFor={`phoneNumber-${index}`}>Phone Number *</label>
+                    <label htmlFor={`phoneNumber-${index}`}>{t('pages.employees.phoneNumber')} *</label>
                     <input
                       type="tel"
                       id={`phoneNumber-${index}`}
@@ -359,7 +364,7 @@ export default function EmployeeEditModal({ isOpen, employee, onClose, onSuccess
                   </div>
 
                   <div className="form-group">
-                    <label htmlFor={`phoneType-${index}`}>Type *</label>
+                    <label htmlFor={`phoneType-${index}`}>{t('pages.employees.phoneType')} *</label>
                     <select
                       id={`phoneType-${index}`}
                       value={phone.type}

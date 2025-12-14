@@ -5,7 +5,9 @@ import com.profroid.profroidapp.customersubdomain.businessLayer.CustomerServiceI
 import com.profroid.profroidapp.customersubdomain.dataAccessLayer.Customer;
 import com.profroid.profroidapp.customersubdomain.dataAccessLayer.CustomerAddress;
 import com.profroid.profroidapp.customersubdomain.dataAccessLayer.CustomerIdentifier;
+import com.profroid.profroidapp.customersubdomain.dataAccessLayer.CustomerPhoneNumber;
 import com.profroid.profroidapp.customersubdomain.dataAccessLayer.CustomerRepository;
+import com.profroid.profroidapp.customersubdomain.dataAccessLayer.PhoneType;
 import com.profroid.profroidapp.customersubdomain.mappingLayer.CustomerRequestMapper;
 import com.profroid.profroidapp.customersubdomain.mappingLayer.CustomerResponseMapper;
 import com.profroid.profroidapp.customersubdomain.presentationLayer.CustomerRequestModel;
@@ -139,6 +141,131 @@ public class CustomerServiceUnitTest {
                 () -> customerService.getCustomerById(NON_EXISTING_CUSTOMER_ID));
 
         verify(customerRepository).findCustomerByCustomerIdentifier_CustomerId(NON_EXISTING_CUSTOMER_ID);
+    }
+
+    // -------------------------------------------------------------------------
+    // GET CUSTOMER BY USER ID
+    // -------------------------------------------------------------------------
+    @Test
+    void getCustomerByUserId_valid_returnsCustomer() {
+        when(customerRepository.findCustomerByUserId("johndoe"))
+                .thenReturn(existingCustomer);
+        when(customerResponseMapper.toResponseModel(existingCustomer))
+                .thenReturn(existingCustomerResponse);
+
+        CustomerResponseModel response = customerService.getCustomerByUserId("johndoe");
+
+        assertEquals("johndoe", response.getUserId());
+        verify(customerRepository).findCustomerByUserId("johndoe");
+        verify(customerResponseMapper).toResponseModel(existingCustomer);
+    }
+
+    @Test
+    void getCustomerByUserId_invalidUserId_throwsInvalidIdentifier() {
+        assertThrows(InvalidIdentifierException.class,
+                () -> customerService.getCustomerByUserId(""));
+        assertThrows(InvalidIdentifierException.class,
+                () -> customerService.getCustomerByUserId(null));
+        verify(customerRepository, never()).findCustomerByUserId(any());
+    }
+
+    @Test
+    void getCustomerByUserId_notFound_throwsResourceNotFound() {
+        when(customerRepository.findCustomerByUserId("nonexistent"))
+                .thenReturn(null);
+
+        assertThrows(ResourceNotFoundException.class,
+                () -> customerService.getCustomerByUserId("nonexistent"));
+
+        verify(customerRepository).findCustomerByUserId("nonexistent");
+    }
+
+    // -------------------------------------------------------------------------
+    // UPDATE CUSTOMER BY USER ID
+    // -------------------------------------------------------------------------
+    @Test
+    void updateCustomerByUserId_valid_succeeds() {
+        when(customerRepository.findCustomerByUserId("johndoe"))
+                .thenReturn(existingCustomer);
+
+        CustomerPhoneNumber phone = new CustomerPhoneNumber();
+        phone.setType(PhoneType.MOBILE);
+        phone.setNumber("416-123-4567");
+        List<CustomerPhoneNumber> phoneNumbers = Arrays.asList(phone);
+
+        CustomerRequestModel updateRequest = CustomerRequestModel.builder()
+                .firstName("Jane")
+                .lastName("Smith")
+                .streetAddress("456 Oak")
+                .city("Toronto")
+                .province("ON")
+                .country("Canada")
+                .postalCode("M1M1M1")
+                .phoneNumbers(phoneNumbers)
+                .userId("johndoe")
+                .build();
+
+        Customer updated = new Customer();
+        updated.setCustomerIdentifier(new CustomerIdentifier(VALID_CUSTOMER_ID));
+        updated.setFirstName("Jane");
+        updated.setLastName("Smith");
+        updated.setUserId("johndoe");
+        CustomerAddress updatedAddress = new CustomerAddress();
+        updatedAddress.setStreetAddress("456 Oak");
+        updatedAddress.setCity("Toronto");
+        updatedAddress.setProvince("ON");
+        updatedAddress.setCountry("Canada");
+        updatedAddress.setPostalCode("M1M1M1");
+        updated.setCustomerAddress(updatedAddress);
+        updated.setPhoneNumbers(phoneNumbers);
+
+        when(customerRepository.save(any())).thenReturn(updated);
+
+        CustomerResponseModel responseModel = CustomerResponseModel.builder()
+                .customerId(VALID_CUSTOMER_ID)
+                .firstName("Jane")
+                .lastName("Smith")
+                .userId("johndoe")
+                .streetAddress("456 Oak")
+                .city("Toronto")
+                .province("ON")
+                .country("Canada")
+                .postalCode("M1M1M1")
+                .phoneNumbers(phoneNumbers)
+                .isActive(true)
+                .build();
+
+        when(customerResponseMapper.toResponseModel(updated)).thenReturn(responseModel);
+
+        CustomerResponseModel response = customerService.updateCustomerByUserId("johndoe", updateRequest);
+
+        assertEquals("Jane", response.getFirstName());
+        assertEquals("Smith", response.getLastName());
+        assertEquals("Toronto", response.getCity());
+        verify(customerRepository).findCustomerByUserId("johndoe");
+        verify(customerRepository).save(any(Customer.class));
+        verify(customerResponseMapper).toResponseModel(updated);
+    }
+
+    @Test
+    void updateCustomerByUserId_invalidUserId_throwsInvalidIdentifier() {
+        assertThrows(InvalidIdentifierException.class,
+                () -> customerService.updateCustomerByUserId("", validRequest));
+        assertThrows(InvalidIdentifierException.class,
+                () -> customerService.updateCustomerByUserId(null, validRequest));
+        verify(customerRepository, never()).findCustomerByUserId(any());
+    }
+
+    @Test
+    void updateCustomerByUserId_notFound_throwsResourceNotFound() {
+        when(customerRepository.findCustomerByUserId("nonexistent"))
+                .thenReturn(null);
+
+        assertThrows(ResourceNotFoundException.class,
+                () -> customerService.updateCustomerByUserId("nonexistent", validRequest));
+
+        verify(customerRepository).findCustomerByUserId("nonexistent");
+        verify(customerRepository, never()).save(any());
     }
 
     // -------------------------------------------------------------------------

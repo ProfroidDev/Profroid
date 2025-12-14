@@ -1,4 +1,6 @@
 import React, { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
+import useAuthStore from "../../features/authentication/store/authStore";
 import { getCustomers } from "../../features/customer/api/getAllCustomers";
 import { getCustomer } from "../../features/customer/api/getCustomerById";
 import { createCustomer } from "../../features/customer/api/createCustomer";
@@ -13,6 +15,9 @@ import type { CustomerResponseModel } from "../../features/customer/models/Custo
 import "./CustomerListPage.css";
 
 export default function CustomerListPage(): React.ReactElement {
+  const { t } = useTranslation();
+  const { user } = useAuthStore();
+  const isAdmin = user?.employeeType === "ADMIN";
   const [customers, setCustomers] = useState<CustomerResponseModel[]>([]);
   const [loading, setLoading] = useState(false);
 
@@ -321,24 +326,26 @@ export default function CustomerListPage(): React.ReactElement {
 
   return (
     <div className="customers-page-light">
-      <h2 className="customers-title-light">Customers</h2>
+      <h2 className="customers-title-light">{t('pages.customers.title')}</h2>
 
-      <button
-        className="btn-view-light"
-        onClick={() => setCreateModalOpen(true)}
-      >
-        Add Customer
-      </button>
+      {!isAdmin && (
+        <button
+          className="btn-view-light"
+          onClick={() => setCreateModalOpen(true)}
+        >
+          {t('pages.customers.addCustomer')}
+        </button>
+      )}
 
       <div className="customers-card-light">
         {loading ? (
-          <div className="loading-light">Loading...</div>
+          <div className="loading-light">{t('common.loading')}</div>
         ) : (
           <table className="customers-table-light">
             <thead>
               <tr>
-                <th>Customer</th>
-                <th>Actions</th>
+                <th>{t('pages.customers.name')}</th>
+                <th>{t('common.edit')}</th>
               </tr>
             </thead>
             <tbody>
@@ -352,22 +359,26 @@ export default function CustomerListPage(): React.ReactElement {
                       className="btn-view-light"
                       onClick={() => openDetails(c.customerId)}
                     >
-                      View Details
+                      {t('pages.customers.viewDetails')}
                     </button>
-                    <button
-                      className="btn-view-light"
-                      onClick={() => openEditFromList(c.customerId)}
-                      style={{ marginLeft: 8 }}
-                    >
-                      Edit
-                    </button>
-                    <button
-                      className="btn-view-light"
-                      onClick={() => openDelete(c)}
-                      style={{ marginLeft: 8 }}
-                    >
-                      Delete
-                    </button>
+                    {!isAdmin && (
+                      <button
+                        className="btn-view-light"
+                        onClick={() => openEditFromList(c.customerId)}
+                        style={{ marginLeft: 8 }}
+                      >
+                        {t('common.edit')}
+                      </button>
+                    )}
+                    {!isAdmin && (
+                      <button
+                        className="btn-view-light"
+                        onClick={() => openDelete(c)}
+                        style={{ marginLeft: 8 }}
+                      >
+                        {t('common.delete')}
+                      </button>
+                    )}
                   </td>
                 </tr>
               ))}
@@ -378,17 +389,13 @@ export default function CustomerListPage(): React.ReactElement {
 
       <ConfirmationModal
         isOpen={deleteModalOpen}
-        title="Delete Customer"
+        title={t('pages.customers.deleteCustomer')}
         message={
           deleteError ??
-          `Are you sure you want to delete ${
-            deleteTarget
-              ? `${deleteTarget.firstName} ${deleteTarget.lastName}`.trim()
-              : "this customer"
-          }? This action cannot be undone.`
+          `${t('messages.confirmDelete')}`
         }
-        confirmText="Delete"
-        cancelText="Cancel"
+        confirmText={t('common.delete')}
+        cancelText={t('common.cancel')}
         isDanger
         isLoading={deleteLoading}
         onConfirm={handleDeleteConfirm}
@@ -402,31 +409,31 @@ export default function CustomerListPage(): React.ReactElement {
         <div className="modal-overlay-light">
           <div className="modal-container-light">
             <div className="modal-header-light">
-              <h3>Customer Details</h3>
+              <h3>{t('pages.customers.customerDetails')}</h3>
               <button className="modal-close-light" onClick={closeDetails}>
                 &#10005;
               </button>
             </div>
 
             {detailLoading ? (
-              <div className="loading-light">Loading details...</div>
+              <div className="loading-light">{t('common.loading')}</div>
             ) : (
               selectedCustomer && (
                 <div className="modal-content-light">
                   <div className="modal-section">
-                    <h4 className="modal-label">Customer ID</h4>
+                    <h4 className="modal-label">{t('pages.customers.customerId')}</h4>
                     <p className="modal-value">{selectedCustomer.customerId}</p>
                   </div>
 
                   <div className="modal-section">
-                    <h4 className="modal-label">Name</h4>
+                    <h4 className="modal-label">{t('pages.customers.name')}</h4>
                     <p className="modal-value">
                       {selectedCustomer.firstName} {selectedCustomer.lastName}
                     </p>
                   </div>
 
                   <div className="modal-section">
-                    <h4 className="modal-label">Phone Numbers</h4>
+                    <h4 className="modal-label">{t('pages.customers.phoneNumbers')}</h4>
                     <ul className="modal-list">
                       {selectedCustomer.phoneNumbers?.map((p, i) => (
                         <li key={i} className="modal-list-item">
@@ -438,7 +445,7 @@ export default function CustomerListPage(): React.ReactElement {
                   </div>
 
                   <div className="modal-section">
-                    <h4 className="modal-label">Address</h4>
+                    <h4 className="modal-label">{t('pages.customers.address')}</h4>
                     <p className="modal-value">
                       {selectedCustomer.streetAddress}
                       {selectedCustomer.city && `, ${selectedCustomer.city}`}
@@ -450,7 +457,7 @@ export default function CustomerListPage(): React.ReactElement {
                   </div>
 
                   <div className="modal-section">
-                    <h4 className="modal-label">User ID</h4>
+                    <h4 className="modal-label">{t('pages.customers.userId')}</h4>
                     <p className="modal-value">{selectedCustomer.userId}</p>
                   </div>
                 </div>

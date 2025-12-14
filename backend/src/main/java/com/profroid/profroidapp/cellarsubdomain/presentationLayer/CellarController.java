@@ -32,7 +32,7 @@ public class CellarController {
     }
 
     @GetMapping
-    @PreAuthorize("hasAnyRole('CUSTOMER','TECHNICIAN','ADMIN')")
+    @PreAuthorize("hasAnyRole('CUSTOMER','TECHNICIAN')")
     public ResponseEntity<List<CellarResponseModel>> getAllCellars(
             @RequestParam(value = "ownerCustomerId", required = false) String ownerCustomerId,
             Authentication authentication) {
@@ -59,7 +59,7 @@ public class CellarController {
     }
 
     @GetMapping("/{cellarId}")
-    @PreAuthorize("hasAnyRole('CUSTOMER','TECHNICIAN','ADMIN')")
+    @PreAuthorize("hasAnyRole('CUSTOMER','TECHNICIAN')")
     public ResponseEntity<CellarResponseModel> getCellarById(@PathVariable String cellarId,
                                                              @RequestParam(value = "ownerCustomerId", required = false) String ownerCustomerId) {
         if (ownerCustomerId != null && !ownerCustomerId.isBlank()) {

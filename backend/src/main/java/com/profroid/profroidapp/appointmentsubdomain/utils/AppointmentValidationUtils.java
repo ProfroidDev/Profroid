@@ -145,12 +145,7 @@ public class AppointmentValidationUtils {
             Appointment blocking = blockingQuotations.get(0);
             
             throw new InvalidOperationException(
-                "A quotation already exists for this address on " + appointmentDate + 
-                " at " + blocking.getAppointmentDate().toLocalTime() + 
-                " (Customer: " + blocking.getCustomer().getCustomerIdentifier().getCustomerId() + "). " +
-                "Status: " + blocking.getAppointmentStatus().getAppointmentStatusType() + ". " +
-                "Only one quotation per address per day is allowed. " +
-                "Please choose a different date or cancel the existing quotation."
+                "ERROR_QUOTATION_EXISTS"
             );
         }
     }
@@ -193,14 +188,7 @@ public class AppointmentValidationUtils {
                 if (appointmentDateTime.isAfter(quotationDateTime) || appointmentDateTime.isEqual(quotationDateTime)) {
                     String quotationCustomerId = quotation.getCustomer().getCustomerIdentifier().getCustomerId();
                     throw new InvalidOperationException(
-                        "Cannot schedule " + jobType + " service at " + appointmentDateTime.toLocalTime() +
-                        " on " + serviceDate + ". " +
-                        "There is a SCHEDULED quotation at " + quotationDateTime.toLocalTime() +
-                        " on the same day (Customer: " + quotationCustomerId + "). " +
-                        "Services cannot be scheduled after a scheduled quotation. " +
-                        "Please schedule the service before " + quotationDateTime.toLocalTime() + 
-                        ", wait for the quotation to be completed, or choose a different date. " +
-                        "Address: " + address.getStreetAddress() + ", " + address.getCity()
+                        "ERROR_QUOTATION_SCHEDULED_AFTER"
                     );
                 }
             }
@@ -257,19 +245,24 @@ public class AppointmentValidationUtils {
             technician, appointmentDate
         );
         
-        // Check for time slot conflicts
+        // Calculate the end time of the new appointment
+        LocalTime appointmentEnd = appointmentTime.plusMinutes(durationMinutes);
+        
+        // Check for time range conflicts with existing appointments
         for (Appointment existing : dayAppointments) {
-            LocalTime existingTime = existing.getAppointmentDate().toLocalTime();
-            int existingHour = existingTime.getHour();
+            LocalTime existingStart = existing.getAppointmentDate().toLocalTime();
             int existingDuration = resolveDurationMinutes(existing.getJob());
-            int existingSlots = calculateRequiredSlots(existingDuration);
+            LocalTime existingEnd = existingStart.plusMinutes(existingDuration);
             
-            // Check if time slots overlap
-            if (timeSlotsOverlap(appointmentHour, requiredSlots, existingHour, existingSlots)) {
+            // Check if the time ranges overlap
+            // Two ranges [start1, end1] and [start2, end2] overlap if:
+            // start1 < end2 AND start2 < end1
+            if (appointmentTime.isBefore(existingEnd) && existingStart.isBefore(appointmentEnd)) {
                 throw new InvalidOperationException(
-                    "Time slot conflict: The technician already has an appointment at " + 
-                    existingTime + " which requires " + existingSlots + " hour(s). " +
-                    "Your requested time at " + appointmentTime + " requires " + requiredSlots + " hour(s) and overlaps."
+                    "Time conflict: The technician already has an appointment from " + 
+                    existingStart + " to " + existingEnd + ". " +
+                    "Your requested appointment from " + appointmentTime + " to " + appointmentEnd + 
+                    " conflicts with this existing appointment."
                 );
             }
         }
@@ -342,11 +335,17 @@ public class AppointmentValidationUtils {
      * Calculate required time slots (in hours) based on duration in minutes
      */
     private int calculateRequiredSlots(int durationMinutes) {
-        // Business rule: <=90 minutes fits in the current slot; beyond that, each started hour adds a slot
+        // Business rule: 
+        // - <=90 minutes fits in the current slot (1 slot)
+        // - >90 minutes: 1 slot + ceil((duration - 90) / 60) additional slots
+        // Examples:
+        // - 90 min = 1 slot (9-11 AM covers it)
+        // - 91-150 min = 2 slots (9-11 AM + 11-1 PM = 4 hours covers anything up to 150 min)
+        // - 151-210 min = 3 slots
         if (durationMinutes <= 90) {
             return 1;
         }
-        return (int) Math.ceil(durationMinutes / 60.0);
+        return 1 + (int) Math.ceil((durationMinutes - 90) / 60.0);
     }
 
     /**
@@ -501,8 +500,7 @@ public class AppointmentValidationUtils {
                     && !a.getAppointmentIdentifier().getAppointmentId().equals(currentAppointmentId));
             if (serviceExists) {
                 throw new InvalidOperationException(
-                    "A service appointment already exists for this address on " + appointmentDate +
-                    ". Only one service per address per day is allowed. Please choose a different date or cancel the existing service."
+                    "ERROR_SERVICE_EXISTS"
                 );
             }
         }
@@ -532,8 +530,7 @@ public class AppointmentValidationUtils {
             .anyMatch(a -> a.getJob() != null && a.getJob().getJobType() != JobType.QUOTATION);
         if (serviceExists) {
             throw new InvalidOperationException(
-                "A service appointment already exists for this address on " + appointmentDate + 
-                ". Only one service per address per day is allowed. Please choose a different date or cancel the existing service."
+                "ERROR_SERVICE_EXISTS"
             );
         }
     }

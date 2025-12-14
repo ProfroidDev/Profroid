@@ -449,5 +449,57 @@ public class EmployeeControllerUnitTest {
         assertThrows(InvalidOperationException.class, () -> employeeController.reactivateEmployee(VALID_EMPLOYEE_ID));
         verify(employeeService, times(1)).reactivateEmployee(VALID_EMPLOYEE_ID);
     }
+
+    // [Employee-Service][Unit Test][Positive] Get employee by user ID with valid data
+    @Test
+    void whenGetEmployeeByUserId_withValidUserId_thenReturnEmployee() {
+        // Arrange
+        String userId = "user-123";
+        EmployeeIdentifier identifier = new EmployeeIdentifier(VALID_EMPLOYEE_ID);
+        EmployeeResponseModel responseModel = EmployeeResponseModel.builder()
+                .employeeIdentifier(identifier)
+                .firstName("John")
+                .lastName("Doe")
+                .userId(userId)
+                .build();
+
+        when(employeeService.getEmployeeByUserId(userId))
+                .thenReturn(responseModel);
+
+        // Act
+        ResponseEntity<EmployeeResponseModel> response = employeeController.getEmployeeByUserId(userId);
+
+        // Assert
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        assertNotNull(response.getBody());
+        assertEquals("John", response.getBody().getFirstName());
+        assertEquals(userId, response.getBody().getUserId());
+        verify(employeeService, times(1)).getEmployeeByUserId(userId);
+    }
+
+    // [Employee-Service][Unit Test][Negative] Get employee by user ID with null user ID
+    @Test
+    void whenGetEmployeeByUserId_withNullUserId_thenThrowInvalidIdentifierException() {
+        // Arrange
+        when(employeeService.getEmployeeByUserId(null))
+                .thenThrow(new InvalidIdentifierException("User ID is required."));
+
+        // Act & Assert
+        assertThrows(InvalidIdentifierException.class, () -> employeeController.getEmployeeByUserId(null));
+        verify(employeeService, times(1)).getEmployeeByUserId(null);
+    }
+
+    // [Employee-Service][Unit Test][Negative] Get employee by user ID that doesn't exist
+    @Test
+    void whenGetEmployeeByUserId_withNonExistentUserId_thenThrowResourceNotFoundException() {
+        // Arrange
+        String nonExistentUserId = "non-existent-user";
+        when(employeeService.getEmployeeByUserId(nonExistentUserId))
+                .thenThrow(new ResourceNotFoundException("No employee found for user ID: " + nonExistentUserId));
+
+        // Act & Assert
+        assertThrows(ResourceNotFoundException.class, () -> employeeController.getEmployeeByUserId(nonExistentUserId));
+        verify(employeeService, times(1)).getEmployeeByUserId(nonExistentUserId);
+    }
 }
 

@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { getErrorMessage } from '../shared/api/errorHandler';
 import { addEmployee } from '../features/employee/api/addEmployee';
 import type { EmployeeRequestModel } from '../features/employee/models/EmployeeRequestModel';
@@ -43,6 +44,7 @@ const provinces = ['Ontario', 'Quebec', 'British Columbia', 'Alberta', 'Manitoba
 const phoneTypes = ['MOBILE', 'HOME', 'WORK'];
 
 export default function EmployeeAssignModal({ isOpen, onClose, onSuccess }: EmployeeAssignModalProps) {
+  const { t } = useTranslation();
   const [step, setStep] = useState<'selectUser' | 'enterDetails'>('selectUser');
   const [selectedUser, setSelectedUser] = useState<UnassignedUser | null>(null);
   
@@ -379,7 +381,7 @@ export default function EmployeeAssignModal({ isOpen, onClose, onSuccess }: Empl
     <div className="modal-overlay-light">
       <div className="modal-container-light employee-modal">
         <div className="modal-header-light">
-          <h3>Add Employee {step === 'enterDetails' && `- Step 2`}</h3>
+          <h3>{t('pages.employees.addEmployee')} {step === 'enterDetails' && `- ${t('pages.employees.step2')}`}</h3>
           <button className="modal-close-light" onClick={onClose}>
             &#10005;
           </button>
@@ -396,18 +398,18 @@ export default function EmployeeAssignModal({ isOpen, onClose, onSuccess }: Empl
               )}
 
               {searchQuery.trim().length > 0 && searchQuery.trim().length < 2 && (
-                <div className="form-info-message">Type at least 2 characters to search</div>
+                <div className="form-info-message">{t('pages.employees.typeAtLeast2Characters')}</div>
               )}
 
               <div className="form-section">
-                <h4 className="form-section-title">Step 1: Select User and Employee Type</h4>
+                <h4 className="form-section-title">{t('pages.employees.step1')}</h4>
                 
                 <div className="form-group">
-                  <label htmlFor="userSearch">Search User *</label>
+                  <label htmlFor="userSearch">{t('pages.employees.searchUser')} *</label>
                   <input
                     type="text"
                     id="userSearch"
-                    placeholder="Search by name or email..."
+                    placeholder={t('pages.employees.searchByNameOrEmail')}
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                     className={errors.userId ? 'input-error' : ''}
@@ -418,7 +420,7 @@ export default function EmployeeAssignModal({ isOpen, onClose, onSuccess }: Empl
                 {searchQuery.trim() && (
                   <div className="user-search-results">
                     {filteredUsers.length === 0 ? (
-                      <div className="search-no-results">No users found matching "{searchQuery}"</div>
+                      <div className="search-no-results">{t('pages.employees.noUsersFound', { query: searchQuery })}</div>
                     ) : (
                       <div className="user-list">
                         {filteredUsers.map(user => (
@@ -440,7 +442,7 @@ export default function EmployeeAssignModal({ isOpen, onClose, onSuccess }: Empl
                 )}
 
                 <div className="form-group">
-                  <label htmlFor="employeeType">Employee Type *</label>
+                  <label htmlFor="employeeType">{t('pages.employees.employeeType')} *</label>
                   <select
                     id="employeeType"
                     name="employeeType"
@@ -463,13 +465,13 @@ export default function EmployeeAssignModal({ isOpen, onClose, onSuccess }: Empl
           {step === 'enterDetails' && selectedUser && (
             <>
               <div className="form-info-message">
-                Assigning: {selectedUser.name} ({selectedUser.email}) as {formData.employeeType}
+                {t('pages.employees.assigningMessage', { name: selectedUser.name, email: selectedUser.email, employeeType: formData.employeeType })}
               </div>
 
               <div className="form-section">
-                <h4 className="form-section-title">Personal Information</h4>
+                <h4 className="form-section-title">{t('pages.employees.personalInformation')}</h4>
                 <div className="form-group">
-                  <label htmlFor="firstName">First Name *</label>
+                  <label htmlFor="firstName">{t('auth.firstName')} *</label>
                   <input
                     type="text"
                     id="firstName"
@@ -483,7 +485,7 @@ export default function EmployeeAssignModal({ isOpen, onClose, onSuccess }: Empl
                 </div>
 
                 <div className="form-group">
-                  <label htmlFor="lastName">Last Name *</label>
+                  <label htmlFor="lastName">{t('auth.lastName')} *</label>
                   <input
                     type="text"
                     id="lastName"
@@ -499,9 +501,9 @@ export default function EmployeeAssignModal({ isOpen, onClose, onSuccess }: Empl
               </div>
 
               <div className="form-section">
-                <h4 className="form-section-title">Address</h4>
+                <h4 className="form-section-title">{t('pages.customers.address')}</h4>
                 <div className="form-group">
-                  <label htmlFor="streetAddress">Street Address *</label>
+                  <label htmlFor="streetAddress">{t('pages.employees.streetAddress')} *</label>
                   <input
                     type="text"
                     id="streetAddress"
@@ -516,7 +518,7 @@ export default function EmployeeAssignModal({ isOpen, onClose, onSuccess }: Empl
 
                 <div className="form-row">
                   <div className="form-group">
-                    <label htmlFor="province">Province *</label>
+                    <label htmlFor="province">{t('pages.customers.province')} *</label>
                     <select
                       id="province"
                       name="province"
@@ -532,7 +534,7 @@ export default function EmployeeAssignModal({ isOpen, onClose, onSuccess }: Empl
                   </div>
 
                   <div className="form-group">
-                    <label htmlFor="city">City *</label>
+                    <label htmlFor="city">{t('pages.customers.city')} *</label>
                     <input
                       type="text"
                       id="city"
@@ -547,7 +549,7 @@ export default function EmployeeAssignModal({ isOpen, onClose, onSuccess }: Empl
                 </div>
 
                 <div className="form-group">
-                  <label htmlFor="postalCode">Postal Code *</label>
+                  <label htmlFor="postalCode">{t('pages.customers.postalCode')} *</label>
                   <input
                     type="text"
                     id="postalCode"
@@ -561,7 +563,7 @@ export default function EmployeeAssignModal({ isOpen, onClose, onSuccess }: Empl
                 </div>
 
                 <div className="form-group">
-                  <label htmlFor="country">Country *</label>
+                  <label htmlFor="country">{t('pages.customers.country')} *</label>
                   <input
                     type="text"
                     id="country"
@@ -574,12 +576,12 @@ export default function EmployeeAssignModal({ isOpen, onClose, onSuccess }: Empl
               </div>
 
               <div className="form-section">
-                <h4 className="form-section-title">Phone Numbers</h4>
+                <h4 className="form-section-title">{t('pages.employees.phoneNumbers')}</h4>
                 {formData.phoneNumbers.map((phone, index) => (
                   <div key={index} className="phone-group">
                     <div className="form-row">
                       <div className="form-group">
-                        <label htmlFor={`phoneNumber-${index}`}>Phone Number *</label>
+                        <label htmlFor={`phoneNumber-${index}`}>{t('pages.employees.phoneNumber')} *</label>
                         <input
                           type="tel"
                           id={`phoneNumber-${index}`}
@@ -591,7 +593,7 @@ export default function EmployeeAssignModal({ isOpen, onClose, onSuccess }: Empl
                       </div>
 
                       <div className="form-group">
-                        <label htmlFor={`phoneType-${index}`}>Type *</label>
+                        <label htmlFor={`phoneType-${index}`}>{t('pages.employees.phoneType')} *</label>
                         <select
                           id={`phoneType-${index}`}
                           value={phone.type}
@@ -630,7 +632,7 @@ export default function EmployeeAssignModal({ isOpen, onClose, onSuccess }: Empl
                 onClick={() => setStep('selectUser')}
                 className="btn-cancel"
               >
-                Back
+                {t('common.back')}
               </button>
             )}
             <button
@@ -638,14 +640,14 @@ export default function EmployeeAssignModal({ isOpen, onClose, onSuccess }: Empl
               disabled={loading || (step === 'selectUser' && unassignedUsers.length === 0)}
               className="btn-submit"
             >
-              {loading ? 'Creating...' : step === 'selectUser' ? 'Next' : 'Create Employee'}
+              {loading ? t('common.creating') : step === 'selectUser' ? t('pages.employees.next') : t('pages.employees.createEmployee')}
             </button>
             <button
               type="button"
               onClick={onClose}
               className="btn-cancel"
             >
-              Cancel
+              {t('common.cancel')}
             </button>
           </div>
         </form>

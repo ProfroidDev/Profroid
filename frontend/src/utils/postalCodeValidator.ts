@@ -51,7 +51,7 @@ export function validatePostalCodeForCity(postalCode: string, city: string, prov
 export function getPostalCodeError(postalCode: string, city: string, province: string): string | null {
   if (!postalCode) return null;
   if (!validatePostalCodeForCity(postalCode, city, province)) {
-    return `Postal code does not match ${city}, ${province}`;
+    return `validation.postalCodeMismatch`;
   }
   return null;
 }

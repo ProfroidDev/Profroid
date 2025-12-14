@@ -1,6 +1,7 @@
 import React, { useEffect } from "react";
 import { BrowserRouter, Routes, Route, Link } from "react-router-dom";
 import "./App.css";
+import "./i18n/config";
 
 import CustomerListPage from "./pages/Customer/CustomerListPage";
 import ServicesPage from "./pages/jobs/ServicesPage";
@@ -19,17 +20,20 @@ import ForgotPasswordPage from "./pages/Auth/ForgotPasswordPage";
 import ResetPasswordPage from "./pages/Auth/ResetPasswordPage";
 import { ProtectedRoute, PublicRoute } from "./features/authentication/components/ProtectedRoute";
 import useAuthStore from "./features/authentication/store/authStore";
+import { useTranslation } from "react-i18next";
 
 function Home(): React.ReactElement {
+  const { t } = useTranslation();
+
   return (
     <div style={{ padding: 16 }}>
-      <h1>Profroid</h1>
-      <p>Welcome to the Profroid frontend.</p>
+      <h1>{t('common.appName')}</h1>
+      <p>{t('common.welcome')}</p>
       <p>
-        <Link to="/customers">View Customers</Link>
+        <Link to="/customers">{t('pages.home.viewCustomers')}</Link>
       </p>
       <p>
-        <Link to="/services">View Services</Link>
+        <Link to="/services">{t('pages.home.viewServices')}</Link>
       </p>
     </div>
   );

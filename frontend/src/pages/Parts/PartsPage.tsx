@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { getAllParts } from "../../features/parts/api/getAllParts";
 import { deletePart } from "../../features/parts/api/deletePart";
 import type { PartResponseModel } from "../../features/parts/models/PartResponseModel";
@@ -12,6 +13,7 @@ import "./PartsPage.css";
 const ITEMS_PER_PAGE = 12;
 
 export default function PartsPage(): React.ReactElement {
+  const { t } = useTranslation();
   const [parts, setParts] = useState<PartResponseModel[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
   const [currentPage, setCurrentPage] = useState<number>(1);
@@ -175,9 +177,9 @@ export default function PartsPage(): React.ReactElement {
   return (
     <div className="parts-page-light">
       <div className="page-header">
-        <h1 className="parts-title-light">Parts Catalog</h1>
+        <h1 className="parts-title-light">{t('pages.parts.title')}</h1>
         <button className="btn-add-part" onClick={handleOpenAddModal}>
-          + Add Part
+          + {t('pages.parts.addPart')}
         </button>
       </div>
 
@@ -185,16 +187,16 @@ export default function PartsPage(): React.ReactElement {
         <input
           type="text"
           className="search-bar"
-          placeholder="Search by part name or ID..."
+          placeholder={t('pages.parts.name')}
           value={searchTerm}
           onChange={handleSearchChange}
         />
       </div>
 
       {loading ? (
-        <div className="parts-loading">Loading parts...</div>
+        <div className="parts-loading">{t('common.loading')}</div>
       ) : parts.length === 0 ? (
-        <div className="parts-empty">No parts available</div>
+        <div className="parts-empty">{t('pages.parts.noParts')}</div>
       ) : filteredParts.length === 0 ? (
         <div className="parts-empty">No parts match your search</div>
       ) : (
@@ -272,13 +274,13 @@ export default function PartsPage(): React.ReactElement {
 
       <ConfirmationModal
         isOpen={deleteModalOpen}
-        title="Delete Part"
+        title={t('pages.parts.deletePart')}
         message={
           deleteError ??
-          `Are you sure you want to delete "${deleteTarget?.name}"? This action cannot be undone.`
+          `${t('messages.confirmDelete')}`
         }
-        confirmText="Delete"
-        cancelText="Cancel"
+        confirmText={t('common.delete')}
+        cancelText={t('common.cancel')}
         isDanger
         isLoading={deleteLoading}
         onConfirm={handleDeleteConfirm}

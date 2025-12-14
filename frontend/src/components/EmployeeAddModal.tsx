@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import type { EmployeeRequestModel } from '../features/employee/models/EmployeeRequestModel';
 import type { EmployeePhoneNumber } from '../features/employee/models/EmployeePhoneNumber';
 import type { EmployeeRole, EmployeeRoleType } from '../features/employee/models/EmployeeRole';
@@ -20,6 +21,7 @@ const roles: EmployeeRoleType[] = ['ADMIN', 'TECHNICIAN', 'SUPPORT', 'SALES'];
 const phoneTypes = ['MOBILE', 'HOME', 'WORK'];
 
 export default function EmployeeAddModal({ isOpen, onClose, onSuccess }: EmployeeAddModalProps) {
+  const { t } = useTranslation();
   const [formData, setFormData] = useState({
     firstName: '',
     lastName: '',
@@ -56,9 +58,10 @@ export default function EmployeeAddModal({ isOpen, onClose, onSuccess }: Employe
 
     // Validate postal code on change
     if (name === 'postalCode') {
-      const error = getPostalCodeError(value, formData.city, formData.province);
-      if (error) {
-        setErrors(prev => ({ ...prev, postalCode: error }));
+      const errorKey = getPostalCodeError(value, formData.city, formData.province);
+      if (errorKey) {
+        const translatedError = t(errorKey, { city: formData.city, province: formData.province });
+        setErrors(prev => ({ ...prev, postalCode: translatedError }));
       }
     }
   };
@@ -93,8 +96,10 @@ export default function EmployeeAddModal({ isOpen, onClose, onSuccess }: Employe
     if (!formData.city.trim()) newErrors.city = 'City is required';
     if (!formData.postalCode.trim()) newErrors.postalCode = 'Postal code is required';
     else {
-      const postalError = getPostalCodeError(formData.postalCode, formData.city, formData.province);
-      if (postalError) newErrors.postalCode = postalError;
+      const postalErrorKey = getPostalCodeError(formData.postalCode, formData.city, formData.province);
+      if (postalErrorKey) {
+        newErrors.postalCode = t(postalErrorKey, { city: formData.city, province: formData.province });
+      }
     }
 
     if (formData.phoneNumbers.some(p => !p.number.trim())) {

@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { getMyAppointments } from "../../features/appointment/api/getMyAppointments";
 import type { AppointmentResponseModel } from "../../features/appointment/models/AppointmentResponseModel";
 import AddAppointmentModal from "../../features/appointment/components/AddAppointmentModal";
@@ -8,6 +9,7 @@ import { MapPin, Clock, User, Wrench, DollarSign, AlertCircle } from "lucide-rea
 import "./MyAppointmentsPage.css";
 
 export default function MyAppointmentsPage(): React.ReactElement {
+  const { t, i18n } = useTranslation();
   const [appointments, setAppointments] = useState<AppointmentResponseModel[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
   const [selectedAppointment, setSelectedAppointment] = useState<AppointmentResponseModel | null>(null);
@@ -60,12 +62,13 @@ export default function MyAppointmentsPage(): React.ReactElement {
   const handleCreated = () => {
     setShowAddModal(false);
     fetchAppointments();
-    setToast({ message: "Appointment created", type: "success" });
+    setToast({ message: t('pages.appointments.appointmentCreated'), type: "success" });
   };
 
   const formatDate = (dateString: string): string => {
     const date = new Date(dateString);
-    return date.toLocaleDateString("en-US", {
+    const locale = i18n.language === 'fr' ? 'fr-FR' : 'en-US';
+    return date.toLocaleDateString(locale, {
       weekday: "long",
       year: "numeric",
       month: "long",
@@ -91,14 +94,14 @@ export default function MyAppointmentsPage(): React.ReactElement {
   return (
     <div className="appointments-page-light">
       <div className="appointments-header">
-        <h1 className="appointments-title-light">My Appointments</h1>
+        <h1 className="appointments-title-light">{t('pages.appointments.myAppointments')}</h1>
         {customerData?.firstName && customerData?.lastName && (
-          <p className="user-name-display">Welcome, {customerData.firstName} {customerData.lastName}</p>
+          <p className="user-name-display">{t('common.welcome')}, {customerData.firstName} {customerData.lastName}</p>
         )}
-        <p className="appointments-subtitle">View and manage your scheduled service appointments</p>
+        <p className="appointments-subtitle">{t('pages.appointments.viewAndManageAppointments')}</p>
         <div className="header-actions">
           <button className="btn-primary" onClick={() => setShowAddModal(true)}>
-            Book Appointment
+            {t('pages.appointments.bookAppointment')}
           </button>
         </div>
       </div>
@@ -106,17 +109,17 @@ export default function MyAppointmentsPage(): React.ReactElement {
       {loading ? (
         <div className="loading-container">
           <div className="spinner"></div>
-          <p>Loading your appointments...</p>
+          <p>{t('common.loading')}</p>
         </div>
       ) : error ? (
         <div className="error-state">
-          <h3>Access Denied</h3>
+          <h3>{t('messages.error')}</h3>
           <p>{error}</p>
         </div>
       ) : appointments.length === 0 ? (
         <div className="empty-state">
-          <h3>No Appointments Found</h3>
-          <p>You don't have any scheduled appointments yet.</p>
+          <h3>{t('pages.appointments.noAppointments')}</h3>
+          <p>{t('pages.appointments.noAppointmentsYet')}</p>
         </div>
       ) : (
         <div className="appointments-grid">
@@ -141,9 +144,9 @@ export default function MyAppointmentsPage(): React.ReactElement {
                   {appointment.appointmentStartTime && appointment.appointmentEndTime && (
                     <>
                       {" | "}
-                      <strong>Start:</strong> {appointment.appointmentStartTime}
+                      <strong>{t('pages.appointments.start')}:</strong> {appointment.appointmentStartTime}
                       {" | "}
-                      <strong>End:</strong> {appointment.appointmentEndTime}
+                      <strong>{t('pages.appointments.end')}:</strong> {appointment.appointmentEndTime}
                     </>
                   )}
                 </span>
@@ -153,14 +156,14 @@ export default function MyAppointmentsPage(): React.ReactElement {
               <div className="appointment-info-row">
                 <User size={18} />
                 <span>
-                  Technician: {appointment.technicianFirstName} {appointment.technicianLastName}
+                  {t('pages.appointments.technician')}: {appointment.technicianFirstName} {appointment.technicianLastName}
                 </span>
               </div>
 
               {/* Cellar */}
               <div className="appointment-info-row">
                 <Wrench size={18} />
-                <span>Cellar: {appointment.cellarName}</span>
+                <span>{t('pages.appointments.cellar')}: {appointment.cellarName}</span>
               </div>
 
               {/* Address */}
@@ -174,7 +177,7 @@ export default function MyAppointmentsPage(): React.ReactElement {
               {/* Hourly Rate */}
               <div className="appointment-info-row">
                 <DollarSign size={18} />
-                <span>${appointment.hourlyRate.toFixed(2)}/hour</span>
+                <span>${appointment.hourlyRate.toFixed(2)}{t('pages.appointments.hour')}</span>
               </div>
 
               {/* Description */}
@@ -188,7 +191,7 @@ export default function MyAppointmentsPage(): React.ReactElement {
                 className="btn-view-details"
                 onClick={() => setSelectedAppointment(appointment)}
               >
-                View Full Details
+                {t('pages.appointments.viewFullDetails')}
               </button>
             </div>
           ))}
@@ -200,7 +203,7 @@ export default function MyAppointmentsPage(): React.ReactElement {
         <div className="modal-overlay-light" onClick={() => setSelectedAppointment(null)}>
           <div className="modal-container-light" onClick={(e) => e.stopPropagation()}>
             <div className="modal-header-light">
-              <h2>Appointment Details</h2>
+              <h2>{t('pages.appointments.appointmentDetails')}</h2>
               <button className="modal-close-light" onClick={() => setSelectedAppointment(null)}>
                 &#10005;
               </button>
@@ -208,56 +211,56 @@ export default function MyAppointmentsPage(): React.ReactElement {
 
             <div className="modal-content-light">
               <div className="detail-section">
-                <h3>Service Information</h3>
-                <p><strong>Job:</strong> {selectedAppointment.jobName}</p>
-                <p><strong>Type:</strong> {selectedAppointment.jobType}</p>
-                <p><strong>Rate:</strong> ${selectedAppointment.hourlyRate.toFixed(2)}/hour</p>
-                <p><strong>Status:</strong> <span className={`modal-status-badge ${getStatusBadge(selectedAppointment.status)}`}>{selectedAppointment.status}</span></p>
+                <h3>{t('pages.appointments.serviceInformation')}</h3>
+                <p><strong>{t('pages.appointments.job')}:</strong> {selectedAppointment.jobName}</p>
+                <p><strong>{t('pages.appointments.type')}:</strong> {selectedAppointment.jobType}</p>
+                <p><strong>{t('pages.appointments.rate')}:</strong> ${selectedAppointment.hourlyRate.toFixed(2)}/hour</p>
+                <p><strong>{t('pages.appointments.status')}:</strong> <span className={`modal-status-badge ${getStatusBadge(selectedAppointment.status)}`}>{selectedAppointment.status}</span></p>
               </div>
 
               <div className="detail-section">
-                <h3>Appointment Time</h3>
+                <h3>{t('pages.appointments.appointmentTime')}</h3>
                 <p>
                   {formatDate(selectedAppointment.appointmentDate)}
                   {selectedAppointment.appointmentStartTime && selectedAppointment.appointmentEndTime && (
                     <>
                       <br />
-                      <strong>Start:</strong> {selectedAppointment.appointmentStartTime}
+                      <strong>{t('pages.appointments.start')}:</strong> {selectedAppointment.appointmentStartTime}
                       {" | "}
-                      <strong>End:</strong> {selectedAppointment.appointmentEndTime}
+                      <strong>{t('pages.appointments.end')}:</strong> {selectedAppointment.appointmentEndTime}
                     </>
                   )}
                 </p>
               </div>
 
               <div className="detail-section">
-                <h3>Technician</h3>
-                <p><strong>Name:</strong> {selectedAppointment.technicianFirstName} {selectedAppointment.technicianLastName}</p>
+                <h3>{t('pages.appointments.technician')}</h3>
+                <p><strong>{t('pages.appointments.name')}:</strong> {selectedAppointment.technicianFirstName} {selectedAppointment.technicianLastName}</p>
                 {selectedAppointment.technicianRole && (
-                  <p><strong>Role:</strong> {typeof selectedAppointment.technicianRole === 'string' ? selectedAppointment.technicianRole : 'TECHNICIAN'}</p>
+                  <p><strong>{t('pages.appointments.role')}:</strong> {typeof selectedAppointment.technicianRole === 'string' ? selectedAppointment.technicianRole : 'TECHNICIAN'}</p>
                 )}
               </div>
 
               <div className="detail-section">
-                <h3>Cellar</h3>
+                <h3>{t('pages.appointments.cellar')}</h3>
                 <p>{selectedAppointment.cellarName}</p>
               </div>
 
               <div className="detail-section">
-                <h3>Service Location</h3>
+                <h3>{t('pages.appointments.serviceLocation')}</h3>
                 <p>{selectedAppointment.appointmentAddress.streetAddress}</p>
                 <p>{selectedAppointment.appointmentAddress.city}, {selectedAppointment.appointmentAddress.province}</p>
                 <p>{selectedAppointment.appointmentAddress.country} {selectedAppointment.appointmentAddress.postalCode}</p>
               </div>
 
               <div className="detail-section">
-                <h3>Description</h3>
+                <h3>{t('pages.appointments.description')}</h3>
                 <p>{selectedAppointment.description}</p>
               </div>
 
               <div className="detail-section">
-                <h3>Contact Information</h3>
-                <p><strong>Customer:</strong> {selectedAppointment.customerFirstName} {selectedAppointment.customerLastName}</p>
+                <h3>{t('pages.appointments.contactInformation')}</h3>
+                <p><strong>{t('pages.appointments.customer')}:</strong> {selectedAppointment.customerFirstName} {selectedAppointment.customerLastName}</p>
                 {selectedAppointment.customerPhoneNumbers.map((phone, idx) => (
                   <p key={idx}><strong>{phone.type}:</strong> {phone.number}</p>
                 ))}

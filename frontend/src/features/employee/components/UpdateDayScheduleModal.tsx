@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import './AddScheduleModal.css'; // Reuse same styles
 import { patchDateSchedule } from '../../employee/api/patchDateSchedule';
 import type { PatchDateScheduleRequest } from '../../employee/api/patchDateSchedule';
@@ -26,17 +27,24 @@ function getAvailableSlots(isTechnician: boolean): TimeSlotType[] {
     : AVAILABLE_SLOTS;
 }
 
-const SLOT_LABELS: Record<TimeSlotType, string> = {
-  NINE_AM: '9:00 AM',
-  ELEVEN_AM: '11:00 AM',
-  ONE_PM: '1:00 PM',
-  THREE_PM: '3:00 PM',
-  FIVE_PM: '5:00 PM',
+const SLOT_KEYS: Record<TimeSlotType, string> = {
+  NINE_AM: 'common.timeSlot.nineAm',
+  ELEVEN_AM: 'common.timeSlot.elevenAm',
+  ONE_PM: 'common.timeSlot.onePm',
+  THREE_PM: 'common.timeSlot.threePm',
+  FIVE_PM: 'common.timeSlot.fivePm',
 };
 
 // Helper to convert display time to TimeSlotType enum
 function toTimeSlotEnum(displayTime: string): TimeSlotType | null {
-  const entry = Object.entries(SLOT_LABELS).find(([, label]) => label === displayTime);
+  const slotLabels: Record<TimeSlotType, string> = {
+    NINE_AM: '9:00 AM',
+    ELEVEN_AM: '11:00 AM',
+    ONE_PM: '1:00 PM',
+    THREE_PM: '3:00 PM',
+    FIVE_PM: '5:00 PM',
+  };
+  const entry = Object.entries(slotLabels).find(([, label]) => label === displayTime);
   return entry ? (entry[0] as TimeSlotType) : null;
 }
 
@@ -71,10 +79,22 @@ export default function UpdateDayScheduleModal({
   onUpdated, 
   onError 
 }: Props) {
+  const { t } = useTranslation();
   const [submitting, setSubmitting] = useState(false);
   
   const dayOfWeek = selectedDate.toLocaleDateString('en-US', { weekday: 'long' }).toUpperCase() as DayOfWeekType;
   const formattedDate = selectedDate.toISOString().split('T')[0]; // YYYY-MM-DD
+  
+  function getDayLabelTranslationKey(day: DayOfWeekType): string {
+    switch (day) {
+      case 'MONDAY': return 'common.dayOfWeek.monday';
+      case 'TUESDAY': return 'common.dayOfWeek.tuesday';
+      case 'WEDNESDAY': return 'common.dayOfWeek.wednesday';
+      case 'THURSDAY': return 'common.dayOfWeek.thursday';
+      case 'FRIDAY': return 'common.dayOfWeek.friday';
+      default: return '';
+    }
+  }
   
   const [nonTechSlot, setNonTechSlot] = useState<NonTechSlot>({ start: '09:00', end: '' });
   const [techSlots, setTechSlots] = useState<TechSlot[]>([]);
@@ -95,11 +115,15 @@ export default function UpdateDayScheduleModal({
         .sort((a, b) => toMinutes(a) - toMinutes(b));
 
       if (enumSlots.length >= 2) {
+        const endSlot = enumSlots[1];
+        let endTime = '17:00';
+        if (endSlot === 'ELEVEN_AM') endTime = '11:00';
+        else if (endSlot === 'ONE_PM') endTime = '13:00';
+        else if (endSlot === 'THREE_PM') endTime = '15:00';
+        
         setNonTechSlot({
           start: '09:00',
-          end: SLOT_LABELS[enumSlots[1]].includes('11') ? '11:00' :
-               SLOT_LABELS[enumSlots[1]].includes('1') ? '13:00' :
-               SLOT_LABELS[enumSlots[1]].includes('3') ? '15:00' : '17:00'
+          end: endTime
         });
       }
     } else {
@@ -128,31 +152,31 @@ export default function UpdateDayScheduleModal({
   function validate(): string | null {
     if (!isTechnician) {
       if (!nonTechSlot.end) {
-        return 'Please select an end time for this day.';
+        return t('error.schedule.selectEndTime');
       }
       const start = timeStringToEnum(nonTechSlot.start);
       const end = timeStringToEnum(nonTechSlot.end);
       if (!start || !end) {
-        return 'Invalid time selection.';
+        return t('error.schedule.invalidTimeSelection');
       }
       if (toMinutes(end) <= toMinutes(start)) {
-        return 'End time must be after start time.';
+        return t('error.schedule.endTimeAfterStart');
       }
       const dailyHours = (toMinutes(end) - toMinutes(start)) / 60;
       if (dailyHours > 8) {
-        return 'Non-technician employees cannot work more than 8 hours per day.';
+        return t('error.schedule.nonTechnicianMaxHours');
       }
     } else {
       if (techSlots.length === 0) {
-        return 'Please add at least one time slot.';
+        return t('error.schedule.addAtLeastOneTimeSlot');
       }
       if (techSlots.length > 4) {
-        return 'Technician cannot exceed 8 hours in a single day (max 4 slots of 2h each).';
+        return t('error.schedule.technicianMaxHoursPerDay', { day: t(getDayLabelTranslationKey(dayOfWeek)) });
       }
       const sortedMinutes = techSlots.map(toMinutes).sort((a, b) => a - b);
       for (let i = 1; i < sortedMinutes.length; i++) {
         if (sortedMinutes[i] - sortedMinutes[i - 1] < 120) {
-          return 'Technician time slots must be at least 2 hours apart.';
+          return t('error.schedule.technicianSlotsTwoHoursApart');
         }
       }
     }
@@ -218,6 +242,11 @@ export default function UpdateDayScheduleModal({
         }
       }
       
+      // Translate known error messages
+      if (message === 'Cannot edit schedule; there is an appointment on this date at a time slot you are removing.') {
+        message = t('error.schedule.cannotEditScheduleAppointmentConflict');
+      }
+      
       // Restore slots from current schedule after backend rejection
       if (currentSchedule?.timeSlots && isTechnician) {
         const enumSlots = currentSchedule.timeSlots
@@ -240,19 +269,19 @@ export default function UpdateDayScheduleModal({
     <div className="add-schedule-modal-backdrop">
       <div className="add-schedule-modal">
         <div className="header">
-          <h2>Update Schedule for {selectedDate.toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' })}</h2>
+          <h2>{t('pages.employees.updateScheduleForDate', { date: `${t(getDayLabelTranslationKey(dayOfWeek))}, ${selectedDate.toLocaleDateString('fr-FR', { month: 'short', day: 'numeric' })}` })}</h2>
           <button className="close" onClick={onClose} aria-label="Close">×</button>
         </div>
         <div className="content">
           <div className="day-block">
             <div className="day-header">
-              <span>{dayOfWeek.charAt(0) + dayOfWeek.slice(1).toLowerCase()}</span>
+              <span>{t(getDayLabelTranslationKey(dayOfWeek))}</span>
             </div>
             
             {!isTechnician ? (
               <div className="slot">
                 <label>
-                  <span>Start</span>
+                  <span>{t('pages.employees.start')}</span>
                   <input
                     type="time"
                     value={nonTechSlot.start}
@@ -261,13 +290,13 @@ export default function UpdateDayScheduleModal({
                   />
                 </label>
                 <label>
-                  <span>End (hour only)</span>
+                  <span>{t('pages.employees.end')}</span>
                   <select
                     value={nonTechSlot.end}
                     onChange={e => updateNonTechSlot('end', e.target.value)}
                     className="hour-select"
                   >
-                    <option value="">Select hour</option>
+                    <option value="">{t('pages.employees.selectHour')}</option>
                     <option value="11:00">11:00 AM</option>
                     <option value="13:00">1:00 PM</option>
                     <option value="15:00">3:00 PM</option>
@@ -320,7 +349,7 @@ export default function UpdateDayScheduleModal({
                           }
                         }}
                       >
-                        {SLOT_LABELS[slot]}
+                        {t(SLOT_KEYS[slot])}
                       </button>
                     );
                   })}
@@ -381,7 +410,7 @@ export default function UpdateDayScheduleModal({
               }
             }}
           >
-            {submitting ? 'Updating...' : 'Update This Day'}
+            {submitting ? t('common.updating') : t('pages.employees.updateThisDay')}
           </button>
         </div>
       </div>
