@@ -1,31 +1,31 @@
 import React from "react";
 import { ThermometerSun, Sparkles, Settings } from "lucide-react";
 import { motion } from "framer-motion";
+import { useTranslation } from "react-i18next";
 import "../HomePage.css";
 import "./WhyChooseUsSection.css";
 
-const features = [
-  {
-    icon: <ThermometerSun size={40} />,
-    title: "Precision Climate Control",
-    description:
-      "Maintain perfect temperature and humidity levels with advanced monitoring systems",
-  },
-  {
-    icon: <Sparkles size={40} />,
-    title: "Expert Repairs",
-    description:
-      "Certified technicians with years of experience in wine cellar restoration",
-  },
-  {
-    icon: <Settings size={40} />,
-    title: "Smart Technology",
-    description:
-      "Monitor and control your wine cellar remotely with integrated smart systems",
-  },
-];
-
 const WhyChooseUsSection: React.FC = () => {
+  const { t } = useTranslation();
+
+  const features = [
+    {
+      icon: <ThermometerSun size={40} />,
+      title: t('pages.home.whyChooseUs.certified.title'),
+      description: t('pages.home.whyChooseUs.certified.description'),
+    },
+    {
+      icon: <Sparkles size={40} />,
+      title: t('pages.home.whyChooseUs.support.title'),
+      description: t('pages.home.whyChooseUs.support.description'),
+    },
+    {
+      icon: <Settings size={40} />,
+      title: t('pages.home.whyChooseUs.expertise.title'),
+      description: t('pages.home.whyChooseUs.expertise.description'),
+    },
+  ];
+
   return (
     <section className="section-container why-choose-us-section">
       <motion.div
@@ -34,10 +34,9 @@ const WhyChooseUsSection: React.FC = () => {
         viewport={{ once: true }}
         transition={{ duration: 0.6 }}
       >
-        <h2 className="section-title">Why Choose Profroid</h2>
+        <h2 className="section-title">{t('pages.home.whyChooseUs.title')}</h2>
         <p className="section-subtitle">
-          Our repair services combine cutting-edge technology with timeless
-          craftsmanship
+          {t('pages.home.whyChooseUs.subtitle')}
         </p>
       </motion.div>
 

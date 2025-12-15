@@ -48,9 +48,6 @@ export default function Navigation(): React.ReactElement {
 
         {/* Desktop Menu */}
         <div className="nav-links">
-          {/* Home Link - always visible */}
-          <a href="/">{t('navigation.home')}</a>
-
           {/* Admin Links - only visible to admins */}
           {isAdmin && (
             <>
@@ -177,9 +174,6 @@ export default function Navigation(): React.ReactElement {
       {/* Mobile Menu */}
       {open && (
         <div className="nav-mobile-menu">
-          {/* Home Link - always visible */}
-          <a href="/">{t('navigation.home')}</a>
-
           {/* Admin Links - only visible to admins */}
           {isAdmin && (
             <>

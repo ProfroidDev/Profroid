@@ -1,34 +1,36 @@
 import React from "react";
 import { Star, Quote } from "lucide-react";
 import { motion } from "framer-motion";
+import { useTranslation } from "react-i18next";
 import "../HomePage.css";
 import "./TestimonialsSection.css";
 
-const testimonials = [
-  {
-    id: 1,
-    name: "Marc Dupont",
-    location: "Montreal, QC",
-    rating: 5,
-    text: "Profroid saved my wine collection! Their technician diagnosed the cooling issue within minutes and had it fixed the same day.",
-  },
-  {
-    id: 2,
-    name: "Sophie Martin",
-    location: "Quebec City, QC",
-    rating: 5,
-    text: "Excellent service and very professional. They explained everything clearly and the pricing was transparent. Highly recommended!",
-  },
-  {
-    id: 3,
-    name: "Jean-Luc Tremblay",
-    location: "Laval, QC",
-    rating: 4,
-    text: "Great experience overall. The technician was on time and very knowledgeable about my specific wine cellar model.",
-  },
-];
-
 const TestimonialsSection: React.FC = () => {
+  const { t } = useTranslation();
+
+  const testimonials = [
+    {
+      id: 1,
+      name: t('pages.home.testimonials.reviews.review1.name'),
+      location: t('pages.home.testimonials.reviews.review1.location'),
+      rating: 5,
+      text: t('pages.home.testimonials.reviews.review1.text'),
+    },
+    {
+      id: 2,
+      name: t('pages.home.testimonials.reviews.review2.name'),
+      location: t('pages.home.testimonials.reviews.review2.location'),
+      rating: 5,
+      text: t('pages.home.testimonials.reviews.review2.text'),
+    },
+    {
+      id: 3,
+      name: t('pages.home.testimonials.reviews.review3.name'),
+      location: t('pages.home.testimonials.reviews.review3.location'),
+      rating: 4,
+      text: t('pages.home.testimonials.reviews.review3.text'),
+    },
+  ];
   // Duplicate testimonials to create a seamless loop
   const allTestimonials = [
     ...testimonials,
@@ -56,9 +58,9 @@ const TestimonialsSection: React.FC = () => {
         viewport={{ once: true }}
         transition={{ duration: 0.6 }}
       >
-        <h2 className="section-title">What Our Clients Say</h2>
+        <h2 className="section-title">{t('pages.home.testimonials.title')}</h2>
         <p className="section-subtitle">
-          Trusted by wine collectors across Quebec
+          {t('pages.home.testimonials.subtitle')}
         </p>
       </motion.div>
 

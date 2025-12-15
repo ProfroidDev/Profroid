@@ -732,8 +732,8 @@ export default function AddAppointmentModal({
       <div className="appointment-modal">
         <header className="appointment-modal__header">
           <div>
-            <p className="eyebrow">{mode === "customer" ? "Customer Booking" : "Technician Scheduling"}</p>
-            <h2>Add Appointment</h2>
+            <p className="eyebrow">{mode === "customer" ? t('pages.appointments.customerBooking') : t('pages.appointments.technicianScheduling')}</p>
+            <h2>{t('pages.appointments.addAppointment')}</h2>
           </div>
           <button className="ghost" onClick={onClose} aria-label="Close">×</button>
         </header>
@@ -741,7 +741,7 @@ export default function AddAppointmentModal({
         {loading ? (
           <div className="state state--inline">
             <Loader2 className="spin" size={22} />
-            <span>Loading options…</span>
+            <span>{t('pages.appointments.loadingOptions')}</span>
           </div>
         ) : (
           <form className="appointment-form" onSubmit={handleSubmit}>

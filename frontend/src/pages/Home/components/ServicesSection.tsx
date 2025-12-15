@@ -2,41 +2,39 @@ import React from "react";
 import { Thermometer, Wrench, Zap, Shield, ArrowRight } from "lucide-react";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
+import { useTranslation } from "react-i18next";
 import "../HomePage.css";
 import "./ServicesSection.css";
 
-const services = [
-  {
-    icon: <Thermometer size={32} />,
-    title: "Free Quotation",
-    description:
-      "Technician visits the site to evaluate cellar needs and prepare a detailed quote.",
-    price: "From $0.00",
-  },
-  {
-    icon: <Wrench size={32} />,
-    title: "Cellar Installation",
-    description:
-      "Full installation of a new refrigeration system, wiring, tubing, and calibration.",
-    price: "From $120.00",
-  },
-  {
-    icon: <Zap size={32} />,
-    title: "Repair Service",
-    description:
-      "Diagnosis and repair of refrigeration, humidity control, or electrical issues.",
-    price: "From $95.00",
-  },
-  {
-    icon: <Shield size={32} />,
-    title: "Annual Maintenance",
-    description:
-      " Full system checkup, cleaning, refrigerant check and performance optimization.",
-    price: "From $85.00",
-  },
-];
-
 const ServicesSection: React.FC = () => {
+  const { t } = useTranslation();
+
+  const services = [
+    {
+      icon: <Thermometer size={32} />,
+      title: t('pages.home.services.items.quotation.title'),
+      description: t('pages.home.services.items.quotation.description'),
+      price: t('pages.home.services.items.quotation.price'),
+    },
+    {
+      icon: <Wrench size={32} />,
+      title: t('pages.home.services.items.installation.title'),
+      description: t('pages.home.services.items.installation.description'),
+      price: t('pages.home.services.items.installation.price'),
+    },
+    {
+      icon: <Zap size={32} />,
+      title: t('pages.home.services.items.repair.title'),
+      description: t('pages.home.services.items.repair.description'),
+      price: t('pages.home.services.items.repair.price'),
+    },
+    {
+      icon: <Shield size={32} />,
+      title: t('pages.home.services.items.maintenance.title'),
+      description: t('pages.home.services.items.maintenance.description'),
+      price: t('pages.home.services.items.maintenance.price'),
+    },
+  ];
   const containerVariants = {
     hidden: { opacity: 0 },
     visible: {
@@ -64,10 +62,9 @@ const ServicesSection: React.FC = () => {
         viewport={{ once: true }}
         transition={{ duration: 0.6 }}
       >
-        <h2 className="section-title">Our Services</h2>
+        <h2 className="section-title">{t('pages.home.services.title')}</h2>
         <p className="section-subtitle">
-          Professional wine cellar repair services to keep your collection
-          perfectly preserved
+          {t('pages.home.services.subtitle')}
         </p>
       </motion.div>
 
@@ -101,7 +98,7 @@ const ServicesSection: React.FC = () => {
         transition={{ delay: 0.6, duration: 0.5 }}
       >
         <Link to="/services" className="btn-primary browse-services-btn">
-          View Services <ArrowRight size={18} style={{ marginLeft: 8 }} />
+          {t('pages.home.services.browseAll')} <ArrowRight size={18} style={{ marginLeft: 8 }} />
         </Link>
       </motion.div>
     </section>

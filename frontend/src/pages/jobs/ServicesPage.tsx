@@ -76,7 +76,7 @@ export default function ServicesPage(): React.ReactElement {
       } catch (error) {
         console.error("Error loading jobs:", error);
         setToast({
-          message: "Failed to load services",
+          message: t('pages.services.failedToLoad'),
           type: "error",
         });
       } finally {
@@ -84,7 +84,7 @@ export default function ServicesPage(): React.ReactElement {
       }
     }
     void load();
-  }, []);
+  }, [t]);
 
   async function openDetails(jobId: string) {
     setModalOpen(true);
@@ -96,7 +96,7 @@ export default function ServicesPage(): React.ReactElement {
     } catch (error) {
       console.error("Error loading job details:", error);
       setToast({
-        message: "Failed to load service details",
+        message: t('pages.services.failedToLoadDetails'),
         type: "error",
       });
     } finally {
@@ -189,19 +189,19 @@ export default function ServicesPage(): React.ReactElement {
   async function handleUpdateJob() {
     // Validate required fields
     if (!updateFormData.jobName.trim()) {
-      setUpdateError("Job name is required");
+      setUpdateError(t('pages.services.jobNameRequired'));
       return;
     }
     if (!updateFormData.jobDescription.trim()) {
-      setUpdateError("Job description is required");
+      setUpdateError(t('pages.services.jobDescriptionRequired'));
       return;
     }
     if (updateFormData.hourlyRate <= 0) {
-      setUpdateError("Hourly rate must be greater than 0");
+      setUpdateError(t('pages.services.hourlyRateRequired'));
       return;
     }
     if (updateFormData.estimatedDurationMinutes <= 0) {
-      setUpdateError("Estimated duration must be greater than 0");
+      setUpdateError(t('pages.services.durationRequired'));
       return;
     }
 
@@ -223,12 +223,12 @@ export default function ServicesPage(): React.ReactElement {
       closeUpdateModal();
       // Show success notification
       setToast({
-        message: "Service has been updated successfully!",
+        message: t('pages.services.serviceUpdated'),
         type: "success",
       });
     } catch (error) {
       // Try to extract backend error message if available
-      let errorMsg = "Failed to update service";
+      let errorMsg = t('pages.services.failedToUpdate');
       if (error && typeof error === "object" && "response" in error) {
         const axiosError = error as {
           response?: { data?: { message?: string }; status?: number };
@@ -271,19 +271,19 @@ export default function ServicesPage(): React.ReactElement {
   async function handleCreateJob() {
     // Validate required fields
     if (!formData.jobName.trim()) {
-      setCreateError("Job name is required");
+      setCreateError(t('pages.services.jobNameRequired'));
       return;
     }
     if (!formData.jobDescription.trim()) {
-      setCreateError("Job description is required");
+      setCreateError(t('pages.services.jobDescriptionRequired'));
       return;
     }
     if (formData.hourlyRate <= 0) {
-      setCreateError("Hourly rate must be greater than 0");
+      setCreateError(t('pages.services.hourlyRateRequired'));
       return;
     }
     if (formData.estimatedDurationMinutes <= 0) {
-      setCreateError("Estimated duration must be greater than 0");
+      setCreateError(t('pages.services.durationRequired'));
       return;
     }
 
@@ -297,12 +297,12 @@ export default function ServicesPage(): React.ReactElement {
       closeCreateModal();
       // Show success notification
       setToast({
-        message: "Service has been created successfully!",
+        message: t('pages.services.serviceCreated'),
         type: "success",
       });
     } catch (error) {
       setCreateError(
-        error instanceof Error ? error.message : "Failed to create service"
+        error instanceof Error ? error.message : t('pages.services.failedToCreate')
       );
     } finally {
       setCreateLoading(false);
@@ -324,7 +324,7 @@ export default function ServicesPage(): React.ReactElement {
     try {
       const updatedJob = await deactivateJob(confirmationModal.job.jobId);
       setToast({
-        message: `${confirmationModal.job.jobName} has been deactivated. You can reactivate it at any time.`,
+        message: t('pages.services.serviceDeactivated', { serviceName: confirmationModal.job.jobName }),
         type: "warning",
       });
       // Update the job in the list to show deactivated state
@@ -335,7 +335,7 @@ export default function ServicesPage(): React.ReactElement {
       );
     } catch (error) {
       console.error("Error deactivating job:", error);
-      setToast({ message: "Failed to deactivate service", type: "error" });
+      setToast({ message: t('pages.services.failedToDeactivate'), type: "error" });
     } finally {
       setDeactivateLoading(false);
       setConfirmationModal({ isOpen: false, type: null, job: null });
@@ -357,7 +357,7 @@ export default function ServicesPage(): React.ReactElement {
     try {
       const updatedJob = await reactivateJob(confirmationModal.job.jobId);
       setToast({
-        message: `${confirmationModal.job.jobName} has been reactivated successfully!`,
+        message: t('pages.services.serviceReactivated', { serviceName: confirmationModal.job.jobName }),
         type: "success",
       });
       // Update the job in the list to show reactivated state
@@ -368,7 +368,7 @@ export default function ServicesPage(): React.ReactElement {
       );
     } catch (error) {
       console.error("Error reactivating job:", error);
-      setToast({ message: "Failed to reactivate service", type: "error" });
+      setToast({ message: t('pages.services.failedToReactivate'), type: "error" });
     } finally {
       setDeactivateLoading(false);
       setConfirmationModal({ isOpen: false, type: null, job: null });
@@ -422,7 +422,7 @@ export default function ServicesPage(): React.ReactElement {
                   <h3 className="service-title">
                     {j.jobName}
                     {!j.active && (
-                      <span className="inactive-badge"> (Inactive)</span>
+                      <span className="inactive-badge"> ({t('pages.services.inactive')})</span>
                     )}
                   </h3>
                   <div className="service-description-wrapper">
@@ -459,14 +459,14 @@ export default function ServicesPage(): React.ReactElement {
                         onClick={() => void openDetails(j.jobId)}
                         disabled={!j.active}
                       >
-                        View Details
+                        {t('pages.services.viewDetails')}
                       </button>
                       <button
                         className="btn-view-light"
                         onClick={() => void openUpdateModal(j.jobId)}
                         disabled={!j.active}
                       >
-                        Modify
+                        {t('pages.services.modify')}
                       </button>
                       {j.active ? (
                         <button
@@ -479,7 +479,7 @@ export default function ServicesPage(): React.ReactElement {
                           onClick={() => handleDeactivateJob(j)}
                           disabled={deactivateLoading}
                         >
-                          Deactivate
+                          {t('pages.services.deactivate')}
                         </button>
                       ) : (
                         <button
@@ -492,7 +492,7 @@ export default function ServicesPage(): React.ReactElement {
                           onClick={() => handleReactivateJob(j)}
                           disabled={deactivateLoading}
                         >
-                          Reactivate
+                          {t('pages.services.reactivate')}
                         </button>
                       )}
                     </>
