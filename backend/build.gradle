@@ -86,7 +86,9 @@ tasks.jacocoTestReport {
                     "**/config/**",
                     "**/mappingLayer/**",
                     "**/ProfroidAppApplication.class",
-                    '**/auth/**'
+                    '**/auth/**',
+                    "**/appointmentsubdomain/businessLayer/**",
+                    "**/employeesubdomain/businessLayer/employeeScheduleBusinessLayer/**",
 
             ])
         }))

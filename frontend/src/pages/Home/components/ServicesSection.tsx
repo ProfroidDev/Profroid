@@ -14,25 +14,21 @@ const ServicesSection: React.FC = () => {
       icon: <Thermometer size={32} />,
       title: t("pages.home.services.items.quotation.title"),
       description: t("pages.home.services.items.quotation.description"),
-      price: t("pages.home.services.items.quotation.price"),
     },
     {
       icon: <Wrench size={32} />,
       title: t("pages.home.services.items.installation.title"),
       description: t("pages.home.services.items.installation.description"),
-      price: t("pages.home.services.items.installation.price"),
     },
     {
       icon: <Zap size={32} />,
       title: t("pages.home.services.items.repair.title"),
       description: t("pages.home.services.items.repair.description"),
-      price: t("pages.home.services.items.repair.price"),
     },
     {
       icon: <Shield size={32} />,
       title: t("pages.home.services.items.maintenance.title"),
       description: t("pages.home.services.items.maintenance.description"),
-      price: t("pages.home.services.items.maintenance.price"),
     },
   ];
   const containerVariants = {
@@ -67,7 +63,7 @@ const ServicesSection: React.FC = () => {
       </motion.div>
 
       <motion.div
-        className="services-grid"
+        className="services-grid-home"
         variants={containerVariants}
         initial="hidden"
         whileInView="visible"
@@ -83,7 +79,6 @@ const ServicesSection: React.FC = () => {
             <div className="service-icon">{service.icon}</div>
             <h3 className="service-title">{service.title}</h3>
             <p className="service-description">{service.description}</p>
-            <p className="service-price">{service.price}</p>
           </motion.div>
         ))}
       </motion.div>

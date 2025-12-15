@@ -1,8 +1,22 @@
-.services-grid {
+.services-grid-home {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  grid-template-columns: repeat(4, 1fr);
   gap: 2rem;
   margin-top: 3rem;
+}
+
+@media (max-width: 1200px) {
+  .services-grid-home {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1.5rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .services-grid-home {
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+  }
 }
 
 .service-card {
@@ -16,6 +30,18 @@
   align-items: center;
   text-align: center;
   border: 1px solid #f0f0f0;
+}
+
+@media (max-width: 768px) {
+  .service-card {
+    padding: 1.5rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .service-card {
+    padding: 1.25rem;
+  }
 }
 
 .service-card:hover {
@@ -44,11 +70,39 @@
   font-family: serif;
 }
 
+@media (max-width: 768px) {
+  .service-title {
+    font-size: 1.1rem;
+    margin-bottom: 10px;
+  }
+}
+
+@media (max-width: 480px) {
+  .service-title {
+    font-size: 1rem;
+  }
+}
+
 .service-description {
   color: #666;
   line-height: 1.5;
   margin-bottom: 20px;
   flex-grow: 1;
+}
+
+@media (max-width: 768px) {
+  .service-description {
+    font-size: 0.95rem;
+    margin-bottom: 15px;
+  }
+}
+
+@media (max-width: 480px) {
+  .service-description {
+    font-size: 0.9rem;
+    line-height: 1.4;
+    margin-bottom: 12px;
+  }
 }
 
 .service-price {
