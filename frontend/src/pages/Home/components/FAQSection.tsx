@@ -11,20 +11,20 @@ const FAQSection: React.FC = () => {
 
   const faqs = [
     {
-      question: t('pages.home.faq.q1.question'),
-      answer: t('pages.home.faq.q1.answer'),
+      question: t("pages.home.faq.q1.question"),
+      answer: t("pages.home.faq.q1.answer"),
     },
     {
-      question: t('pages.home.faq.q2.question'),
-      answer: t('pages.home.faq.q2.answer'),
+      question: t("pages.home.faq.q2.question"),
+      answer: t("pages.home.faq.q2.answer"),
     },
     {
-      question: t('pages.home.faq.q3.question'),
-      answer: t('pages.home.faq.q3.answer'),
+      question: t("pages.home.faq.q3.question"),
+      answer: t("pages.home.faq.q3.answer"),
     },
     {
-      question: t('pages.home.faq.q4.question'),
-      answer: t('pages.home.faq.q4.answer'),
+      question: t("pages.home.faq.q4.question"),
+      answer: t("pages.home.faq.q4.answer"),
     },
   ];
 
@@ -40,10 +40,8 @@ const FAQSection: React.FC = () => {
         viewport={{ once: true }}
         transition={{ duration: 0.6 }}
       >
-        <h2 className="section-title">{t('pages.home.faq.title')}</h2>
-        <p className="section-subtitle">
-          {t('pages.home.faq.subtitle')}
-        </p>
+        <h2 className="section-title">{t("pages.home.faq.title")}</h2>
+        <p className="section-subtitle">{t("pages.home.faq.subtitle")}</p>
       </motion.div>
 
       <div className="faq-list">

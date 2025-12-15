@@ -36,10 +36,8 @@ const FeedbackSection: React.FC = () => {
         viewport={{ once: true }}
         transition={{ duration: 0.6 }}
       >
-        <h2 className="section-title">{t('pages.home.feedback.title')}</h2>
-        <p className="section-subtitle">
-          {t('pages.home.feedback.subtitle')}
-        </p>
+        <h2 className="section-title">{t("pages.home.feedback.title")}</h2>
+        <p className="section-subtitle">{t("pages.home.feedback.subtitle")}</p>
       </motion.div>
 
       <motion.div
@@ -59,8 +57,8 @@ const FeedbackSection: React.FC = () => {
               exit={{ opacity: 0, scale: 0.8 }}
             >
               <div className="success-icon">✓</div>
-              <h3>{t('pages.home.feedback.success.title')}</h3>
-              <p>{t('pages.home.feedback.success.message')}</p>
+              <h3>{t("pages.home.feedback.success.title")}</h3>
+              <p>{t("pages.home.feedback.success.message")}</p>
             </motion.div>
           ) : (
             <motion.form
@@ -71,7 +69,9 @@ const FeedbackSection: React.FC = () => {
               exit={{ opacity: 0 }}
             >
               <div className="rating-container">
-                <p className="rating-label">{t('pages.home.feedback.rateLabel')}</p>
+                <p className="rating-label">
+                  {t("pages.home.feedback.rateLabel")}
+                </p>
                 <div className="stars-input">
                   {[1, 2, 3, 4, 5].map((star) => (
                     <motion.button
@@ -101,7 +101,7 @@ const FeedbackSection: React.FC = () => {
               <div className="feedback-input-group">
                 <textarea
                   className="feedback-textarea"
-                  placeholder={t('pages.home.feedback.placeholder')}
+                  placeholder={t("pages.home.feedback.placeholder")}
                   value={feedback}
                   onChange={(e) => setFeedback(e.target.value)}
                   rows={4}
@@ -115,7 +115,8 @@ const FeedbackSection: React.FC = () => {
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
               >
-                {t('pages.home.feedback.submitButton')} <Send size={18} style={{ marginLeft: 8 }} />
+                {t("pages.home.feedback.submitButton")}{" "}
+                <Send size={18} style={{ marginLeft: 8 }} />
               </motion.button>
             </motion.form>
           )}

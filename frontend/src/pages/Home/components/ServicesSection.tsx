@@ -12,27 +12,27 @@ const ServicesSection: React.FC = () => {
   const services = [
     {
       icon: <Thermometer size={32} />,
-      title: t('pages.home.services.items.quotation.title'),
-      description: t('pages.home.services.items.quotation.description'),
-      price: t('pages.home.services.items.quotation.price'),
+      title: t("pages.home.services.items.quotation.title"),
+      description: t("pages.home.services.items.quotation.description"),
+      price: t("pages.home.services.items.quotation.price"),
     },
     {
       icon: <Wrench size={32} />,
-      title: t('pages.home.services.items.installation.title'),
-      description: t('pages.home.services.items.installation.description'),
-      price: t('pages.home.services.items.installation.price'),
+      title: t("pages.home.services.items.installation.title"),
+      description: t("pages.home.services.items.installation.description"),
+      price: t("pages.home.services.items.installation.price"),
     },
     {
       icon: <Zap size={32} />,
-      title: t('pages.home.services.items.repair.title'),
-      description: t('pages.home.services.items.repair.description'),
-      price: t('pages.home.services.items.repair.price'),
+      title: t("pages.home.services.items.repair.title"),
+      description: t("pages.home.services.items.repair.description"),
+      price: t("pages.home.services.items.repair.price"),
     },
     {
       icon: <Shield size={32} />,
-      title: t('pages.home.services.items.maintenance.title'),
-      description: t('pages.home.services.items.maintenance.description'),
-      price: t('pages.home.services.items.maintenance.price'),
+      title: t("pages.home.services.items.maintenance.title"),
+      description: t("pages.home.services.items.maintenance.description"),
+      price: t("pages.home.services.items.maintenance.price"),
     },
   ];
   const containerVariants = {
@@ -62,10 +62,8 @@ const ServicesSection: React.FC = () => {
         viewport={{ once: true }}
         transition={{ duration: 0.6 }}
       >
-        <h2 className="section-title">{t('pages.home.services.title')}</h2>
-        <p className="section-subtitle">
-          {t('pages.home.services.subtitle')}
-        </p>
+        <h2 className="section-title">{t("pages.home.services.title")}</h2>
+        <p className="section-subtitle">{t("pages.home.services.subtitle")}</p>
       </motion.div>
 
       <motion.div
@@ -98,7 +96,8 @@ const ServicesSection: React.FC = () => {
         transition={{ delay: 0.6, duration: 0.5 }}
       >
         <Link to="/services" className="btn-primary browse-services-btn">
-          {t('pages.home.services.browseAll')} <ArrowRight size={18} style={{ marginLeft: 8 }} />
+          {t("pages.home.services.browseAll")}{" "}
+          <ArrowRight size={18} style={{ marginLeft: 8 }} />
         </Link>
       </motion.div>
     </section>

@@ -551,7 +551,8 @@
       "update": "Update",
       "delete": "Delete",
       "deactivate": "Deactivate",
-      "deactivateConfirmMessage": "Are you sure you want to deactivate this cellar?",
+      "deactivateCellar": "Deactivate Cellar",
+      "deactivateConfirmMessage": "Are you sure you want to deactivate \"{{cellarName}}\"? This cellar will no longer be available for appointments.",
       "unnamedCellar": "Unnamed Cellar",
       "cellarName": "Cellar Name",
       "height": "Height (cm)",
@@ -638,6 +639,7 @@
       "quotationScheduledAfter": "A scheduled quotation exists on this date. Services cannot be scheduled after a quotation. Please schedule before the quotation time or choose a different date.",
       "serviceAlreadyExists": "A service appointment already exists for this address on this day. Only one service per address per day is allowed. Please choose a different date or cancel the existing service.",
       "appointmentEndsAfterClosing": "Appointment cannot end after 5:00 PM. Please choose an earlier time slot or shorter duration.",
+      "notEnoughRemainingTime": "Not enough remaining time on this day for the requested service at {{time}} (requires {{slots}} slot(s)). Choose an earlier start time.",
       "weekendNotAllowed": "Weekend bookings are not allowed. Please select a weekday.",
       "noAvailableSlots": "No available time slots for this date. Please choose a different date or time."
     }

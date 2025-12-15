@@ -551,7 +551,8 @@
       "update": "Mettre à jour",
       "delete": "Supprimer",
       "deactivate": "Désactiver",
-      "deactivateConfirmMessage": "Êtes-vous sûr de vouloir désactiver cette cave?",
+      "deactivateCellar": "Désactiver la Cave",
+      "deactivateConfirmMessage": "Êtes-vous sûr de vouloir désactiver \"{{cellarName}}\"? Cette cave ne sera plus disponible pour les rendez-vous.",
       "unnamedCellar": "Cave sans nom",
       "cellarName": "Nom de la Cave",
       "height": "Hauteur (cm)",
@@ -632,6 +633,7 @@
       "quotationScheduledAfter": "Un devis programmé existe à cette date. Les services ne peuvent pas être programmés après un devis. Veuillez programmer avant l'heure du devis ou choisir une date différente.",
       "serviceAlreadyExists": "Un rendez-vous de service existe déjà pour cette adresse ce jour. Un seul service par adresse par jour est autorisé. Veuillez choisir une date différente ou annuler le service existant.",
       "appointmentEndsAfterClosing": "Le rendez-vous ne peut pas se terminer après 17h00. Veuillez choisir un créneau horaire antérieur ou une durée plus courte.",
+      "notEnoughRemainingTime": "Pas assez de temps restant ce jour pour le service demandé à {{time}} (nécessite {{slots}} créneau(x)). Veuillez choisir une heure de début plus tôt.",
       "weekendNotAllowed": "Les réservations le week-end ne sont pas autorisées. Veuillez sélectionner un jour de semaine.",
       "noAvailableSlots": "Aucun créneau horaire disponible pour cette date. Veuillez choisir une date ou une heure différente."
     }

@@ -198,6 +198,10 @@ public class AppointmentValidationUtils {
     }
 
     public void validateTimeSlotAvailability(Employee technician, LocalDateTime appointmentDateTime, Job job) {
+        validateTimeSlotAvailability(technician, appointmentDateTime, job, null);
+    }
+
+    public void validateTimeSlotAvailability(Employee technician, LocalDateTime appointmentDateTime, Job job, String excludeAppointmentId) {
         LocalDate appointmentDate = appointmentDateTime.toLocalDate();
         LocalTime appointmentTime = appointmentDateTime.toLocalTime();
         int appointmentHour = appointmentTime.getHour();
@@ -248,22 +252,61 @@ public class AppointmentValidationUtils {
         // Calculate the end time of the new appointment
         LocalTime appointmentEnd = appointmentTime.plusMinutes(durationMinutes);
         
+        // Minimum buffer time between appointments (30 minutes)
+        final int BUFFER_MINUTES = 30;
+        
         // Check for time range conflicts with existing appointments
         for (Appointment existing : dayAppointments) {
+            // Skip the current appointment when updating (to avoid self-conflict)
+            if (excludeAppointmentId != null && 
+                existing.getAppointmentIdentifier().getAppointmentId().equals(excludeAppointmentId)) {
+                continue;
+            }
+            
             LocalTime existingStart = existing.getAppointmentDate().toLocalTime();
             int existingDuration = resolveDurationMinutes(existing.getJob());
             LocalTime existingEnd = existingStart.plusMinutes(existingDuration);
             
-            // Check if the time ranges overlap
-            // Two ranges [start1, end1] and [start2, end2] overlap if:
-            // start1 < end2 AND start2 < end1
-            if (appointmentTime.isBefore(existingEnd) && existingStart.isBefore(appointmentEnd)) {
+            // Check for overlap first
+            // Two ranges [start1, end1] and [start2, end2] overlap if: start1 < end2 AND start2 < end1
+            boolean hasOverlap = appointmentTime.isBefore(existingEnd) && existingStart.isBefore(appointmentEnd);
+            
+            if (hasOverlap) {
                 throw new InvalidOperationException(
                     "Time conflict: The technician already has an appointment from " + 
                     existingStart + " to " + existingEnd + ". " +
                     "Your requested appointment from " + appointmentTime + " to " + appointmentEnd + 
-                    " conflicts with this existing appointment."
+                    " overlaps with this existing appointment."
                 );
+            }
+            
+            // Calculate time gaps between appointments for buffer validation
+            long minutesAfterExisting = java.time.Duration.between(existingEnd, appointmentTime).toMinutes();
+            long minutesBeforeExisting = java.time.Duration.between(appointmentEnd, existingStart).toMinutes();
+            
+            // Check for insufficient buffer time (30 minutes minimum)
+            // Case 1: New appointment is scheduled BEFORE the existing one (no overlap)
+            if (appointmentEnd.isBefore(existingStart) || appointmentEnd.equals(existingStart)) {
+                // Need at least 30 minutes gap
+                if (minutesBeforeExisting < BUFFER_MINUTES) {
+                    throw new InvalidOperationException(
+                        "Insufficient time between appointments: Your appointment ending at " + appointmentEnd + 
+                        " leaves only " + minutesBeforeExisting + " minute(s) before the next appointment at " + existingStart + ". " +
+                        "At least " + BUFFER_MINUTES + " minutes buffer is required between appointments."
+                    );
+                }
+            }
+            
+            // Case 2: New appointment is scheduled AFTER the existing one (no overlap)
+            if (existingEnd.isBefore(appointmentTime) || existingEnd.equals(appointmentTime)) {
+                // Need at least 30 minutes gap
+                if (minutesAfterExisting < BUFFER_MINUTES) {
+                    throw new InvalidOperationException(
+                        "Insufficient time between appointments: An existing appointment ending at " + existingEnd + 
+                        " leaves only " + minutesAfterExisting + " minute(s) before your requested start time of " + appointmentTime + ". " +
+                        "At least " + BUFFER_MINUTES + " minutes buffer is required between appointments."
+                    );
+                }
             }
         }
     }
@@ -366,46 +409,6 @@ public class AppointmentValidationUtils {
         };
     }
 
-    /**
-     * Check if two time slots overlap
-     * Since time slots are discrete (9, 11, 13, 15, 17) with 2-hour intervals,
-     * we need to calculate which discrete slots are occupied
-     */
-    private boolean timeSlotsOverlap(int startHour1, int slots1, int startHour2, int slots2) {
-        // Calculate the discrete time slots occupied by each appointment
-        // Time slots are: 9, 11, 13, 15, 17 (indices: 0, 1, 2, 3, 4)
-        
-        // Get occupied slot indices for appointment 1
-        int[] occupiedSlots1 = getOccupiedSlotIndices(startHour1, slots1);
-        int[] occupiedSlots2 = getOccupiedSlotIndices(startHour2, slots2);
-        
-        // Check if any slots overlap
-        for (int slot1 : occupiedSlots1) {
-            for (int slot2 : occupiedSlots2) {
-                if (slot1 == slot2) {
-                    return true; // Overlap found
-                }
-            }
-        }
-        
-        return false; // No overlap
-    }
-    
-    /**
-     * Get the array of discrete slot indices occupied by an appointment
-     * Slot indices: 9=0, 11=1, 1 PM = 2, 3 PM = 3, 5 PM = 4
-     */
-    private int[] getOccupiedSlotIndices(int startHour, int slots) {
-        int startIndex = hourToSlotIndex(startHour);
-        int[] occupied = new int[slots];
-        
-        for (int i = 0; i < slots; i++) {
-            occupied[i] = startIndex + i;
-        }
-        
-        return occupied;
-    }
-    
     /**
      * Convert hour to slot index
      * 9 AM = 0, 11 AM = 1, 1 PM = 2, 3 PM = 3, 5 PM = 4

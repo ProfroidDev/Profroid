@@ -11,24 +11,24 @@ const TestimonialsSection: React.FC = () => {
   const testimonials = [
     {
       id: 1,
-      name: t('pages.home.testimonials.reviews.review1.name'),
-      location: t('pages.home.testimonials.reviews.review1.location'),
+      name: t("pages.home.testimonials.reviews.review1.name"),
+      location: t("pages.home.testimonials.reviews.review1.location"),
       rating: 5,
-      text: t('pages.home.testimonials.reviews.review1.text'),
+      text: t("pages.home.testimonials.reviews.review1.text"),
     },
     {
       id: 2,
-      name: t('pages.home.testimonials.reviews.review2.name'),
-      location: t('pages.home.testimonials.reviews.review2.location'),
+      name: t("pages.home.testimonials.reviews.review2.name"),
+      location: t("pages.home.testimonials.reviews.review2.location"),
       rating: 5,
-      text: t('pages.home.testimonials.reviews.review2.text'),
+      text: t("pages.home.testimonials.reviews.review2.text"),
     },
     {
       id: 3,
-      name: t('pages.home.testimonials.reviews.review3.name'),
-      location: t('pages.home.testimonials.reviews.review3.location'),
+      name: t("pages.home.testimonials.reviews.review3.name"),
+      location: t("pages.home.testimonials.reviews.review3.location"),
       rating: 4,
-      text: t('pages.home.testimonials.reviews.review3.text'),
+      text: t("pages.home.testimonials.reviews.review3.text"),
     },
   ];
   // Duplicate testimonials to create a seamless loop
@@ -58,9 +58,9 @@ const TestimonialsSection: React.FC = () => {
         viewport={{ once: true }}
         transition={{ duration: 0.6 }}
       >
-        <h2 className="section-title">{t('pages.home.testimonials.title')}</h2>
+        <h2 className="section-title">{t("pages.home.testimonials.title")}</h2>
         <p className="section-subtitle">
-          {t('pages.home.testimonials.subtitle')}
+          {t("pages.home.testimonials.subtitle")}
         </p>
       </motion.div>
 

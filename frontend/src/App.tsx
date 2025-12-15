@@ -19,7 +19,10 @@ import RegisterPage from "./pages/Auth/RegisterPage";
 import ProfilePage from "./pages/Auth/ProfilePage";
 import ForgotPasswordPage from "./pages/Auth/ForgotPasswordPage";
 import ResetPasswordPage from "./pages/Auth/ResetPasswordPage";
-import { ProtectedRoute, PublicRoute } from "./features/authentication/components/ProtectedRoute";
+import {
+  ProtectedRoute,
+  PublicRoute,
+} from "./features/authentication/components/ProtectedRoute";
 import useAuthStore from "./features/authentication/store/authStore";
 
 function App(): React.ReactElement {
@@ -71,13 +74,34 @@ function App(): React.ReactElement {
 
         {/* Protected Routes */}
         <Route path="/" element={<HomePage />} />
-        <Route path="/profile" element={<ProtectedRoute><ProfilePage /></ProtectedRoute>} />
+        <Route
+          path="/profile"
+          element={
+            <ProtectedRoute>
+              <ProfilePage />
+            </ProtectedRoute>
+          }
+        />
         <Route path="/parts" element={<PartsPage />} />
         <Route path="/customers" element={<CustomerListPage />} />
         <Route path="/services" element={<ServicesPage />} />
-        <Route path="/employees" element={<ProtectedRoute requiredRole="admin"><EmployeeListPage /></ProtectedRoute>} />
+        <Route
+          path="/employees"
+          element={
+            <ProtectedRoute requiredRole="admin">
+              <EmployeeListPage />
+            </ProtectedRoute>
+          }
+        />
         <Route path="/my-appointments" element={<MyAppointmentsPage />} />
-        <Route path="/my-jobs" element={<ProtectedRoute requiredEmployeeType="TECHNICIAN"><MyJobsPage /></ProtectedRoute>} />
+        <Route
+          path="/my-jobs"
+          element={
+            <ProtectedRoute requiredEmployeeType="TECHNICIAN">
+              <MyJobsPage />
+            </ProtectedRoute>
+          }
+        />
       </Routes>
 
       <Footer />
