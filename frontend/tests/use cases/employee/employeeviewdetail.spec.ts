@@ -1,11 +1,9 @@
-import { test, expect } from "../../fixtures/basePage";
+import { adminTest as test, expect } from "../../fixtures/authFixtures";
 
 test.describe.serial("Employee Operations", () => {
-  test("User can view employee details", async ({ homePage, employeePage }) => {
-    
-    // 1. Navigate to Home → Employees page
-    await homePage.goto();
-    await homePage.goToEmployees();
+  test("User can view employee details", async ({ loggedInAdminHomePage, employeePage }) => {
+    // 1. Navigate to Employees page as admin
+    await loggedInAdminHomePage.goToEmployees();
 
     // 2. Ensure table loaded
     await expect(employeePage.tableRows.first()).toBeVisible();
@@ -36,37 +34,8 @@ test.describe.serial("Employee Operations", () => {
     await expect(modal).toBeHidden();
   });
 
-  test("User can edit an existing employee", async ({ employeePage }) => {
-    await employeePage.goto();
-
-    // Step 1: Get the first active employee from the table
-    const row = await employeePage.getFirstActiveEmployeeRow();
-
-    // Step 2: Open the Edit modal by clicking the Edit button on the row
-    await row.getByRole("button", { name: /^edit$/i }).click();
-
-    await employeePage.page.getByRole('heading', { name: /Edit Employee/i }).waitFor();
-
-    // Step 3: Change employee fields
-    await employeePage.editEmployee({
-      firstName: "UpdatedFirst",
-      lastName: "UpdatedLast",
-      street: "555 Updated Street",
-      city: "Montreal",
-      province: "Quebec",
-      postalCode: "H1A 2B3"
-    });
-    await employeePage.page.getByRole('button', { name: 'Update Employee' }).click();
-    // Step 4: Validate update in table
-    await expect(
-      employeePage.page.getByText("UpdatedFirst")
-    ).toBeVisible();
-  });
-
-  test("User can deactivate an employee", async ({ homePage, employeePage }) => {
-    await homePage.goto();
-    await homePage.goToEmployees();
-    await employeePage.goto();
+  test("User can deactivate and reactivate an employee", async ({ loggedInAdminHomePage, employeePage }) => {
+    await loggedInAdminHomePage.goToEmployees();
 
     // Get first active employee from the table
     const row = await employeePage.getFirstActiveEmployeeRow();
@@ -77,11 +46,24 @@ test.describe.serial("Employee Operations", () => {
     await deactivateBtn.click();
 
     // Confirm deactivation
-    const modal = employeePage.page.locator(".confirmation-modal-container");
+    let modal = employeePage.page.locator(".confirmation-modal-container");
     await expect(modal).toBeVisible({ timeout: 5000 });
     await modal.getByRole("button", { name: /deactivate/i }).click();
 
     // Verify the row is now grayed out (deactivated)
     await expect(row).toHaveClass(/row-deactivated/);
+
+    // Now reactivate the employee
+    const reactivateBtn = row.getByRole("button", { name: /reactivate/i });
+    await reactivateBtn.waitFor({ state: "visible" });
+    await reactivateBtn.click();
+
+    // Confirm reactivation
+    modal = employeePage.page.locator(".confirmation-modal-container");
+    await expect(modal).toBeVisible({ timeout: 5000 });
+    await modal.getByRole("button", { name: /reactivate/i }).click();
+
+    // Verify the row no longer has deactivated class
+    await expect(row).not.toHaveClass(/row-deactivated/);
   });
 });

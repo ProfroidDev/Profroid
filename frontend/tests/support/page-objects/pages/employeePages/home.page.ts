@@ -1,7 +1,6 @@
 import { Page } from '@playwright/test';
 
-export class HomePage {
-
+export class EmployeeHomePage {
     constructor(private page: Page) {}
 
     // -------------------------
@@ -22,35 +21,31 @@ export class HomePage {
 
     partLink = () => this.page.locator('nav').getByRole('link', { name: 'Parts' });
     serviceLink = () => this.page.locator('nav').getByRole('link', { name: 'Services' });
-    customerLink = () =>
-  this.page.locator('nav').getByRole('link', { name: 'Customers' });
-    employeeLink = () => this.page.getByRole('link', { name: 'Employees' });
-    customerAppointmentLink = () => this.page.getByRole('link', { name: 'My Appointments' });
-    technicianAppointmentLink = () => this.page.getByRole('link', { name: 'My Jobs' });
+    jobsLink = () => this.page.getByRole('link', { name: 'My Jobs' });
+    employeeLink = () => this.page.locator('nav').getByRole('link', { name: 'Employees' });
     hamburgerMenuButton = () => this.page.getByRole('button', { name: 'Toggle navigation' });
 
     // -------------------------
-    // Actions - (clean helpers)
+    // Actions
     // -------------------------
-
-    public async goToCustomers() {
-        await this.customerLink().click();
-    }
 
     public async goToParts() {
         await this.partLink().click();
     }
 
-    public async goToEmployees() {
-        await this.employeeLink().click();
+    public async goToJobs() {
+        await this.jobsLink().click();
     }
 
     public async goToServices() {
         await this.serviceLink().click();
     }
 
-    public async goToCustomerAppointments() {
-        await this.customerAppointmentLink().click();
+    public async goToEmployees() {
+        await this.employeeLink().click();
     }
 
+    public async openHamburgerMenu() {
+        await this.hamburgerMenuButton().click();
+    }
 }
