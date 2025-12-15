@@ -1,5 +1,5 @@
 import React, { useEffect } from "react";
-import { BrowserRouter, Routes, Route, Link } from "react-router-dom";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
 import "./App.css";
 import "./i18n/config";
 
@@ -11,6 +11,7 @@ import EmployeeListPage from "./pages/Employee/EmployeeListPage";
 import PartsPage from "./pages/Parts/PartsPage";
 import MyAppointmentsPage from "./pages/Appointment/MyAppointmentsPage";
 import MyJobsPage from "./pages/Appointment/MyJobsPage";
+import HomePage from "./pages/Home/HomePage";
 
 // Auth pages and components
 import LoginPage from "./pages/Auth/LoginPage";
@@ -18,26 +19,11 @@ import RegisterPage from "./pages/Auth/RegisterPage";
 import ProfilePage from "./pages/Auth/ProfilePage";
 import ForgotPasswordPage from "./pages/Auth/ForgotPasswordPage";
 import ResetPasswordPage from "./pages/Auth/ResetPasswordPage";
-import { ProtectedRoute, PublicRoute } from "./features/authentication/components/ProtectedRoute";
+import {
+  ProtectedRoute,
+  PublicRoute,
+} from "./features/authentication/components/ProtectedRoute";
 import useAuthStore from "./features/authentication/store/authStore";
-import { useTranslation } from "react-i18next";
-
-function Home(): React.ReactElement {
-  const { t } = useTranslation();
-
-  return (
-    <div style={{ padding: 16 }}>
-      <h1>{t('common.appName')}</h1>
-      <p>{t('common.welcome')}</p>
-      <p>
-        <Link to="/customers">{t('pages.home.viewCustomers')}</Link>
-      </p>
-      <p>
-        <Link to="/services">{t('pages.home.viewServices')}</Link>
-      </p>
-    </div>
-  );
-}
 
 function App(): React.ReactElement {
   const { initializeAuth } = useAuthStore();
@@ -87,14 +73,35 @@ function App(): React.ReactElement {
         />
 
         {/* Protected Routes */}
-        <Route path="/" element={<Home />} />
-        <Route path="/profile" element={<ProtectedRoute><ProfilePage /></ProtectedRoute>} />
+        <Route path="/" element={<HomePage />} />
+        <Route
+          path="/profile"
+          element={
+            <ProtectedRoute>
+              <ProfilePage />
+            </ProtectedRoute>
+          }
+        />
         <Route path="/parts" element={<PartsPage />} />
         <Route path="/customers" element={<CustomerListPage />} />
         <Route path="/services" element={<ServicesPage />} />
-        <Route path="/employees" element={<ProtectedRoute requiredRole="admin"><EmployeeListPage /></ProtectedRoute>} />
+        <Route
+          path="/employees"
+          element={
+            <ProtectedRoute requiredRole="admin">
+              <EmployeeListPage />
+            </ProtectedRoute>
+          }
+        />
         <Route path="/my-appointments" element={<MyAppointmentsPage />} />
-        <Route path="/my-jobs" element={<ProtectedRoute requiredEmployeeType="TECHNICIAN"><MyJobsPage /></ProtectedRoute>} />
+        <Route
+          path="/my-jobs"
+          element={
+            <ProtectedRoute requiredEmployeeType="TECHNICIAN">
+              <MyJobsPage />
+            </ProtectedRoute>
+          }
+        />
       </Routes>
 
       <Footer />

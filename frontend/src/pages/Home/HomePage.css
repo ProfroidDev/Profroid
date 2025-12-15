@@ -1,0 +1,82 @@
+.home-page {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  background-color: #fdfbf7; /* Light cream background from screenshots */
+  color: #2c1810; /* Dark brown text */
+  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+}
+
+.section-container {
+  width: 100%;
+  max-width: 1200px;
+  padding: 60px 20px;
+  box-sizing: border-box;
+}
+
+.section-title {
+  font-size: 2.5rem;
+  font-weight: 700;
+  text-align: center;
+  margin-bottom: 1rem;
+  color: #2c1810;
+  font-family: serif; /* Match the serif font in screenshots */
+}
+
+.section-subtitle {
+  font-size: 1.1rem;
+  text-align: center;
+  color: #666;
+  margin-bottom: 3rem;
+  max-width: 600px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+/* Button Styles */
+.btn-primary {
+  background-color: #722f37; /* Wine red */
+  color: white;
+  padding: 12px 24px;
+  border: none;
+  border-radius: 4px;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+  text-decoration: none;
+  display: inline-block;
+}
+
+.btn-primary:hover {
+  background-color: #5a252b;
+}
+
+.btn-secondary {
+  background-color: transparent;
+  color: #722f37;
+  border: 2px solid #722f37;
+  padding: 10px 22px;
+  border-radius: 4px;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  text-decoration: none;
+  display: inline-block;
+}
+
+.btn-secondary:hover {
+  background-color: #722f37;
+  color: white;
+}
+
+/* Browse Services Button - Ensure white text */
+.btn-primary.browse-services-btn,
+.browse-services-btn {
+  color: white;
+}
+
+.btn-primary.browse-services-btn:hover,
+.browse-services-btn:hover {
+  color: white;
+}

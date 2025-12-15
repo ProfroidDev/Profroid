@@ -408,11 +408,15 @@ public class AppointmentServiceImpl implements AppointmentService {
             validationUtils.validateDuplicateQuotation(job.getJobType(), appointmentRequest, appointmentDateTime.toLocalDate(), appointmentDateTime, customer);
             // Prevent duplicate service for same address/day/technician except for the current appointment
             validationUtils.validateDuplicateServiceAddressAndDayExcludeCurrent(job.getJobType(), appointmentRequest, appointmentDateTime.toLocalDate(), appointment.getAppointmentIdentifier().getAppointmentId());
-            validationUtils.validateTimeSlotAvailability(technician, appointmentDateTime, job);
             
-            // Validate that appointment doesn't exceed 5 PM (17:00)
+            // Validate time slot availability - MUST include 30-minute buffer check and exclude current appointment
+            // This will also validate that appointment doesn't exceed 5 PM
+            validationUtils.validateTimeSlotAvailability(technician, appointmentDateTime, job, appointment.getAppointmentIdentifier().getAppointmentId());
+            
+            // Additional explicit check that appointment doesn't exceed 5 PM (17:00)
             LocalTime appointmentStart = appointmentDateTime.toLocalTime();
-            int durationMinutes = job.getEstimatedDurationMinutes();
+            Integer durationMinutesObj = job.getEstimatedDurationMinutes();
+            int durationMinutes = (durationMinutesObj != null) ? durationMinutesObj : getDefaultDuration(job.getJobType());
             LocalTime appointmentEnd = appointmentStart.plusMinutes(durationMinutes);
             if (appointmentEnd.isAfter(LocalTime.of(17, 0))) {
                 throw new InvalidOperationException("ERROR_APPOINTMENT_ENDS_AFTER_CLOSING");
@@ -817,4 +821,16 @@ public class AppointmentServiceImpl implements AppointmentService {
             
             return leastBookedTechnician;
         }
-}
+        
+        /**
+         * Get default duration in minutes for a job type when estimatedDurationMinutes is null
+         */
+        private int getDefaultDuration(JobType jobType) {
+            return switch (jobType) {
+                case QUOTATION -> 30;
+                case MAINTENANCE -> 60;
+                case REPARATION -> 90;
+                case INSTALLATION -> 240;
+            };
+        }
+    }

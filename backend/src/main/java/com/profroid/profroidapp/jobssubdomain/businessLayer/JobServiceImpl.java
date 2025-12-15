@@ -163,9 +163,15 @@ public class JobServiceImpl implements JobService {
                 LocalTime otherStartTime = other.getAppointmentDate().toLocalTime();
 
                 if (timeSlotsOverlap(startTime, updatedDurationMinutes, otherStartTime, otherDuration)) {
+                    LocalTime updatedEndTime = startTime.plusMinutes(updatedDurationMinutes);
+                    LocalTime otherEndTime = otherStartTime.plusMinutes(otherDuration);
+                    
                     throw new InvalidOperationException(
-                        "Job duration update causes overlap: appointment at " + startTime + " now conflicts with " +
-                        otherStartTime + " on " + date + ". Adjust existing appointments or choose a shorter duration."
+                        "Job duration update violates scheduling rules: appointment at " + startTime + 
+                        " (ending at " + updatedEndTime + ") would overlap or be too close to another appointment at " +
+                        otherStartTime + " (ending at " + otherEndTime + ") on " + date + 
+                        ". A minimum 30-minute buffer is required between appointments. " +
+                        "Adjust existing appointments or choose a shorter duration."
                     );
                 }
             }
@@ -209,9 +215,35 @@ public class JobServiceImpl implements JobService {
         LocalTime endTime1 = startTime1.plusMinutes(durationMinutes1);
         LocalTime endTime2 = startTime2.plusMinutes(durationMinutes2);
         
-        // Check for overlap: two time ranges overlap if one starts before the other ends
+        // Minimum buffer time between appointments (30 minutes)
+        final int BUFFER_MINUTES = 30;
+        
+        // Check for direct overlap: two time ranges overlap if one starts before the other ends
         // and the other starts before the first ends
-        return startTime1.isBefore(endTime2) && startTime2.isBefore(endTime1);
+        boolean hasDirectOverlap = startTime1.isBefore(endTime2) && startTime2.isBefore(endTime1);
+        
+        if (hasDirectOverlap) {
+            return true; // Direct overlap detected
+        }
+        
+        // Check for insufficient buffer time (30 minutes minimum)
+        // Case 1: Appointment 1 ends before Appointment 2 starts
+        if (endTime1.isBefore(startTime2) || endTime1.equals(startTime2)) {
+            long minutesBetween = java.time.Duration.between(endTime1, startTime2).toMinutes();
+            if (minutesBetween < BUFFER_MINUTES) {
+                return true; // Insufficient buffer - treat as overlap
+            }
+        }
+        
+        // Case 2: Appointment 2 ends before Appointment 1 starts
+        if (endTime2.isBefore(startTime1) || endTime2.equals(startTime1)) {
+            long minutesBetween = java.time.Duration.between(endTime2, startTime1).toMinutes();
+            if (minutesBetween < BUFFER_MINUTES) {
+                return true; // Insufficient buffer - treat as overlap
+            }
+        }
+        
+        return false; // No overlap and sufficient buffer
     }
 
     private int[] getOccupiedSlotIndices(int startHour, int slots) {

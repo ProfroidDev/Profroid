@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
+import i18n from "../../i18n/config";
 import useAuthStore from "../../features/authentication/store/authStore";
 import "../Auth.css";
 import "../jobs/ServicesPage.css"; // Import ServicesPage styles for modal
@@ -8,6 +9,7 @@ import Calendar from "react-calendar";
 import "react-calendar/dist/Calendar.css";
 import "../Employee/EmployeeListPage.css";
 import Toast from "../../shared/components/Toast";
+import ConfirmationModal from "../../components/ConfirmationModal";
 import { getEmployeeScheduleForDate } from "../../features/employee/api/getEmployeeScheduleForDate";
 import type { EmployeeSchedule } from "../../features/employee/models/EmployeeSchedule";
 
@@ -105,6 +107,17 @@ export default function ProfilePage() {
     message: string;
     type: "success" | "error" | "info" | "warning";
   } | null>(null);
+
+  // Confirmation modal state for cellar deactivation
+  const [confirmationModal, setConfirmationModal] = useState<{
+    isOpen: boolean;
+    cellarId: string | null;
+    cellarName: string | null;
+  }>({
+    isOpen: false,
+    cellarId: null,
+    cellarName: null,
+  });
 
   // Customer cellars state
   // Align to backend response fields
@@ -502,9 +515,14 @@ export default function ProfilePage() {
       }
 
       setEditMode(false);
+      // Show success message
+      setToast({
+        message: t("pages.profile.notifications.profileUpdated"),
+        type: "success",
+      });
     } catch (error) {
       console.error("Error saving profile:", error);
-      setFormError("Failed to save profile changes");
+      setFormError(t("pages.profile.notifications.profileUpdateFailed"));
     }
   };
 
@@ -530,10 +548,15 @@ export default function ProfilePage() {
 
     const success = await changePassword(oldPassword, newPassword);
     if (success) {
+      setToast({
+        message: t("pages.profile.notifications.passwordChanged"),
+        type: "success",
+      });
       setPasswordMode(false);
       setOldPassword("");
       setNewPassword("");
       setConfirmPassword("");
+      setFormError("");
     }
   };
 
@@ -616,7 +639,7 @@ export default function ProfilePage() {
 
       // Show success message
       setToast({
-        message: "Cellar intake created successfully!",
+        message: t("pages.profile.notifications.cellarCreated"),
         type: "success",
       });
     } catch (error) {
@@ -726,7 +749,7 @@ export default function ProfilePage() {
 
       // Show success message
       setToast({
-        message: "Cellar updated successfully!",
+        message: t("pages.profile.notifications.cellarUpdated"),
         type: "success",
       });
     } catch (error) {
@@ -737,19 +760,31 @@ export default function ProfilePage() {
     }
   };
 
-  const handleCellarDelete = async (cellarId: string | undefined) => {
+  const handleCellarDelete = async (
+    cellarId: string | undefined,
+    cellarName: string | undefined
+  ) => {
     if (!cellarId) return;
 
-    if (!window.confirm("Are you sure you want to delete this cellar?")) {
-      return;
-    }
+    // Open the confirmation modal instead of using window.confirm
+    setConfirmationModal({
+      isOpen: true,
+      cellarId: cellarId,
+      cellarName: cellarName || "Unknown Cellar",
+    });
+  };
+
+  const confirmCellarDeactivation = async () => {
+    if (!confirmationModal.cellarId) return;
 
     try {
       setCellarLoading(true);
       const token = localStorage.getItem("authToken");
 
       const response = await fetch(
-        `${import.meta.env.VITE_BACKEND_URL}/cellars/${cellarId}/deactivate`,
+        `${import.meta.env.VITE_BACKEND_URL}/cellars/${
+          confirmationModal.cellarId
+        }/deactivate`,
         {
           method: "DELETE",
           headers: {
@@ -761,7 +796,10 @@ export default function ProfilePage() {
 
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.message || "Failed to delete cellar");
+        throw new Error(
+          errorData.message ||
+            t("pages.profile.notifications.cellarDeactivateFailed")
+        );
       }
 
       // Refresh cellars list
@@ -769,13 +807,20 @@ export default function ProfilePage() {
 
       // Show success message
       setToast({
-        message: "Cellar deleted successfully!",
+        message: t("pages.profile.notifications.cellarDeactivated"),
         type: "success",
+      });
+
+      // Close modal
+      setConfirmationModal({
+        isOpen: false,
+        cellarId: null,
+        cellarName: null,
       });
     } catch (error) {
       console.error("Error deleting cellar:", error);
       setToast({
-        message: "Failed to delete cellar",
+        message: t("pages.profile.notifications.cellarDeactivateFailed"),
         type: "error",
       });
     } finally {
@@ -799,7 +844,7 @@ export default function ProfilePage() {
       )}
       <div className="profile-card">
         <div className="profile-header">
-          <h1>{t('pages.profile.title')}</h1>
+          <h1>{t("pages.profile.title")}</h1>
           <div style={{ display: "flex", gap: "0.5rem" }}>
             <button
               onClick={() => {
@@ -813,14 +858,14 @@ export default function ProfilePage() {
               className="btn-secondary"
               disabled={isLoading}
             >
-              {t('pages.profile.refresh')}
+              {t("pages.profile.refresh")}
             </button>
             <button
               onClick={handleLogout}
               className="btn-secondary"
               disabled={isLoading}
             >
-              {t('common.logout')}
+              {t("common.logout")}
             </button>
           </div>
         </div>
@@ -829,13 +874,13 @@ export default function ProfilePage() {
         {!passwordMode && (
           <div className="profile-section">
             <div className="section-header">
-              <h2>Profile Information</h2>
+              <h2>{t("pages.profile.profileInformation")}</h2>
               {!editMode && (
                 <button
                   onClick={() => setEditMode(true)}
                   className="btn-secondary"
                 >
-                  Edit
+                  {t("pages.profile.edit")}
                 </button>
               )}
             </div>
@@ -844,7 +889,9 @@ export default function ProfilePage() {
               <form onSubmit={handleProfileSubmit} className="auth-form">
                 <div className="form-row">
                   <div className="form-group">
-                    <label htmlFor="firstName">First Name</label>
+                    <label htmlFor="firstName">
+                      {t("pages.profile.firstName")}
+                    </label>
                     <input
                       id="firstName"
                       type="text"
@@ -854,7 +901,9 @@ export default function ProfilePage() {
                     />
                   </div>
                   <div className="form-group">
-                    <label htmlFor="lastName">Last Name</label>
+                    <label htmlFor="lastName">
+                      {t("pages.profile.lastName")}
+                    </label>
                     <input
                       id="lastName"
                       type="text"
@@ -866,12 +915,14 @@ export default function ProfilePage() {
                 </div>
 
                 <div className="form-group">
-                  <label htmlFor="email">Email (Read Only)</label>
+                  <label htmlFor="email">
+                    {t("pages.profile.emailReadOnly")}
+                  </label>
                   <input id="email" type="email" value={user.email} disabled />
                 </div>
 
                 <div className="form-group">
-                  <label htmlFor="phone">Phone</label>
+                  <label htmlFor="phone">{t("pages.profile.phone")}</label>
                   <input
                     id="phone"
                     type="tel"
@@ -883,7 +934,7 @@ export default function ProfilePage() {
                 </div>
 
                 <div className="form-group">
-                  <label htmlFor="address">Address</label>
+                  <label htmlFor="address">{t("pages.profile.address")}</label>
                   <input
                     id="address"
                     type="text"
@@ -896,7 +947,9 @@ export default function ProfilePage() {
 
                 <div className="form-row">
                   <div className="form-group">
-                    <label htmlFor="postalCode">Postal Code</label>
+                    <label htmlFor="postalCode">
+                      {t("pages.profile.postalCode")}
+                    </label>
                     <input
                       id="postalCode"
                       type="text"
@@ -908,7 +961,7 @@ export default function ProfilePage() {
                   </div>
 
                   <div className="form-group">
-                    <label htmlFor="city">City</label>
+                    <label htmlFor="city">{t("pages.profile.city")}</label>
                     <input
                       id="city"
                       type="text"
@@ -922,7 +975,9 @@ export default function ProfilePage() {
 
                 <div className="form-row">
                   <div className="form-group">
-                    <label htmlFor="province">Province</label>
+                    <label htmlFor="province">
+                      {t("pages.profile.province")}
+                    </label>
                     <input
                       id="province"
                       type="text"
@@ -934,7 +989,9 @@ export default function ProfilePage() {
                   </div>
 
                   <div className="form-group">
-                    <label htmlFor="country">Country</label>
+                    <label htmlFor="country">
+                      {t("pages.profile.country")}
+                    </label>
                     <input
                       id="country"
                       type="text"
@@ -956,7 +1013,9 @@ export default function ProfilePage() {
                     disabled={isLoading}
                     className="btn-primary"
                   >
-                    {isLoading ? "Saving..." : "Save Changes"}
+                    {isLoading
+                      ? t("pages.profile.saving")
+                      : t("pages.profile.saveChanges")}
                   </button>
                   <button
                     type="button"
@@ -995,14 +1054,14 @@ export default function ProfilePage() {
                     }}
                     className="btn-secondary"
                   >
-                    Cancel
+                    {t("pages.profile.cancel")}
                   </button>
                 </div>
               </form>
             ) : (
               <>
                 <div className="info-row">
-                  <span className="label">First Name:</span>
+                  <span className="label">{t("pages.profile.firstName")}:</span>
                   <span className="value">
                     {customerData?.firstName || "—"}
                   </span>
@@ -1011,7 +1070,7 @@ export default function ProfilePage() {
                 {customerData?.phoneNumbers &&
                   customerData.phoneNumbers.length > 0 && (
                     <div className="info-row">
-                      <span className="label">Phone:</span>
+                      <span className="label">{t("pages.profile.phone")}:</span>
                       <span className="value">
                         {customerData.phoneNumbers
                           .map((p) => `${String(p.number)} (${String(p.type)})`)
@@ -1024,7 +1083,9 @@ export default function ProfilePage() {
                   (customerData.streetAddress ||
                     customerData.employeeAddress?.streetAddress) && (
                     <div className="info-row">
-                      <span className="label">Address:</span>
+                      <span className="label">
+                        {t("pages.profile.address")}:
+                      </span>
                       <span className="value">
                         {customerData.streetAddress ||
                           customerData.employeeAddress?.streetAddress}
@@ -1035,7 +1096,7 @@ export default function ProfilePage() {
                 {customerData &&
                   (customerData.city || customerData.employeeAddress?.city) && (
                     <div className="info-row">
-                      <span className="label">City:</span>
+                      <span className="label">{t("pages.profile.city")}:</span>
                       <span className="value">
                         {customerData.city ||
                           customerData.employeeAddress?.city}
@@ -1053,7 +1114,9 @@ export default function ProfilePage() {
                   (customerData.postalCode ||
                     customerData.employeeAddress?.postalCode) && (
                     <div className="info-row">
-                      <span className="label">Postal Code:</span>
+                      <span className="label">
+                        {t("pages.profile.postalCode")}:
+                      </span>
                       <span className="value">
                         {customerData.postalCode ||
                           customerData.employeeAddress?.postalCode}
@@ -1065,7 +1128,9 @@ export default function ProfilePage() {
                   (customerData.country ||
                     customerData.employeeAddress?.country) && (
                     <div className="info-row">
-                      <span className="label">Country:</span>
+                      <span className="label">
+                        {t("pages.profile.country")}:
+                      </span>
                       <span className="value">
                         {customerData.country ||
                           customerData.employeeAddress?.country}
@@ -1080,7 +1145,7 @@ export default function ProfilePage() {
               className="btn-secondary"
               style={{ marginTop: "1rem" }}
             >
-              Change Password
+              {t("pages.profile.changePassword")}
             </button>
 
             {/* Cellar Intake Button - Only show for customers */}
@@ -1090,7 +1155,7 @@ export default function ProfilePage() {
                 className="btn-secondary"
                 style={{ marginTop: "1rem", marginLeft: "0.5rem" }}
               >
-                Add Cellar Intake
+                {t("pages.profile.addCellarIntake")}
               </button>
             )}
 
@@ -1098,59 +1163,76 @@ export default function ProfilePage() {
             {!user?.employeeType && (
               <div style={{ marginTop: "2rem" }}>
                 <div className="section-header">
-                  <h2>Your Cellars</h2>
+                  <h2>{t("pages.profile.yourCellars")}</h2>
                 </div>
                 {cellars.length === 0 ? (
-                  <p>No cellars yet.</p>
+                  <p>{t("pages.profile.noCellarsYet")}</p>
                 ) : (
                   <div style={{ display: "grid", gap: "0.75rem" }}>
                     {cellars.map((c) => {
                       const status =
-                        c.isActive ?? c.active ? "Active" : "Inactive";
+                        c.isActive ?? c.active
+                          ? t("pages.profile.active")
+                          : t("pages.profile.inactive");
                       return (
                         <div key={c.cellarId}>
                           <div className="info-row">
-                            <span className="label">Name:</span>
+                            <span className="label">
+                              {t("pages.profile.name")}:
+                            </span>
                             <span className="value">
-                              {c.name || "Unnamed Cellar"}
+                              {c.name || t("pages.profile.unnamedCellar")}
                             </span>
                           </div>
                           <div className="info-row">
-                            <span className="label">Status:</span>
+                            <span className="label">
+                              {t("pages.profile.status")}:
+                            </span>
                             <span className="value">{status}</span>
                           </div>
                           <div className="info-row">
-                            <span className="label">Type:</span>
+                            <span className="label">
+                              {t("pages.profile.type")}:
+                            </span>
                             <span className="value">{c.cellarType}</span>
                           </div>
                           <div className="info-row">
-                            <span className="label">Capacity:</span>
+                            <span className="label">
+                              {t("pages.profile.capacity")}:
+                            </span>
                             <span className="value">
-                              {c.bottleCapacity} bottles
+                              {c.bottleCapacity} {t("pages.profile.bottles")}
                             </span>
                           </div>
                           <div className="info-row">
-                            <span className="label">Dimensions (H×W×D):</span>
+                            <span className="label">
+                              {t("pages.profile.dimensions")}:
+                            </span>
                             <span className="value">
                               {c.height} × {c.width} × {c.depth} cm
                             </span>
                           </div>
                           <div className="info-row">
-                            <span className="label">Features:</span>
+                            <span className="label">
+                              {t("pages.profile.features")}:
+                            </span>
                             <span className="value">
-                              {c.hasCoolingSystem ? "Cooling" : null}
+                              {c.hasCoolingSystem
+                                ? t("pages.profile.cooling")
+                                : null}
                               {c.hasHumidityControl
-                                ? (c.hasCoolingSystem ? ", " : "") + "Humidity"
+                                ? (c.hasCoolingSystem ? ", " : "") +
+                                  t("pages.profile.humidity")
                                 : ""}
                               {c.hasAutoRegulation
                                 ? (c.hasCoolingSystem || c.hasHumidityControl
                                     ? ", "
-                                    : "") + "Auto Regulation"
+                                    : "") + t("pages.profile.autoRegulation")
                                 : ""}
                               {!c.hasCoolingSystem &&
                               !c.hasHumidityControl &&
                               !c.hasAutoRegulation
-                                ? "None"
+                                ? t("pages.profile.none")
                                 : ""}
                             </span>
                           </div>
@@ -1167,10 +1249,12 @@ export default function ProfilePage() {
                               className="btn-secondary"
                               style={{ flex: 1 }}
                             >
-                              Update
+                              {t("pages.profile.update")}
                             </button>
                             <button
-                              onClick={() => handleCellarDelete(c.cellarId)}
+                              onClick={() =>
+                                handleCellarDelete(c.cellarId, c.name)
+                              }
                               className="btn-secondary"
                               style={{
                                 flex: 1,
@@ -1178,7 +1262,7 @@ export default function ProfilePage() {
                                 color: "white",
                               }}
                             >
-                              Delete
+                              {t("pages.profile.deactivate")}
                             </button>
                           </div>
                           <hr
@@ -1203,7 +1287,7 @@ export default function ProfilePage() {
           <div className="modal-overlay" role="dialog" aria-modal>
             <div className="modal">
               <div className="modal-header">
-                <h3>Add Cellar Intake</h3>
+                <h3>{t("pages.profile.addCellarIntake")}</h3>
                 <button
                   className="modal-close-light"
                   aria-label="Close"
@@ -1231,7 +1315,9 @@ export default function ProfilePage() {
 
               <form onSubmit={handleCellarSubmit} className="create-job-form">
                 <div className="form-group">
-                  <label htmlFor="cellarName">Cellar Name *</label>
+                  <label htmlFor="cellarName">
+                    {t("pages.profile.cellarName")} *
+                  </label>
                   <input
                     id="cellarName"
                     type="text"
@@ -1245,7 +1331,9 @@ export default function ProfilePage() {
 
                 <div className="form-row">
                   <div className="form-group">
-                    <label htmlFor="cellarHeight">Height (cm) *</label>
+                    <label htmlFor="cellarHeight">
+                      {t("pages.profile.height")} *
+                    </label>
                     <input
                       id="cellarHeight"
                       type="number"
@@ -1259,7 +1347,9 @@ export default function ProfilePage() {
                   </div>
 
                   <div className="form-group">
-                    <label htmlFor="cellarWidth">Width (cm) *</label>
+                    <label htmlFor="cellarWidth">
+                      {t("pages.profile.width")} *
+                    </label>
                     <input
                       id="cellarWidth"
                       type="number"
@@ -1275,7 +1365,9 @@ export default function ProfilePage() {
 
                 <div className="form-row">
                   <div className="form-group">
-                    <label htmlFor="cellarDepth">Depth (cm) *</label>
+                    <label htmlFor="cellarDepth">
+                      {t("pages.profile.depth")} *
+                    </label>
                     <input
                       id="cellarDepth"
                       type="number"
@@ -1290,7 +1382,7 @@ export default function ProfilePage() {
 
                   <div className="form-group">
                     <label htmlFor="cellarBottleCapacity">
-                      Bottle Capacity *
+                      {t("pages.profile.bottleCapacity")} *
                     </label>
                     <input
                       id="cellarBottleCapacity"
@@ -1305,17 +1397,27 @@ export default function ProfilePage() {
                 </div>
 
                 <div className="form-group">
-                  <label htmlFor="cellarType">Cellar Type</label>
+                  <label htmlFor="cellarType">
+                    {t("pages.profile.cellarType")}
+                  </label>
                   <select
                     id="cellarType"
                     value={cellarType}
                     onChange={(e) => setCellarType(e.target.value)}
                     disabled={cellarLoading}
                   >
-                    <option value="PRIVATE">Private</option>
-                    <option value="COMMERCIAL">Commercial</option>
-                    <option value="PROFESSIONAL">Professional</option>
-                    <option value="MODULAR">Modular</option>
+                    <option value="PRIVATE">
+                      {t("pages.profile.private")}
+                    </option>
+                    <option value="COMMERCIAL">
+                      {t("pages.profile.commercial")}
+                    </option>
+                    <option value="PROFESSIONAL">
+                      {t("pages.profile.professional")}
+                    </option>
+                    <option value="MODULAR">
+                      {t("pages.profile.modular")}
+                    </option>
                   </select>
                 </div>
 
@@ -1336,7 +1438,7 @@ export default function ProfilePage() {
                       onChange={(e) => setCellarCoolingSystem(e.target.checked)}
                       disabled={cellarLoading}
                     />
-                    Has Cooling System
+                    {t("pages.profile.hasCoolingSystem")}
                   </label>
 
                   <label
@@ -1354,7 +1456,7 @@ export default function ProfilePage() {
                       }
                       disabled={cellarLoading}
                     />
-                    Has Humidity Control
+                    {t("pages.profile.hasHumidityControl")}
                   </label>
 
                   <label
@@ -1372,7 +1474,7 @@ export default function ProfilePage() {
                       }
                       disabled={cellarLoading}
                     />
-                    Has Auto Regulation
+                    {t("pages.profile.hasAutoRegulation")}
                   </label>
                 </div>
 
@@ -1394,14 +1496,16 @@ export default function ProfilePage() {
                     }}
                     className="btn-cancel"
                   >
-                    Cancel
+                    {t("common.cancel")}
                   </button>
                   <button
                     type="submit"
                     disabled={cellarLoading}
                     className="btn-create"
                   >
-                    {cellarLoading ? "Creating..." : "Create Cellar"}
+                    {cellarLoading
+                      ? t("common.creating")
+                      : t("pages.profile.createCellar")}
                   </button>
                 </div>
               </form>
@@ -1414,7 +1518,7 @@ export default function ProfilePage() {
           <div className="modal-overlay" role="dialog" aria-modal>
             <div className="modal">
               <div className="modal-header">
-                <h3>Update Cellar</h3>
+                <h3>{t("pages.profile.updateCellar")}</h3>
                 <button
                   className="modal-close-light"
                   aria-label="Close"
@@ -1443,7 +1547,9 @@ export default function ProfilePage() {
 
               <form onSubmit={handleCellarUpdate} className="create-job-form">
                 <div className="form-group">
-                  <label htmlFor="editCellarName">Cellar Name *</label>
+                  <label htmlFor="editCellarName">
+                    {t("pages.profile.cellarName")} *
+                  </label>
                   <input
                     id="editCellarName"
                     type="text"
@@ -1457,7 +1563,9 @@ export default function ProfilePage() {
 
                 <div className="form-row">
                   <div className="form-group">
-                    <label htmlFor="editCellarHeight">Height (cm) *</label>
+                    <label htmlFor="editCellarHeight">
+                      {t("pages.profile.height")} *
+                    </label>
                     <input
                       id="editCellarHeight"
                       type="number"
@@ -1471,7 +1579,9 @@ export default function ProfilePage() {
                   </div>
 
                   <div className="form-group">
-                    <label htmlFor="editCellarWidth">Width (cm) *</label>
+                    <label htmlFor="editCellarWidth">
+                      {t("pages.profile.width")} *
+                    </label>
                     <input
                       id="editCellarWidth"
                       type="number"
@@ -1487,7 +1597,9 @@ export default function ProfilePage() {
 
                 <div className="form-row">
                   <div className="form-group">
-                    <label htmlFor="editCellarDepth">Depth (cm) *</label>
+                    <label htmlFor="editCellarDepth">
+                      {t("pages.profile.depth")} *
+                    </label>
                     <input
                       id="editCellarDepth"
                       type="number"
@@ -1502,7 +1614,7 @@ export default function ProfilePage() {
 
                   <div className="form-group">
                     <label htmlFor="editCellarBottleCapacity">
-                      Bottle Capacity *
+                      {t("pages.profile.bottleCapacity")} *
                     </label>
                     <input
                       id="editCellarBottleCapacity"
@@ -1517,17 +1629,27 @@ export default function ProfilePage() {
                 </div>
 
                 <div className="form-group">
-                  <label htmlFor="editCellarType">Cellar Type</label>
+                  <label htmlFor="editCellarType">
+                    {t("pages.profile.cellarType")}
+                  </label>
                   <select
                     id="editCellarType"
                     value={cellarType}
                     onChange={(e) => setCellarType(e.target.value)}
                     disabled={cellarLoading}
                   >
-                    <option value="PRIVATE">Private</option>
-                    <option value="COMMERCIAL">Commercial</option>
-                    <option value="PROFESSIONAL">Professional</option>
-                    <option value="MODULAR">Modular</option>
+                    <option value="PRIVATE">
+                      {t("pages.profile.private")}
+                    </option>
+                    <option value="COMMERCIAL">
+                      {t("pages.profile.commercial")}
+                    </option>
+                    <option value="PROFESSIONAL">
+                      {t("pages.profile.professional")}
+                    </option>
+                    <option value="MODULAR">
+                      {t("pages.profile.modular")}
+                    </option>
                   </select>
                 </div>
 
@@ -1548,7 +1670,7 @@ export default function ProfilePage() {
                       onChange={(e) => setCellarCoolingSystem(e.target.checked)}
                       disabled={cellarLoading}
                     />
-                    Has Cooling System
+                    {t("pages.profile.hasCoolingSystem")}
                   </label>
 
                   <label
@@ -1566,7 +1688,7 @@ export default function ProfilePage() {
                       }
                       disabled={cellarLoading}
                     />
-                    Has Humidity Control
+                    {t("pages.profile.hasHumidityControl")}
                   </label>
 
                   <label
@@ -1584,7 +1706,7 @@ export default function ProfilePage() {
                       }
                       disabled={cellarLoading}
                     />
-                    Has Auto Regulation
+                    {t("pages.profile.hasAutoRegulation")}
                   </label>
                 </div>
 
@@ -1607,14 +1729,16 @@ export default function ProfilePage() {
                     }}
                     className="btn-cancel"
                   >
-                    Cancel
+                    {t("common.cancel")}
                   </button>
                   <button
                     type="submit"
                     disabled={cellarLoading}
                     className="btn-create"
                   >
-                    {cellarLoading ? "Updating..." : "Update Cellar"}
+                    {cellarLoading
+                      ? t("common.updating")
+                      : t("pages.profile.updateCellar")}
                   </button>
                 </div>
               </form>
@@ -1626,12 +1750,14 @@ export default function ProfilePage() {
         {passwordMode && (
           <div className="profile-section">
             <div className="section-header">
-              <h2>Change Password</h2>
+              <h2>{t("pages.profile.changePassword")}</h2>
             </div>
 
             <form onSubmit={handlePasswordSubmit} className="auth-form">
               <div className="form-group">
-                <label htmlFor="oldPassword">Current Password</label>
+                <label htmlFor="oldPassword">
+                  {t("pages.profile.currentPassword")}
+                </label>
                 <input
                   id="oldPassword"
                   type="password"
@@ -1644,7 +1770,9 @@ export default function ProfilePage() {
               </div>
 
               <div className="form-group">
-                <label htmlFor="newPassword">New Password</label>
+                <label htmlFor="newPassword">
+                  {t("pages.profile.newPassword")}
+                </label>
                 <input
                   id="newPassword"
                   type="password"
@@ -1657,7 +1785,9 @@ export default function ProfilePage() {
               </div>
 
               <div className="form-group">
-                <label htmlFor="confirmPassword">Confirm New Password</label>
+                <label htmlFor="confirmPassword">
+                  {t("pages.profile.confirmNewPassword")}
+                </label>
                 <input
                   id="confirmPassword"
                   type="password"
@@ -1679,7 +1809,9 @@ export default function ProfilePage() {
                   disabled={isLoading}
                   className="btn-primary"
                 >
-                  {isLoading ? "Updating..." : "Update Password"}
+                  {isLoading
+                    ? t("common.updating")
+                    : t("pages.profile.updatePassword")}
                 </button>
                 <button
                   type="button"
@@ -1692,7 +1824,7 @@ export default function ProfilePage() {
                   }}
                   className="btn-secondary"
                 >
-                  Cancel
+                  {t("common.cancel")}
                 </button>
               </div>
             </form>
@@ -1703,7 +1835,7 @@ export default function ProfilePage() {
         {user?.employeeType && !passwordMode && (
           <div className="profile-section">
             <div className="section-header">
-              <h2>My Schedule</h2>
+              <h2>{t("pages.profile.mySchedule")}</h2>
             </div>
 
             {scheduleError && (
@@ -1711,26 +1843,32 @@ export default function ProfilePage() {
             )}
 
             {scheduleLoading ? (
-              <p>Loading schedule...</p>
+              <p>{t("pages.profile.loadingSchedule")}</p>
             ) : (
               <div className="modal-content-light">
                 <div className="modal-section schedule-calendar-section">
-                  <h4 className="modal-label">Select Date</h4>
+                  <h4 className="modal-label">
+                    {t("pages.profile.selectDate")}
+                  </h4>
                   <div className="calendar-center">
                     <Calendar
                       onChange={(date) => setSelectedDate(date as Date | null)}
                       value={selectedDate}
-                      locale="fr-FR"
+                      locale={i18n.language === "fr" ? "fr-FR" : "en-US"}
                     />
                   </div>
                 </div>
                 <div className="modal-section">
-                  <h4 className="modal-label">Time Slots</h4>
+                  <h4 className="modal-label">
+                    {t("pages.profile.timeSlots")}
+                  </h4>
                   <ul className="modal-list">
                     {(() => {
                       if (!selectedDate)
                         return (
-                          <li className="modal-list-item">Select a date</li>
+                          <li className="modal-list-item">
+                            {t("pages.profile.selectADate")}
+                          </li>
                         );
                       const sched =
                         selectedDateSchedule as EmployeeSchedule | null;
@@ -1762,7 +1900,7 @@ export default function ProfilePage() {
                         }
                         return (
                           <li className="modal-list-item">
-                            No schedule for this date
+                            {t("pages.profile.noScheduleForDate")}
                           </li>
                         );
                       }
@@ -1781,6 +1919,26 @@ export default function ProfilePage() {
           </div>
         )}
       </div>
+
+      <ConfirmationModal
+        isOpen={confirmationModal.isOpen}
+        title={t("pages.profile.deactivateCellar")}
+        message={t("pages.profile.deactivateConfirmMessage", {
+          cellarName: confirmationModal.cellarName,
+        })}
+        confirmText={t("pages.profile.deactivate")}
+        cancelText={t("common.cancel")}
+        isDanger={true}
+        isLoading={cellarLoading}
+        onConfirm={confirmCellarDeactivation}
+        onCancel={() =>
+          setConfirmationModal({
+            isOpen: false,
+            cellarId: null,
+            cellarName: null,
+          })
+        }
+      />
     </div>
   );
 }

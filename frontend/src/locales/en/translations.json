@@ -80,7 +80,151 @@
   "pages": {
     "home": {
       "viewCustomers": "View Customers",
-      "viewServices": "View Services"
+      "viewServices": "View Services",
+      "hero": {
+        "title": "Expert Wine Cellar Repair Services",
+        "subtitle": "Your trusted partner for wine cellar cooling system repairs and maintenance",
+        "cta": "Browse Services"
+      },
+      "services": {
+        "title": "Our Services",
+        "subtitle": "Professional wine cellar repair services to keep your collection perfectly preserved",
+        "browseAll": "View Services",
+        "items": {
+          "quotation": {
+            "title": "Free Quotation",
+            "description": "Technician visits the site to evaluate cellar needs and prepare a detailed quote.",
+            "price": "From $0.00"
+          },
+          "installation": {
+            "title": "Cellar Installation",
+            "description": "Full installation of a new refrigeration system, wiring, tubing, and calibration.",
+            "price": "From $120.00"
+          },
+          "repair": {
+            "title": "Repair Service",
+            "description": "Diagnosis and repair of refrigeration, humidity control, or electrical issues.",
+            "price": "From $95.00"
+          },
+          "maintenance": {
+            "title": "Annual Maintenance",
+            "description": "Full system checkup, cleaning, refrigerant check and performance optimization.",
+            "price": "From $85.00"
+          }
+        },
+        "climateControl": {
+          "title": "Climate Control Repair",
+          "description": "Restore optimal temperature and humidity levels in your wine cellar.",
+          "price": "From $199"
+        },
+        "compressor": {
+          "title": "Compressor Service",
+          "description": "Expert diagnosis and repair of cooling system components.",
+          "price": "From $249"
+        },
+        "electrical": {
+          "title": "Electrical Systems",
+          "description": "Fix wiring, sensors, and control panel issues.",
+          "price": "From $149"
+        },
+        "preventive": {
+          "title": "Preventive Maintenance",
+          "description": "Regular check-ups to prevent costly breakdowns.",
+          "price": "From $99"
+        }
+      },
+      "whyChooseUs": {
+        "title": "Why Choose Profroid?",
+        "subtitle": "Excellence in wine cellar preservation",
+        "certified": {
+          "title": "Certified Technicians",
+          "description": "Our team is fully trained and certified in wine cellar cooling systems"
+        },
+        "support": {
+          "title": "24/7 Emergency Support",
+          "description": "Round-the-clock availability for urgent cooling system failures"
+        },
+        "satisfaction": {
+          "title": "100% Satisfaction Guarantee",
+          "description": "We stand behind our work with a comprehensive warranty"
+        },
+        "expertise": {
+          "title": "15+ Years Experience",
+          "description": "Our repair services combine cutting-edge technology with timeless expertise"
+        }
+      },
+      "testimonials": {
+        "title": "What Our Clients Say",
+        "subtitle": "Read what our satisfied customers have to say",
+        "reviews": {
+          "review1": {
+            "name": "Pierre Dubois",
+            "location": "Westmount, Montreal",
+            "text": "Excellent service! They fixed my wine cellar cooling system in no time. Very professional and knowledgeable technicians."
+          },
+          "review2": {
+            "name": "Marie Laurent",
+            "location": "Outremont, Montreal",
+            "text": "I've been using Profroid for annual maintenance for 5 years. Always reliable, professional, and they take great care of my wine collection."
+          },
+          "review3": {
+            "name": "Jean-François Martin",
+            "location": "Laval, QC",
+            "text": "Quick response to my emergency call. The technician was courteous and fixed the humidity control issue efficiently."
+          }
+        }
+      },
+      "faq": {
+        "title": "Frequently Asked Questions",
+        "subtitle": "Have questions? We've got answers. Find what you need below.",
+        "q1": {
+          "question": "Do you offer emergency repair services?",
+          "answer": "We offer 24/7 emergency services for critical wine cellar issues. Our technicians typically arrive within 2-4 hours for emergency calls in the greater Montreal area."
+        },
+        "q2": {
+          "question": "What types of wine cellar systems do you service?",
+          "answer": "We service all major brands and types of wine cellar cooling systems, including split systems, ducted systems, and through-the-wall units. Our technicians are certified to work on brands like EuroCave, WhisperKOOL, CellarPro, and more."
+        },
+        "q3": {
+          "question": "How often should I have my wine cellar serviced?",
+          "answer": "We recommend professional maintenance at least twice a year - before summer and winter seasons. Regular maintenance helps prevent unexpected breakdowns and extends the life of your cooling system."
+        },
+        "q4": {
+          "question": "What areas do you serve?",
+          "answer": "We serve the greater Montreal area, including Laval, Longueuil, the North Shore, and the South Shore. Contact us to check if we service your specific location."
+        }
+      },
+      "feedback": {
+        "title": "We Value Your Feedback",
+        "subtitle": "Help us improve our service",
+        "rateLabel": "Rate your experience",
+        "placeholder": "Tell us about your experience...",
+        "submitButton": "Submit Feedback",
+        "success": {
+          "title": "Thank You!",
+          "message": "We appreciate your feedback and will use it to improve our service."
+        }
+      },
+      "contact": {
+        "title": "Get In Touch",
+        "subtitle": "Get in touch with us for any inquiries or to schedule a service.",
+        "phone": {
+          "title": "Phone",
+          "availability": "Available 24/7 for emergencies"
+        },
+        "email": {
+          "title": "Email",
+          "response": "We'll respond within 24 hours"
+        },
+        "location": {
+          "title": "Location"
+        },
+        "hours": {
+          "title": "Business Hours",
+          "weekdays": "Mon-Fri: 8:00 AM - 6:00 PM",
+          "weekends": "Sat: 9:00 AM - 4:00 PM"
+        }
+      }
     },
     "customers": {
       "title": "Customers",
@@ -196,6 +340,7 @@
     },
     "services": {
       "title": "Services",
+      "ourServices": "Our Services",
       "addService": "Add Service",
       "editService": "Edit Service",
       "deleteService": "Delete Service",
@@ -207,9 +352,13 @@
       "noServices": "No services available",
       "serviceDetails": "Service Details",
       "jobId": "Job ID",
+      "jobName": "Job Name",
+      "jobDescription": "Description",
       "hourlyRate": "Hourly Rate",
       "estimatedDuration": "Estimated Duration",
+      "durationMins": "Duration (mins)",
       "type": "Service Type",
+      "jobType": "Job Type",
       "quotation": "Quotation",
       "installation": "Installation",
       "reparation": "Reparation",
@@ -218,12 +367,34 @@
       "createService": "Create Service",
       "modifyService": "Modify Service",
       "updateService": "Update Service",
+      "viewDetails": "View Details",
+      "modify": "Modify",
       "deactivateService": "Deactivate Service",
       "reactivateService": "Reactivate Service",
       "deactivateConfirmMessage": "Are you sure you want to deactivate \"{{serviceName}}\"? This service will no longer be available for appointments.",
       "reactivateConfirmMessage": "Are you sure you want to reactivate \"{{serviceName}}\"? This service will become available again.",
       "deactivate": "Deactivate",
-      "reactivate": "Reactivate"
+      "reactivate": "Reactivate",
+      "inactive": "Inactive",
+      "serviceCreated": "Service has been created successfully!",
+      "serviceUpdated": "Service has been updated successfully!",
+      "serviceDeactivated": "{{serviceName}} has been deactivated. You can reactivate it at any time.",
+      "serviceReactivated": "{{serviceName}} has been reactivated successfully!",
+      "failedToLoad": "Failed to load services",
+      "failedToLoadDetails": "Failed to load service details",
+      "failedToCreate": "Failed to create service",
+      "failedToUpdate": "Failed to update service",
+      "failedToDeactivate": "Failed to deactivate service",
+      "failedToReactivate": "Failed to reactivate service",
+      "loadingServices": "Loading services...",
+      "loadingDetails": "Loading details...",
+      "noDetailsAvailable": "No details available.",
+      "creating": "Creating...",
+      "updating": "Updating...",
+      "jobNameRequired": "Job name is required",
+      "jobDescriptionRequired": "Job description is required",
+      "hourlyRateRequired": "Hourly rate must be greater than 0",
+      "durationRequired": "Estimated duration must be greater than 0"
     },
     "parts": {
       "title": "Parts",
@@ -240,6 +411,10 @@
       "myAppointments": "My Appointments",
       "title": "Appointments",
       "bookAppointment": "Book Appointment",
+      "addAppointment": "Add Appointment",
+      "customerBooking": "Customer Booking",
+      "technicianScheduling": "Technician Scheduling",
+      "loadingOptions": "Loading options…",
       "date": "Date",
       "time": "Time",
       "timeSlot": "Time Slot",
@@ -265,7 +440,6 @@
       "appointmentDetails": "Appointment Details",
       "serviceInformation": "Service Information",
       "appointmentTime": "Appointment Time",
-      "technician": "Technician",
       "serviceLocation": "Service Location",
       "contactInformation": "Contact Information",
       "name": "Name",
@@ -273,7 +447,6 @@
       "job": "Job",
       "type": "Type",
       "rate": "Rate",
-      "status": "Status",
       "availableTechnicians": "Available Technicians",
       "streetAddress": "Street Address",
       "city": "City",
@@ -282,14 +455,11 @@
       "postalCode": "Postal Code",
       "createAppointment": "Create Appointment",
       "weekdaysOnly": "Weekdays only",
-      "selectService": "Select a service",
       "autoAssignedTechnician": "Will be auto-assigned from available technicians",
-      "selectTechnician": "Select a technician",
       "autoAssignedFromStaff": "Technician will be automatically assigned from available staff",
       "slotsFromAnyTechnician": "Slots available from any technician",
       "slotsDependOnSchedule": "Slots depend on technician schedule",
       "checkingSchedule": "Checking schedule",
-      "selectTime": "Select a time",
       "weekendBookingsBlocked": "Weekend bookings are blocked",
       "noAvailableSlotsCustomer": "No available slots from any technician for this date/service",
       "noAvailableSlotsEmployee": "No valid slots for this date/service with the selected technician",
@@ -337,7 +507,92 @@
       "currentPassword": "Current Password",
       "newPassword": "New Password",
       "updateProfile": "Update Profile",
-      "refresh": "Refresh"
+      "refresh": "Refresh",
+      "myCellars": "My Cellars",
+      "addCellar": "Add Cellar",
+      "cellarInformation": "Cellar Information",
+      "address": "Address",
+      "city": "City",
+      "province": "Province",
+      "country": "Country",
+      "postalCode": "Postal Code",
+      "cellarAdded": "Cellar added successfully!",
+      "cellarUpdated": "Cellar updated successfully!",
+      "editCellar": "Edit Cellar",
+      "updateCellar": "Update Cellar",
+      "createCellar": "Create Cellar",
+      "noCellars": "No cellars yet",
+      "addFirstCellar": "Add your first wine cellar to get started.",
+      "profileInformation": "Profile Information",
+      "edit": "Edit",
+      "firstName": "First Name",
+      "lastName": "Last Name",
+      "emailReadOnly": "Email (Read Only)",
+      "phone": "Phone",
+      "saveChanges": "Save Changes",
+      "saving": "Saving...",
+      "cancel": "Cancel",
+      "addCellarIntake": "Add Cellar Intake",
+      "yourCellars": "Your Cellars",
+      "noCellarsYet": "No cellars yet.",
+      "name": "Name",
+      "status": "Status",
+      "active": "Active",
+      "inactive": "Inactive",
+      "type": "Type",
+      "capacity": "Capacity",
+      "bottles": "bottles",
+      "dimensions": "Dimensions (H×W×D)",
+      "features": "Features",
+      "cooling": "Cooling",
+      "humidity": "Humidity",
+      "autoRegulation": "Auto Regulation",
+      "none": "None",
+      "update": "Update",
+      "delete": "Delete",
+      "deactivate": "Deactivate",
+      "deactivateCellar": "Deactivate Cellar",
+      "deactivateConfirmMessage": "Are you sure you want to deactivate \"{{cellarName}}\"? This cellar will no longer be available for appointments.",
+      "unnamedCellar": "Unnamed Cellar",
+      "cellarName": "Cellar Name",
+      "height": "Height (cm)",
+      "width": "Width (cm)",
+      "depth": "Depth (cm)",
+      "bottleCapacity": "Bottle Capacity",
+      "cellarType": "Cellar Type",
+      "private": "Private",
+      "commercial": "Commercial",
+      "professional": "Professional",
+      "modular": "Modular",
+      "hasCoolingSystem": "Has Cooling System",
+      "hasHumidityControl": "Has Humidity Control",
+      "hasAutoRegulation": "Has Auto Regulation",
+      "oldPassword": "Old Password",
+      "confirmNewPassword": "Confirm New Password",
+      "notifications": {
+        "profileUpdated": "Profile updated successfully!",
+        "profileUpdateFailed": "Failed to update profile",
+        "cellarCreated": "Cellar created successfully!",
+        "cellarCreateFailed": "Failed to create cellar",
+        "cellarUpdated": "Cellar updated successfully!",
+        "cellarUpdateFailed": "Failed to update cellar",
+        "cellarDeactivated": "Cellar has been deactivated successfully!",
+        "cellarDeactivateFailed": "Failed to deactivate cellar",
+        "passwordChanged": "Password changed successfully!"
+      },
+      "mySchedule": "My Schedule",
+      "selectDate": "Select Date",
+      "timeSlots": "Time Slots",
+      "selectADate": "Select a date",
+      "noScheduleForDate": "No schedule for this date",
+      "loadingSchedule": "Loading schedule...",
+      "changePassword": "Change Password",
+      "currentPassword": "Current Password",
+      "newPassword": "New Password",
+      "confirmNewPassword": "Confirm New Password",
+      "updatePassword": "Update Password",
+      "refresh": "Refresh",
+      "logout": "Logout"
     }
   },
   "validation": {
@@ -384,6 +639,7 @@
       "quotationScheduledAfter": "A scheduled quotation exists on this date. Services cannot be scheduled after a quotation. Please schedule before the quotation time or choose a different date.",
       "serviceAlreadyExists": "A service appointment already exists for this address on this day. Only one service per address per day is allowed. Please choose a different date or cancel the existing service.",
       "appointmentEndsAfterClosing": "Appointment cannot end after 5:00 PM. Please choose an earlier time slot or shorter duration.",
+      "notEnoughRemainingTime": "Not enough remaining time on this day for the requested service at {{time}} (requires {{slots}} slot(s)). Choose an earlier start time.",
       "weekendNotAllowed": "Weekend bookings are not allowed. Please select a weekday.",
       "noAvailableSlots": "No available time slots for this date. Please choose a different date or time."
     }

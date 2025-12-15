@@ -76,7 +76,7 @@ export default function ServicesPage(): React.ReactElement {
       } catch (error) {
         console.error("Error loading jobs:", error);
         setToast({
-          message: "Failed to load services",
+          message: t("pages.services.failedToLoad"),
           type: "error",
         });
       } finally {
@@ -84,7 +84,7 @@ export default function ServicesPage(): React.ReactElement {
       }
     }
     void load();
-  }, []);
+  }, [t]);
 
   async function openDetails(jobId: string) {
     setModalOpen(true);
@@ -96,7 +96,7 @@ export default function ServicesPage(): React.ReactElement {
     } catch (error) {
       console.error("Error loading job details:", error);
       setToast({
-        message: "Failed to load service details",
+        message: t("pages.services.failedToLoadDetails"),
         type: "error",
       });
     } finally {
@@ -189,19 +189,19 @@ export default function ServicesPage(): React.ReactElement {
   async function handleUpdateJob() {
     // Validate required fields
     if (!updateFormData.jobName.trim()) {
-      setUpdateError("Job name is required");
+      setUpdateError(t("pages.services.jobNameRequired"));
       return;
     }
     if (!updateFormData.jobDescription.trim()) {
-      setUpdateError("Job description is required");
+      setUpdateError(t("pages.services.jobDescriptionRequired"));
       return;
     }
     if (updateFormData.hourlyRate <= 0) {
-      setUpdateError("Hourly rate must be greater than 0");
+      setUpdateError(t("pages.services.hourlyRateRequired"));
       return;
     }
     if (updateFormData.estimatedDurationMinutes <= 0) {
-      setUpdateError("Estimated duration must be greater than 0");
+      setUpdateError(t("pages.services.durationRequired"));
       return;
     }
 
@@ -223,12 +223,12 @@ export default function ServicesPage(): React.ReactElement {
       closeUpdateModal();
       // Show success notification
       setToast({
-        message: "Service has been updated successfully!",
+        message: t("pages.services.serviceUpdated"),
         type: "success",
       });
     } catch (error) {
       // Try to extract backend error message if available
-      let errorMsg = "Failed to update service";
+      let errorMsg = t("pages.services.failedToUpdate");
       if (error && typeof error === "object" && "response" in error) {
         const axiosError = error as {
           response?: { data?: { message?: string }; status?: number };
@@ -271,19 +271,19 @@ export default function ServicesPage(): React.ReactElement {
   async function handleCreateJob() {
     // Validate required fields
     if (!formData.jobName.trim()) {
-      setCreateError("Job name is required");
+      setCreateError(t("pages.services.jobNameRequired"));
       return;
     }
     if (!formData.jobDescription.trim()) {
-      setCreateError("Job description is required");
+      setCreateError(t("pages.services.jobDescriptionRequired"));
       return;
     }
     if (formData.hourlyRate <= 0) {
-      setCreateError("Hourly rate must be greater than 0");
+      setCreateError(t("pages.services.hourlyRateRequired"));
       return;
     }
     if (formData.estimatedDurationMinutes <= 0) {
-      setCreateError("Estimated duration must be greater than 0");
+      setCreateError(t("pages.services.durationRequired"));
       return;
     }
 
@@ -297,12 +297,14 @@ export default function ServicesPage(): React.ReactElement {
       closeCreateModal();
       // Show success notification
       setToast({
-        message: "Service has been created successfully!",
+        message: t("pages.services.serviceCreated"),
         type: "success",
       });
     } catch (error) {
       setCreateError(
-        error instanceof Error ? error.message : "Failed to create service"
+        error instanceof Error
+          ? error.message
+          : t("pages.services.failedToCreate")
       );
     } finally {
       setCreateLoading(false);
@@ -324,7 +326,9 @@ export default function ServicesPage(): React.ReactElement {
     try {
       const updatedJob = await deactivateJob(confirmationModal.job.jobId);
       setToast({
-        message: `${confirmationModal.job.jobName} has been deactivated. You can reactivate it at any time.`,
+        message: t("pages.services.serviceDeactivated", {
+          serviceName: confirmationModal.job.jobName,
+        }),
         type: "warning",
       });
       // Update the job in the list to show deactivated state
@@ -335,7 +339,10 @@ export default function ServicesPage(): React.ReactElement {
       );
     } catch (error) {
       console.error("Error deactivating job:", error);
-      setToast({ message: "Failed to deactivate service", type: "error" });
+      setToast({
+        message: t("pages.services.failedToDeactivate"),
+        type: "error",
+      });
     } finally {
       setDeactivateLoading(false);
       setConfirmationModal({ isOpen: false, type: null, job: null });
@@ -357,7 +364,9 @@ export default function ServicesPage(): React.ReactElement {
     try {
       const updatedJob = await reactivateJob(confirmationModal.job.jobId);
       setToast({
-        message: `${confirmationModal.job.jobName} has been reactivated successfully!`,
+        message: t("pages.services.serviceReactivated", {
+          serviceName: confirmationModal.job.jobName,
+        }),
         type: "success",
       });
       // Update the job in the list to show reactivated state
@@ -368,7 +377,10 @@ export default function ServicesPage(): React.ReactElement {
       );
     } catch (error) {
       console.error("Error reactivating job:", error);
-      setToast({ message: "Failed to reactivate service", type: "error" });
+      setToast({
+        message: t("pages.services.failedToReactivate"),
+        type: "error",
+      });
     } finally {
       setDeactivateLoading(false);
       setConfirmationModal({ isOpen: false, type: null, job: null });
@@ -394,110 +406,165 @@ export default function ServicesPage(): React.ReactElement {
   return (
     <div className="services-page">
       <div className="services-header">
-        <h2>{t('pages.services.title')}</h2>
+        <div className="header-content">
+          <h1 className="page-title">{t("pages.services.title")}</h1>
+          <p className="page-subtitle">
+            {isAdmin 
+              ? "Gérez vos services professionnels" 
+              : "Découvrez nos services de cave à vin"}
+          </p>
+        </div>
         {isAdmin && (
           <button className="btn-add-service" onClick={openCreateModal}>
-            {t('pages.services.addService')}
+            <span className="btn-icon">+</span>
+            {t("pages.services.addService")}
           </button>
         )}
       </div>
 
       {loading ? (
-        <div>{t('common.loading')}</div>
+        <div className="loading-container">
+          <div className="loading-spinner"></div>
+          <p>{t("common.loading")}</p>
+        </div>
       ) : (
-        <div className="services-list">
+        <div className="services-grid">
           {jobs.map((j) => (
             <div
               key={j.jobId}
-              className={`service-card-wrapper ${
+              className={`service-card-modern ${
                 !j.active ? "service-inactive" : ""
               }`}
             >
-              <div className="service-card">
-                <div className="service-image" aria-hidden>
-                  <span>Image</span>
+              {/* Image on the Left */}
+              <div className="service-image-container">
+                <div className="service-image-modern">
+                  <div className="image-placeholder">
+                    <svg className="image-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                      <path d="M21 21H3v-2l3-3 5 4 5-5 5 4v2z"/>
+                      <path d="M3 21V3h18v18"/>
+                      <circle cx="9" cy="9" r="2"/>
+                    </svg>
+                    <span>Image</span>
+                  </div>
+                </div>
+                {!j.active && (
+                  <div className="inactive-overlay">
+                    <span className="inactive-badge-modern">
+                      {t("pages.services.inactive")}
+                    </span>
+                  </div>
+                )}
+              </div>
+
+              {/* Content in the Middle */}
+              <div className="service-info">
+                <div className="service-header-row">
+                  <h3 className="service-title-modern">{j.jobName}</h3>
+                  <div className="service-price">
+                    <span className="price-label">Prix</span>
+                    <span className="price-value">${j.hourlyRate?.toFixed(2)}</span>
+                    <span className="price-unit">/heure</span>
+                  </div>
                 </div>
 
-                <div className="service-content">
-                  <h3 className="service-title">
-                    {j.jobName}
-                    {!j.active && (
-                      <span className="inactive-badge"> (Inactive)</span>
-                    )}
-                  </h3>
-                  <div className="service-description-wrapper">
-                    <p
-                      className={`service-desc ${
-                        expandedDescriptions.has(j.jobId)
-                          ? "expanded"
-                          : "collapsed"
-                      }`}
+                <div className="service-meta">
+                  <div className="meta-item">
+                    <svg className="meta-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                      <circle cx="12" cy="12" r="10"/>
+                      <path d="M12 6v6l4 2"/>
+                    </svg>
+                    <span>{j.estimatedDurationMinutes} min</span>
+                  </div>
+                  <div className="meta-item">
+                    <svg className="meta-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                      <path d="M20 7h-3V4c0-1-1-2-2-2H9c-1 0-2 1-2 2v3H4c-1 0-2 1-2 2v11c0 1 1 2 2 2h16c1 0 2-1 2-2V9c0-1-1-2-2-2zM9 4h6v3H9V4z"/>
+                    </svg>
+                    <span>{j.jobType}</span>
+                  </div>
+                </div>
+
+                <div className="service-description-modern">
+                  <p
+                    className={`description-text ${
+                      expandedDescriptions.has(j.jobId)
+                        ? "expanded"
+                        : "collapsed"
+                    }`}
+                  >
+                    {j.jobDescription}
+                  </p>
+                  {isDescriptionTruncated(j.jobDescription) && !isAdmin && (
+                    <button
+                      className="description-toggle"
+                      onClick={() => toggleDescriptionExpanded(j.jobId)}
+                      aria-expanded={expandedDescriptions.has(j.jobId)}
                     >
-                      {j.jobDescription}
-                    </p>
-                    {isDescriptionTruncated(j.jobDescription) && !isAdmin && (
+                      {expandedDescriptions.has(j.jobId) 
+                        ? "Voir moins" 
+                        : "Voir plus"}
+                    </button>
+                  )}
+                </div>
+              </div>
+
+              {/* Actions on the Right */}
+              <div className="service-actions-modern">
+                {isAdmin ? (
+                  <>
+                    <button
+                      className="action-btn primary"
+                      onClick={() => void openDetails(j.jobId)}
+                      disabled={!j.active}
+                      title={t("pages.services.viewDetails")}
+                    >
+                      <svg className="btn-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                        <circle cx="12" cy="12" r="3"/>
+                      </svg>
+                      {t("pages.services.viewDetails")}
+                    </button>
+                    <button
+                      className="action-btn secondary"
+                      onClick={() => void openUpdateModal(j.jobId)}
+                      disabled={!j.active}
+                      title={t("pages.services.modify")}
+                    >
+                      <svg className="btn-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                        <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+                        <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+                      </svg>
+                      {t("pages.services.modify")}
+                    </button>
+                    {j.active ? (
                       <button
-                        className="description-expand-btn"
-                        onClick={() => toggleDescriptionExpanded(j.jobId)}
-                        aria-expanded={expandedDescriptions.has(j.jobId)}
+                        className="action-btn danger"
+                        onClick={() => handleDeactivateJob(j)}
+                        disabled={deactivateLoading}
+                        title={t("pages.services.deactivate")}
                       >
-                        {expandedDescriptions.has(j.jobId) ? "▲" : "▼"}
+                        <svg className="btn-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                          <circle cx="12" cy="12" r="10"/>
+                          <path d="M4.93 4.93l14.14 14.14"/>
+                        </svg>
+                        {t("pages.services.deactivate")}
+                      </button>
+                    ) : (
+                      <button
+                        className="action-btn success"
+                        onClick={() => handleReactivateJob(j)}
+                        disabled={deactivateLoading}
+                        title={t("pages.services.reactivate")}
+                      >
+                        <svg className="btn-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                          <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+                          <polyline points="22 4 12 14.01 9 11.01"/>
+                        </svg>
+                        {t("pages.services.reactivate")}
                       </button>
                     )}
-                  </div>
-                </div>
-
-                <div className="service-actions">
-                  <div className="service-rate">
-                    ${j.hourlyRate?.toFixed(2)}
-                  </div>
-
-                  {isAdmin ? (
-                    <>
-                      <button
-                        className="btn-view-light"
-                        onClick={() => void openDetails(j.jobId)}
-                        disabled={!j.active}
-                      >
-                        View Details
-                      </button>
-                      <button
-                        className="btn-view-light"
-                        onClick={() => void openUpdateModal(j.jobId)}
-                        disabled={!j.active}
-                      >
-                        Modify
-                      </button>
-                      {j.active ? (
-                        <button
-                          className="btn-view-light"
-                          style={{
-                            marginLeft: 8,
-                            backgroundColor: "#ff6b6b",
-                            color: "white",
-                          }}
-                          onClick={() => handleDeactivateJob(j)}
-                          disabled={deactivateLoading}
-                        >
-                          Deactivate
-                        </button>
-                      ) : (
-                        <button
-                          className="btn-view-light"
-                          style={{
-                            marginLeft: 8,
-                            backgroundColor: "#51cf66",
-                            color: "white",
-                          }}
-                          onClick={() => handleReactivateJob(j)}
-                          disabled={deactivateLoading}
-                        >
-                          Reactivate
-                        </button>
-                      )}
-                    </>
-                  ) : null}
-                </div>
+                  </>
+                ) : null}
               </div>
             </div>
           ))}
@@ -508,7 +575,7 @@ export default function ServicesPage(): React.ReactElement {
         <div className="modal-overlay" role="dialog" aria-modal>
           <div className="modal">
             <div className="modal-header">
-              <h3>{t('pages.services.serviceDetails')}</h3>
+              <h3>{t("pages.services.serviceDetails")}</h3>
               <button
                 className="modal-close-light"
                 aria-label="Close"
@@ -518,38 +585,45 @@ export default function ServicesPage(): React.ReactElement {
               </button>
             </div>
 
-            {detailLoading && <div>{t('common.loading')}</div>}
+            {detailLoading && <div>{t("common.loading")}</div>}
 
             {!detailLoading && selectedJob && (
               <div className="service-details">
                 <p>
-                  <strong>{t('pages.services.jobId')}:</strong> {selectedJob.jobId}
+                  <strong>{t("pages.services.jobId")}:</strong>{" "}
+                  {selectedJob.jobId}
                 </p>
                 <p>
-                  <strong>{t('pages.services.name')}:</strong> {selectedJob.jobName}
+                  <strong>{t("pages.services.name")}:</strong>{" "}
+                  {selectedJob.jobName}
                 </p>
                 <p>
-                  <strong>{t('pages.services.description')}:</strong> {selectedJob.jobDescription}
+                  <strong>{t("pages.services.description")}:</strong>{" "}
+                  {selectedJob.jobDescription}
                 </p>
                 <p>
-                  <strong>{t('pages.services.hourlyRate')}:</strong> $
+                  <strong>{t("pages.services.hourlyRate")}:</strong> $
                   {selectedJob.hourlyRate?.toFixed(2)}
                 </p>
                 <p>
-                  <strong>{t('pages.services.estimatedDuration')}:</strong>{" "}
+                  <strong>{t("pages.services.estimatedDuration")}:</strong>{" "}
                   {selectedJob.estimatedDurationMinutes}
                 </p>
                 <p>
-                  <strong>{t('pages.services.type')}:</strong> {selectedJob.jobType}
+                  <strong>{t("pages.services.type")}:</strong>{" "}
+                  {selectedJob.jobType}
                 </p>
                 <p>
-                  <strong>{t('common.active')}:</strong> {selectedJob.active ? t('common.yes') : t('common.no')}
+                  <strong>{t("common.active")}:</strong>{" "}
+                  {selectedJob.active ? t("common.yes") : t("common.no")}
                 </p>
               </div>
             )}
 
             {!detailLoading && !selectedJob && (
-              <div className="service-details">{t('messages.noDetailsAvailable')}</div>
+              <div className="service-details">
+                {t("messages.noDetailsAvailable")}
+              </div>
             )}
           </div>
         </div>
@@ -559,7 +633,7 @@ export default function ServicesPage(): React.ReactElement {
         <div className="modal-overlay" role="dialog" aria-modal>
           <div className="modal">
             <div className="modal-header">
-              <h3>{t('pages.services.createNewService')}</h3>
+              <h3>{t("pages.services.createNewService")}</h3>
               <button
                 className="modal-close-light"
                 aria-label="Close"
@@ -580,26 +654,32 @@ export default function ServicesPage(): React.ReactElement {
               }}
             >
               <div className="form-group">
-                <label htmlFor="jobName">{t('pages.services.name')} *</label>
+                <label htmlFor="jobName">{t("pages.services.name")} *</label>
                 <input
                   id="jobName"
                   type="text"
                   name="jobName"
                   value={formData.jobName}
                   onChange={handleFormChange}
-                  placeholder={t('common.enterPlaceholder', { field: t('pages.services.name') })}
+                  placeholder={t("common.enterPlaceholder", {
+                    field: t("pages.services.name"),
+                  })}
                   disabled={createLoading}
                 />
               </div>
 
               <div className="form-group">
-                <label htmlFor="jobDescription">{t('pages.services.description')} *</label>
+                <label htmlFor="jobDescription">
+                  {t("pages.services.description")} *
+                </label>
                 <textarea
                   id="jobDescription"
                   name="jobDescription"
                   value={formData.jobDescription}
                   onChange={handleFormChange}
-                  placeholder={t('common.enterPlaceholder', { field: t('pages.services.description') })}
+                  placeholder={t("common.enterPlaceholder", {
+                    field: t("pages.services.description"),
+                  })}
                   disabled={createLoading}
                   rows={3}
                 />
@@ -607,7 +687,9 @@ export default function ServicesPage(): React.ReactElement {
 
               <div className="form-row">
                 <div className="form-group">
-                  <label htmlFor="hourlyRate">{t('pages.services.hourlyRate')} ($) *</label>
+                  <label htmlFor="hourlyRate">
+                    {t("pages.services.hourlyRate")} ($) *
+                  </label>
                   <input
                     id="hourlyRate"
                     type="number"
@@ -622,7 +704,8 @@ export default function ServicesPage(): React.ReactElement {
 
                 <div className="form-group">
                   <label htmlFor="estimatedDurationMinutes">
-                    {t('pages.services.duration')} ({t('pages.services.minutes')}) *
+                    {t("pages.services.duration")} (
+                    {t("pages.services.minutes")}) *
                   </label>
                   <input
                     id="estimatedDurationMinutes"
@@ -638,7 +721,7 @@ export default function ServicesPage(): React.ReactElement {
 
               <div className="form-row">
                 <div className="form-group">
-                  <label htmlFor="jobType">{t('pages.services.type')} *</label>
+                  <label htmlFor="jobType">{t("pages.services.type")} *</label>
                   <select
                     id="jobType"
                     name="jobType"
@@ -646,10 +729,18 @@ export default function ServicesPage(): React.ReactElement {
                     onChange={handleFormChange}
                     disabled={createLoading}
                   >
-                    <option value="QUOTATION">{t('pages.services.quotation')}</option>
-                    <option value="INSTALLATION">{t('pages.services.installation')}</option>
-                    <option value="REPARATION">{t('pages.services.reparation')}</option>
-                    <option value="MAINTENANCE">{t('pages.services.maintenance')}</option>
+                    <option value="QUOTATION">
+                      {t("pages.services.quotation")}
+                    </option>
+                    <option value="INSTALLATION">
+                      {t("pages.services.installation")}
+                    </option>
+                    <option value="REPARATION">
+                      {t("pages.services.reparation")}
+                    </option>
+                    <option value="MAINTENANCE">
+                      {t("pages.services.maintenance")}
+                    </option>
                   </select>
                 </div>
 
@@ -663,7 +754,7 @@ export default function ServicesPage(): React.ReactElement {
                       onChange={handleFormChange}
                       disabled={createLoading}
                     />
-                    {t('common.active')}
+                    {t("common.active")}
                   </label>
                 </div>
               </div>
@@ -675,14 +766,16 @@ export default function ServicesPage(): React.ReactElement {
                   onClick={closeCreateModal}
                   disabled={createLoading}
                 >
-                  {t('common.cancel')}
+                  {t("common.cancel")}
                 </button>
                 <button
                   type="submit"
                   className="btn-create"
                   disabled={createLoading}
                 >
-                  {createLoading ? t('common.creating') : t('pages.services.createService')}
+                  {createLoading
+                    ? t("common.creating")
+                    : t("pages.services.createService")}
                 </button>
               </div>
             </form>
@@ -699,7 +792,7 @@ export default function ServicesPage(): React.ReactElement {
         >
           <div className="modal" onClick={(e) => e.stopPropagation()}>
             <div className="modal-header">
-              <h3>{t('pages.services.modifyService')}</h3>
+              <h3>{t("pages.services.modifyService")}</h3>
               <button
                 className="modal-close-light"
                 aria-label="Close"
@@ -720,26 +813,34 @@ export default function ServicesPage(): React.ReactElement {
               }}
             >
               <div className="form-group">
-                <label htmlFor="updateJobName">{t('pages.services.name')} *</label>
+                <label htmlFor="updateJobName">
+                  {t("pages.services.name")} *
+                </label>
                 <input
                   id="updateJobName"
                   type="text"
                   name="jobName"
                   value={updateFormData.jobName}
                   onChange={handleUpdateFormChange}
-                  placeholder={t('common.enterPlaceholder', { field: t('pages.services.name') })}
+                  placeholder={t("common.enterPlaceholder", {
+                    field: t("pages.services.name"),
+                  })}
                   disabled={updateLoading}
                 />
               </div>
 
               <div className="form-group">
-                <label htmlFor="updateJobDescription">{t('pages.services.description')} *</label>
+                <label htmlFor="updateJobDescription">
+                  {t("pages.services.description")} *
+                </label>
                 <textarea
                   id="updateJobDescription"
                   name="jobDescription"
                   value={updateFormData.jobDescription}
                   onChange={handleUpdateFormChange}
-                  placeholder={t('common.enterPlaceholder', { field: t('pages.services.description') })}
+                  placeholder={t("common.enterPlaceholder", {
+                    field: t("pages.services.description"),
+                  })}
                   disabled={updateLoading}
                   rows={3}
                 />
@@ -747,7 +848,9 @@ export default function ServicesPage(): React.ReactElement {
 
               <div className="form-row">
                 <div className="form-group">
-                  <label htmlFor="updateHourlyRate">{t('pages.services.hourlyRate')} ($) *</label>
+                  <label htmlFor="updateHourlyRate">
+                    {t("pages.services.hourlyRate")} ($) *
+                  </label>
                   <input
                     id="updateHourlyRate"
                     type="number"
@@ -762,7 +865,8 @@ export default function ServicesPage(): React.ReactElement {
 
                 <div className="form-group">
                   <label htmlFor="updateEstimatedDurationMinutes">
-                    {t('pages.services.duration')} ({t('pages.services.minutes')}) *
+                    {t("pages.services.duration")} (
+                    {t("pages.services.minutes")}) *
                   </label>
                   <input
                     id="updateEstimatedDurationMinutes"
@@ -778,7 +882,9 @@ export default function ServicesPage(): React.ReactElement {
 
               <div className="form-row">
                 <div className="form-group">
-                  <label htmlFor="updateJobType">{t('pages.services.type')} *</label>
+                  <label htmlFor="updateJobType">
+                    {t("pages.services.type")} *
+                  </label>
                   <select
                     id="updateJobType"
                     name="jobType"
@@ -786,10 +892,18 @@ export default function ServicesPage(): React.ReactElement {
                     onChange={handleUpdateFormChange}
                     disabled={updateLoading}
                   >
-                    <option value="QUOTATION">{t('pages.services.quotation')}</option>
-                    <option value="INSTALLATION">{t('pages.services.installation')}</option>
-                    <option value="REPARATION">{t('pages.services.reparation')}</option>
-                    <option value="MAINTENANCE">{t('pages.services.maintenance')}</option>
+                    <option value="QUOTATION">
+                      {t("pages.services.quotation")}
+                    </option>
+                    <option value="INSTALLATION">
+                      {t("pages.services.installation")}
+                    </option>
+                    <option value="REPARATION">
+                      {t("pages.services.reparation")}
+                    </option>
+                    <option value="MAINTENANCE">
+                      {t("pages.services.maintenance")}
+                    </option>
                   </select>
                 </div>
 
@@ -803,7 +917,7 @@ export default function ServicesPage(): React.ReactElement {
                       onChange={handleUpdateFormChange}
                       disabled={updateLoading}
                     />
-                    {t('common.active')}
+                    {t("common.active")}
                   </label>
                 </div>
               </div>
@@ -815,14 +929,16 @@ export default function ServicesPage(): React.ReactElement {
                   onClick={closeUpdateModal}
                   disabled={updateLoading}
                 >
-                  {t('common.cancel')}
+                  {t("common.cancel")}
                 </button>
                 <button
                   type="submit"
                   className="btn-create"
                   disabled={updateLoading}
                 >
-                  {updateLoading ? t('common.updating') : t('pages.services.updateService')}
+                  {updateLoading
+                    ? t("common.updating")
+                    : t("pages.services.updateService")}
                 </button>
               </div>
             </form>
@@ -834,18 +950,24 @@ export default function ServicesPage(): React.ReactElement {
         isOpen={confirmationModal.isOpen}
         title={
           confirmationModal.type === "deactivate"
-            ? t('pages.services.deactivateService')
-            : t('pages.services.reactivateService')
+            ? t("pages.services.deactivateService")
+            : t("pages.services.reactivateService")
         }
         message={
           confirmationModal.type === "deactivate"
-            ? t('pages.services.deactivateConfirmMessage', { serviceName: confirmationModal.job?.jobName })
-            : t('pages.services.reactivateConfirmMessage', { serviceName: confirmationModal.job?.jobName })
+            ? t("pages.services.deactivateConfirmMessage", {
+                serviceName: confirmationModal.job?.jobName,
+              })
+            : t("pages.services.reactivateConfirmMessage", {
+                serviceName: confirmationModal.job?.jobName,
+              })
         }
         confirmText={
-          confirmationModal.type === "deactivate" ? t('pages.services.deactivate') : t('pages.services.reactivate')
+          confirmationModal.type === "deactivate"
+            ? t("pages.services.deactivate")
+            : t("pages.services.reactivate")
         }
-        cancelText={t('common.cancel')}
+        cancelText={t("common.cancel")}
         isDanger={confirmationModal.type === "deactivate"}
         isLoading={deactivateLoading}
         onConfirm={

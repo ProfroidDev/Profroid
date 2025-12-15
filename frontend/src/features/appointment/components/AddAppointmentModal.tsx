@@ -19,7 +19,10 @@ import { getEmployeeSchedule } from "../../employee/api/getEmployeeSchedule";
 import type { TimeSlotType } from "../../employee/models/EmployeeScheduleRequestModel";
 import { getPostalCodeError } from "../../../utils/postalCodeValidator";
 import { getMyJobs } from "../api/getMyJobs";
-import { getTechnicianBookedSlots, type BookedSlot } from "../api/getTechnicianBookedSlots";
+import {
+  getTechnicianBookedSlots,
+  type BookedSlot,
+} from "../api/getTechnicianBookedSlots";
 import { getAggregatedAvailability } from "../api/getAggregatedAvailability";
 import useAuthStore from "../../authentication/store/authStore";
 
@@ -29,7 +32,14 @@ const dataCache: {
   employees: EmployeeResponseModel[] | null;
   customers: CustomerResponseModel[] | null;
   cellars: CellarResponseModel[] | null;
-  loadingPromise: Promise<[JobResponseModel[], EmployeeResponseModel[], CustomerResponseModel[], CellarResponseModel[]]> | null;
+  loadingPromise: Promise<
+    [
+      JobResponseModel[],
+      EmployeeResponseModel[],
+      CustomerResponseModel[],
+      CellarResponseModel[]
+    ]
+  > | null;
 } = {
   jobs: null,
   employees: null,
@@ -47,14 +57,29 @@ function clearAppointmentDataCache() {
   dataCache.loadingPromise = null;
 }
 
-function getCachedData(): Promise<[JobResponseModel[], EmployeeResponseModel[], CustomerResponseModel[], CellarResponseModel[]]> {
+function getCachedData(): Promise<
+  [
+    JobResponseModel[],
+    EmployeeResponseModel[],
+    CustomerResponseModel[],
+    CellarResponseModel[]
+  ]
+> {
   // If all data is already cached AND has actual data, return it immediately
   // Don't use cache if any array is empty (might be from a failed fetch)
-  if (dataCache.jobs && dataCache.jobs.length > 0 && 
-      dataCache.employees && 
-      dataCache.customers && 
-      dataCache.cellars) {
-    return Promise.resolve([dataCache.jobs, dataCache.employees, dataCache.customers, dataCache.cellars]);
+  if (
+    dataCache.jobs &&
+    dataCache.jobs.length > 0 &&
+    dataCache.employees &&
+    dataCache.customers &&
+    dataCache.cellars
+  ) {
+    return Promise.resolve([
+      dataCache.jobs,
+      dataCache.employees,
+      dataCache.customers,
+      dataCache.cellars,
+    ]);
   }
 
   // If a load is already in progress, return that promise
@@ -68,22 +93,31 @@ function getCachedData(): Promise<[JobResponseModel[], EmployeeResponseModel[], 
     getEmployees(),
     getCustomers(),
     getCellars(),
-  ] as const).then(([jobs, employees, customers, cellars]) => {
-    // Only cache if we got actual data (jobs should never be empty)
-    if (jobs.length > 0) {
-      dataCache.jobs = jobs;
-      dataCache.employees = employees;
-      dataCache.customers = customers;
-      dataCache.cellars = cellars;
-    }
-    dataCache.loadingPromise = null;
-    return [jobs, employees, customers, cellars];
-  }).catch((error) => {
-    dataCache.loadingPromise = null;
-    // Clear cache on error so next attempt will refetch
-    clearAppointmentDataCache();
-    throw error;
-  }) as Promise<[JobResponseModel[], EmployeeResponseModel[], CustomerResponseModel[], CellarResponseModel[]]>;
+  ] as const)
+    .then(([jobs, employees, customers, cellars]) => {
+      // Only cache if we got actual data (jobs should never be empty)
+      if (jobs.length > 0) {
+        dataCache.jobs = jobs;
+        dataCache.employees = employees;
+        dataCache.customers = customers;
+        dataCache.cellars = cellars;
+      }
+      dataCache.loadingPromise = null;
+      return [jobs, employees, customers, cellars];
+    })
+    .catch((error) => {
+      dataCache.loadingPromise = null;
+      // Clear cache on error so next attempt will refetch
+      clearAppointmentDataCache();
+      throw error;
+    }) as Promise<
+    [
+      JobResponseModel[],
+      EmployeeResponseModel[],
+      CustomerResponseModel[],
+      CellarResponseModel[]
+    ]
+  >;
 
   return dataCache.loadingPromise;
 }
@@ -122,23 +156,26 @@ const SLOT_TO_LABEL: Record<TimeSlotType, string> = {
 
 function getRequiredSlots(job?: JobResponseModel): number {
   if (!job) return 1;
-  
+
   // Calculate slots based on estimated duration from job response
   // Each slot is 2 hours (120 minutes)
   const MINUTES_PER_SLOT = 120;
   const duration = job.estimatedDurationMinutes || 120;
   const requiredSlots = Math.ceil(duration / MINUTES_PER_SLOT);
-  
+
   // Cap at maximum available slots (5 slots from 9 AM to 5 PM)
   return Math.min(requiredSlots, 5);
 }
 
-function slotAllowedForJob(job: JobResponseModel | undefined, slot: TimeSlotType): boolean {
+function slotAllowedForJob(
+  job: JobResponseModel | undefined,
+  slot: TimeSlotType
+): boolean {
   if (!job) return true;
-  
+
   const required = getRequiredSlots(job);
   const startIdx = SLOT_ORDER.indexOf(slot);
-  
+
   // Check if there are enough consecutive slots available for this job duration
   return startIdx + required <= SLOT_ORDER.length;
 }
@@ -146,7 +183,7 @@ function slotAllowedForJob(job: JobResponseModel | undefined, slot: TimeSlotType
 function isWeekend(date: string): boolean {
   if (!date) return false;
   // Parse date parts to avoid timezone issues
-  const [year, month, day] = date.split('-').map(Number);
+  const [year, month, day] = date.split("-").map(Number);
   const localDate = new Date(year, month - 1, day);
   const dayOfWeek = localDate.getDay();
   return dayOfWeek === 0 || dayOfWeek === 6;
@@ -185,7 +222,9 @@ function getActualCustomerId(id: string | object | undefined): string {
 }
 
 function labelForTime(time: string): string {
-  const entry = Object.entries(SLOT_TO_TIME).find(([, value]) => value === time);
+  const entry = Object.entries(SLOT_TO_TIME).find(
+    ([, value]) => value === time
+  );
   if (!entry) return time;
   const slot = entry[0] as TimeSlotType;
   return SLOT_TO_LABEL[slot];
@@ -198,11 +237,11 @@ export default function AddAppointmentModal({
 }: AddAppointmentModalProps): React.ReactElement {
   const { t, i18n } = useTranslation();
   const { customerData } = useAuthStore();
-  
+
   // Get customerId or employeeId from auth store
   const customerId = customerData?.customerId;
   const technicianId = customerData?.employeeId;
-  
+
   const [jobs, setJobs] = useState<JobResponseModel[]>([]);
   const [employees, setEmployees] = useState<EmployeeResponseModel[]>([]);
   const [customers, setCustomers] = useState<CustomerResponseModel[]>([]);
@@ -210,8 +249,12 @@ export default function AddAppointmentModal({
   const [scheduleSlots, setScheduleSlots] = useState<TimeSlotType[]>([]);
 
   const [selectedJobId, setSelectedJobId] = useState<string>("");
-  const [selectedTechnicianId, setSelectedTechnicianId] = useState<string>(technicianId || "");
-  const [selectedCustomerId, setSelectedCustomerId] = useState<string>(customerId || "");
+  const [selectedTechnicianId, setSelectedTechnicianId] = useState<string>(
+    technicianId || ""
+  );
+  const [selectedCustomerId, setSelectedCustomerId] = useState<string>(
+    customerId || ""
+  );
   const [selectedCellarId, setSelectedCellarId] = useState<string>("");
 
   const [appointmentDate, setAppointmentDate] = useState<string>("");
@@ -231,15 +274,20 @@ export default function AddAppointmentModal({
   const [scheduleError, setScheduleError] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState<boolean>(false);
-  const [allAppointments, setAllAppointments] = useState<AppointmentResponseModel[]>([]);
-  const [technicianBookedSlots, setTechnicianBookedSlots] = useState<BookedSlot[]>([]);
+  const [allAppointments, setAllAppointments] = useState<
+    AppointmentResponseModel[]
+  >([]);
+  const [technicianBookedSlots, setTechnicianBookedSlots] = useState<
+    BookedSlot[]
+  >([]);
 
   useEffect(() => {
     let isMounted = true;
     async function loadData() {
       try {
         setLoading(true);
-        const [jobData, employeeData, customerData, cellarData] = await getCachedData();
+        const [jobData, employeeData, customerData, cellarData] =
+          await getCachedData();
 
         if (!isMounted) return;
 
@@ -257,8 +305,14 @@ export default function AddAppointmentModal({
           setSelectedCustomerId(customerId);
         }
 
-        if (mode === "customer" && !selectedTechnicianId && technicians.length > 0) {
-          setSelectedTechnicianId(technicians[0].employeeIdentifier.employeeId || "");
+        if (
+          mode === "customer" &&
+          !selectedTechnicianId &&
+          technicians.length > 0
+        ) {
+          setSelectedTechnicianId(
+            technicians[0].employeeIdentifier.employeeId || ""
+          );
         }
 
         if (mode === "technician" && technicianId) {
@@ -268,9 +322,13 @@ export default function AddAppointmentModal({
         if (mode === "technician" && customerData.length > 0) {
           // Find first customer with cellars
           const customerWithCellar = customerData.find((cust) =>
-            cellarData.some((cel) => getActualCustomerId(cel.ownerCustomerId) === getActualCustomerId(cust.customerId))
+            cellarData.some(
+              (cel) =>
+                getActualCustomerId(cel.ownerCustomerId) ===
+                getActualCustomerId(cust.customerId)
+            )
           );
-          
+
           if (customerWithCellar) {
             setSelectedCustomerId(customerWithCellar.customerId);
           } else if (customerData.length > 0) {
@@ -298,16 +356,24 @@ export default function AddAppointmentModal({
     return jobs;
   }, [jobs, mode]);
 
-  const selectedJob = useMemo(() => jobOptions.find((j) => j.jobId === selectedJobId), [jobOptions, selectedJobId]);
+  const selectedJob = useMemo(
+    () => jobOptions.find((j) => j.jobId === selectedJobId),
+    [jobOptions, selectedJobId]
+  );
 
   const selectedTechnician = useMemo(
-    () => employees.find((e) => e.employeeIdentifier.employeeId === selectedTechnicianId),
+    () =>
+      employees.find(
+        (e) => e.employeeIdentifier.employeeId === selectedTechnicianId
+      ),
     [employees, selectedTechnicianId]
   );
 
   const selectedCustomer = useMemo(() => {
     const actualCustomerId = getActualCustomerId(selectedCustomerId);
-    return customers.find((c) => getActualCustomerId(c.customerId) === actualCustomerId);
+    return customers.find(
+      (c) => getActualCustomerId(c.customerId) === actualCustomerId
+    );
   }, [customers, selectedCustomerId]);
 
   // Fetch aggregated availability for customer mode (when no technician is selected)
@@ -320,15 +386,20 @@ export default function AddAppointmentModal({
       }
 
       try {
-        const selectedJobToUse = jobOptions.find((j) => j.jobId === selectedJobId);
+        const selectedJobToUse = jobOptions.find(
+          (j) => j.jobId === selectedJobId
+        );
         if (!selectedJobToUse) {
           return;
         }
 
-        const response = await getAggregatedAvailability(appointmentDate, selectedJobToUse.jobName);
+        const response = await getAggregatedAvailability(
+          appointmentDate,
+          selectedJobToUse.jobName
+        );
         setTechnicianBookedSlots(response.bookedSlots || []);
       } catch (err) {
-        console.error('Failed to fetch aggregated availability:', err);
+        console.error("Failed to fetch aggregated availability:", err);
         setTechnicianBookedSlots([]);
       }
     }
@@ -346,10 +417,13 @@ export default function AddAppointmentModal({
       }
 
       try {
-        const response = await getTechnicianBookedSlots(selectedTechnicianId, appointmentDate);
+        const response = await getTechnicianBookedSlots(
+          selectedTechnicianId,
+          appointmentDate
+        );
         setTechnicianBookedSlots(response.bookedSlots || []);
       } catch (err) {
-        console.error('Failed to fetch technician booked slots:', err);
+        console.error("Failed to fetch technician booked slots:", err);
         setTechnicianBookedSlots([]);
       }
     }
@@ -371,7 +445,7 @@ export default function AddAppointmentModal({
         const appointments = await getMyJobs();
         setAllAppointments(appointments);
       } catch (err) {
-        console.error('Failed to fetch appointments:', err);
+        console.error("Failed to fetch appointments:", err);
         // If fetch fails, continue without filtering (backend will validate)
         setAllAppointments([]);
       }
@@ -383,19 +457,25 @@ export default function AddAppointmentModal({
   const filteredCustomers = useMemo(() => {
     if (!customerSearch.trim()) return customers;
     const term = customerSearch.toLowerCase();
-    return customers.filter(
-      (c) => `${c.firstName} ${c.lastName}`.toLowerCase().includes(term)
+    return customers.filter((c) =>
+      `${c.firstName} ${c.lastName}`.toLowerCase().includes(term)
     );
   }, [customers, customerSearch]);
 
   // Keep customer selection in sync with the filtered list only if current selection is filtered out
   useEffect(() => {
-    if (mode === "technician" && filteredCustomers.length > 0 && selectedCustomerId) {
+    if (
+      mode === "technician" &&
+      filteredCustomers.length > 0 &&
+      selectedCustomerId
+    ) {
       const actualCustomerId = getActualCustomerId(selectedCustomerId);
-      
+
       // Only update if the current selection is not in the filtered list
-      const isCurrentInFiltered = filteredCustomers.some((c) => getActualCustomerId(c.customerId) === actualCustomerId);
-      
+      const isCurrentInFiltered = filteredCustomers.some(
+        (c) => getActualCustomerId(c.customerId) === actualCustomerId
+      );
+
       if (!isCurrentInFiltered) {
         // Current customer was filtered out, select first from filtered list
         setSelectedCustomerId(filteredCustomers[0].customerId);
@@ -408,12 +488,12 @@ export default function AddAppointmentModal({
     if (!actualCustomerId) {
       return [];
     }
-    
+
     const filtered = cellars.filter((c) => {
       const actualOwnerCustomerId = getActualCustomerId(c.ownerCustomerId);
       return actualOwnerCustomerId === actualCustomerId;
     });
-    
+
     return filtered;
   }, [cellars, selectedCustomerId]);
 
@@ -455,15 +535,23 @@ export default function AddAppointmentModal({
         setScheduleError(null);
 
         // 1) Date-specific schedule
-        const dateSchedule = await getEmployeeScheduleForDate(selectedTechnicianId, appointmentDate);
+        const dateSchedule = await getEmployeeScheduleForDate(
+          selectedTechnicianId,
+          appointmentDate
+        );
         let slots = dateSchedule.flatMap((s) => s.timeSlots || []);
 
         // 2) Fallback to weekly schedule for the weekday if no slots
         if (slots.length === 0) {
           const weekly = await getEmployeeSchedule(selectedTechnicianId);
-          const weekday = new Date(appointmentDate).toLocaleDateString("en-US", { weekday: "long" }).toUpperCase();
+          const weekday = new Date(appointmentDate)
+            .toLocaleDateString("en-US", { weekday: "long" })
+            .toUpperCase();
           const daySlots = weekly
-            .filter((s: { dayOfWeek?: string }) => s.dayOfWeek?.toUpperCase() === weekday)
+            .filter(
+              (s: { dayOfWeek?: string }) =>
+                s.dayOfWeek?.toUpperCase() === weekday
+            )
             .flatMap((s: { timeSlots?: string[] }) => s.timeSlots || []);
           slots = daySlots;
         }
@@ -476,29 +564,36 @@ export default function AddAppointmentModal({
           "3:00 PM": "THREE_PM",
           "5:00 PM": "FIVE_PM",
         };
-        
+
         const normalized = slots
           .map((slot) => timeToEnum[slot] || slot.toUpperCase())
-          .filter((slot): slot is TimeSlotType => SLOT_ORDER.includes(slot as TimeSlotType));
+          .filter((slot): slot is TimeSlotType =>
+            SLOT_ORDER.includes(slot as TimeSlotType)
+          );
         const uniqueSlots = Array.from(new Set(normalized));
         setScheduleSlots(uniqueSlots);
 
         if (uniqueSlots.length === 0) {
-          setScheduleError("No schedule returned for this technician on the selected date.");
+          setScheduleError(
+            "No schedule returned for this technician on the selected date."
+          );
         }
       } catch (e) {
         setScheduleSlots([]);
 
         // Try to surface a clearer message from backend
-        let message = "Unable to load technician schedule. Try another date or technician.";
+        let message =
+          "Unable to load technician schedule. Try another date or technician.";
         if (typeof e === "object" && e && "response" in e) {
-          const resp = (e as { response?: { status?: number; data?: unknown } }).response;
+          const resp = (e as { response?: { status?: number; data?: unknown } })
+            .response;
           if (resp?.data) {
             if (typeof resp.data === "string") {
               message = resp.data;
             } else if (typeof resp.data === "object") {
               const data = resp.data as Record<string, unknown>;
-              message = (data.message as string) || (data.error as string) || message;
+              message =
+                (data.message as string) || (data.error as string) || message;
             }
           }
         }
@@ -512,7 +607,8 @@ export default function AddAppointmentModal({
   }, [selectedTechnicianId, appointmentDate]);
 
   const availableSlots = useMemo(() => {
-    if (!selectedJob || !appointmentDate || isWeekend(appointmentDate)) return [];
+    if (!selectedJob || !appointmentDate || isWeekend(appointmentDate))
+      return [];
 
     // For customer mode: use aggregated availability
     if (mode === "customer") {
@@ -526,8 +622,8 @@ export default function AddAppointmentModal({
           if (!startTimeRaw) return;
 
           // Extract HH:MM from HH:MM:SS format or use as-is if already HH:MM
-          const time = startTimeRaw.includes(':') 
-            ? startTimeRaw.substring(0, 5)  // Take first 5 chars: "09:00" from "09:00:00"
+          const time = startTimeRaw.includes(":")
+            ? startTimeRaw.substring(0, 5) // Take first 5 chars: "09:00" from "09:00:00"
             : startTimeRaw;
 
           if (isPast(appointmentDate, time)) return;
@@ -535,7 +631,9 @@ export default function AddAppointmentModal({
 
           // Calculate end time for this slot
           const slotStart = new Date(`${appointmentDate}T${time}:00`);
-          const slotEnd = new Date(slotStart.getTime() + jobDuration * 60 * 1000);
+          const slotEnd = new Date(
+            slotStart.getTime() + jobDuration * 60 * 1000
+          );
 
           // Check if slotEnd goes past working hours (6:00 PM)
           const lastSlotEnd = new Date(`${appointmentDate}T18:00:00`);
@@ -575,10 +673,12 @@ export default function AddAppointmentModal({
       // Check for conflicts with booked slots (for technician mode when checking against specific tech)
       const hasBookedConflict = technicianBookedSlots.some((bookedSlot) => {
         if (!bookedSlot.startTime || !bookedSlot.endTime) return false;
-        
-        const bookedStart = new Date(`${appointmentDate}T${bookedSlot.startTime}`);
+
+        const bookedStart = new Date(
+          `${appointmentDate}T${bookedSlot.startTime}`
+        );
         const bookedEnd = new Date(`${appointmentDate}T${bookedSlot.endTime}`);
-        
+
         // Overlap check: slotStart < bookedEnd AND slotEnd > bookedStart
         return slotStart < bookedEnd && slotEnd > bookedStart;
       });
@@ -587,7 +687,9 @@ export default function AddAppointmentModal({
 
       // Overlap detection with allAppointments (for technician mode)
       const hasConflict = allAppointments.some((apt) => {
-        const aptDate = new Date(apt.appointmentDate).toISOString().split('T')[0];
+        const aptDate = new Date(apt.appointmentDate)
+          .toISOString()
+          .split("T")[0];
         if (aptDate !== appointmentDate) return false;
         if (apt.status === "CANCELLED") return false;
 
@@ -598,12 +700,18 @@ export default function AddAppointmentModal({
         if (!isSameTechnician) return false;
 
         // Use start/end time from backend if available
-        const aptStart = apt.appointmentStartTime ? new Date(`${appointmentDate}T${apt.appointmentStartTime}`) : new Date(apt.appointmentDate);
+        const aptStart = apt.appointmentStartTime
+          ? new Date(`${appointmentDate}T${apt.appointmentStartTime}`)
+          : new Date(apt.appointmentDate);
         const aptEnd = new Date(aptStart);
         if (apt.appointmentStartTime && apt.appointmentEndTime) {
           // Parse times as minutes since midnight
-          const [startHour, startMin] = apt.appointmentStartTime.split(":").map(Number);
-          const [endHour, endMin] = apt.appointmentEndTime.split(":").map(Number);
+          const [startHour, startMin] = apt.appointmentStartTime
+            .split(":")
+            .map(Number);
+          const [endHour, endMin] = apt.appointmentEndTime
+            .split(":")
+            .map(Number);
           const startMinutes = startHour * 60 + startMin;
           const endMinutes = endHour * 60 + endMin;
           const durationMs = (endMinutes - startMinutes) * 60 * 1000;
@@ -622,7 +730,14 @@ export default function AddAppointmentModal({
     });
 
     return slots;
-  }, [appointmentDate, scheduleSlots, selectedJob, allAppointments, selectedTechnician, technicianBookedSlots]);
+  }, [
+    appointmentDate,
+    scheduleSlots,
+    selectedJob,
+    allAppointments,
+    selectedTechnician,
+    technicianBookedSlots,
+  ]);
 
   useEffect(() => {
     if (!appointmentTime && availableSlots.length > 0) {
@@ -666,9 +781,16 @@ export default function AddAppointmentModal({
       return;
     }
 
-    const postalErrorKey = getPostalCodeError(address.postalCode, address.city, address.province);
+    const postalErrorKey = getPostalCodeError(
+      address.postalCode,
+      address.city,
+      address.province
+    );
     if (postalErrorKey) {
-      const translatedError = t(postalErrorKey, { city: address.city, province: address.province });
+      const translatedError = t(postalErrorKey, {
+        city: address.city,
+        province: address.province,
+      });
       setError(translatedError);
       return;
     }
@@ -682,14 +804,19 @@ export default function AddAppointmentModal({
     const appointmentDateTime = `${appointmentDate}T${appointmentTime}:00`;
 
     // Extract actual customer ID in case it's nested - only needed for technician mode
-    const actualCustomerId = mode === "technician" ? getActualCustomerId(selectedCustomerId) : undefined;
+    const actualCustomerId =
+      mode === "technician"
+        ? getActualCustomerId(selectedCustomerId)
+        : undefined;
 
     const request: AppointmentRequestModel = {
       customerId: actualCustomerId,
-      ...(mode === "technician" && selectedTechnician ? {
-        technicianFirstName: selectedTechnician.firstName,
-        technicianLastName: selectedTechnician.lastName,
-      } : {}),
+      ...(mode === "technician" && selectedTechnician
+        ? {
+            technicianFirstName: selectedTechnician.firstName,
+            technicianLastName: selectedTechnician.lastName,
+          }
+        : {}),
       jobName: selectedJob.jobName,
       cellarName: cellar.name,
       appointmentDate: appointmentDateTime,
@@ -711,7 +838,8 @@ export default function AddAppointmentModal({
             message = resp.data;
           } else if (typeof resp.data === "object") {
             const data = resp.data as Record<string, unknown>;
-            message = (data.message as string) || (data.error as string) || message;
+            message =
+              (data.message as string) || (data.error as string) || message;
           }
         }
       }
@@ -732,22 +860,28 @@ export default function AddAppointmentModal({
       <div className="appointment-modal">
         <header className="appointment-modal__header">
           <div>
-            <p className="eyebrow">{mode === "customer" ? "Customer Booking" : "Technician Scheduling"}</p>
-            <h2>Add Appointment</h2>
+            <p className="eyebrow">
+              {mode === "customer"
+                ? t("pages.appointments.customerBooking")
+                : t("pages.appointments.technicianScheduling")}
+            </p>
+            <h2>{t("pages.appointments.addAppointment")}</h2>
           </div>
-          <button className="ghost" onClick={onClose} aria-label="Close">×</button>
+          <button className="ghost" onClick={onClose} aria-label="Close">
+            ×
+          </button>
         </header>
 
         {loading ? (
           <div className="state state--inline">
             <Loader2 className="spin" size={22} />
-            <span>Loading options…</span>
+            <span>{t("pages.appointments.loadingOptions")}</span>
           </div>
         ) : (
           <form className="appointment-form" onSubmit={handleSubmit}>
             <div className="grid two">
               <label className="field">
-                <span>{t('pages.appointments.service')}</span>
+                <span>{t("pages.appointments.service")}</span>
                 <div className="input-with-icon">
                   <ClipboardList size={16} />
                   <select
@@ -755,7 +889,9 @@ export default function AddAppointmentModal({
                     onChange={(e) => setSelectedJobId(e.target.value)}
                     required
                   >
-                    <option value="" disabled>{t('pages.appointments.selectService')}</option>
+                    <option value="" disabled>
+                      {t("pages.appointments.selectService")}
+                    </option>
                     {jobOptions.map((job) => (
                       <option key={job.jobId} value={job.jobId}>
                         {job.jobName} ({job.jobType})
@@ -766,20 +902,30 @@ export default function AddAppointmentModal({
               </label>
 
               <label className="field">
-                <span>{mode === "customer" ? t('pages.appointments.availableTechnicians') : t('pages.appointments.customer')}</span>
+                <span>
+                  {mode === "customer"
+                    ? t("pages.appointments.availableTechnicians")
+                    : t("pages.appointments.customer")}
+                </span>
                 <div className="input-with-icon">
                   <Users size={16} />
                   {mode === "customer" ? (
                     <input
                       type="text"
-                      placeholder={t('pages.appointments.autoAssignedTechnician')}
+                      placeholder={t(
+                        "pages.appointments.autoAssignedTechnician"
+                      )}
                       disabled
                       value="Auto-assigned"
                     />
                   ) : (
                     <input
                       type="text"
-                      placeholder={disableCustomerSearch ? t('pages.appointments.selectServiceFirst') : t('pages.appointments.searchCustomerByName')}
+                      placeholder={
+                        disableCustomerSearch
+                          ? t("pages.appointments.selectServiceFirst")
+                          : t("pages.appointments.searchCustomerByName")
+                      }
                       value={customerSearch}
                       onChange={(e) => setCustomerSearch(e.target.value)}
                       disabled={disableCustomerSearch}
@@ -789,18 +935,27 @@ export default function AddAppointmentModal({
                 {mode === "technician" && (
                   <div className="customer-results">
                     {disableCustomerSearch ? (
-                      <small className="hint">{t('pages.appointments.pickServiceFirst')}</small>
+                      <small className="hint">
+                        {t("pages.appointments.pickServiceFirst")}
+                      </small>
                     ) : (
                       filteredCustomers.slice(0, 8).map((cust, idx) => {
                         const custId = getActualCustomerId(cust.customerId);
-                        const selectedId = getActualCustomerId(selectedCustomerId);
-                        
+                        const selectedId =
+                          getActualCustomerId(selectedCustomerId);
+
                         return (
                           <button
-                            key={`${custId || `${cust.firstName}-${cust.lastName}`}-${idx}`}
+                            key={`${
+                              custId || `${cust.firstName}-${cust.lastName}`
+                            }-${idx}`}
                             type="button"
-                            className={`pill ${selectedId === custId ? "pill--active" : ""}`}
-                            onClick={() => setSelectedCustomerId(cust.customerId)}
+                            className={`pill ${
+                              selectedId === custId ? "pill--active" : ""
+                            }`}
+                            onClick={() =>
+                              setSelectedCustomerId(cust.customerId)
+                            }
                           >
                             {cust.firstName} {cust.lastName}
                           </button>
@@ -810,19 +965,21 @@ export default function AddAppointmentModal({
                   </div>
                 )}
                 {mode === "customer" && (
-                  <small className="hint">{t('pages.appointments.autoAssignedFromStaff')}</small>
+                  <small className="hint">
+                    {t("pages.appointments.autoAssignedFromStaff")}
+                  </small>
                 )}
               </label>
             </div>
 
             <div className="grid two">
               <label className="field">
-                <span>{t('pages.appointments.date')}</span>
+                <span>{t("pages.appointments.date")}</span>
                 <div className="input-with-icon">
                   <CalendarClock size={16} />
                   <input
                     type="date"
-                    lang={i18n.language === 'fr' ? 'fr-FR' : 'en-US'}
+                    lang={i18n.language === "fr" ? "fr-FR" : "en-US"}
                     value={appointmentDate}
                     onChange={(e) => setAppointmentDate(e.target.value)}
                     min={new Date().toISOString().split("T")[0]}
@@ -830,21 +987,32 @@ export default function AddAppointmentModal({
                     required
                   />
                 </div>
-                <small className="hint">{t('pages.appointments.weekdaysOnly')} {mode === "customer" ? t('pages.appointments.slotsFromAnyTechnician') : t('pages.appointments.slotsDependOnSchedule')}</small>
+                <small className="hint">
+                  {t("pages.appointments.weekdaysOnly")}{" "}
+                  {mode === "customer"
+                    ? t("pages.appointments.slotsFromAnyTechnician")
+                    : t("pages.appointments.slotsDependOnSchedule")}
+                </small>
               </label>
 
               <label className="field">
-                <span>{t('pages.appointments.timeSlot')}</span>
+                <span>{t("pages.appointments.timeSlot")}</span>
                 <div className="input-with-icon">
                   <CalendarClock size={16} />
                   <select
                     value={appointmentTime}
                     onChange={(e) => setAppointmentTime(e.target.value)}
-                    disabled={disableTimePicker || scheduleLoading || availableSlots.length === 0}
+                    disabled={
+                      disableTimePicker ||
+                      scheduleLoading ||
+                      availableSlots.length === 0
+                    }
                     required
                   >
                     <option value="" disabled>
-                      {scheduleLoading ? t('pages.appointments.checkingSchedule') : t('pages.appointments.selectTime')}
+                      {scheduleLoading
+                        ? t("pages.appointments.checkingSchedule")
+                        : t("pages.appointments.selectTime")}
                     </option>
                     {availableSlots.map((slot) => (
                       <option key={slot} value={slot}>
@@ -854,25 +1022,36 @@ export default function AddAppointmentModal({
                   </select>
                 </div>
                 {appointmentDate && isWeekend(appointmentDate) && (
-                  <small className="error">{t('pages.appointments.weekendBookingsBlocked')}</small>
-                )}
-                {availableSlots.length === 0 && appointmentDate && !isWeekend(appointmentDate) && (
                   <small className="error">
-                    {scheduleError || (mode === "customer" ? t('pages.appointments.noAvailableSlotsCustomer') : t('pages.appointments.noAvailableSlotsEmployee'))}
+                    {t("pages.appointments.weekendBookingsBlocked")}
                   </small>
                 )}
+                {availableSlots.length === 0 &&
+                  appointmentDate &&
+                  !isWeekend(appointmentDate) && (
+                    <small className="error">
+                      {scheduleError ||
+                        (mode === "customer"
+                          ? t("pages.appointments.noAvailableSlotsCustomer")
+                          : t("pages.appointments.noAvailableSlotsEmployee"))}
+                    </small>
+                  )}
               </label>
             </div>
 
             <label className="field">
-              <span>{t('pages.appointments.cellar')}</span>
+              <span>{t("pages.appointments.cellar")}</span>
               <select
                 value={selectedCellarId}
                 onChange={(e) => setSelectedCellarId(e.target.value)}
                 disabled={customerCellars.length === 0}
                 required
               >
-                {customerCellars.length === 0 && <option value="">{t('pages.appointments.noCellarsForCustomer')}</option>}
+                {customerCellars.length === 0 && (
+                  <option value="">
+                    {t("pages.appointments.noCellarsForCustomer")}
+                  </option>
+                )}
                 {customerCellars.map((cellar) => (
                   <option key={cellar.cellarId} value={cellar.cellarId}>
                     {cellar.name}
@@ -883,20 +1062,24 @@ export default function AddAppointmentModal({
 
             <div className="grid two">
               <label className="field">
-                <span>{t('pages.appointments.streetAddress')}</span>
+                <span>{t("pages.appointments.streetAddress")}</span>
                 <input
                   type="text"
                   value={address.streetAddress}
-                  onChange={(e) => setAddress({ ...address, streetAddress: e.target.value })}
+                  onChange={(e) =>
+                    setAddress({ ...address, streetAddress: e.target.value })
+                  }
                   required
                 />
               </label>
               <label className="field">
-                <span>{t('pages.appointments.city')}</span>
+                <span>{t("pages.appointments.city")}</span>
                 <input
                   type="text"
                   value={address.city}
-                  onChange={(e) => setAddress({ ...address, city: e.target.value })}
+                  onChange={(e) =>
+                    setAddress({ ...address, city: e.target.value })
+                  }
                   required
                 />
               </label>
@@ -904,41 +1087,47 @@ export default function AddAppointmentModal({
 
             <div className="grid three">
               <label className="field">
-                <span>{t('pages.appointments.province')}</span>
+                <span>{t("pages.appointments.province")}</span>
                 <input
                   type="text"
                   value={address.province}
-                  onChange={(e) => setAddress({ ...address, province: e.target.value })}
+                  onChange={(e) =>
+                    setAddress({ ...address, province: e.target.value })
+                  }
                   required
                 />
               </label>
               <label className="field">
-                <span>{t('pages.appointments.country')}</span>
+                <span>{t("pages.appointments.country")}</span>
                 <input
                   type="text"
                   value={address.country}
-                  onChange={(e) => setAddress({ ...address, country: e.target.value })}
+                  onChange={(e) =>
+                    setAddress({ ...address, country: e.target.value })
+                  }
                   required
                 />
               </label>
               <label className="field">
-                <span>{t('pages.appointments.postalCode')}</span>
+                <span>{t("pages.appointments.postalCode")}</span>
                 <input
                   type="text"
                   value={address.postalCode}
-                  onChange={(e) => setAddress({ ...address, postalCode: e.target.value })}
+                  onChange={(e) =>
+                    setAddress({ ...address, postalCode: e.target.value })
+                  }
                   required
                 />
               </label>
             </div>
 
             <label className="field">
-              <span>{t('pages.appointments.description')}</span>
+              <span>{t("pages.appointments.description")}</span>
               <textarea
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
                 rows={3}
-                placeholder={t('pages.appointments.description')}
+                placeholder={t("pages.appointments.description")}
                 required
               />
             </label>
@@ -946,9 +1135,24 @@ export default function AddAppointmentModal({
             {error && <div className="banner banner--error">{error}</div>}
 
             <footer className="modal-actions">
-              <button type="button" className="ghost" onClick={onClose} disabled={submitting}>{t('common.cancel')}</button>
-              <button type="submit" className="primary" disabled={submitting || loading}>
-                {submitting ? <Loader2 className="spin" size={16} /> : t('pages.appointments.createAppointment')}
+              <button
+                type="button"
+                className="ghost"
+                onClick={onClose}
+                disabled={submitting}
+              >
+                {t("common.cancel")}
+              </button>
+              <button
+                type="submit"
+                className="primary"
+                disabled={submitting || loading}
+              >
+                {submitting ? (
+                  <Loader2 className="spin" size={16} />
+                ) : (
+                  t("pages.appointments.createAppointment")
+                )}
               </button>
             </footer>
           </form>

@@ -80,7 +80,151 @@
   "pages": {
     "home": {
       "viewCustomers": "Afficher les clients",
-      "viewServices": "Afficher les services"
+      "viewServices": "Afficher les services",
+      "hero": {
+        "title": "Services Expert de Réparation de Caves à Vin à Montréal",
+        "subtitle": "Votre partenaire de confiance pour les réparations et l'entretien des systèmes de refroidissement de caves à vin",
+        "cta": "Parcourir les Services"
+      },
+      "services": {
+        "title": "Nos Services",
+        "subtitle": "Services professionnels de réparation de caves à vin pour garder votre collection parfaitement préservée",
+        "browseAll": "Voir les Services",
+        "items": {
+          "quotation": {
+            "title": "Soumission Gratuite",
+            "description": "Un technicien visite le site pour évaluer les besoins de la cave et préparer une soumission détaillée.",
+            "price": "À partir de 0,00$"
+          },
+          "installation": {
+            "title": "Installation de Cave",
+            "description": "Installation complète d'un nouveau système de réfrigération, câblage, tuyauterie et calibration.",
+            "price": "À partir de 120,00$"
+          },
+          "repair": {
+            "title": "Service de Réparation",
+            "description": "Diagnostic et réparation des problèmes de réfrigération, de contrôle d'humidité ou électriques.",
+            "price": "À partir de 95,00$"
+          },
+          "maintenance": {
+            "title": "Entretien Annuel",
+            "description": "Vérification complète du système, nettoyage, contrôle du réfrigérant et optimisation des performances.",
+            "price": "À partir de 85,00$"
+          }
+        },
+        "climateControl": {
+          "title": "Réparation de Contrôle Climatique",
+          "description": "Rétablissez les niveaux optimaux de température et d'humidité dans votre cave à vin.",
+          "price": "À partir de 199$"
+        },
+        "compressor": {
+          "title": "Service de Compresseur",
+          "description": "Diagnostic expert et réparation des composants du système de refroidissement.",
+          "price": "À partir de 249$"
+        },
+        "electrical": {
+          "title": "Systèmes Électriques",
+          "description": "Réparation du câblage, des capteurs et des panneaux de contrôle.",
+          "price": "À partir de 149$"
+        },
+        "preventive": {
+          "title": "Maintenance Préventive",
+          "description": "Inspections régulières pour prévenir les pannes coûteuses.",
+          "price": "À partir de 99$"
+        }
+      },
+      "whyChooseUs": {
+        "title": "Pourquoi Choisir Profroid?",
+        "subtitle": "Excellence dans la préservation des caves à vin",
+        "certified": {
+          "title": "Techniciens Certifiés",
+          "description": "Notre équipe est entièrement formée et certifiée pour les systèmes de refroidissement de caves à vin"
+        },
+        "support": {
+          "title": "Support d'Urgence 24/7",
+          "description": "Disponibilité 24h/24 pour les pannes urgentes du système de refroidissement"
+        },
+        "satisfaction": {
+          "title": "Garantie de Satisfaction 100%",
+          "description": "Nous garantissons notre travail avec une garantie complète"
+        },
+        "expertise": {
+          "title": "Plus de 15 Ans d'Expérience",
+          "description": "Nos services de réparation combinent technologie de pointe et expertise intemporelle"
+        }
+      },
+      "testimonials": {
+        "title": "Ce Que Disent Nos Clients",
+        "subtitle": "Lisez ce que nos clients satisfaits ont à dire",
+        "reviews": {
+          "review1": {
+            "name": "Pierre Dubois",
+            "location": "Westmount, Montréal",
+            "text": "Excellent service! Ils ont réparé mon système de refroidissement de cave à vin en un rien de temps. Techniciens très professionnels et compétents."
+          },
+          "review2": {
+            "name": "Marie Laurent",
+            "location": "Outremont, Montréal",
+            "text": "J'utilise Profroid pour l'entretien annuel depuis 5 ans. Toujours fiables, professionnels et ils prennent grand soin de ma collection de vins."
+          },
+          "review3": {
+            "name": "Jean-François Martin",
+            "location": "Laval, QC",
+            "text": "Réponse rapide à mon appel d'urgence. Le technicien était courtois et a résolu le problème de contrôle d'humidité efficacement."
+          }
+        }
+      },
+      "faq": {
+        "title": "Foire Aux Questions",
+        "subtitle": "Vous avez des questions? Nous avons les réponses. Trouvez ce dont vous avez besoin ci-dessous.",
+        "q1": {
+          "question": "Offrez-vous des services de réparation d'urgence?",
+          "answer": "Nous offrons des services d'urgence 24/7 pour les problèmes critiques de caves à vin. Nos techniciens arrivent généralement dans les 2-4 heures pour les appels d'urgence dans la grande région de Montréal."
+        },
+        "q2": {
+          "question": "Quels types de systèmes de caves à vin réparez-vous?",
+          "answer": "Nous réparons toutes les grandes marques et tous les types de systèmes de refroidissement de caves à vin, y compris les systèmes split, les systèmes à conduits et les unités traversantes. Nos techniciens sont certifiés pour travailler sur des marques comme EuroCave, WhisperKOOL, CellarPro, et plus encore."
+        },
+        "q3": {
+          "question": "À quelle fréquence devrais-je faire entretenir ma cave à vin?",
+          "answer": "Nous recommandons un entretien professionnel au moins deux fois par an - avant les saisons d'été et d'hiver. Un entretien régulier aide à prévenir les pannes inattendues et prolonge la durée de vie de votre système de refroidissement."
+        },
+        "q4": {
+          "question": "Quelles régions desservez-vous?",
+          "answer": "Nous desservons la grande région de Montréal, incluant Laval, Longueuil, la Rive-Nord et la Rive-Sud. Contactez-nous pour vérifier si nous desservons votre emplacement spécifique."
+        }
+      },
+      "feedback": {
+        "title": "Nous Valorisons Vos Commentaires",
+        "subtitle": "Aidez-nous à améliorer notre service",
+        "rateLabel": "Évaluez votre expérience",
+        "placeholder": "Parlez-nous de votre expérience...",
+        "submitButton": "Envoyer les Commentaires",
+        "success": {
+          "title": "Merci!",
+          "message": "Nous apprécions vos commentaires et les utiliserons pour améliorer notre service."
+        }
+      },
+      "contact": {
+        "title": "Contactez-Nous",
+        "subtitle": "Contactez-nous pour toute demande ou pour planifier un service.",
+        "phone": {
+          "title": "Téléphone",
+          "availability": "Disponible 24/7 pour les urgences"
+        },
+        "email": {
+          "title": "Courriel",
+          "response": "Nous répondrons dans les 24 heures"
+        },
+        "location": {
+          "title": "Emplacement"
+        },
+        "hours": {
+          "title": "Heures d'Ouverture",
+          "weekdays": "Lun-Ven: 8h00 - 18h00",
+          "weekends": "Sam: 9h00 - 16h00"
+        }
+      }
     },
     "customers": {
       "title": "Clients",
@@ -196,6 +340,7 @@
     },
     "services": {
       "title": "Services",
+      "ourServices": "Nos Services",
       "addService": "Ajouter un service",
       "editService": "Modifier le service",
       "deleteService": "Supprimer le service",
@@ -207,9 +352,13 @@
       "noServices": "Aucun service disponible",
       "serviceDetails": "Détails du service",
       "jobId": "Identifiant du service",
+      "jobName": "Nom du Travail",
+      "jobDescription": "Description",
       "hourlyRate": "Taux horaire",
       "estimatedDuration": "Durée estimée",
+      "durationMins": "Durée (mins)",
       "type": "Type de service",
+      "jobType": "Type de Travail",
       "quotation": "Devis",
       "installation": "Installation",
       "reparation": "Réparation",
@@ -218,12 +367,34 @@
       "createService": "Créer le service",
       "modifyService": "Modifier le service",
       "updateService": "Mettre à jour le service",
+      "viewDetails": "Afficher les Détails",
+      "modify": "Modifier",
       "deactivateService": "Désactiver le service",
       "reactivateService": "Réactiver le service",
       "deactivateConfirmMessage": "Êtes-vous sûr de vouloir désactiver \"{{serviceName}}\" ? Ce service ne sera plus disponible pour les rendez-vous.",
       "reactivateConfirmMessage": "Êtes-vous sûr de vouloir réactiver \"{{serviceName}}\" ? Ce service sera de nouveau disponible.",
       "deactivate": "Désactiver",
-      "reactivate": "Réactiver"
+      "reactivate": "Réactiver",
+      "inactive": "Inactif",
+      "serviceCreated": "Le service a été créé avec succès!",
+      "serviceUpdated": "Le service a été mis à jour avec succès!",
+      "serviceDeactivated": "{{serviceName}} a été désactivé. Vous pouvez le réactiver à tout moment.",
+      "serviceReactivated": "{{serviceName}} a été réactivé avec succès!",
+      "failedToLoad": "Échec du chargement des services",
+      "failedToLoadDetails": "Échec du chargement des détails du service",
+      "failedToCreate": "Échec de la création du service",
+      "failedToUpdate": "Échec de la mise à jour du service",
+      "failedToDeactivate": "Échec de la désactivation du service",
+      "failedToReactivate": "Échec de la réactivation du service",
+      "loadingServices": "Chargement des services...",
+      "loadingDetails": "Chargement des détails...",
+      "noDetailsAvailable": "Aucun détail disponible.",
+      "creating": "Création en cours...",
+      "updating": "Mise à jour en cours...",
+      "jobNameRequired": "Le nom du travail est obligatoire",
+      "jobDescriptionRequired": "La description du travail est obligatoire",
+      "hourlyRateRequired": "Le taux horaire doit être supérieur à 0",
+      "durationRequired": "La durée estimée doit être supérieure à 0"
     },
     "parts": {
       "title": "Pièces",
@@ -240,6 +411,10 @@
       "myAppointments": "Mes Rendez-vous",
       "title": "Rendez-vous",
       "bookAppointment": "Réserver un Rendez-vous",
+      "addAppointment": "Ajouter un Rendez-vous",
+      "customerBooking": "Réservation Client",
+      "technicianScheduling": "Planification Technicien",
+      "loadingOptions": "Chargement des options…",
       "date": "Date",
       "time": "Heure",
       "timeSlot": "Créneau horaire",
@@ -265,7 +440,6 @@
       "appointmentDetails": "Détails du rendez-vous",
       "serviceInformation": "Informations sur les services",
       "appointmentTime": "Heure du rendez-vous",
-      "technician": "Technicien",
       "serviceLocation": "Lieu du service",
       "contactInformation": "Informations de contact",
       "name": "Nom",
@@ -273,7 +447,6 @@
       "job": "Travail",
       "type": "Type",
       "rate": "Tarif",
-      "status": "Statut",
       "availableTechnicians": "Techniciens disponibles",
       "streetAddress": "Adresse",
       "city": "Ville",
@@ -282,14 +455,11 @@
       "postalCode": "Code postal",
       "createAppointment": "Créer un rendez-vous",
       "weekdaysOnly": "Jours de semaine uniquement",
-      "selectService": "Sélectionnez un service",
       "autoAssignedTechnician": "Sera attribué automatiquement à partir des techniciens disponibles",
-      "selectTechnician": "Sélectionnez un technicien",
       "autoAssignedFromStaff": "Le technicien sera automatiquement assigné à partir du personnel disponible",
       "slotsFromAnyTechnician": "Les créneaux sont disponibles auprès de n'importe quel technicien",
       "slotsDependOnSchedule": "Les créneaux dépendent de l'horaire du technicien",
       "checkingSchedule": "Vérification de l'horaire",
-      "selectTime": "Sélectionnez une heure",
       "weekendBookingsBlocked": "Les réservations le week-end sont bloquées",
       "noAvailableSlotsCustomer": "Aucun créneau disponible auprès d'un technicien pour cette date/service",
       "noAvailableSlotsEmployee": "Aucun créneau valide pour cette date/service avec le technicien sélectionné",
@@ -337,7 +507,86 @@
       "currentPassword": "Mot de passe actuel",
       "newPassword": "Nouveau mot de passe",
       "updateProfile": "Mettre à jour le profil",
-      "refresh": "Rafraîchir"
+      "refresh": "Rafraîchir",
+      "myCellars": "Mes Caves",
+      "addCellar": "Ajouter une Cave",
+      "cellarInformation": "Informations sur la Cave",
+      "address": "Adresse",
+      "city": "Ville",
+      "province": "Province",
+      "country": "Pays",
+      "postalCode": "Code Postal",
+      "cellarAdded": "Cave ajoutée avec succès!",
+      "cellarUpdated": "Cave mise à jour avec succès!",
+      "editCellar": "Modifier la Cave",
+      "updateCellar": "Mettre à Jour la Cave",
+      "createCellar": "Créer une Cave",
+      "noCellars": "Aucune cave pour le moment",
+      "addFirstCellar": "Ajoutez votre première cave à vin pour commencer.",
+      "profileInformation": "Informations du Profil",
+      "edit": "Modifier",
+      "firstName": "Prénom",
+      "lastName": "Nom",
+      "emailReadOnly": "E-mail (Lecture seule)",
+      "phone": "Téléphone",
+      "saveChanges": "Enregistrer les modifications",
+      "saving": "Enregistrement...",
+      "cancel": "Annuler",
+      "addCellarIntake": "Ajouter un Inventaire de Cave",
+      "yourCellars": "Vos Caves",
+      "noCellarsYet": "Aucune cave pour le moment.",
+      "name": "Nom",
+      "status": "Statut",
+      "active": "Actif",
+      "inactive": "Inactif",
+      "type": "Type",
+      "capacity": "Capacité",
+      "bottles": "bouteilles",
+      "dimensions": "Dimensions (H×L×P)",
+      "features": "Caractéristiques",
+      "cooling": "Refroidissement",
+      "humidity": "Humidité",
+      "autoRegulation": "Auto-régulation",
+      "none": "Aucun",
+      "update": "Mettre à jour",
+      "delete": "Supprimer",
+      "deactivate": "Désactiver",
+      "deactivateCellar": "Désactiver la Cave",
+      "deactivateConfirmMessage": "Êtes-vous sûr de vouloir désactiver \"{{cellarName}}\"? Cette cave ne sera plus disponible pour les rendez-vous.",
+      "unnamedCellar": "Cave sans nom",
+      "cellarName": "Nom de la Cave",
+      "height": "Hauteur (cm)",
+      "width": "Largeur (cm)",
+      "depth": "Profondeur (cm)",
+      "bottleCapacity": "Capacité en Bouteilles",
+      "cellarType": "Type de Cave",
+      "private": "Privée",
+      "commercial": "Commerciale",
+      "professional": "Professionnelle",
+      "modular": "Modulaire",
+      "hasCoolingSystem": "Possède un Système de Refroidissement",
+      "hasHumidityControl": "Possède un Contrôle d'Humidité",
+      "hasAutoRegulation": "Possède une Auto-régulation",
+      "oldPassword": "Ancien Mot de Passe",
+      "confirmNewPassword": "Confirmer le Nouveau Mot de Passe",
+      "notifications": {
+        "profileUpdated": "Profil mis à jour avec succès!",
+        "profileUpdateFailed": "Échec de la mise à jour du profil",
+        "cellarCreated": "Cave créée avec succès!",
+        "cellarCreateFailed": "Échec de la création de la cave",
+        "cellarUpdated": "Cave mise à jour avec succès!",
+        "cellarUpdateFailed": "Échec de la mise à jour de la cave",
+        "cellarDeactivated": "Cave désactivée avec succès!",
+        "cellarDeactivateFailed": "Échec de la désactivation de la cave",
+        "passwordChanged": "Mot de passe modifié avec succès!"
+      },
+      "mySchedule": "Mon Horaire",
+      "selectDate": "Sélectionner une Date",
+      "timeSlots": "Créneaux Horaires",
+      "selectADate": "Sélectionnez une date",
+      "noScheduleForDate": "Aucun horaire pour cette date",
+      "loadingSchedule": "Chargement de l'horaire...",
+      "updatePassword": "Mettre à Jour le Mot de Passe"
     }
   },
   "validation": {
@@ -384,6 +633,7 @@
       "quotationScheduledAfter": "Un devis programmé existe à cette date. Les services ne peuvent pas être programmés après un devis. Veuillez programmer avant l'heure du devis ou choisir une date différente.",
       "serviceAlreadyExists": "Un rendez-vous de service existe déjà pour cette adresse ce jour. Un seul service par adresse par jour est autorisé. Veuillez choisir une date différente ou annuler le service existant.",
       "appointmentEndsAfterClosing": "Le rendez-vous ne peut pas se terminer après 17h00. Veuillez choisir un créneau horaire antérieur ou une durée plus courte.",
+      "notEnoughRemainingTime": "Pas assez de temps restant ce jour pour le service demandé à {{time}} (nécessite {{slots}} créneau(x)). Veuillez choisir une heure de début plus tôt.",
       "weekendNotAllowed": "Les réservations le week-end ne sont pas autorisées. Veuillez sélectionner un jour de semaine.",
       "noAvailableSlots": "Aucun créneau horaire disponible pour cette date. Veuillez choisir une date ou une heure différente."
     }
