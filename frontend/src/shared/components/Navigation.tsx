@@ -91,40 +91,6 @@ export default function Navigation(): React.ReactElement {
             </>
           )}
 
-          {/* Language Switcher */}
-          <div className="nav-language-container">
-            <button
-              className="nav-language-button"
-              onClick={() => setLanguageOpen(!languageOpen)}
-              aria-label={t("common.language")}
-            >
-              <Globe className="language-icon" />
-              <span className="language-text">
-                {i18n.language.toUpperCase()}
-              </span>
-            </button>
-            {languageOpen && (
-              <div className="nav-language-dropdown">
-                <button
-                  className={`language-option ${
-                    i18n.language === "en" ? "active" : ""
-                  }`}
-                  onClick={() => changeLanguage("en")}
-                >
-                  <span className="language-name">English</span>
-                </button>
-                <button
-                  className={`language-option ${
-                    i18n.language === "fr" ? "active" : ""
-                  }`}
-                  onClick={() => changeLanguage("fr")}
-                >
-                  <span className="language-name">Français</span>
-                </button>
-              </div>
-            )}
-          </div>
-
           {isAuthenticated && (
             <button className="nav-cart">
               <ShoppingCart className="icon" />
@@ -145,11 +111,81 @@ export default function Navigation(): React.ReactElement {
               <button className="nav-logout" onClick={handleLogout}>
                 <LogOut className="icon" /> {t("common.logout")}
               </button>
+              
+              {/* Language Switcher */}
+              <div className="nav-language-container">
+                <button
+                  className="nav-language-button"
+                  onClick={() => setLanguageOpen(!languageOpen)}
+                  aria-label={t("common.language")}
+                >
+                  <Globe className="language-icon" />
+                  <span className="language-text">
+                    {i18n.language.toUpperCase()}
+                  </span>
+                </button>
+                {languageOpen && (
+                  <div className="nav-language-dropdown">
+                    <button
+                      className={`language-option ${
+                        i18n.language === "en" ? "active" : ""
+                      }`}
+                      onClick={() => changeLanguage("en")}
+                    >
+                      <span className="language-name">English</span>
+                    </button>
+                    <button
+                      className={`language-option ${
+                        i18n.language === "fr" ? "active" : ""
+                      }`}
+                      onClick={() => changeLanguage("fr")}
+                    >
+                      <span className="language-name">Français</span>
+                    </button>
+                  </div>
+                )}
+              </div>
             </>
           ) : (
-            <button className="nav-signin" onClick={handleLogin}>
-              <LogIn className="icon" /> {t("navigation.signIn")}
-            </button>
+            <>
+              <button className="nav-signin" onClick={handleLogin}>
+                <LogIn className="icon" /> {t("navigation.signIn")}
+              </button>
+              
+              {/* Language Switcher */}
+              <div className="nav-language-container">
+                <button
+                  className="nav-language-button"
+                  onClick={() => setLanguageOpen(!languageOpen)}
+                  aria-label={t("common.language")}
+                >
+                  <Globe className="language-icon" />
+                  <span className="language-text">
+                    {i18n.language.toUpperCase()}
+                  </span>
+                </button>
+                {languageOpen && (
+                  <div className="nav-language-dropdown">
+                    <button
+                      className={`language-option ${
+                        i18n.language === "en" ? "active" : ""
+                      }`}
+                      onClick={() => changeLanguage("en")}
+                    >
+                      <span className="language-name">English</span>
+                    </button>
+                    <button
+                      className={`language-option ${
+                        i18n.language === "fr" ? "active" : ""
+                      }`}
+                      onClick={() => changeLanguage("fr")}
+                    >
+                      <span className="language-name">Français</span>
+                    </button>
+                  </div>
+                )}
+              </div>
+            </>
           )}
         </div>
 

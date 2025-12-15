@@ -406,113 +406,165 @@ export default function ServicesPage(): React.ReactElement {
   return (
     <div className="services-page">
       <div className="services-header">
-        <h2>{t("pages.services.title")}</h2>
+        <div className="header-content">
+          <h1 className="page-title">{t("pages.services.title")}</h1>
+          <p className="page-subtitle">
+            {isAdmin 
+              ? "Gérez vos services professionnels" 
+              : "Découvrez nos services de cave à vin"}
+          </p>
+        </div>
         {isAdmin && (
           <button className="btn-add-service" onClick={openCreateModal}>
+            <span className="btn-icon">+</span>
             {t("pages.services.addService")}
           </button>
         )}
       </div>
 
       {loading ? (
-        <div>{t("common.loading")}</div>
+        <div className="loading-container">
+          <div className="loading-spinner"></div>
+          <p>{t("common.loading")}</p>
+        </div>
       ) : (
-        <div className="services-list">
+        <div className="services-grid">
           {jobs.map((j) => (
             <div
               key={j.jobId}
-              className={`service-card-wrapper ${
+              className={`service-card-modern ${
                 !j.active ? "service-inactive" : ""
               }`}
             >
-              <div className="service-card">
-                <div className="service-image" aria-hidden>
-                  <span>Image</span>
+              {/* Image on the Left */}
+              <div className="service-image-container">
+                <div className="service-image-modern">
+                  <div className="image-placeholder">
+                    <svg className="image-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                      <path d="M21 21H3v-2l3-3 5 4 5-5 5 4v2z"/>
+                      <path d="M3 21V3h18v18"/>
+                      <circle cx="9" cy="9" r="2"/>
+                    </svg>
+                    <span>Image</span>
+                  </div>
+                </div>
+                {!j.active && (
+                  <div className="inactive-overlay">
+                    <span className="inactive-badge-modern">
+                      {t("pages.services.inactive")}
+                    </span>
+                  </div>
+                )}
+              </div>
+
+              {/* Content in the Middle */}
+              <div className="service-info">
+                <div className="service-header-row">
+                  <h3 className="service-title-modern">{j.jobName}</h3>
+                  <div className="service-price">
+                    <span className="price-label">Prix</span>
+                    <span className="price-value">${j.hourlyRate?.toFixed(2)}</span>
+                    <span className="price-unit">/heure</span>
+                  </div>
                 </div>
 
-                <div className="service-content">
-                  <h3 className="service-title">
-                    {j.jobName}
-                    {!j.active && (
-                      <span className="inactive-badge">
-                        {" "}
-                        ({t("pages.services.inactive")})
-                      </span>
-                    )}
-                  </h3>
-                  <div className="service-description-wrapper">
-                    <p
-                      className={`service-desc ${
-                        expandedDescriptions.has(j.jobId)
-                          ? "expanded"
-                          : "collapsed"
-                      }`}
+                <div className="service-meta">
+                  <div className="meta-item">
+                    <svg className="meta-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                      <circle cx="12" cy="12" r="10"/>
+                      <path d="M12 6v6l4 2"/>
+                    </svg>
+                    <span>{j.estimatedDurationMinutes} min</span>
+                  </div>
+                  <div className="meta-item">
+                    <svg className="meta-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                      <path d="M20 7h-3V4c0-1-1-2-2-2H9c-1 0-2 1-2 2v3H4c-1 0-2 1-2 2v11c0 1 1 2 2 2h16c1 0 2-1 2-2V9c0-1-1-2-2-2zM9 4h6v3H9V4z"/>
+                    </svg>
+                    <span>{j.jobType}</span>
+                  </div>
+                </div>
+
+                <div className="service-description-modern">
+                  <p
+                    className={`description-text ${
+                      expandedDescriptions.has(j.jobId)
+                        ? "expanded"
+                        : "collapsed"
+                    }`}
+                  >
+                    {j.jobDescription}
+                  </p>
+                  {isDescriptionTruncated(j.jobDescription) && !isAdmin && (
+                    <button
+                      className="description-toggle"
+                      onClick={() => toggleDescriptionExpanded(j.jobId)}
+                      aria-expanded={expandedDescriptions.has(j.jobId)}
                     >
-                      {j.jobDescription}
-                    </p>
-                    {isDescriptionTruncated(j.jobDescription) && !isAdmin && (
+                      {expandedDescriptions.has(j.jobId) 
+                        ? "Voir moins" 
+                        : "Voir plus"}
+                    </button>
+                  )}
+                </div>
+              </div>
+
+              {/* Actions on the Right */}
+              <div className="service-actions-modern">
+                {isAdmin ? (
+                  <>
+                    <button
+                      className="action-btn primary"
+                      onClick={() => void openDetails(j.jobId)}
+                      disabled={!j.active}
+                      title={t("pages.services.viewDetails")}
+                    >
+                      <svg className="btn-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                        <circle cx="12" cy="12" r="3"/>
+                      </svg>
+                      {t("pages.services.viewDetails")}
+                    </button>
+                    <button
+                      className="action-btn secondary"
+                      onClick={() => void openUpdateModal(j.jobId)}
+                      disabled={!j.active}
+                      title={t("pages.services.modify")}
+                    >
+                      <svg className="btn-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                        <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+                        <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+                      </svg>
+                      {t("pages.services.modify")}
+                    </button>
+                    {j.active ? (
                       <button
-                        className="description-expand-btn"
-                        onClick={() => toggleDescriptionExpanded(j.jobId)}
-                        aria-expanded={expandedDescriptions.has(j.jobId)}
+                        className="action-btn danger"
+                        onClick={() => handleDeactivateJob(j)}
+                        disabled={deactivateLoading}
+                        title={t("pages.services.deactivate")}
                       >
-                        {expandedDescriptions.has(j.jobId) ? "▲" : "▼"}
+                        <svg className="btn-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                          <circle cx="12" cy="12" r="10"/>
+                          <path d="M4.93 4.93l14.14 14.14"/>
+                        </svg>
+                        {t("pages.services.deactivate")}
+                      </button>
+                    ) : (
+                      <button
+                        className="action-btn success"
+                        onClick={() => handleReactivateJob(j)}
+                        disabled={deactivateLoading}
+                        title={t("pages.services.reactivate")}
+                      >
+                        <svg className="btn-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                          <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+                          <polyline points="22 4 12 14.01 9 11.01"/>
+                        </svg>
+                        {t("pages.services.reactivate")}
                       </button>
                     )}
-                  </div>
-                </div>
-
-                <div className="service-actions">
-                  <div className="service-rate">
-                    ${j.hourlyRate?.toFixed(2)}
-                  </div>
-
-                  {isAdmin ? (
-                    <>
-                      <button
-                        className="btn-view-light"
-                        onClick={() => void openDetails(j.jobId)}
-                        disabled={!j.active}
-                      >
-                        {t("pages.services.viewDetails")}
-                      </button>
-                      <button
-                        className="btn-view-light"
-                        onClick={() => void openUpdateModal(j.jobId)}
-                        disabled={!j.active}
-                      >
-                        {t("pages.services.modify")}
-                      </button>
-                      {j.active ? (
-                        <button
-                          className="btn-view-light"
-                          style={{
-                            marginLeft: 8,
-                            backgroundColor: "#ff6b6b",
-                            color: "white",
-                          }}
-                          onClick={() => handleDeactivateJob(j)}
-                          disabled={deactivateLoading}
-                        >
-                          {t("pages.services.deactivate")}
-                        </button>
-                      ) : (
-                        <button
-                          className="btn-view-light"
-                          style={{
-                            marginLeft: 8,
-                            backgroundColor: "#51cf66",
-                            color: "white",
-                          }}
-                          onClick={() => handleReactivateJob(j)}
-                          disabled={deactivateLoading}
-                        >
-                          {t("pages.services.reactivate")}
-                        </button>
-                      )}
-                    </>
-                  ) : null}
-                </div>
+                  </>
+                ) : null}
               </div>
             </div>
           ))}
