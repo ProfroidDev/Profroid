@@ -225,7 +225,7 @@
   display: flex;
   flex-direction: column;
   align-items: flex-end;
-  background: linear-gradient(135deg, #fef9f5 0%, #f8f6f3 100%);
+  background: white;
   padding: 14px 22px;
   border-radius: 10px;
   border: 1px solid #e8dfd5;
@@ -327,9 +327,19 @@
   flex-direction: column;
   gap: 8px;
   padding: 20px 16px;
-  background: linear-gradient(135deg, #fdfbf7 0%, #f8f6f3 100%);
+  background: white;
   border-left: 2px solid #e6e3de;
   min-width: 140px;
+}
+
+/* When actions section is empty (no buttons) */
+.service-actions-modern:empty {
+  display: none;
+}
+
+/* Move price to the right when no buttons */
+.service-card-modern:has(.service-actions-modern:empty) .service-price {
+  margin-left: auto;
 }
 
 .action-btn {
