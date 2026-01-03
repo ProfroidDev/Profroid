@@ -11,6 +11,7 @@
     "delete": "Delete",
     "edit": "Edit",
     "back": "Back",
+    "goBack": "Go Back",
     "logout": "Logout",
     "profile": "Profile",
     "email": "Email",
@@ -420,6 +421,7 @@
       "appointmentCancelled": "Appointment cancelled successfully",
       "errorCancelling": "Failed to cancel appointment",
       "confirmCancel": "Are you sure you want to cancel this appointment?",
+      "confirmCancelTitle": "Cancel Appointment",
       "customerBooking": "Customer Booking",
       "technicianScheduling": "Technician Scheduling",
       "loadingOptions": "Loading options…",
@@ -473,8 +475,13 @@
       "noAvailableSlotsEmployee": "No valid slots for this date/service with the selected technician",
       "noCellarsForCustomer": "No cellars for this customer",
       "pickServiceFirst": "Pick a service before choosing a customer",
-      "searchCustomerByName": "Search customer by name",
-      "selectServiceFirst": "Select a service first"
+      "searchCustomerByName": "Search customer by email",
+      "selectServiceFirst": "Select a service first",
+      "typeEmailToSearch": "Type customer email to search",
+      "noCustomersFound": "No customers found with this email",
+      "cannotChangeQuotationType": "Cannot change the type of a quotation",
+      "cannotChangeCustomerForQuotation": "Cannot change customer for a quotation",
+      "cannotChangeCustomerQuotation": "Cannot change a quotation created by a customer"
     },
     "jobs": {
       "myJobs": "My Jobs",
@@ -482,6 +489,7 @@
       "editJob": "Edit Job",
       "markComplete": "Mark as Complete",
       "confirmComplete": "Are you sure you want to mark this job as completed?",
+      "confirmCompleteTitle": "Complete Job",
       "jobCompleted": "Job marked as completed successfully",
       "errorCompleting": "Failed to mark job as completed",
       "customer": "Customer",
@@ -648,7 +656,7 @@
     },
     "appointment": {
       "quotationAlreadyExists": "A quotation already exists for this address. Only one quotation per address per day is allowed. Please choose a different date or cancel the existing quotation.",
-      "quotationScheduledAfter": "A scheduled quotation exists on this date. Services cannot be scheduled after a quotation. Please schedule before the quotation time or choose a different date.",
+      "quotationScheduledAfter": "A scheduled quotation exists on this date. The quotation must be completed or cancelled before scheduling any service. Please complete/cancel the quotation first or choose a different date.",
       "serviceAlreadyExists": "A service appointment already exists for this address on this day. Only one service per address per day is allowed. Please choose a different date or cancel the existing service.",
       "appointmentEndsAfterClosing": "Appointment cannot end after 5:00 PM. Please choose an earlier time slot or shorter duration.",
       "notEnoughRemainingTime": "Not enough remaining time on this day for the requested service at {{time}} (requires {{slots}} slot(s)). Choose an earlier start time.",

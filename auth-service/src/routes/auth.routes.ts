@@ -621,7 +621,7 @@ router.get("/unassigned-users", async (req: Request, res: Response) => {
  * Headers: Authorization: Bearer <jwt>
  * 
  * Security & Privacy:
- * - Admins only
+ * - Admins and employees only
  * - Requires search query (min 2 chars) to prevent bulk enumeration
  * - Pagination enforced (max 50 per page for search)
  * - Returns userId and email for search results
@@ -631,12 +631,12 @@ router.get("/search-users", async (req: Request, res: Response) => {
     const payload = getPayloadFromRequest(req, res);
     if (!payload) return;
 
-    // Check if user is admin
+    // Check if user is admin or employee
     const userProfile = await prisma.userProfile.findUnique({
       where: { userId: payload.sub },
     });
 
-    if (userProfile?.role !== "admin") {
+    if (userProfile?.role !== "admin" && userProfile?.role !== "employee") {
       res.status(403).json({ error: "Only admins can access this resource" });
       return;
     }

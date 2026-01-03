@@ -6,7 +6,8 @@ import AddAppointmentModal from "../../features/appointment/components/AddAppoin
 import { patchAppointmentStatus } from "../../features/appointment/api/patchAppointmentStatus";
 import Toast from "../../shared/components/Toast";
 import useAuthStore from "../../features/authentication/store/authStore";
-import { MapPin, Clock, User, Wrench, DollarSign, Phone, AlertCircle, Edit, CheckCircle } from "lucide-react";
+import ConfirmationModal from "../../components/ConfirmationModal";
+import { MapPin, Clock, User, Wrench, DollarSign, Phone, AlertCircle, Edit, CheckCircle, X } from "lucide-react";
 import "./MyJobsPage.css";
 
 export default function MyJobsPage(): React.ReactElement {
@@ -18,6 +19,7 @@ export default function MyJobsPage(): React.ReactElement {
   const [error, setError] = useState<string | null>(null);
   const [showAddModal, setShowAddModal] = useState<boolean>(false);
   const [editingAppointment, setEditingAppointment] = useState<AppointmentResponseModel | null>(null);
+  const [confirmModal, setConfirmModal] = useState<{ isOpen: boolean; type: 'complete' | 'cancel' | null; appointmentId: string | null }>({ isOpen: false, type: null, appointmentId: null });
   
   const { user, customerData } = useAuthStore();
 
@@ -33,7 +35,10 @@ export default function MyJobsPage(): React.ReactElement {
       setLoading(true);
       setError(null);
       const data = await getMyJobs();
-      setJobs(data);
+      const sorted = [...data].sort(
+        (a, b) => new Date(a.appointmentDate).getTime() - new Date(b.appointmentDate).getTime()
+      );
+      setJobs(sorted);
     } catch (error: unknown) {
       console.error("Error fetching jobs:", error);
       
@@ -74,20 +79,36 @@ export default function MyJobsPage(): React.ReactElement {
     });
   };
 
-  const handleCompleteJob = async (appointmentId: string) => {
-    if (!confirm(t('pages.jobs.confirmComplete'))) {
-      return;
-    }
+  const handleCompleteJob = (appointmentId: string) => {
+    setConfirmModal({ isOpen: true, type: 'complete', appointmentId });
+  };
+
+  const handleCancelJob = (appointmentId: string) => {
+    setConfirmModal({ isOpen: true, type: 'cancel', appointmentId });
+  };
+
+  const handleConfirmAction = async () => {
+    if (!confirmModal.appointmentId) return;
 
     try {
-      await patchAppointmentStatus(appointmentId, { status: "COMPLETED" });
-      fetchJobs();
-      setToast({ message: t('pages.jobs.jobCompleted'), type: "success" });
+      if (confirmModal.type === 'complete') {
+        await patchAppointmentStatus(confirmModal.appointmentId, { status: "COMPLETED" });
+        fetchJobs();
+        setToast({ message: t('pages.jobs.jobCompleted'), type: "success" });
+      } else if (confirmModal.type === 'cancel') {
+        await patchAppointmentStatus(confirmModal.appointmentId, { status: "CANCELLED" });
+        fetchJobs();
+        setToast({ message: t('pages.appointments.appointmentCancelled'), type: "success" });
+      }
+      setConfirmModal({ isOpen: false, type: null, appointmentId: null });
     } catch (error: unknown) {
-      console.error("Error completing job:", error);
+      console.error("Error updating job:", error);
       
       // Extract error message for user
-      let errorMessage = t('pages.jobs.errorCompleting');
+      let errorMessage = confirmModal.type === 'complete' 
+        ? t('pages.jobs.errorCompleting')
+        : t('pages.appointments.errorCancelling');
+      
       if (typeof error === "object" && error && "response" in error) {
         const resp = (error as { response?: { data?: unknown } }).response;
         if (resp?.data) {
@@ -101,6 +122,7 @@ export default function MyJobsPage(): React.ReactElement {
       }
       
       setToast({ message: errorMessage, type: "error" });
+      setConfirmModal({ isOpen: false, type: null, appointmentId: null });
     }
   };
 
@@ -242,25 +264,35 @@ export default function MyJobsPage(): React.ReactElement {
 
               {/* Action Buttons */}
               <div className="job-actions">
+                {job.status === "SCHEDULED" && (job.createdByRole === "TECHNICIAN" || job.jobType === "QUOTATION") && (
+                  <button
+                    className="btn-edit"
+                    onClick={() => handleEditJob(job)}
+                    title={t('pages.jobs.editJob')}
+                  >
+                    <Edit size={16} />
+                    {t('common.edit')}
+                  </button>
+                )}
                 {job.status === "SCHEDULED" && (
-                  <>
-                    <button
-                      className="btn-edit"
-                      onClick={() => handleEditJob(job)}
-                      title={t('pages.jobs.editJob')}
-                    >
-                      <Edit size={16} />
-                      {t('common.edit')}
-                    </button>
-                    <button
-                      className="btn-complete"
-                      onClick={() => handleCompleteJob(job.appointmentId)}
-                      title={t('pages.jobs.markComplete')}
-                    >
-                      <CheckCircle size={16} />
-                      {t('pages.jobs.markComplete')}
-                    </button>
-                  </>
+                  <button
+                    className="btn-complete"
+                    onClick={() => handleCompleteJob(job.appointmentId)}
+                    title={t('pages.jobs.markComplete')}
+                  >
+                    <CheckCircle size={16} />
+                    {t('pages.jobs.markComplete')}
+                  </button>
+                )}
+                {job.status === "SCHEDULED" && (
+                  <button
+                    className="btn-cancel"
+                    onClick={() => handleCancelJob(job.appointmentId)}
+                    title={t('pages.appointments.cancelAppointment')}
+                  >
+                    <X size={16} />
+                    {t('common.cancel')}
+                  </button>
                 )}
               </div>
 
@@ -359,6 +391,17 @@ export default function MyJobsPage(): React.ReactElement {
           onClose={() => setToast(null)}
         />
       )}
+
+      <ConfirmationModal
+        isOpen={confirmModal.isOpen}
+        title={confirmModal.type === 'complete' ? t('pages.jobs.confirmCompleteTitle') : t('pages.appointments.confirmCancelTitle')}
+        message={confirmModal.type === 'complete' ? t('pages.jobs.confirmComplete') : t('pages.appointments.confirmCancel')}
+        confirmText={confirmModal.type === 'complete' ? t('pages.jobs.markComplete') : t('common.cancel')}
+        cancelText={t('common.goBack')}
+        isDanger={confirmModal.type === 'cancel'}
+        onConfirm={handleConfirmAction}
+        onCancel={() => setConfirmModal({ isOpen: false, type: null, appointmentId: null })}
+      />
     </div>
   );
 }

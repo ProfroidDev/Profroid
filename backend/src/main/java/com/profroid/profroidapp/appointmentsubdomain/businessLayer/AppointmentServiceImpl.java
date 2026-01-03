@@ -203,6 +203,7 @@ public class AppointmentServiceImpl implements AppointmentService {
         appointment.setJob(job);
         appointment.setCellar(cellar);
         appointment.setSchedule(null); // Schedule can be set later if needed
+        appointment.setCreatedByRole(userRole); // Track who created this appointment
         
         // Save appointment
         Appointment savedAppointment = appointmentRepository.save(appointment);
@@ -350,26 +351,40 @@ public class AppointmentServiceImpl implements AppointmentService {
                 }
             }
 
-            // Permission check (same as POST)
-            Customer customer;
-            Employee technician = appointment.getTechnician();
-
+            // Permission check: customers can only edit appointments they created, technicians can edit their own and customer-created quotations
             if ("CUSTOMER".equals(effectiveRole)) {
-                customer = customerRepository.findCustomerByCustomerIdentifier_CustomerId(userId);
+                // Customer can only edit appointments they created
+                if (!"CUSTOMER".equals(appointment.getCreatedByRole())) {
+                    throw new InvalidOperationException("You can only edit appointments you have created.");
+                }
+                Customer customer = customerRepository.findCustomerByCustomerIdentifier_CustomerId(userId);
                 if (customer == null || !customer.getId().equals(appointment.getCustomer().getId())) {
                     throw new ResourceNotFoundException("You don't have permission to update this appointment.");
                 }
-            } else {
-                if (appointmentRequest.getCustomerId() == null || appointmentRequest.getCustomerId().isEmpty()) {
-                    throw new InvalidOperationException("When technician updates an appointment, customer ID must be provided in the request body.");
+            } else if ("TECHNICIAN".equals(effectiveRole)) {
+                // Technician can edit their own appointments or customer-created quotations
+                boolean isTechnicianOwned = "TECHNICIAN".equals(appointment.getCreatedByRole());
+                boolean isCustomerQuotation = "CUSTOMER".equals(appointment.getCreatedByRole()) && appointment.getJob() != null && JobType.QUOTATION.equals(appointment.getJob().getJobType());
+                
+                if (!isTechnicianOwned && !isCustomerQuotation) {
+                    throw new InvalidOperationException("You can only edit appointments you have created.");
                 }
-                customer = customerRepository.findCustomerByCustomerIdentifier_CustomerId(appointmentRequest.getCustomerId());
-                if (customer == null) {
-                    throw new ResourceNotFoundException("Customer not found with ID: " + appointmentRequest.getCustomerId());
+                
+                Employee technician = employeeRepository.findEmployeeByEmployeeIdentifier_EmployeeId(userId);
+                if (technician == null) {
+                    throw new ResourceNotFoundException("Technician not found.");
                 }
-                // Prevent technician change
-                if (!appointment.getTechnician().getId().equals(technician.getId())) {
-                    throw new InvalidOperationException("Technician cannot be changed in an update.");
+                
+                // For technician-owned appointments, verify technician assignment
+                if (isTechnicianOwned && !technician.getId().equals(appointment.getTechnician().getId())) {
+                    throw new ResourceNotFoundException("You don't have permission to update this appointment.");
+                }
+                
+                // For customer-created quotations, technician cannot change the job type
+                if (isCustomerQuotation) {
+                    if (!appointmentRequest.getJobName().equals(appointment.getJob().getJobName())) {
+                        throw new InvalidOperationException("You cannot change the service type of a customer-created quotation.");
+                    }
                 }
             }
 
@@ -385,7 +400,7 @@ public class AppointmentServiceImpl implements AppointmentService {
             // Find cellar by name and owner (prevents duplicate name issues)
             Cellar cellar = cellarRepository.findCellarByNameAndOwnerCustomerIdentifier_CustomerId(
                 appointmentRequest.getCellarName(), 
-                customer.getCustomerIdentifier().getCustomerId()
+                appointment.getCustomer().getCustomerIdentifier().getCustomerId()
             );
             if (cellar == null) {
                 throw new ResourceNotFoundException("Cellar not found: " + appointmentRequest.getCellarName() + " for this customer");
@@ -401,17 +416,29 @@ public class AppointmentServiceImpl implements AppointmentService {
                 throw new InvalidOperationException("Appointments cannot be scheduled on weekends (Saturday or Sunday). Please choose a weekday. Requested date: " + appointmentDateTime.toLocalDate() + " (" + appointmentDateTime.getDayOfWeek() + ")");
             }
             validationUtils.validateBookingDeadline(appointmentDateTime, now);
-            validationUtils.validateCellarOwnership(cellar, customer);
-            validationUtils.validateTechnicianSchedule(technician, appointmentDateTime);
+            validationUtils.validateCellarOwnership(cellar, appointment.getCustomer());
+            
+            // For customer edits, allow technician reassignment
+            // For technician edits, validate against the same technician
+            if ("CUSTOMER".equals(effectiveRole)) {
+                // Customer editing: don't require the same technician
+                // The slot must be available from SOME technician
+                // We'll find an available technician during the update
+            } else {
+                // Technician editing: must validate with their own schedule
+                validationUtils.validateTechnicianSchedule(appointment.getTechnician(), appointmentDateTime);
+            }
+            
             validationUtils.validateServiceTypeRestrictions(job.getJobType(), effectiveRole);
-            validationUtils.validateQuotationCompleted(job.getJobType(), appointmentRequest, customer, appointmentDateTime);
-            validationUtils.validateDuplicateQuotation(job.getJobType(), appointmentRequest, appointmentDateTime.toLocalDate(), appointmentDateTime, customer);
+            validationUtils.validateQuotationCompleted(job.getJobType(), appointmentRequest, appointment.getCustomer(), appointmentDateTime);
+            validationUtils.validateDuplicateQuotation(job.getJobType(), appointmentRequest, appointmentDateTime.toLocalDate(), appointmentDateTime, appointment.getCustomer(), appointment.getAppointmentIdentifier().getAppointmentId());
             // Prevent duplicate service for same address/day/technician except for the current appointment
             validationUtils.validateDuplicateServiceAddressAndDayExcludeCurrent(job.getJobType(), appointmentRequest, appointmentDateTime.toLocalDate(), appointment.getAppointmentIdentifier().getAppointmentId());
             
-            // Validate time slot availability - MUST include 30-minute buffer check and exclude current appointment
-            // This will also validate that appointment doesn't exceed 5 PM
-            validationUtils.validateTimeSlotAvailability(technician, appointmentDateTime, job, appointment.getAppointmentIdentifier().getAppointmentId());
+            if (!"CUSTOMER".equals(effectiveRole)) {
+                // Technician editing: validate against their own time slot
+                validationUtils.validateTimeSlotAvailability(appointment.getTechnician(), appointmentDateTime, job, appointment.getAppointmentIdentifier().getAppointmentId());
+            }
             
             // Additional explicit check that appointment doesn't exceed 5 PM (17:00)
             LocalTime appointmentStart = appointmentDateTime.toLocalTime();
@@ -422,14 +449,24 @@ public class AppointmentServiceImpl implements AppointmentService {
                 throw new InvalidOperationException("ERROR_APPOINTMENT_ENDS_AFTER_CLOSING");
             }
 
-            // Update appointment fields (technician cannot be changed)
-            appointment.setCustomer(customer);
+            // Update appointment fields
             appointment.setJob(job);
             appointment.setCellar(cellar);
             appointment.setAppointmentDate(appointmentDateTime);
             appointment.setDescription(appointmentRequest.getDescription());
             appointment.setAppointmentAddress(appointmentRequest.getAppointmentAddress());
-            // Do not change status or technician here
+            
+            // For customer edits, find an available technician at the new time using workload balancing
+            // For technician edits, keep the same technician
+            if ("CUSTOMER".equals(effectiveRole)) {
+                Employee availableTechnician = findAvailableTechnicianForUpdate(
+                    appointmentDateTime,
+                    job,
+                    appointment.getAppointmentIdentifier().getAppointmentId()
+                );
+                appointment.setTechnician(availableTechnician);
+            }
+            // Do not change status or technician for technician edits
 
             Appointment updatedAppointment = appointmentRepository.save(appointment);
             return appointmentResponseMapper.toResponseModel(updatedAppointment);
@@ -820,6 +857,80 @@ public class AppointmentServiceImpl implements AppointmentService {
             }
             
             return leastBookedTechnician;
+        }
+
+        /**
+         * Find an available technician for an update, balancing by weekly workload and
+         * excluding the appointment being updated from conflict and workload checks.
+         */
+        private Employee findAvailableTechnicianForUpdate(LocalDateTime appointmentDateTime, Job job, String excludeAppointmentId) {
+            List<Employee> technicians = employeeRepository.findAllByIsActiveTrue().stream()
+                    .filter(Employee::getIsActive)
+                    .filter(e -> e.getEmployeeRole() != null && e.getEmployeeRole().getEmployeeRoleType() == EmployeeRoleType.TECHNICIAN)
+                    .toList();
+
+            if (technicians.isEmpty()) {
+                throw new ResourceNotFoundException("No active technicians available for assignment.");
+            }
+
+            List<Employee> availableTechnicians = new ArrayList<>();
+
+            for (Employee tech : technicians) {
+                try {
+                    // Respect the technician's schedule for the new time
+                    validationUtils.validateTechnicianSchedule(tech, appointmentDateTime);
+                    // Ensure no appointment conflict, excluding the current appointment
+                    validationUtils.validateTimeSlotAvailability(tech, appointmentDateTime, job, excludeAppointmentId);
+                    availableTechnicians.add(tech);
+                } catch (Exception ignored) {
+                    // Not available, skip
+                }
+            }
+
+            if (availableTechnicians.isEmpty()) {
+                throw new InvalidOperationException("No technician is available at the requested time. Please choose a different date or time.");
+            }
+
+            // Choose the least-booked technician for the current week
+            LocalDate appointmentDate = appointmentDateTime.toLocalDate();
+            LocalDate weekStart = appointmentDate.with(java.time.temporal.TemporalAdjusters.previousOrSame(java.time.DayOfWeek.MONDAY));
+            LocalDate weekEnd = weekStart.plusDays(6);
+            LocalDateTime weekStartDT = weekStart.atStartOfDay();
+            LocalDateTime weekEndDT = weekEnd.plusDays(1).atStartOfDay();
+
+            Employee selected = null;
+            int minMinutes = Integer.MAX_VALUE;
+            java.util.Random random = new java.util.Random();
+
+            for (Employee tech : availableTechnicians) {
+                List<Appointment> weekAppointments = appointmentRepository.findByTechnicianAndAppointmentDateBetween(
+                        tech, weekStartDT, weekEndDT).stream()
+                        .filter(apt -> apt.getAppointmentStatus() == null ||
+                                apt.getAppointmentStatus().getAppointmentStatusType() != AppointmentStatusType.CANCELLED)
+                        .filter(apt -> !apt.getAppointmentIdentifier().getAppointmentId().equals(excludeAppointmentId))
+                        .toList();
+
+                int totalMinutes = 0;
+                for (Appointment apt : weekAppointments) {
+                    if (apt.getJob() != null && apt.getJob().getEstimatedDurationMinutes() != null && apt.getJob().getEstimatedDurationMinutes() > 0) {
+                        totalMinutes += apt.getJob().getEstimatedDurationMinutes();
+                    } else if (apt.getJob() != null) {
+                        totalMinutes += getDefaultDuration(apt.getJob().getJobType());
+                    } else {
+                        totalMinutes += 120;
+                    }
+                }
+
+                if (totalMinutes < minMinutes) {
+                    minMinutes = totalMinutes;
+                    selected = tech;
+                } else if (totalMinutes == minMinutes && random.nextBoolean()) {
+                    // Break ties randomly to distribute load fairly
+                    selected = tech;
+                }
+            }
+
+            return selected != null ? selected : availableTechnicians.get(0);
         }
         
         /**

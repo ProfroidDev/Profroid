@@ -112,6 +112,16 @@ public class AppointmentValidationUtils {
             LocalDate appointmentDate,
             LocalDateTime appointmentDateTime,
             Customer customer) {
+        validateDuplicateQuotation(jobType, requestModel, appointmentDate, appointmentDateTime, customer, null);
+    }
+
+    public void validateDuplicateQuotation(
+            JobType jobType,
+            AppointmentRequestModel requestModel,
+            LocalDate appointmentDate,
+            LocalDateTime appointmentDateTime,
+            Customer customer,
+            String excludeAppointmentId) {
         
         // Only validate if the current job is a quotation
         if (jobType != JobType.QUOTATION) {
@@ -138,6 +148,8 @@ public class AppointmentValidationUtils {
         
         List<Appointment> blockingQuotations = quotationsOnSameDay.stream()
             .filter(apt -> blockingStatuses.contains(apt.getAppointmentStatus().getAppointmentStatusType()))
+            .filter(apt -> excludeAppointmentId == null || 
+                          !apt.getAppointmentIdentifier().getAppointmentId().equals(excludeAppointmentId))
             .toList();
         
         if (!blockingQuotations.isEmpty()) {

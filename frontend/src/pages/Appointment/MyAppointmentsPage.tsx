@@ -6,6 +6,7 @@ import AddAppointmentModal from "../../features/appointment/components/AddAppoin
 import { patchAppointmentStatus } from "../../features/appointment/api/patchAppointmentStatus";
 import Toast from "../../shared/components/Toast";
 import useAuthStore from "../../features/authentication/store/authStore";
+import ConfirmationModal from "../../components/ConfirmationModal";
 import { MapPin, Clock, User, Wrench, DollarSign, AlertCircle, Edit, X } from "lucide-react";
 import "./MyAppointmentsPage.css";
 
@@ -18,6 +19,7 @@ export default function MyAppointmentsPage(): React.ReactElement {
   const [error, setError] = useState<string | null>(null);
   const [showAddModal, setShowAddModal] = useState<boolean>(false);
   const [editingAppointment, setEditingAppointment] = useState<AppointmentResponseModel | null>(null);
+  const [confirmModal, setConfirmModal] = useState<{ isOpen: boolean; appointmentId: string | null }>({ isOpen: false, appointmentId: null });
   
   const { user, customerData } = useAuthStore();
 
@@ -33,7 +35,10 @@ export default function MyAppointmentsPage(): React.ReactElement {
       setLoading(true);
       setError(null);
       const data = await getMyAppointments();
-      setAppointments(data);
+      const sorted = [...data].sort(
+        (a, b) => new Date(a.appointmentDate).getTime() - new Date(b.appointmentDate).getTime()
+      );
+      setAppointments(sorted);
     } catch (error: unknown) {
       console.error("Error fetching appointments:", error);
       
@@ -73,18 +78,22 @@ export default function MyAppointmentsPage(): React.ReactElement {
     });
   };
 
-  const handleCancelAppointment = async (appointmentId: string) => {
-    if (!confirm(t('pages.appointments.confirmCancel'))) {
-      return;
-    }
+  const handleCancelAppointment = (appointmentId: string) => {
+    setConfirmModal({ isOpen: true, appointmentId });
+  };
+
+  const handleConfirmCancel = async () => {
+    if (!confirmModal.appointmentId) return;
 
     try {
-      await patchAppointmentStatus(appointmentId, { status: "CANCELLED" });
+      await patchAppointmentStatus(confirmModal.appointmentId, { status: "CANCELLED" });
       fetchAppointments();
       setToast({ message: t('pages.appointments.appointmentCancelled'), type: "success" });
+      setConfirmModal({ isOpen: false, appointmentId: null });
     } catch (error: unknown) {
       console.error("Error cancelling appointment:", error);
       setToast({ message: t('pages.appointments.errorCancelling'), type: "error" });
+      setConfirmModal({ isOpen: false, appointmentId: null });
     }
   };
 
@@ -216,25 +225,25 @@ export default function MyAppointmentsPage(): React.ReactElement {
 
               {/* Action Buttons */}
               <div className="appointment-actions">
+                {appointment.status === "SCHEDULED" && appointment.createdByRole === "CUSTOMER" && (
+                  <button
+                    className="btn-edit"
+                    onClick={() => handleEditAppointment(appointment)}
+                    title={t('pages.appointments.editAppointment')}
+                  >
+                    <Edit size={16} />
+                    {t('common.edit')}
+                  </button>
+                )}
                 {appointment.status === "SCHEDULED" && (
-                  <>
-                    <button
-                      className="btn-edit"
-                      onClick={() => handleEditAppointment(appointment)}
-                      title={t('pages.appointments.editAppointment')}
-                    >
-                      <Edit size={16} />
-                      {t('common.edit')}
-                    </button>
-                    <button
-                      className="btn-cancel"
-                      onClick={() => handleCancelAppointment(appointment.appointmentId)}
-                      title={t('pages.appointments.cancelAppointment')}
-                    >
-                      <X size={16} />
-                      {t('common.cancel')}
-                    </button>
-                  </>
+                  <button
+                    className="btn-cancel"
+                    onClick={() => handleCancelAppointment(appointment.appointmentId)}
+                    title={t('pages.appointments.cancelAppointment')}
+                  >
+                    <X size={16} />
+                    {t('common.cancel')}
+                  </button>
                 )}
               </div>
 
@@ -341,6 +350,17 @@ export default function MyAppointmentsPage(): React.ReactElement {
           editAppointment={editingAppointment || undefined}
         />
       )}
+
+      <ConfirmationModal
+        isOpen={confirmModal.isOpen}
+        title={t('pages.appointments.confirmCancelTitle')}
+        message={t('pages.appointments.confirmCancel')}
+        confirmText={t('common.cancel')}
+        cancelText={t('common.goBack')}
+        isDanger={true}
+        onConfirm={handleConfirmCancel}
+        onCancel={() => setConfirmModal({ isOpen: false, appointmentId: null })}
+      />
     </div>
   );
 }
