@@ -3,6 +3,7 @@ import { useTranslation } from "react-i18next";
 import { Loader2, CalendarClock, ClipboardList, Users } from "lucide-react";
 import "./AddAppointmentModal.css";
 import { createAppointment } from "../api/createAppointment";
+import { updateAppointment } from "../api/updateAppointment";
 import type { AppointmentRequestModel } from "../models/AppointmentRequestModel";
 import type { AppointmentResponseModel } from "../models/AppointmentResponseModel";
 import { getJobs } from "../../jobs/api/getAllJobs";
@@ -128,6 +129,7 @@ interface AddAppointmentModalProps {
   mode: Mode;
   onClose: () => void;
   onCreated: (appointment: AppointmentResponseModel) => void;
+  editAppointment?: AppointmentResponseModel; // If provided, modal is in edit mode
 }
 
 const SLOT_ORDER: TimeSlotType[] = [
@@ -234,9 +236,13 @@ export default function AddAppointmentModal({
   mode,
   onClose,
   onCreated,
+  editAppointment,
 }: AddAppointmentModalProps): React.ReactElement {
   const { t, i18n } = useTranslation();
   const { customerData } = useAuthStore();
+
+  // Determine if we're in edit mode
+  const isEditMode = !!editAppointment;
 
   // Get customerId or employeeId from auth store
   const customerId = customerData?.customerId;
@@ -301,38 +307,102 @@ export default function AddAppointmentModal({
         setCustomers(customerData);
         setCellars(cellarData);
 
-        if (mode === "customer" && customerId) {
-          setSelectedCustomerId(customerId);
-        }
+        // If in edit mode, initialize form with existing appointment data
+        if (isEditMode && editAppointment) {
+          // Set job
+          const job = activeJobs.find((j) => j.jobName === editAppointment.jobName);
+          if (job) {
+            setSelectedJobId(job.jobId);
+          }
 
-        if (
-          mode === "customer" &&
-          !selectedTechnicianId &&
-          technicians.length > 0
-        ) {
-          setSelectedTechnicianId(
-            technicians[0].employeeIdentifier.employeeId || ""
+          // Set technician (for customer mode, don't allow changing technician)
+          const tech = technicians.find(
+            (e) => 
+              e.firstName === editAppointment.technicianFirstName && 
+              e.lastName === editAppointment.technicianLastName
           );
-        }
+          if (tech) {
+            setSelectedTechnicianId(tech.employeeIdentifier.employeeId || "");
+          }
 
-        if (mode === "technician" && technicianId) {
-          setSelectedTechnicianId(technicianId);
-        }
-
-        if (mode === "technician" && customerData.length > 0) {
-          // Find first customer with cellars
-          const customerWithCellar = customerData.find((cust) =>
-            cellarData.some(
-              (cel) =>
-                getActualCustomerId(cel.ownerCustomerId) ===
-                getActualCustomerId(cust.customerId)
-            )
+          // Set customer (for technician mode)
+          const cust = customerData.find(
+            (c) => 
+              c.firstName === editAppointment.customerFirstName && 
+              c.lastName === editAppointment.customerLastName
           );
+          if (cust) {
+            setSelectedCustomerId(cust.customerId);
+          }
 
-          if (customerWithCellar) {
-            setSelectedCustomerId(customerWithCellar.customerId);
-          } else if (customerData.length > 0) {
-            setSelectedCustomerId(customerData[0].customerId);
+          // Set date and time
+          const appointmentDateTime = new Date(editAppointment.appointmentDate);
+          const dateStr = appointmentDateTime.toISOString().split('T')[0];
+          setAppointmentDate(dateStr);
+
+          // Extract time from appointmentStartTime or parse from date
+          if (editAppointment.appointmentStartTime) {
+            const timeParts = editAppointment.appointmentStartTime.split(':');
+            const time = `${timeParts[0]}:${timeParts[1]}`;
+            setAppointmentTime(time);
+          } else {
+            const hours = appointmentDateTime.getHours().toString().padStart(2, '0');
+            const minutes = appointmentDateTime.getMinutes().toString().padStart(2, '0');
+            setAppointmentTime(`${hours}:${minutes}`);
+          }
+
+          // Set cellar
+          const cellar = cellarData.find((c) => c.name === editAppointment.cellarName);
+          if (cellar) {
+            setSelectedCellarId(cellar.cellarId);
+          }
+
+          // Set description
+          setDescription(editAppointment.description);
+
+          // Set address
+          setAddress({
+            streetAddress: editAppointment.appointmentAddress.streetAddress,
+            city: editAppointment.appointmentAddress.city,
+            province: editAppointment.appointmentAddress.province,
+            country: editAppointment.appointmentAddress.country,
+            postalCode: editAppointment.appointmentAddress.postalCode,
+          });
+        } else {
+          // Original logic for non-edit mode
+          if (mode === "customer" && customerId) {
+            setSelectedCustomerId(customerId);
+          }
+
+          if (
+            mode === "customer" &&
+            !selectedTechnicianId &&
+            technicians.length > 0
+          ) {
+            setSelectedTechnicianId(
+              technicians[0].employeeIdentifier.employeeId || ""
+            );
+          }
+
+          if (mode === "technician" && technicianId) {
+            setSelectedTechnicianId(technicianId);
+          }
+
+          if (mode === "technician" && customerData.length > 0) {
+            // Find first customer with cellars
+            const customerWithCellar = customerData.find((cust) =>
+              cellarData.some(
+                (cel) =>
+                  getActualCustomerId(cel.ownerCustomerId) ===
+                  getActualCustomerId(cust.customerId)
+              )
+            );
+
+            if (customerWithCellar) {
+              setSelectedCustomerId(customerWithCellar.customerId);
+            } else if (customerData.length > 0) {
+              setSelectedCustomerId(customerData[0].customerId);
+            }
           }
         }
       } catch {
@@ -346,7 +416,7 @@ export default function AddAppointmentModal({
     return () => {
       isMounted = false;
     };
-  }, [mode, customerId, technicianId, selectedTechnicianId]);
+  }, [mode, customerId, technicianId, selectedTechnicianId, isEditMode, editAppointment]);
 
   // Define computed values BEFORE useEffects that depend on them
   const jobOptions = useMemo(() => {
@@ -737,6 +807,7 @@ export default function AddAppointmentModal({
     allAppointments,
     selectedTechnician,
     technicianBookedSlots,
+    mode,
   ]);
 
   useEffect(() => {
@@ -826,11 +897,22 @@ export default function AddAppointmentModal({
 
     try {
       setSubmitting(true);
-      const created = await createAppointment(request);
-      onCreated(created);
+      let result: AppointmentResponseModel;
+      
+      if (isEditMode && editAppointment) {
+        // Update existing appointment
+        result = await updateAppointment(editAppointment.appointmentId, request);
+      } else {
+        // Create new appointment
+        result = await createAppointment(request);
+      }
+      
+      onCreated(result);
       onClose();
     } catch (e: unknown) {
-      let message = "Failed to create appointment.";
+      let message = isEditMode 
+        ? "Failed to update appointment." 
+        : "Failed to create appointment.";
       if (typeof e === "object" && e && "response" in e) {
         const resp = (e as { response?: { data?: unknown } }).response;
         if (resp?.data) {
@@ -865,7 +947,11 @@ export default function AddAppointmentModal({
                 ? t("pages.appointments.customerBooking")
                 : t("pages.appointments.technicianScheduling")}
             </p>
-            <h2>{t("pages.appointments.addAppointment")}</h2>
+            <h2>
+              {isEditMode 
+                ? t("pages.appointments.editAppointment") 
+                : t("pages.appointments.addAppointment")}
+            </h2>
           </div>
           <button className="ghost" onClick={onClose} aria-label="Close">
             ×
@@ -1150,6 +1236,8 @@ export default function AddAppointmentModal({
               >
                 {submitting ? (
                   <Loader2 className="spin" size={16} />
+                ) : isEditMode ? (
+                  t("pages.appointments.updateAppointment")
                 ) : (
                   t("pages.appointments.createAppointment")
                 )}

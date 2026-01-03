@@ -3,9 +3,10 @@ import { useTranslation } from "react-i18next";
 import { getMyJobs } from "../../features/appointment/api/getMyJobs";
 import type { AppointmentResponseModel } from "../../features/appointment/models/AppointmentResponseModel";
 import AddAppointmentModal from "../../features/appointment/components/AddAppointmentModal";
+import { patchAppointmentStatus } from "../../features/appointment/api/patchAppointmentStatus";
 import Toast from "../../shared/components/Toast";
 import useAuthStore from "../../features/authentication/store/authStore";
-import { MapPin, Clock, User, Wrench, DollarSign, Phone, AlertCircle } from "lucide-react";
+import { MapPin, Clock, User, Wrench, DollarSign, Phone, AlertCircle, Edit, CheckCircle } from "lucide-react";
 import "./MyJobsPage.css";
 
 export default function MyJobsPage(): React.ReactElement {
@@ -16,6 +17,7 @@ export default function MyJobsPage(): React.ReactElement {
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' | 'info' | 'warning' } | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [showAddModal, setShowAddModal] = useState<boolean>(false);
+  const [editingAppointment, setEditingAppointment] = useState<AppointmentResponseModel | null>(null);
   
   const { user, customerData } = useAuthStore();
 
@@ -62,8 +64,49 @@ export default function MyJobsPage(): React.ReactElement {
 
   const handleCreated = () => {
     setShowAddModal(false);
+    setEditingAppointment(null);
     fetchJobs();
-    setToast({ message: t('pages.appointments.appointmentCreated'), type: "success" });
+    setToast({ 
+      message: editingAppointment 
+        ? t('pages.appointments.appointmentUpdated') 
+        : t('pages.appointments.appointmentCreated'), 
+      type: "success" 
+    });
+  };
+
+  const handleCompleteJob = async (appointmentId: string) => {
+    if (!confirm(t('pages.jobs.confirmComplete'))) {
+      return;
+    }
+
+    try {
+      await patchAppointmentStatus(appointmentId, { status: "COMPLETED" });
+      fetchJobs();
+      setToast({ message: t('pages.jobs.jobCompleted'), type: "success" });
+    } catch (error: unknown) {
+      console.error("Error completing job:", error);
+      
+      // Extract error message for user
+      let errorMessage = t('pages.jobs.errorCompleting');
+      if (typeof error === "object" && error && "response" in error) {
+        const resp = (error as { response?: { data?: unknown } }).response;
+        if (resp?.data) {
+          if (typeof resp.data === "string") {
+            errorMessage = resp.data;
+          } else if (typeof resp.data === "object") {
+            const data = resp.data as Record<string, unknown>;
+            errorMessage = (data.message as string) || (data.error as string) || errorMessage;
+          }
+        }
+      }
+      
+      setToast({ message: errorMessage, type: "error" });
+    }
+  };
+
+  const handleEditJob = (job: AppointmentResponseModel) => {
+    setEditingAppointment(job);
+    setShowAddModal(true);
   };
 
   const formatDate = (dateString: string): string => {
@@ -197,6 +240,30 @@ export default function MyJobsPage(): React.ReactElement {
                 <p>{job.description}</p>
               </div>
 
+              {/* Action Buttons */}
+              <div className="job-actions">
+                {job.status === "SCHEDULED" && (
+                  <>
+                    <button
+                      className="btn-edit"
+                      onClick={() => handleEditJob(job)}
+                      title={t('pages.jobs.editJob')}
+                    >
+                      <Edit size={16} />
+                      {t('common.edit')}
+                    </button>
+                    <button
+                      className="btn-complete"
+                      onClick={() => handleCompleteJob(job.appointmentId)}
+                      title={t('pages.jobs.markComplete')}
+                    >
+                      <CheckCircle size={16} />
+                      {t('pages.jobs.markComplete')}
+                    </button>
+                  </>
+                )}
+              </div>
+
               {/* View Details Button */}
               <button
                 className="btn-view-details"
@@ -276,8 +343,12 @@ export default function MyJobsPage(): React.ReactElement {
       {showAddModal && (
         <AddAppointmentModal
           mode="technician"
-          onClose={() => setShowAddModal(false)}
+          onClose={() => {
+            setShowAddModal(false);
+            setEditingAppointment(null);
+          }}
           onCreated={handleCreated}
+          editAppointment={editingAppointment || undefined}
         />
       )}
 
