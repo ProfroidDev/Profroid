@@ -34,6 +34,7 @@ import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 
 @Service
@@ -379,14 +380,21 @@ public class AppointmentServiceImpl implements AppointmentService {
                 if (isTechnicianOwned && !technician.getId().equals(appointment.getTechnician().getId())) {
                     throw new ResourceNotFoundException("You don't have permission to update this appointment.");
                 }
-                
-                // For customer-created quotations, verify technician assignment and restrict job type changes
+
                 if (isCustomerQuotation) {
                     if (!technician.getId().equals(appointment.getTechnician().getId())) {
                         throw new ResourceNotFoundException("You don't have permission to update this appointment.");
                     }
                     if (!appointmentRequest.getJobName().equals(appointment.getJob().getJobName())) {
                         throw new InvalidOperationException("You cannot change the service type of a customer-created quotation.");
+                    }
+                    
+                    // Check if customer is being changed
+                    if (appointmentRequest.getCustomerId() != null && 
+                        appointment.getCustomer().getCustomerIdentifier() != null &&
+                        !Objects.equals(appointmentRequest.getCustomerId(), 
+                                       appointment.getCustomer().getCustomerIdentifier().getCustomerId())) {
+                        throw new InvalidOperationException("You cannot change the customer for a customer-created quotation.");
                     }
                 }
             }
@@ -435,13 +443,23 @@ public class AppointmentServiceImpl implements AppointmentService {
             
             // For customer edits, allow technician reassignment
             // For technician edits, validate against the same technician
+            Employee assignedTechnician = appointment.getTechnician();
             if ("CUSTOMER".equals(effectiveRole)) {
-                // Customer editing: don't require the same technician
-                // The slot must be available from SOME technician
-                // We'll find an available technician during the update
+                // Customer editing: validate that at least one technician is available
+                // and reassign if necessary
+                try {
+                    // Check if current technician is still available
+                    validationUtils.validateTechnicianSchedule(assignedTechnician, appointmentDateTime);
+                    validationUtils.validateTimeSlotAvailability(assignedTechnician, appointmentDateTime, job, appointment.getAppointmentIdentifier().getAppointmentId());
+                    // Current technician is available, keep them assigned
+                } catch (InvalidOperationException | ResourceNotFoundException e) {
+                    // Current technician is not available, find a new one
+                    assignedTechnician = findAvailableTechnicianForUpdate(appointmentDateTime, job, appointment.getAppointmentIdentifier().getAppointmentId());
+                }
             } else {
                 // Technician editing: must validate with their own schedule
-                validationUtils.validateTechnicianSchedule(appointment.getTechnician(), appointmentDateTime);
+                validationUtils.validateTechnicianSchedule(assignedTechnician, appointmentDateTime);
+                validationUtils.validateTimeSlotAvailability(assignedTechnician, appointmentDateTime, job, appointment.getAppointmentIdentifier().getAppointmentId());
             }
             
             validationUtils.validateServiceTypeRestrictions(job.getJobType(), effectiveRole);
@@ -449,11 +467,6 @@ public class AppointmentServiceImpl implements AppointmentService {
             validationUtils.validateDuplicateQuotation(job.getJobType(), appointmentRequest, appointmentDateTime.toLocalDate(), appointmentDateTime, customerForValidation, appointment.getAppointmentIdentifier().getAppointmentId());
             // Prevent duplicate service for same address/day/technician except for the current appointment
             validationUtils.validateDuplicateServiceAddressAndDayExcludeCurrent(job.getJobType(), appointmentRequest, appointmentDateTime.toLocalDate(), appointment.getAppointmentIdentifier().getAppointmentId());
-            
-            if (!"CUSTOMER".equals(effectiveRole)) {
-                // Technician editing: validate against their own time slot
-                validationUtils.validateTimeSlotAvailability(appointment.getTechnician(), appointmentDateTime, job, appointment.getAppointmentIdentifier().getAppointmentId());
-            }
             
             // Additional explicit check that appointment doesn't exceed 5 PM (17:00)
             LocalTime appointmentStart = appointmentDateTime.toLocalTime();
@@ -476,9 +489,13 @@ public class AppointmentServiceImpl implements AppointmentService {
                 appointment.setCustomer(customerForValidation);
             }
 
-            // Keep the originally validated technician for all roles so that
-            // schedule validations and the persisted technician remain consistent.
-            // Do not change status or technician for customer or technician edits
+            // Update technician assignment if it was changed (for customer edits with conflicts)
+            // For technician edits, the technician remains the same (already validated)
+            if (!assignedTechnician.getId().equals(appointment.getTechnician().getId())) {
+                appointment.setTechnician(assignedTechnician);
+            }
+
+            // Do not change status for customer or technician edits
             Appointment updatedAppointment = appointmentRepository.save(appointment);
             return appointmentResponseMapper.toResponseModel(updatedAppointment);
         }

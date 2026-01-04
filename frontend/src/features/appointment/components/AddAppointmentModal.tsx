@@ -232,6 +232,12 @@ function labelForTime(time: string): string {
   return SLOT_TO_LABEL[slot];
 }
 
+// Type for technician data used in appointment requests
+type TechnicianData = {
+  technicianFirstName: string;
+  technicianLastName: string;
+};
+
 export default function AddAppointmentModal({
   mode,
   onClose,
@@ -392,6 +398,24 @@ export default function AddAppointmentModal({
             );
             if (tech) {
               setSelectedTechnicianId(tech.employeeIdentifier.employeeId || "");
+            } else {
+              // Technician not found - handle gracefully
+              const technicianName = `${editAppointment.technicianFirstName} ${editAppointment.technicianLastName}`;
+              
+              // Fallback: select first available technician if any exist
+              if (technicians.length > 0) {
+                setSelectedTechnicianId(
+                  technicians[0].employeeIdentifier.employeeId || ""
+                );
+                setError(
+                  `Technician ${technicianName} is no longer available. Selected first available technician instead.`
+                );
+              } else {
+                // No technicians available at all
+                setError(
+                  `Unable to find technician ${technicianName} and no other technicians are available.`
+                );
+              }
             }
           } else if (mode === "customer") {
             // In customer mode edits, explicitly clear technician to enable aggregated availability
@@ -409,7 +433,7 @@ export default function AddAppointmentModal({
               try {
                 const token = useAuthStore.getState().token;
                 const response = await fetch(
-                  `${import.meta.env.VITE_API_URL}/search-users?q=${encodeURIComponent(cust.userId)}&limit=1`,
+                  `${import.meta.env.VITE_API_URL}/users/${cust.userId}`,
                   {
                     method: 'GET',
                     headers: {
@@ -420,9 +444,8 @@ export default function AddAppointmentModal({
                 );
                 if (response.ok) {
                   const result = await response.json();
-                  const user = result.data?.[0];
-                  if (user?.email) {
-                    setCustomerSearch(user.email);
+                  if (result.user?.email) {
+                    setCustomerSearch(result.user.email);
                   }
                 }
               } catch (error) {
@@ -1031,6 +1054,26 @@ export default function AddAppointmentModal({
         ? getActualCustomerId(selectedCustomerId)
         : undefined;
 
+    // For customer mode edits, validate that the original technician still exists and is active
+    let validatedTechnicianData: TechnicianData | undefined;
+    if (mode === "customer" && isEditMode && editAppointment) {
+      const originalTechnician = employees.find(
+        (e) =>
+          e.firstName === editAppointment.technicianFirstName &&
+          e.lastName === editAppointment.technicianLastName
+      );
+      
+      if (!originalTechnician) {
+        setError(t("pages.appointments.technicianNoLongerAvailable"));
+        return;
+      }
+      
+      validatedTechnicianData = {
+        technicianFirstName: originalTechnician.firstName,
+        technicianLastName: originalTechnician.lastName,
+      };
+    }
+
     const request: AppointmentRequestModel = {
       customerId: actualCustomerId,
       ...(mode === "technician" && selectedTechnician
@@ -1039,13 +1082,8 @@ export default function AddAppointmentModal({
             technicianLastName: selectedTechnician.lastName,
           }
         : {}),
-      // For customer mode edits, include the original technician to prevent technician change validation errors
-      ...(mode === "customer" && isEditMode && editAppointment
-        ? {
-            technicianFirstName: editAppointment.technicianFirstName,
-            technicianLastName: editAppointment.technicianLastName,
-          }
-        : {}),
+      // For customer mode edits, include the validated technician data
+      ...(validatedTechnicianData ? validatedTechnicianData : {}),
       jobName: selectedJob.jobName,
       cellarName: cellar.name,
       appointmentDate: appointmentDateTime,
