@@ -407,10 +407,10 @@ export default function AddAppointmentModal({
               setSelectedCustomerId(cust.customerId);
               // Fetch the user email for this customer's userId
               try {
-                const token = localStorage.getItem('authToken');
+                const token = useAuthStore.getState().token;
                 const response = await fetch(
-                  `${import.meta.env.VITE_API_URL}/search-users?q=${encodeURIComponent(cust.userId)}&limit=1`,
-              const token = useAuthStore.getState().token;
+                  `${import.meta.env.VITE_API_URL}/users/${cust.userId}`,
+                  {
                     method: 'GET',
                     headers: {
                       'Authorization': `Bearer ${token}`,
@@ -420,9 +420,8 @@ export default function AddAppointmentModal({
                 );
                 if (response.ok) {
                   const result = await response.json();
-                  const user = result.data?.[0];
-                  if (user?.email) {
-                    setCustomerSearch(user.email);
+                  if (result.user?.email) {
+                    setCustomerSearch(result.user.email);
                   }
                 }
               } catch (error) {
