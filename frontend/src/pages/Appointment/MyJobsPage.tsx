@@ -264,7 +264,7 @@ export default function MyJobsPage(): React.ReactElement {
 
               {/* Action Buttons */}
               <div className="job-actions">
-                {job.status === "SCHEDULED" && (job.createdByRole === "TECHNICIAN" || job.jobType === "QUOTATION") && (
+                {job.status === "SCHEDULED" && ((job.createdByRole === "TECHNICIAN" || job.createdByRole == null) || job.jobType === "QUOTATION") && (
                   <button
                     className="btn-edit"
                     onClick={() => handleEditJob(job)}
