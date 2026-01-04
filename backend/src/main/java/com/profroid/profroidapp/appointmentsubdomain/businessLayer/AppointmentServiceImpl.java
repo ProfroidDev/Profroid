@@ -34,6 +34,7 @@ import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 
 @Service
@@ -388,7 +389,9 @@ public class AppointmentServiceImpl implements AppointmentService {
                     
                     // Check if customer is being changed
                     if (appointmentRequest.getCustomerId() != null && 
-                        !appointmentRequest.getCustomerId().equals(appointment.getCustomer().getCustomerIdentifier().getCustomerId())) {
+                        appointment.getCustomer().getCustomerIdentifier() != null &&
+                        !Objects.equals(appointmentRequest.getCustomerId(), 
+                                       appointment.getCustomer().getCustomerIdentifier().getCustomerId())) {
                         throw new InvalidOperationException("You cannot change the customer for a customer-created quotation.");
                     }
                 }
