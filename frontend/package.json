@@ -17,6 +17,7 @@
   },
   "dependencies": {
     "axios": "^1.13.2",
+    "framer-motion": "^12.23.26",
     "i18next": "^25.7.2",
     "i18next-browser-languagedetector": "^8.2.0",
     "lucide-react": "^0.554.0",
