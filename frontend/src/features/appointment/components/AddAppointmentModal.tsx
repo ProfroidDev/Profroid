@@ -394,13 +394,18 @@ export default function AddAppointmentModal({
               console.warn(
                 `Technician not found for edit mode: ${editAppointment.technicianFirstName} ${editAppointment.technicianLastName}`
               );
-              setError(
-                `Unable to find technician ${editAppointment.technicianFirstName} ${editAppointment.technicianLastName}. Please select a technician manually.`
-              );
               // Fallback: select first available technician if any exist
               if (technicians.length > 0) {
                 setSelectedTechnicianId(
                   technicians[0].employeeIdentifier.employeeId || ""
+                );
+                setError(
+                  `Technician ${editAppointment.technicianFirstName} ${editAppointment.technicianLastName} is no longer available. Selected first available technician instead.`
+                );
+              } else {
+                // No technicians available at all
+                setError(
+                  `Unable to find technician ${editAppointment.technicianFirstName} ${editAppointment.technicianLastName} and no other technicians are available.`
                 );
               }
             }
