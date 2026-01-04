@@ -13,6 +13,7 @@ import com.profroid.profroidapp.employeesubdomain.dataAccessLayer.employeeDataAc
 import com.profroid.profroidapp.employeesubdomain.dataAccessLayer.employeeScheduleDataAccessLayer.Schedule;
 import com.profroid.profroidapp.employeesubdomain.dataAccessLayer.employeeScheduleDataAccessLayer.TimeSlotType;
 import com.profroid.profroidapp.jobssubdomain.dataAccessLayer.Job;
+import com.profroid.profroidapp.jobssubdomain.dataAccessLayer.JobType;
 import com.profroid.profroidapp.jobssubdomain.dataAccessLayer.JobRepository;
 import com.profroid.profroidapp.cellarsubdomain.dataAccessLayer.CellarRepository;
 import com.profroid.profroidapp.employeesubdomain.mappingLayer.employeeMappers.EmployeeResponseMapper;
@@ -753,8 +754,8 @@ public class AppointmentServiceUnitTest {
         when(mockAppointment.getAppointmentStatus()).thenReturn(scheduledStatus);
 
         // Setup Job as QUOTATION type
-        com.profroid.profroidapp.jobssubdomain.dataAccessLayer.Job quotationJob = mock(com.profroid.profroidapp.jobssubdomain.dataAccessLayer.Job.class);
-        lenient().when(quotationJob.getJobType()).thenReturn(com.profroid.profroidapp.jobssubdomain.dataAccessLayer.JobType.QUOTATION);
+        Job quotationJob = mock(Job.class);
+        lenient().when(quotationJob.getJobType()).thenReturn(JobType.QUOTATION);
         lenient().when(quotationJob.getJobName()).thenReturn("Quotation Service");
 
         // Setup appointment as customer-created
@@ -796,8 +797,8 @@ public class AppointmentServiceUnitTest {
         when(mockAppointment.getAppointmentStatus()).thenReturn(scheduledStatus);
 
         // Setup Job as QUOTATION type
-        com.profroid.profroidapp.jobssubdomain.dataAccessLayer.Job quotationJob = mock(com.profroid.profroidapp.jobssubdomain.dataAccessLayer.Job.class);
-        lenient().when(quotationJob.getJobType()).thenReturn(com.profroid.profroidapp.jobssubdomain.dataAccessLayer.JobType.QUOTATION);
+        Job quotationJob = mock(Job.class);
+        lenient().when(quotationJob.getJobType()).thenReturn(JobType.QUOTATION);
         lenient().when(quotationJob.getJobName()).thenReturn("Quotation Service");
 
         // Setup appointment as customer-created
