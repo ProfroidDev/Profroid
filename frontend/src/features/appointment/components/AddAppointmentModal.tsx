@@ -314,15 +314,20 @@ export default function AddAppointmentModal({
 
     const timeoutId = setTimeout(async () => {
       try {
-        const token = localStorage.getItem('authToken');
+        const headers: HeadersInit = {
+          'Content-Type': 'application/json',
+        };
+
+        const authToken = useAuthStore.getState().token;
+        if (authToken) {
+          headers['Authorization'] = `Bearer ${authToken}`;
+        }
+
         const response = await fetch(
           `${import.meta.env.VITE_API_URL}/search-users?q=${encodeURIComponent(customerSearch)}&limit=50`,
           {
             method: 'GET',
-            headers: {
-              'Authorization': `Bearer ${token}`,
-              'Content-Type': 'application/json',
-            },
+            headers,
           }
         );
 
