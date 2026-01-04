@@ -312,6 +312,7 @@ export default function AddAppointmentModal({
       return;
     }
 
+    const abortController = new AbortController();
     const timeoutId = setTimeout(async () => {
       try {
         const token = localStorage.getItem('authToken');
@@ -323,6 +324,7 @@ export default function AddAppointmentModal({
               'Authorization': `Bearer ${token}`,
               'Content-Type': 'application/json',
             },
+            signal: abortController.signal,
           }
         );
 
@@ -342,13 +344,20 @@ export default function AddAppointmentModal({
         }));
         setSearchedUsers(users);
       } catch (error) {
+        // Ignore abort errors
+        if (error instanceof Error && error.name === 'AbortError') {
+          return;
+        }
         console.error('Error searching users:', error);
         setSearchedUsers([]);
         setError("Failed to search users. Please try again.");
       }
     }, 300);
 
-    return () => clearTimeout(timeoutId);
+    return () => {
+      clearTimeout(timeoutId);
+      abortController.abort();
+    };
   }, [customerSearch]);
 
   useEffect(() => {
