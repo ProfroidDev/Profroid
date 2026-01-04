@@ -1229,7 +1229,6 @@ export default function AddAppointmentModal({
                               e.stopPropagation();
                               handleSelectCustomer(cust);
                             }}
-                            disabled={isEditingQuotationCreatedByCustomer}
                           >
                             {cust.firstName} {cust.lastName} ({userEmail})
                           </button>
