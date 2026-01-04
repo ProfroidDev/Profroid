@@ -410,7 +410,7 @@ export default function AddAppointmentModal({
                 const token = localStorage.getItem('authToken');
                 const response = await fetch(
                   `${import.meta.env.VITE_API_URL}/search-users?q=${encodeURIComponent(cust.userId)}&limit=1`,
-                  {
+              const token = useAuthStore.getState().token;
                     method: 'GET',
                     headers: {
                       'Authorization': `Bearer ${token}`,
