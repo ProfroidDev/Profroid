@@ -18,6 +18,10 @@ if (!JWT_SECRET) {
 }
 
 // Helper function to extract rate limiting key from request
+// Note: This function is called twice per rate-limited request (keyGenerator and handler),
+// but the computation cost is minimal (JWT verification) and code reuse is prioritized.
+// The express-rate-limit library doesn't provide a built-in mechanism to share the key
+// between keyGenerator and handler.
 function getRateLimitKey(req: Request): string {
   const authHeader = req.headers.authorization;
   if (authHeader && authHeader.startsWith("Bearer ")) {
@@ -44,6 +48,8 @@ const searchUsersRateLimiter = rateLimit({
   keyGenerator: getRateLimitKey,
   handler: (req: Request, res: Response) => {
     const rateLimitKey = getRateLimitKey(req);
+    // Security Note: rateLimitKey includes user IDs for audit purposes.
+    // Ensure application logs are properly secured with access controls.
     console.warn(`[RATE LIMIT] User search rate limit exceeded for ${rateLimitKey}`);
     res.status(429).json({
       error: "Too many search requests. Please try again later.",
@@ -695,6 +701,9 @@ router.get("/search-users", searchUsersRateLimiter, async (req: Request, res: Re
     }
 
     // Log search activity for audit purposes
+    // Security Note: This log contains user IDs and search queries for security auditing.
+    // Logs should be stored securely with appropriate access controls and retention policies.
+    // User IDs and email searches are necessary to detect abuse patterns and investigate incidents.
     console.info(`[AUDIT] User search: userId=${payload.sub}, role=${userProfile.role}, query="${query}", ip=${req.ip}`);
 
     // Parse pagination
