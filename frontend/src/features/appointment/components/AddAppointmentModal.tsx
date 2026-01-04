@@ -232,6 +232,12 @@ function labelForTime(time: string): string {
   return SLOT_TO_LABEL[slot];
 }
 
+// Type for technician data used in appointment requests
+type TechnicianData = {
+  technicianFirstName: string;
+  technicianLastName: string;
+};
+
 export default function AddAppointmentModal({
   mode,
   onClose,
@@ -1031,6 +1037,26 @@ export default function AddAppointmentModal({
         ? getActualCustomerId(selectedCustomerId)
         : undefined;
 
+    // For customer mode edits, validate that the original technician still exists and is active
+    let validatedTechnicianData: TechnicianData | undefined;
+    if (mode === "customer" && isEditMode && editAppointment) {
+      const originalTechnician = employees.find(
+        (e) =>
+          e.firstName === editAppointment.technicianFirstName &&
+          e.lastName === editAppointment.technicianLastName
+      );
+      
+      if (!originalTechnician) {
+        setError(t("pages.appointments.technicianNoLongerAvailable"));
+        return;
+      }
+      
+      validatedTechnicianData = {
+        technicianFirstName: originalTechnician.firstName,
+        technicianLastName: originalTechnician.lastName,
+      };
+    }
+
     const request: AppointmentRequestModel = {
       customerId: actualCustomerId,
       ...(mode === "technician" && selectedTechnician
@@ -1039,13 +1065,8 @@ export default function AddAppointmentModal({
             technicianLastName: selectedTechnician.lastName,
           }
         : {}),
-      // For customer mode edits, include the original technician to prevent technician change validation errors
-      ...(mode === "customer" && isEditMode && editAppointment
-        ? {
-            technicianFirstName: editAppointment.technicianFirstName,
-            technicianLastName: editAppointment.technicianLastName,
-          }
-        : {}),
+      // For customer mode edits, include the validated technician data
+      ...(validatedTechnicianData ? validatedTechnicianData : {}),
       jobName: selectedJob.jobName,
       cellarName: cellar.name,
       appointmentDate: appointmentDateTime,

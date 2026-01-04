@@ -420,6 +420,7 @@
       "appointmentUpdated": "Rendez-vous mis à jour avec succès",
       "appointmentCancelled": "Rendez-vous annulé avec succès",
       "errorCancelling": "Échec de l'annulation du rendez-vous",
+      "technicianNoLongerAvailable": "Le technicien assigné à ce rendez-vous n'est plus disponible. Veuillez contacter le support pour réaffecter le rendez-vous.",
       "confirmCancel": "Êtes-vous sûr de vouloir annuler ce rendez-vous ?",
       "confirmCancelTitle": "Annuler le rendez-vous",
       "customerBooking": "Réservation Client",
