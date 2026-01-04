@@ -232,6 +232,12 @@ function labelForTime(time: string): string {
   return SLOT_TO_LABEL[slot];
 }
 
+// Type for technician data used in appointment requests
+type TechnicianData = {
+  technicianFirstName: string;
+  technicianLastName: string;
+};
+
 export default function AddAppointmentModal({
   mode,
   onClose,
@@ -1025,7 +1031,7 @@ export default function AddAppointmentModal({
         : undefined;
 
     // For customer mode edits, validate that the original technician still exists and is active
-    let validatedTechnicianData: { technicianFirstName: string; technicianLastName: string } | undefined;
+    let validatedTechnicianData: TechnicianData | undefined;
     if (mode === "customer" && isEditMode && editAppointment) {
       const originalTechnician = employees.find(
         (e) =>
@@ -1034,10 +1040,7 @@ export default function AddAppointmentModal({
       );
       
       if (!originalTechnician) {
-        setError(
-          "The technician assigned to this appointment is no longer available. " +
-          "Please contact support to reassign the appointment."
-        );
+        setError(t("pages.appointments.technicianNoLongerAvailable"));
         return;
       }
       
