@@ -398,6 +398,24 @@ export default function AddAppointmentModal({
             );
             if (tech) {
               setSelectedTechnicianId(tech.employeeIdentifier.employeeId || "");
+            } else {
+              // Technician not found - handle gracefully
+              const technicianName = `${editAppointment.technicianFirstName} ${editAppointment.technicianLastName}`;
+              
+              // Fallback: select first available technician if any exist
+              if (technicians.length > 0) {
+                setSelectedTechnicianId(
+                  technicians[0].employeeIdentifier.employeeId || ""
+                );
+                setError(
+                  `Technician ${technicianName} is no longer available. Selected first available technician instead.`
+                );
+              } else {
+                // No technicians available at all
+                setError(
+                  `Unable to find technician ${technicianName} and no other technicians are available.`
+                );
+              }
             }
           } else if (mode === "customer") {
             // In customer mode edits, explicitly clear technician to enable aggregated availability
