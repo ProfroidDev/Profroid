@@ -435,13 +435,15 @@ public class AppointmentServiceImpl implements AppointmentService {
             
             // For customer edits, allow technician reassignment
             // For technician edits, validate against the same technician
+            Employee assignedTechnician;
             if ("CUSTOMER".equals(effectiveRole)) {
-                // Customer editing: don't require the same technician
-                // The slot must be available from SOME technician
-                // We'll find an available technician during the update
+                // Customer editing: find an available technician for the new time slot
+                // This ensures that the appointment can be fulfilled even if the original technician is not available
+                assignedTechnician = findAvailableTechnicianForUpdate(appointmentDateTime, job, appointment.getAppointmentIdentifier().getAppointmentId());
             } else {
                 // Technician editing: must validate with their own schedule
                 validationUtils.validateTechnicianSchedule(appointment.getTechnician(), appointmentDateTime);
+                assignedTechnician = appointment.getTechnician();
             }
             
             validationUtils.validateServiceTypeRestrictions(job.getJobType(), effectiveRole);
@@ -476,9 +478,8 @@ public class AppointmentServiceImpl implements AppointmentService {
                 appointment.setCustomer(customerForValidation);
             }
 
-            // Keep the originally validated technician for all roles so that
-            // schedule validations and the persisted technician remain consistent.
-            // Do not change status or technician for customer or technician edits
+            // Update technician based on the assigned technician (may be reassigned for customer edits)
+            appointment.setTechnician(assignedTechnician);
             Appointment updatedAppointment = appointmentRepository.save(appointment);
             return appointmentResponseMapper.toResponseModel(updatedAppointment);
         }
