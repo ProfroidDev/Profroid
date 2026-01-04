@@ -553,6 +553,27 @@
   box-shadow: 0 4px 12px rgba(59, 126, 161, 0.25);
 }
 
+.btn-cancel {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 16px;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  font-weight: 600;
+  transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+  background: linear-gradient(90deg, #d9534f 60%, #c9302c 100%);
+  color: white;
+  box-shadow: 0 2px 8px rgba(217, 83, 79, 0.15);
+}
+
+.btn-cancel:hover {
+  background: linear-gradient(90deg, #c9302c 60%, #d9534f 100%);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(217, 83, 79, 0.25);
+}
 /* ===============================
    RESPONSIVE
 ================================= */
