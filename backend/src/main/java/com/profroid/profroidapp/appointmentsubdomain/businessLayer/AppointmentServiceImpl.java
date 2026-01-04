@@ -380,10 +380,16 @@ public class AppointmentServiceImpl implements AppointmentService {
                     throw new ResourceNotFoundException("You don't have permission to update this appointment.");
                 }
                 
-                // For customer-created quotations, technician cannot change the job type
+                // For customer-created quotations, technician cannot change the job type or customer
                 if (isCustomerQuotation) {
                     if (!appointmentRequest.getJobName().equals(appointment.getJob().getJobName())) {
                         throw new InvalidOperationException("You cannot change the service type of a customer-created quotation.");
+                    }
+                    
+                    // Check if customer is being changed
+                    if (appointmentRequest.getCustomerId() != null && 
+                        !appointmentRequest.getCustomerId().equals(appointment.getCustomer().getCustomerIdentifier().getCustomerId())) {
+                        throw new InvalidOperationException("You cannot change the customer for a customer-created quotation.");
                     }
                 }
             }
@@ -401,15 +407,6 @@ public class AppointmentServiceImpl implements AppointmentService {
             // For customer edits, use the existing customer
             Customer customerForValidation = appointment.getCustomer();
             if ("TECHNICIAN".equals(effectiveRole) && appointmentRequest.getCustomerId() != null) {
-                // Check if this is a customer-created quotation
-                boolean isCustomerQuotationForCustomerChange = "CUSTOMER".equals(appointment.getCreatedByRole()) && 
-                    appointment.getJob() != null && JobType.QUOTATION.equals(appointment.getJob().getJobType());
-                
-                if (isCustomerQuotationForCustomerChange) {
-                    // Technician cannot change the customer for customer-created quotations
-                    throw new InvalidOperationException("You cannot change the customer for a customer-created quotation.");
-                }
-                
                 // Technician is changing the customer
                 Customer newCustomer = customerRepository.findCustomerByCustomerIdentifier_CustomerId(appointmentRequest.getCustomerId());
                 if (newCustomer == null) {
