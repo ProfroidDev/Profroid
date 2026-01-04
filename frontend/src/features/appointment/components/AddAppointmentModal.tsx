@@ -787,7 +787,10 @@ export default function AddAppointmentModal({
 
     const editingAppointmentId = isEditMode && editAppointment ? editAppointment.appointmentId : null;
     let editStartTime: string | null = null;
-    if (isEditMode && editAppointment) {
+    const editingAppointmentId =
+      isEditMode && editAppointment && editAppointment.appointmentId != null
+        ? editAppointment.appointmentId
+        : null;
       if (editAppointment.appointmentStartTime) {
         editStartTime = editAppointment.appointmentStartTime.substring(0, 5);
       } else {
