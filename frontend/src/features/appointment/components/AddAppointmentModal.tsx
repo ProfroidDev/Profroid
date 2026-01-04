@@ -1019,8 +1019,9 @@ export default function AddAppointmentModal({
     const appointmentDateTime = `${appointmentDate}T${appointmentTime}:00`;
 
     // Extract actual customer ID in case it's nested - only needed for technician mode
+    // However, when editing a customer-created quotation, don't send customerId as customer cannot be changed
     const actualCustomerId =
-      mode === "technician"
+      mode === "technician" && !isEditingQuotationCreatedByCustomer
         ? getActualCustomerId(selectedCustomerId)
         : undefined;
 
