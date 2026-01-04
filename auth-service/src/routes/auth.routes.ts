@@ -637,7 +637,7 @@ router.get("/search-users", async (req: Request, res: Response) => {
     });
 
     if (userProfile?.role !== "admin" && userProfile?.role !== "employee") {
-      res.status(403).json({ error: "Only admins can access this resource" });
+      res.status(403).json({ error: "Only admins and employees can access this resource" });
       return;
     }
 
