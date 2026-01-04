@@ -380,9 +380,11 @@ public class AppointmentServiceImpl implements AppointmentService {
                 if (isTechnicianOwned && !technician.getId().equals(appointment.getTechnician().getId())) {
                     throw new ResourceNotFoundException("You don't have permission to update this appointment.");
                 }
-                
-                // For customer-created quotations, technician cannot change the job type or customer
+
                 if (isCustomerQuotation) {
+                    if (!technician.getId().equals(appointment.getTechnician().getId())) {
+                        throw new ResourceNotFoundException("You don't have permission to update this appointment.");
+                    }
                     if (!appointmentRequest.getJobName().equals(appointment.getJob().getJobName())) {
                         throw new InvalidOperationException("You cannot change the service type of a customer-created quotation.");
                     }
@@ -477,23 +479,14 @@ public class AppointmentServiceImpl implements AppointmentService {
             appointment.setDescription(appointmentRequest.getDescription());
             appointment.setAppointmentAddress(appointmentRequest.getAppointmentAddress());
             
-            // Update customer if technician changed it
+            // Update customer only if a technician user explicitly changed it
             if ("TECHNICIAN".equals(effectiveRole) && appointmentRequest.getCustomerId() != null) {
                 appointment.setCustomer(customerForValidation);
             }
-            
-            // For customer edits, find an available technician at the new time using workload balancing
-            // For technician edits, keep the same technician
-            if ("CUSTOMER".equals(effectiveRole)) {
-                Employee availableTechnician = findAvailableTechnicianForUpdate(
-                    appointmentDateTime,
-                    job,
-                    appointment.getAppointmentIdentifier().getAppointmentId()
-                );
-                appointment.setTechnician(availableTechnician);
-            }
-            // Do not change status or technician for technician edits
 
+            // Keep the originally validated technician for all roles so that
+            // schedule validations and the persisted technician remain consistent.
+            // Do not change status or technician for customer or technician edits
             Appointment updatedAppointment = appointmentRepository.save(appointment);
             return appointmentResponseMapper.toResponseModel(updatedAppointment);
         }

@@ -314,15 +314,20 @@ export default function AddAppointmentModal({
 
     const timeoutId = setTimeout(async () => {
       try {
-        const token = localStorage.getItem('authToken');
+        const headers: HeadersInit = {
+          'Content-Type': 'application/json',
+        };
+
+        const authToken = useAuthStore.getState().token;
+        if (authToken) {
+          headers['Authorization'] = `Bearer ${authToken}`;
+        }
+
         const response = await fetch(
           `${import.meta.env.VITE_API_URL}/search-users?q=${encodeURIComponent(customerSearch)}&limit=50`,
           {
             method: 'GET',
-            headers: {
-              'Authorization': `Bearer ${token}`,
-              'Content-Type': 'application/json',
-            },
+            headers,
           }
         );
 
@@ -381,11 +386,9 @@ export default function AddAppointmentModal({
 
           // Set technician ONLY for technician mode edits
           // In customer mode, don't set a specific technician to enable aggregated availability
-          if (mode === "technician") {
+          if (mode === "technician" && editAppointment.technicianId) {
             const tech = technicians.find(
-              (e) => 
-                e.firstName === editAppointment.technicianFirstName && 
-                e.lastName === editAppointment.technicianLastName
+              (e) => e.employeeIdentifier.employeeId === editAppointment.technicianId
             );
             if (tech) {
               setSelectedTechnicianId(tech.employeeIdentifier.employeeId || "");
@@ -396,35 +399,35 @@ export default function AddAppointmentModal({
           }
 
           // Set customer (for technician mode)
-          const cust = customerData.find(
-            (c) => 
-              c.firstName === editAppointment.customerFirstName && 
-              c.lastName === editAppointment.customerLastName
-          );
-          if (cust) {
-            setSelectedCustomerId(cust.customerId);
-            // Fetch the user email for this customer's userId
-            try {
-              const token = localStorage.getItem('authToken');
-              const response = await fetch(
-                `${import.meta.env.VITE_API_URL}/search-users?q=${encodeURIComponent(cust.userId)}&limit=1`,
-                {
-                  method: 'GET',
-                  headers: {
-                    'Authorization': `Bearer ${token}`,
-                    'Content-Type': 'application/json',
-                  },
+          if (editAppointment.customerId) {
+            const cust = customerData.find(
+              (c) => getActualCustomerId(c.customerId) === editAppointment.customerId
+            );
+            if (cust) {
+              setSelectedCustomerId(cust.customerId);
+              // Fetch the user email for this customer's userId
+              try {
+                const token = localStorage.getItem('authToken');
+                const response = await fetch(
+                  `${import.meta.env.VITE_API_URL}/search-users?q=${encodeURIComponent(cust.userId)}&limit=1`,
+              const token = useAuthStore.getState().token;
+                    method: 'GET',
+                    headers: {
+                      'Authorization': `Bearer ${token}`,
+                      'Content-Type': 'application/json',
+                    },
+                  }
+                );
+                if (response.ok) {
+                  const result = await response.json();
+                  const user = result.data?.[0];
+                  if (user?.email) {
+                    setCustomerSearch(user.email);
+                  }
                 }
-              );
-              if (response.ok) {
-                const result = await response.json();
-                const user = result.data?.[0];
-                if (user?.email) {
-                  setCustomerSearch(user.email);
-                }
+              } catch (error) {
+                console.error('Error fetching user email:', error);
               }
-            } catch (error) {
-              console.error('Error fetching user email:', error);
             }
           }
 
@@ -784,7 +787,10 @@ export default function AddAppointmentModal({
 
     const editingAppointmentId = isEditMode && editAppointment ? editAppointment.appointmentId : null;
     let editStartTime: string | null = null;
-    if (isEditMode && editAppointment) {
+    const editingAppointmentId =
+      isEditMode && editAppointment && editAppointment.appointmentId != null
+        ? editAppointment.appointmentId
+        : null;
       if (editAppointment.appointmentStartTime) {
         editStartTime = editAppointment.appointmentStartTime.substring(0, 5);
       } else {
@@ -1019,8 +1025,9 @@ export default function AddAppointmentModal({
     const appointmentDateTime = `${appointmentDate}T${appointmentTime}:00`;
 
     // Extract actual customer ID in case it's nested - only needed for technician mode
+    // However, when editing a customer-created quotation, don't send customerId as customer cannot be changed
     const actualCustomerId =
-      mode === "technician"
+      mode === "technician" && !isEditingQuotationCreatedByCustomer
         ? getActualCustomerId(selectedCustomerId)
         : undefined;
 
@@ -1229,7 +1236,6 @@ export default function AddAppointmentModal({
                               e.stopPropagation();
                               handleSelectCustomer(cust);
                             }}
-                            disabled={isEditingQuotationCreatedByCustomer}
                           >
                             {cust.firstName} {cust.lastName} ({userEmail})
                           </button>

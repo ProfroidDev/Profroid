@@ -9,11 +9,13 @@ export interface AppointmentResponseModel {
   appointmentId: string;
   
   // Customer Information
+  customerId: string;
   customerFirstName: string;
   customerLastName: string;
   customerPhoneNumbers: CustomerPhoneNumber[];
   
   // Technician Information
+  technicianId: string;
   technicianFirstName: string;
   technicianLastName: string;
   technicianRole?: string | { employeeRoleType?: string; [key: string]: unknown };

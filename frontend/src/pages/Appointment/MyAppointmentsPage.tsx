@@ -225,7 +225,7 @@ export default function MyAppointmentsPage(): React.ReactElement {
 
               {/* Action Buttons */}
               <div className="appointment-actions">
-                {appointment.status === "SCHEDULED" && appointment.createdByRole === "CUSTOMER" && (
+                {appointment.status === "SCHEDULED" && (appointment.createdByRole === "CUSTOMER" || appointment.createdByRole === null || appointment.createdByRole === undefined) && (
                   <button
                     className="btn-edit"
                     onClick={() => handleEditAppointment(appointment)}
