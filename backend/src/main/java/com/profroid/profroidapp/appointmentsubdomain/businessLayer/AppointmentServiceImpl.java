@@ -380,8 +380,11 @@ public class AppointmentServiceImpl implements AppointmentService {
                     throw new ResourceNotFoundException("You don't have permission to update this appointment.");
                 }
                 
-                // For customer-created quotations, technician cannot change the job type
+                // For customer-created quotations, verify technician assignment and restrict job type changes
                 if (isCustomerQuotation) {
+                    if (!technician.getId().equals(appointment.getTechnician().getId())) {
+                        throw new ResourceNotFoundException("You don't have permission to update this appointment.");
+                    }
                     if (!appointmentRequest.getJobName().equals(appointment.getJob().getJobName())) {
                         throw new InvalidOperationException("You cannot change the service type of a customer-created quotation.");
                     }

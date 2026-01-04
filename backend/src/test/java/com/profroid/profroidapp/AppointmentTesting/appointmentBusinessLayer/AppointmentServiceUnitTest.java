@@ -13,6 +13,7 @@ import com.profroid.profroidapp.employeesubdomain.dataAccessLayer.employeeDataAc
 import com.profroid.profroidapp.employeesubdomain.dataAccessLayer.employeeScheduleDataAccessLayer.Schedule;
 import com.profroid.profroidapp.employeesubdomain.dataAccessLayer.employeeScheduleDataAccessLayer.TimeSlotType;
 import com.profroid.profroidapp.jobssubdomain.dataAccessLayer.Job;
+import com.profroid.profroidapp.jobssubdomain.dataAccessLayer.JobType;
 import com.profroid.profroidapp.jobssubdomain.dataAccessLayer.JobRepository;
 import com.profroid.profroidapp.cellarsubdomain.dataAccessLayer.CellarRepository;
 import com.profroid.profroidapp.employeesubdomain.mappingLayer.employeeMappers.EmployeeResponseMapper;
@@ -741,6 +742,93 @@ public class AppointmentServiceUnitTest {
 
         assertThrows(ResourceNotFoundException.class, () ->
                 appointmentService.updateAppointment("appt-id", requestModel, "wrong-user-id", "CUSTOMER")
+        );
+    }
+
+    @Test
+    void updateAppointment_technicianRole_customerQuotation_wrongTechnician_throwsResourceNotFoundException() {
+        // Setup Appointment (customer-created quotation)
+        Appointment mockAppointment = mock(Appointment.class);
+        AppointmentStatus scheduledStatus = mock(AppointmentStatus.class);
+        when(scheduledStatus.getAppointmentStatusType()).thenReturn(AppointmentStatusType.SCHEDULED);
+        when(mockAppointment.getAppointmentStatus()).thenReturn(scheduledStatus);
+
+        // Setup Job as QUOTATION type
+        Job quotationJob = mock(Job.class);
+        lenient().when(quotationJob.getJobType()).thenReturn(JobType.QUOTATION);
+        lenient().when(quotationJob.getJobName()).thenReturn("Quotation Service");
+
+        // Setup appointment as customer-created
+        lenient().when(mockAppointment.getCreatedByRole()).thenReturn("CUSTOMER");
+        lenient().when(mockAppointment.getJob()).thenReturn(quotationJob);
+
+        // Setup technician assigned to the appointment (ID=1)
+        com.profroid.profroidapp.employeesubdomain.dataAccessLayer.employeeDataAccessLayer.Employee assignedTechnician = mock(com.profroid.profroidapp.employeesubdomain.dataAccessLayer.employeeDataAccessLayer.Employee.class);
+        lenient().when(assignedTechnician.getId()).thenReturn(1);
+        lenient().when(mockAppointment.getTechnician()).thenReturn(assignedTechnician);
+
+        // Setup current technician trying to update (ID=2, different from assigned)
+        com.profroid.profroidapp.employeesubdomain.dataAccessLayer.employeeDataAccessLayer.Employee currentTechnician = mock(com.profroid.profroidapp.employeesubdomain.dataAccessLayer.employeeDataAccessLayer.Employee.class);
+        lenient().when(currentTechnician.getId()).thenReturn(2);
+        when(employeeRepository.findEmployeeByEmployeeIdentifier_EmployeeId("tech-id-2")).thenReturn(currentTechnician);
+
+        // Setup other required entities
+        Customer mockCustomer = mock(Customer.class);
+        lenient().when(mockCustomer.getId()).thenReturn(1);
+        lenient().when(mockAppointment.getCustomer()).thenReturn(mockCustomer);
+        lenient().when(mockAppointment.getCellar()).thenReturn(mockCellar);
+        lenient().when(mockAppointment.getAppointmentIdentifier()).thenReturn(mock(com.profroid.profroidapp.appointmentsubdomain.dataAccessLayer.AppointmentIdentifier.class));
+
+        when(appointmentRepository.findAppointmentByAppointmentIdentifier_AppointmentId("appt-id")).thenReturn(java.util.Optional.of(mockAppointment));
+
+        // Test that a technician who is not assigned to the customer quotation cannot update it
+        assertThrows(ResourceNotFoundException.class, () ->
+                appointmentService.updateAppointment("appt-id", requestModel, "tech-id-2", "TECHNICIAN"),
+                "Expected ResourceNotFoundException when technician tries to update a customer quotation they are not assigned to"
+        );
+    }
+
+    @Test
+    void updateAppointment_technicianRole_customerQuotation_changeJobType_throwsInvalidOperationException() {
+        // Setup Appointment (customer-created quotation)
+        Appointment mockAppointment = mock(Appointment.class);
+        AppointmentStatus scheduledStatus = mock(AppointmentStatus.class);
+        when(scheduledStatus.getAppointmentStatusType()).thenReturn(AppointmentStatusType.SCHEDULED);
+        when(mockAppointment.getAppointmentStatus()).thenReturn(scheduledStatus);
+
+        // Setup Job as QUOTATION type
+        Job quotationJob = mock(Job.class);
+        lenient().when(quotationJob.getJobType()).thenReturn(JobType.QUOTATION);
+        lenient().when(quotationJob.getJobName()).thenReturn("Quotation Service");
+
+        // Setup appointment as customer-created
+        lenient().when(mockAppointment.getCreatedByRole()).thenReturn("CUSTOMER");
+        lenient().when(mockAppointment.getJob()).thenReturn(quotationJob);
+
+        // Setup technician assigned to the appointment (ID=1)
+        com.profroid.profroidapp.employeesubdomain.dataAccessLayer.employeeDataAccessLayer.Employee assignedTechnician = mock(com.profroid.profroidapp.employeesubdomain.dataAccessLayer.employeeDataAccessLayer.Employee.class);
+        lenient().when(assignedTechnician.getId()).thenReturn(1);
+        lenient().when(mockAppointment.getTechnician()).thenReturn(assignedTechnician);
+
+        // Setup current technician (same as assigned, ID=1)
+        when(employeeRepository.findEmployeeByEmployeeIdentifier_EmployeeId("tech-id-1")).thenReturn(assignedTechnician);
+
+        // Setup other required entities
+        Customer mockCustomer = mock(Customer.class);
+        lenient().when(mockCustomer.getId()).thenReturn(1);
+        lenient().when(mockAppointment.getCustomer()).thenReturn(mockCustomer);
+        lenient().when(mockAppointment.getCellar()).thenReturn(mockCellar);
+        lenient().when(mockAppointment.getAppointmentIdentifier()).thenReturn(mock(com.profroid.profroidapp.appointmentsubdomain.dataAccessLayer.AppointmentIdentifier.class));
+
+        when(appointmentRepository.findAppointmentByAppointmentIdentifier_AppointmentId("appt-id")).thenReturn(java.util.Optional.of(mockAppointment));
+
+        // Try to change the job type (from "Quotation Service" to "Different Service")
+        when(requestModel.getJobName()).thenReturn("Different Service");
+
+        // Test that assigned technician cannot change job type of customer quotation
+        assertThrows(InvalidOperationException.class, () ->
+                appointmentService.updateAppointment("appt-id", requestModel, "tech-id-1", "TECHNICIAN"),
+                "Expected InvalidOperationException when technician tries to change job type of customer quotation"
         );
     }
 
