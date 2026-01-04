@@ -31,16 +31,32 @@ const searchUsersRateLimiter = rateLimit({
       try {
         const token = authHeader.substring(7);
         const decoded = jwt.verify(token, JWT_SECRET as string) as JWTPayload;
-        return decoded.sub; // Use user ID as key
+        return `user:${decoded.sub}`; // Use user ID as key with prefix
       } catch (err) {
-        // If token is invalid, fallback to IP
-        return req.ip || 'unknown';
+        // If token is invalid, use IP with invalid-token prefix for stricter tracking
+        return `invalid-token:${req.ip || 'unknown'}`;
       }
     }
-    return req.ip || 'unknown';
+    // No auth header - use IP with no-auth prefix
+    return `no-auth:${req.ip || 'unknown'}`;
   },
   handler: (req: Request, res: Response) => {
-    console.warn(`[RATE LIMIT] User search rate limit exceeded for user: ${req.ip}`);
+    // Extract user ID for better logging
+    let rateLimitKey = 'unknown';
+    const authHeader = req.headers.authorization;
+    if (authHeader && authHeader.startsWith("Bearer ")) {
+      try {
+        const token = authHeader.substring(7);
+        const decoded = jwt.verify(token, JWT_SECRET as string) as JWTPayload;
+        rateLimitKey = `user:${decoded.sub}`;
+      } catch (err) {
+        rateLimitKey = `invalid-token:${req.ip}`;
+      }
+    } else {
+      rateLimitKey = `no-auth:${req.ip}`;
+    }
+    
+    console.warn(`[RATE LIMIT] User search rate limit exceeded for ${rateLimitKey}`);
     res.status(429).json({
       error: "Too many search requests. Please try again later.",
       retryAfter: "15 minutes"
