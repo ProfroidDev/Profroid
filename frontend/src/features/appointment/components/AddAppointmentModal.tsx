@@ -613,7 +613,9 @@ export default function AddAppointmentModal({
     if (searchedUsers.length === 0) return [];
     // Match customers whose userId matches any of the searched user IDs
     const userIds = searchedUsers.map(u => u.id);
-    return customers.filter((c) => userIds.includes(c.userId));
+    return customers.filter(
+      (c) => c.isActive !== false && userIds.includes(c.userId)
+    );
   }, [customers, customerSearch, searchedUsers]);
 
   // Keep customer selection in sync with the filtered list only if current selection is filtered out
