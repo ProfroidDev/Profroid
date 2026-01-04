@@ -420,6 +420,7 @@
       "appointmentUpdated": "Appointment updated successfully",
       "appointmentCancelled": "Appointment cancelled successfully",
       "errorCancelling": "Failed to cancel appointment",
+      "technicianNoLongerAvailable": "The technician assigned to this appointment is no longer available. Please contact support to reassign the appointment.",
       "confirmCancel": "Are you sure you want to cancel this appointment?",
       "confirmCancelTitle": "Cancel Appointment",
       "customerBooking": "Customer Booking",

@@ -34,6 +34,7 @@ import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 
 @Service
@@ -379,14 +380,21 @@ public class AppointmentServiceImpl implements AppointmentService {
                 if (isTechnicianOwned && !technician.getId().equals(appointment.getTechnician().getId())) {
                     throw new ResourceNotFoundException("You don't have permission to update this appointment.");
                 }
-                
-                // For customer-created quotations, verify technician assignment and restrict job type changes
+
                 if (isCustomerQuotation) {
                     if (!technician.getId().equals(appointment.getTechnician().getId())) {
                         throw new ResourceNotFoundException("You don't have permission to update this appointment.");
                     }
                     if (!appointmentRequest.getJobName().equals(appointment.getJob().getJobName())) {
                         throw new InvalidOperationException("You cannot change the service type of a customer-created quotation.");
+                    }
+                    
+                    // Check if customer is being changed
+                    if (appointmentRequest.getCustomerId() != null && 
+                        appointment.getCustomer().getCustomerIdentifier() != null &&
+                        !Objects.equals(appointmentRequest.getCustomerId(), 
+                                       appointment.getCustomer().getCustomerIdentifier().getCustomerId())) {
+                        throw new InvalidOperationException("You cannot change the customer for a customer-created quotation.");
                     }
                 }
             }
@@ -451,11 +459,6 @@ public class AppointmentServiceImpl implements AppointmentService {
             validationUtils.validateDuplicateQuotation(job.getJobType(), appointmentRequest, appointmentDateTime.toLocalDate(), appointmentDateTime, customerForValidation, appointment.getAppointmentIdentifier().getAppointmentId());
             // Prevent duplicate service for same address/day/technician except for the current appointment
             validationUtils.validateDuplicateServiceAddressAndDayExcludeCurrent(job.getJobType(), appointmentRequest, appointmentDateTime.toLocalDate(), appointment.getAppointmentIdentifier().getAppointmentId());
-            
-            if (!"CUSTOMER".equals(effectiveRole)) {
-                // Technician editing: validate against their own time slot
-                validationUtils.validateTimeSlotAvailability(appointment.getTechnician(), appointmentDateTime, job, appointment.getAppointmentIdentifier().getAppointmentId());
-            }
             
             // Additional explicit check that appointment doesn't exceed 5 PM (17:00)
             LocalTime appointmentStart = appointmentDateTime.toLocalTime();

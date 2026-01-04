@@ -27,6 +27,7 @@ public class AppointmentResponseModel {
     private List<CustomerPhoneNumber> customerPhoneNumbers;
 
     // Technician Information
+    private String technicianId;  // Employee UUID
     private String technicianFirstName;
     private String technicianLastName;
     private EmployeeRole technicianRole;  // Must be TECHNICIAN to perform work
