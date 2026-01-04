@@ -442,8 +442,8 @@ public class AppointmentServiceImpl implements AppointmentService {
             }
             
             validationUtils.validateServiceTypeRestrictions(job.getJobType(), effectiveRole);
-            validationUtils.validateQuotationCompleted(job.getJobType(), appointmentRequest, appointment.getCustomer(), appointmentDateTime);
-            validationUtils.validateDuplicateQuotation(job.getJobType(), appointmentRequest, appointmentDateTime.toLocalDate(), appointmentDateTime, appointment.getCustomer(), appointment.getAppointmentIdentifier().getAppointmentId());
+            validationUtils.validateQuotationCompleted(job.getJobType(), appointmentRequest, customerForValidation, appointmentDateTime);
+            validationUtils.validateDuplicateQuotation(job.getJobType(), appointmentRequest, appointmentDateTime.toLocalDate(), appointmentDateTime, customerForValidation, appointment.getAppointmentIdentifier().getAppointmentId());
             // Prevent duplicate service for same address/day/technician except for the current appointment
             validationUtils.validateDuplicateServiceAddressAndDayExcludeCurrent(job.getJobType(), appointmentRequest, appointmentDateTime.toLocalDate(), appointment.getAppointmentIdentifier().getAppointmentId());
             
