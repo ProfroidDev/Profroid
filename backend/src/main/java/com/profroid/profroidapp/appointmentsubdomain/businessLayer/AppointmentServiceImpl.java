@@ -441,7 +441,7 @@ public class AppointmentServiceImpl implements AppointmentService {
                     validationUtils.validateTechnicianSchedule(assignedTechnician, appointmentDateTime);
                     validationUtils.validateTimeSlotAvailability(assignedTechnician, appointmentDateTime, job, appointment.getAppointmentIdentifier().getAppointmentId());
                     // Current technician is available, keep them assigned
-                } catch (Exception e) {
+                } catch (InvalidOperationException | ResourceNotFoundException e) {
                     // Current technician is not available, find a new one
                     assignedTechnician = findAvailableTechnicianForUpdate(appointmentDateTime, job, appointment.getAppointmentIdentifier().getAppointmentId());
                 }
@@ -480,7 +480,9 @@ public class AppointmentServiceImpl implements AppointmentService {
 
             // Update technician assignment if it was changed (for customer edits with conflicts)
             // For technician edits, the technician remains the same (already validated)
-            appointment.setTechnician(assignedTechnician);
+            if (!assignedTechnician.getId().equals(appointment.getTechnician().getId())) {
+                appointment.setTechnician(assignedTechnician);
+            }
 
             // Do not change status for customer or technician edits
             Appointment updatedAppointment = appointmentRepository.save(appointment);
