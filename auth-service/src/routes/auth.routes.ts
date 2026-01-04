@@ -17,6 +17,23 @@ if (!JWT_SECRET) {
   throw new Error("JWT_SECRET is required");
 }
 
+// Helper function to extract rate limiting key from request
+function getRateLimitKey(req: Request): string {
+  const authHeader = req.headers.authorization;
+  if (authHeader && authHeader.startsWith("Bearer ")) {
+    try {
+      const token = authHeader.substring(7);
+      const decoded = jwt.verify(token, JWT_SECRET as string) as JWTPayload;
+      return `user:${decoded.sub}`; // Use user ID as key with prefix
+    } catch (err) {
+      // If token is invalid, use IP with invalid-token prefix for stricter tracking
+      return `invalid-token:${req.ip || 'unknown'}`;
+    }
+  }
+  // No auth header - use IP with no-auth prefix
+  return `no-auth:${req.ip || 'unknown'}`;
+}
+
 // Rate limiter for user search endpoint to prevent enumeration attacks
 // Allows 30 requests per 15 minutes per user
 const searchUsersRateLimiter = rateLimit({
@@ -24,38 +41,9 @@ const searchUsersRateLimiter = rateLimit({
   max: 30, // Limit each user to 30 requests per windowMs
   standardHeaders: true, // Return rate limit info in the `RateLimit-*` headers
   legacyHeaders: false, // Disable the `X-RateLimit-*` headers
-  keyGenerator: (req: Request) => {
-    // Rate limit per user ID (from JWT)
-    const authHeader = req.headers.authorization;
-    if (authHeader && authHeader.startsWith("Bearer ")) {
-      try {
-        const token = authHeader.substring(7);
-        const decoded = jwt.verify(token, JWT_SECRET as string) as JWTPayload;
-        return `user:${decoded.sub}`; // Use user ID as key with prefix
-      } catch (err) {
-        // If token is invalid, use IP with invalid-token prefix for stricter tracking
-        return `invalid-token:${req.ip || 'unknown'}`;
-      }
-    }
-    // No auth header - use IP with no-auth prefix
-    return `no-auth:${req.ip || 'unknown'}`;
-  },
+  keyGenerator: getRateLimitKey,
   handler: (req: Request, res: Response) => {
-    // Extract user ID for better logging
-    let rateLimitKey = 'unknown';
-    const authHeader = req.headers.authorization;
-    if (authHeader && authHeader.startsWith("Bearer ")) {
-      try {
-        const token = authHeader.substring(7);
-        const decoded = jwt.verify(token, JWT_SECRET as string) as JWTPayload;
-        rateLimitKey = `user:${decoded.sub}`;
-      } catch (err) {
-        rateLimitKey = `invalid-token:${req.ip}`;
-      }
-    } else {
-      rateLimitKey = `no-auth:${req.ip}`;
-    }
-    
+    const rateLimitKey = getRateLimitKey(req);
     console.warn(`[RATE LIMIT] User search rate limit exceeded for ${rateLimitKey}`);
     res.status(429).json({
       error: "Too many search requests. Please try again later.",
