@@ -80,9 +80,9 @@ public class AppointmentValidationUtils {
         AppointmentAddress address = requestModel.getAppointmentAddress();
         
         // Find appointments at same address on same day (SCHEDULED or COMPLETED status)
+        // Only scheduled appointments block new bookings; completed/cancelled should not block
         List<AppointmentStatusType> blockingStatuses = Arrays.asList(
-            AppointmentStatusType.SCHEDULED, 
-            AppointmentStatusType.COMPLETED
+            AppointmentStatusType.SCHEDULED
         );
         
         List<Appointment> existingAppointments = appointmentRepository.findByAddressAndDateAndStatusIn(
@@ -141,9 +141,9 @@ public class AppointmentValidationUtils {
         );
         
         // Filter by status - only SCHEDULED or COMPLETED block new quotations
+        // Completed or cancelled quotations should not block new ones
         List<AppointmentStatusType> blockingStatuses = Arrays.asList(
-            AppointmentStatusType.SCHEDULED, 
-            AppointmentStatusType.COMPLETED
+            AppointmentStatusType.SCHEDULED
         );
         
         List<Appointment> blockingQuotations = quotationsOnSameDay.stream()
@@ -498,8 +498,7 @@ public class AppointmentValidationUtils {
             }
             AppointmentAddress address = requestModel.getAppointmentAddress();
             List<AppointmentStatusType> blockingStatuses = Arrays.asList(
-                AppointmentStatusType.SCHEDULED,
-                AppointmentStatusType.COMPLETED
+                AppointmentStatusType.SCHEDULED
             );
             List<Appointment> existingServices = appointmentRepository.findByAddressAndDateAndStatusIn(
                 address.getStreetAddress(),
@@ -529,8 +528,7 @@ public class AppointmentValidationUtils {
         }
         AppointmentAddress address = requestModel.getAppointmentAddress();
         List<AppointmentStatusType> blockingStatuses = Arrays.asList(
-            AppointmentStatusType.SCHEDULED,
-            AppointmentStatusType.COMPLETED
+            AppointmentStatusType.SCHEDULED
         );
         List<Appointment> existingServices = appointmentRepository.findByAddressAndDateAndStatusIn(
             address.getStreetAddress(),
