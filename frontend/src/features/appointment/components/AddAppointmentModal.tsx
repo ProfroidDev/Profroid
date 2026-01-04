@@ -326,16 +326,25 @@ export default function AddAppointmentModal({
           }
         );
 
-        if (response.ok) {
-          const result = await response.json();
-          const users = (result.data || []).map((u: { userId: string; email: string }) => ({
-            id: u.userId,
-            email: u.email,
-          }));
-          setSearchedUsers(users);
+        if (!response.ok) {
+          console.error(
+            `User search request failed with status ${response.status} (${response.statusText}).`
+          );
+          setSearchedUsers([]);
+          setError("Failed to search users. Please try again.");
+          return;
         }
+
+        const result = await response.json();
+        const users = (result.data || []).map((u: { userId: string; email: string }) => ({
+          id: u.userId,
+          email: u.email,
+        }));
+        setSearchedUsers(users);
       } catch (error) {
         console.error('Error searching users:', error);
+        setSearchedUsers([]);
+        setError("Failed to search users. Please try again.");
       }
     }, 300);
 
