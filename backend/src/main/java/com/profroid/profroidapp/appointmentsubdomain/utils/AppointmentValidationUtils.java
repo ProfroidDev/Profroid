@@ -140,10 +140,11 @@ public class AppointmentValidationUtils {
             appointmentDate
         );
         
-        // Filter by status - only SCHEDULED or COMPLETED block new quotations
-        // Completed or cancelled quotations should not block new ones
+        // Filter by status - SCHEDULED and COMPLETED block new quotations, but CANCELLED do not
+        // Only one quotation per address per day (excluding cancelled ones)
         List<AppointmentStatusType> blockingStatuses = Arrays.asList(
-            AppointmentStatusType.SCHEDULED
+            AppointmentStatusType.SCHEDULED,
+            AppointmentStatusType.COMPLETED
         );
         
         List<Appointment> blockingQuotations = quotationsOnSameDay.stream()

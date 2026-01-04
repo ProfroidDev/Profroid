@@ -680,14 +680,15 @@ router.get("/search-users", searchUsersRateLimiter, async (req: Request, res: Re
     const payload = getPayloadFromRequest(req, res);
     if (!payload) return;
 
-    // Check if user is admin or employee
+    // Check if user is authenticated (any role allowed)
+    // Customers need access to search users when editing quotations
     const userProfile = await prisma.userProfile.findUnique({
       where: { userId: payload.sub },
     });
 
-    if (userProfile?.role !== "admin" && userProfile?.role !== "employee") {
-      console.warn(`[SECURITY] Unauthorized user search attempt by user ${payload.sub} with role ${userProfile?.role}`);
-      res.status(403).json({ error: "Only admins and employees can access this resource" });
+    if (!userProfile) {
+      console.warn(`[SECURITY] User search attempt by unknown user ${payload.sub}`);
+      res.status(403).json({ error: "User profile not found" });
       return;
     }
 

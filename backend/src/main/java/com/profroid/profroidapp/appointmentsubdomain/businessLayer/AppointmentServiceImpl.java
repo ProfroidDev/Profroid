@@ -190,6 +190,29 @@ public class AppointmentServiceImpl implements AppointmentService {
         validationUtils.validateDuplicateServiceAddressAndDay(job.getJobType(), requestModel, appointmentDateTime.toLocalDate());
         validationUtils.validateTimeSlotAvailability(technician, appointmentDateTime, job);
         
+        // Check if customer already has appointments at this time (for both CUSTOMER and TECHNICIAN roles)
+        // This prevents double-booking the customer regardless of who creates the appointment
+        List<Appointment> customerAppointmentsAtTime = appointmentRepository.findAllByCustomerAndAppointmentDateAndStatusIn(
+            customer, appointmentDateTime.toLocalDate(), 
+            Arrays.asList(AppointmentStatusType.SCHEDULED, AppointmentStatusType.COMPLETED)
+        );
+        if (!customerAppointmentsAtTime.isEmpty()) {
+            for (Appointment existing : customerAppointmentsAtTime) {
+                LocalTime existingStart = existing.getAppointmentDate().toLocalTime();
+                LocalTime existingEnd = existingStart.plusMinutes(
+                    existing.getJob() != null ? existing.getJob().getEstimatedDurationMinutes() : 60
+                );
+                LocalTime newEnd = appointmentDateTime.toLocalTime().plusMinutes(job.getEstimatedDurationMinutes());
+                
+                // Check for overlap
+                if (appointmentDateTime.toLocalTime().isBefore(existingEnd) && existingStart.isBefore(newEnd)) {
+                    throw new InvalidOperationException(
+                        "This customer already has an appointment at this time. Please choose a different time slot."
+                    );
+                }
+            }
+        }
+        
         // Validate that appointment doesn't exceed 5 PM (17:00)
         LocalTime appointmentStart = appointmentDateTime.toLocalTime();
         int durationMinutes = job.getEstimatedDurationMinutes();
@@ -465,6 +488,33 @@ public class AppointmentServiceImpl implements AppointmentService {
             validationUtils.validateServiceTypeRestrictions(job.getJobType(), effectiveRole);
             validationUtils.validateQuotationCompleted(job.getJobType(), appointmentRequest, customerForValidation, appointmentDateTime);
             validationUtils.validateDuplicateQuotation(job.getJobType(), appointmentRequest, appointmentDateTime.toLocalDate(), appointmentDateTime, customerForValidation, appointment.getAppointmentIdentifier().getAppointmentId());
+            
+            // Check if customer already has appointments at this time (exclude the current appointment being updated)
+            List<Appointment> customerAppointmentsAtTime = appointmentRepository.findAllByCustomerAndAppointmentDateAndStatusIn(
+                customerForValidation, appointmentDateTime.toLocalDate(), 
+                Arrays.asList(AppointmentStatusType.SCHEDULED, AppointmentStatusType.COMPLETED)
+            );
+            if (!customerAppointmentsAtTime.isEmpty()) {
+                for (Appointment existing : customerAppointmentsAtTime) {
+                    // Skip the current appointment being updated
+                    if (existing.getAppointmentIdentifier().getAppointmentId().equals(appointment.getAppointmentIdentifier().getAppointmentId())) {
+                        continue;
+                    }
+                    
+                    LocalTime existingStart = existing.getAppointmentDate().toLocalTime();
+                    LocalTime existingEnd = existingStart.plusMinutes(
+                        existing.getJob() != null ? existing.getJob().getEstimatedDurationMinutes() : 60
+                    );
+                    LocalTime newEnd = appointmentDateTime.toLocalTime().plusMinutes(job.getEstimatedDurationMinutes());
+                    
+                    // Check for overlap
+                    if (appointmentDateTime.toLocalTime().isBefore(existingEnd) && existingStart.isBefore(newEnd)) {
+                        throw new InvalidOperationException(
+                            "This customer already has an appointment at this time. Please choose a different time slot."
+                        );
+                    }
+                }
+            }
             // Prevent duplicate service for same address/day/technician except for the current appointment
             validationUtils.validateDuplicateServiceAddressAndDayExcludeCurrent(job.getJobType(), appointmentRequest, appointmentDateTime.toLocalDate(), appointment.getAppointmentIdentifier().getAppointmentId());
             
@@ -593,7 +643,7 @@ public class AppointmentServiceImpl implements AppointmentService {
         }
         
         @Override
-        public TechnicianBookedSlotsResponseModel getAggregatedAvailability(LocalDate date, String jobName) {
+        public TechnicianBookedSlotsResponseModel getAggregatedAvailability(LocalDate date, String jobName, String userId, String userRole) {
             // Get the job to determine duration
             Job job = jobRepository.findJobByJobName(jobName);
             int jobDurationMinutes = (job != null && job.getEstimatedDurationMinutes() > 0) 
@@ -612,6 +662,23 @@ public class AppointmentServiceImpl implements AppointmentService {
                         .date(date)
                         .bookedSlots(new ArrayList<>())
                         .build();
+            }
+            
+            // For customers, get their existing appointments to filter out busy times
+            Customer customer = null;
+            List<Appointment> customerAppointments = new ArrayList<>();
+            if ("customer".equalsIgnoreCase(userRole) || "CUSTOMER".equalsIgnoreCase(userRole)) {
+                // userId from auth might be the auth service user ID, try to find customer by userId first
+                customer = customerRepository.findCustomerByUserId(userId);
+                // If not found, try by customerId
+                if (customer == null) {
+                    customer = customerRepository.findCustomerByCustomerIdentifier_CustomerId(userId);
+                }
+                if (customer != null) {
+                    customerAppointments = appointmentRepository.findAllByCustomerAndAppointmentDateAndStatusIn(
+                        customer, date, Arrays.asList(AppointmentStatusType.SCHEDULED, AppointmentStatusType.COMPLETED)
+                    );
+                }
             }
             
             // Define available time slots for the day (9 AM, 11 AM, 1 PM, 3 PM, 5 PM)
@@ -717,10 +784,30 @@ public class AppointmentServiceImpl implements AppointmentService {
                 
                 // Only add slot if at least one technician is available
                 if (hasAvailableTechnician) {
-                    bookedSlots.add(TechnicianBookedSlotsResponseModel.BookedSlot.builder()
-                            .startTime(slotTime)
-                            .endTime(slotEnd)
-                            .build());
+                    // For customers, also check if they already have an appointment at this time
+                    boolean customerHasConflict = false;
+                    if ("customer".equalsIgnoreCase(userRole) && !customerAppointments.isEmpty()) {
+                        for (Appointment customerApt : customerAppointments) {
+                            LocalTime customerAptStart = customerApt.getAppointmentDate().toLocalTime();
+                            LocalTime customerAptEnd = customerAptStart.plusMinutes(
+                                customerApt.getJob() != null ? customerApt.getJob().getEstimatedDurationMinutes() : 60
+                            );
+                            
+                            // Check for overlap
+                            if (!(slotEnd.isBefore(customerAptStart) || slotTime.isAfter(customerAptEnd))) {
+                                customerHasConflict = true;
+                                break;
+                            }
+                        }
+                    }
+                    
+                    // Only add if customer doesn't have a conflict
+                    if (!customerHasConflict) {
+                        bookedSlots.add(TechnicianBookedSlotsResponseModel.BookedSlot.builder()
+                                .startTime(slotTime)
+                                .endTime(slotEnd)
+                                .build());
+                    }
                 }
             }
             
