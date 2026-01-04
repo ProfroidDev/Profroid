@@ -2,6 +2,7 @@ import { Router, type Request, type Response } from "express";
 import { PrismaClient } from "@prisma/client";
 import crypto from "crypto";
 import jwt from "jsonwebtoken";
+import rateLimit from "express-rate-limit";
 import { sendPasswordResetEmail, sendPasswordChangedEmail } from "../services/email.service.js";
 import { ForgotPasswordSchema, ResetPasswordSchema } from "../validation/schemas.js";
 import { ZodError } from "zod";
@@ -15,6 +16,52 @@ const JWT_EXPIRES_IN = "7d";
 if (!JWT_SECRET) {
   throw new Error("JWT_SECRET is required");
 }
+
+// Helper function to extract rate limiting key from request
+// Note: This function is called twice per rate-limited request (keyGenerator and handler),
+// but the computation cost is minimal (JWT verification) and code reuse is prioritized.
+// The express-rate-limit library doesn't provide a built-in mechanism to share the key
+// between keyGenerator and handler.
+function getRateLimitKey(req: Request): string {
+  const authHeader = req.headers.authorization;
+  if (authHeader && authHeader.startsWith("Bearer ")) {
+    try {
+      const token = authHeader.substring(7);
+      const decoded = jwt.verify(token, JWT_SECRET as string) as JWTPayload;
+      return `user:${decoded.sub}`; // Use user ID as key with prefix
+    } catch (err) {
+      // If token is invalid, use IP with invalid-token prefix for stricter tracking
+      return `invalid-token:${req.ip || 'unknown'}`;
+    }
+  }
+  // No auth header - use IP with no-auth prefix
+  return `no-auth:${req.ip || 'unknown'}`;
+}
+
+// Rate limiter for user search endpoint to prevent enumeration attacks
+// Allows 30 requests per 15 minutes per user
+const searchUsersRateLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 30, // Limit each user to 30 requests per windowMs
+  standardHeaders: true, // Return rate limit info in the `RateLimit-*` headers
+  legacyHeaders: false, // Disable the `X-RateLimit-*` headers
+  keyGenerator: getRateLimitKey,
+  handler: (req: Request, res: Response) => {
+    const rateLimitKey = getRateLimitKey(req);
+    // Security Note: rateLimitKey includes user IDs for audit purposes.
+    // Ensure application logs are properly secured with access controls.
+    console.warn(`[RATE LIMIT] User search rate limit exceeded for ${rateLimitKey}`);
+    res.status(429).json({
+      error: "Too many search requests. Please try again later.",
+      retryAfter: "15 minutes"
+    });
+  },
+  skip: (req: Request) => {
+    // Optionally skip rate limiting for admins
+    // This can be enabled if admins need unrestricted access
+    return false;
+  }
+});
 
 // Simple password hashing (for demo - use bcrypt in production)
 function hashPassword(password: string): string {
@@ -622,11 +669,13 @@ router.get("/unassigned-users", async (req: Request, res: Response) => {
  * 
  * Security & Privacy:
  * - Admins and employees only
+ * - Rate limited to 30 requests per 15 minutes per user
  * - Requires search query (min 2 chars) to prevent bulk enumeration
  * - Pagination enforced (max 50 per page for search)
  * - Returns userId and email for search results
+ * - All searches are logged for audit purposes
  */
-router.get("/search-users", async (req: Request, res: Response) => {
+router.get("/search-users", searchUsersRateLimiter, async (req: Request, res: Response) => {
   try {
     const payload = getPayloadFromRequest(req, res);
     if (!payload) return;
@@ -637,6 +686,7 @@ router.get("/search-users", async (req: Request, res: Response) => {
     });
 
     if (userProfile?.role !== "admin" && userProfile?.role !== "employee") {
+      console.warn(`[SECURITY] Unauthorized user search attempt by user ${payload.sub} with role ${userProfile?.role}`);
       res.status(403).json({ error: "Only admins and employees can access this resource" });
       return;
     }
@@ -649,6 +699,12 @@ router.get("/search-users", async (req: Request, res: Response) => {
         error: "Search query must be at least 2 characters",
       });
     }
+
+    // Log search activity for audit purposes
+    // Security Note: This log contains user IDs and search queries for security auditing.
+    // Logs should be stored securely with appropriate access controls and retention policies.
+    // User IDs and email searches are necessary to detect abuse patterns and investigate incidents.
+    console.info(`[AUDIT] User search: userId=${payload.sub}, role=${userProfile.role}, query="${query}", ip=${req.ip}`);
 
     // Parse pagination
     let page = parseInt(req.query.page as string) || 1;
