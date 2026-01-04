@@ -401,6 +401,15 @@ public class AppointmentServiceImpl implements AppointmentService {
             // For customer edits, use the existing customer
             Customer customerForValidation = appointment.getCustomer();
             if ("TECHNICIAN".equals(effectiveRole) && appointmentRequest.getCustomerId() != null) {
+                // Check if this is a customer-created quotation
+                boolean isCustomerQuotationForCustomerChange = "CUSTOMER".equals(appointment.getCreatedByRole()) && 
+                    appointment.getJob() != null && JobType.QUOTATION.equals(appointment.getJob().getJobType());
+                
+                if (isCustomerQuotationForCustomerChange) {
+                    // Technician cannot change the customer for customer-created quotations
+                    throw new InvalidOperationException("You cannot change the customer for a customer-created quotation.");
+                }
+                
                 // Technician is changing the customer
                 Customer newCustomer = customerRepository.findCustomerByCustomerIdentifier_CustomerId(appointmentRequest.getCustomerId());
                 if (newCustomer == null) {
