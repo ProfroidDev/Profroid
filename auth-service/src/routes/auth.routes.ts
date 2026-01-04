@@ -2,6 +2,7 @@ import { Router, type Request, type Response } from "express";
 import { PrismaClient } from "@prisma/client";
 import crypto from "crypto";
 import jwt from "jsonwebtoken";
+import rateLimit from "express-rate-limit";
 import { sendPasswordResetEmail, sendPasswordChangedEmail } from "../services/email.service.js";
 import { ForgotPasswordSchema, ResetPasswordSchema } from "../validation/schemas.js";
 import { ZodError } from "zod";
@@ -15,6 +16,42 @@ const JWT_EXPIRES_IN = "7d";
 if (!JWT_SECRET) {
   throw new Error("JWT_SECRET is required");
 }
+
+// Rate limiter for user search endpoint to prevent enumeration attacks
+// Allows 30 requests per 15 minutes per user
+const searchUsersRateLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 30, // Limit each user to 30 requests per windowMs
+  standardHeaders: true, // Return rate limit info in the `RateLimit-*` headers
+  legacyHeaders: false, // Disable the `X-RateLimit-*` headers
+  keyGenerator: (req: Request) => {
+    // Rate limit per user ID (from JWT)
+    const authHeader = req.headers.authorization;
+    if (authHeader && authHeader.startsWith("Bearer ")) {
+      try {
+        const token = authHeader.substring(7);
+        const decoded = jwt.verify(token, JWT_SECRET as string) as JWTPayload;
+        return decoded.sub; // Use user ID as key
+      } catch (err) {
+        // If token is invalid, fallback to IP
+        return req.ip || 'unknown';
+      }
+    }
+    return req.ip || 'unknown';
+  },
+  handler: (req: Request, res: Response) => {
+    console.warn(`[RATE LIMIT] User search rate limit exceeded for user: ${req.ip}`);
+    res.status(429).json({
+      error: "Too many search requests. Please try again later.",
+      retryAfter: "15 minutes"
+    });
+  },
+  skip: (req: Request) => {
+    // Optionally skip rate limiting for admins
+    // This can be enabled if admins need unrestricted access
+    return false;
+  }
+});
 
 // Simple password hashing (for demo - use bcrypt in production)
 function hashPassword(password: string): string {
@@ -622,11 +659,13 @@ router.get("/unassigned-users", async (req: Request, res: Response) => {
  * 
  * Security & Privacy:
  * - Admins and employees only
+ * - Rate limited to 30 requests per 15 minutes per user
  * - Requires search query (min 2 chars) to prevent bulk enumeration
  * - Pagination enforced (max 50 per page for search)
  * - Returns userId and email for search results
+ * - All searches are logged for audit purposes
  */
-router.get("/search-users", async (req: Request, res: Response) => {
+router.get("/search-users", searchUsersRateLimiter, async (req: Request, res: Response) => {
   try {
     const payload = getPayloadFromRequest(req, res);
     if (!payload) return;
@@ -637,6 +676,7 @@ router.get("/search-users", async (req: Request, res: Response) => {
     });
 
     if (userProfile?.role !== "admin" && userProfile?.role !== "employee") {
+      console.warn(`[SECURITY] Unauthorized user search attempt by user ${payload.sub} with role ${userProfile?.role}`);
       res.status(403).json({ error: "Only admins and employees can access this resource" });
       return;
     }
@@ -649,6 +689,9 @@ router.get("/search-users", async (req: Request, res: Response) => {
         error: "Search query must be at least 2 characters",
       });
     }
+
+    // Log search activity for audit purposes
+    console.info(`[AUDIT] User search: userId=${payload.sub}, role=${userProfile.role}, query="${query}", ip=${req.ip}`);
 
     // Parse pagination
     let page = parseInt(req.query.page as string) || 1;
