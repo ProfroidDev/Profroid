@@ -407,10 +407,10 @@ export default function AddAppointmentModal({
               setSelectedCustomerId(cust.customerId);
               // Fetch the user email for this customer's userId
               try {
-                const token = localStorage.getItem('authToken');
+                const token = useAuthStore.getState().token;
                 const response = await fetch(
                   `${import.meta.env.VITE_API_URL}/search-users?q=${encodeURIComponent(cust.userId)}&limit=1`,
-              const token = useAuthStore.getState().token;
+                  {
                     method: 'GET',
                     headers: {
                       'Authorization': `Bearer ${token}`,
@@ -785,12 +785,13 @@ export default function AddAppointmentModal({
     if (!selectedJob || !appointmentDate || isWeekend(appointmentDate))
       return [];
 
-    const editingAppointmentId = isEditMode && editAppointment ? editAppointment.appointmentId : null;
-    let editStartTime: string | null = null;
     const editingAppointmentId =
       isEditMode && editAppointment && editAppointment.appointmentId != null
         ? editAppointment.appointmentId
         : null;
+    
+    let editStartTime: string | null = null;
+    if (editAppointment) {
       if (editAppointment.appointmentStartTime) {
         editStartTime = editAppointment.appointmentStartTime.substring(0, 5);
       } else {
@@ -1191,7 +1192,7 @@ export default function AddAppointmentModal({
                       }
                       value={customerSearch}
                       onChange={(e) => setCustomerSearch(e.target.value)}
-                      disabled={disableCustomerSearch}
+                      disabled={disableCustomerSearch || isEditingQuotationCreatedByCustomer}
                     />
                   )}
                 </div>
