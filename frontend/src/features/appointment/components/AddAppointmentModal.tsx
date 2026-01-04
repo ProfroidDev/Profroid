@@ -372,11 +372,9 @@ export default function AddAppointmentModal({
 
           // Set technician ONLY for technician mode edits
           // In customer mode, don't set a specific technician to enable aggregated availability
-          if (mode === "technician") {
+          if (mode === "technician" && editAppointment.technicianId) {
             const tech = technicians.find(
-              (e) => 
-                e.firstName === editAppointment.technicianFirstName && 
-                e.lastName === editAppointment.technicianLastName
+              (e) => e.employeeIdentifier.employeeId === editAppointment.technicianId
             );
             if (tech) {
               setSelectedTechnicianId(tech.employeeIdentifier.employeeId || "");
@@ -387,35 +385,35 @@ export default function AddAppointmentModal({
           }
 
           // Set customer (for technician mode)
-          const cust = customerData.find(
-            (c) => 
-              c.firstName === editAppointment.customerFirstName && 
-              c.lastName === editAppointment.customerLastName
-          );
-          if (cust) {
-            setSelectedCustomerId(cust.customerId);
-            // Fetch the user email for this customer's userId
-            try {
-              const token = localStorage.getItem('authToken');
-              const response = await fetch(
-                `${import.meta.env.VITE_API_URL}/search-users?q=${encodeURIComponent(cust.userId)}&limit=1`,
-                {
-                  method: 'GET',
-                  headers: {
-                    'Authorization': `Bearer ${token}`,
-                    'Content-Type': 'application/json',
-                  },
+          if (editAppointment.customerId) {
+            const cust = customerData.find(
+              (c) => getActualCustomerId(c.customerId) === editAppointment.customerId
+            );
+            if (cust) {
+              setSelectedCustomerId(cust.customerId);
+              // Fetch the user email for this customer's userId
+              try {
+                const token = localStorage.getItem('authToken');
+                const response = await fetch(
+                  `${import.meta.env.VITE_API_URL}/search-users?q=${encodeURIComponent(cust.userId)}&limit=1`,
+                  {
+                    method: 'GET',
+                    headers: {
+                      'Authorization': `Bearer ${token}`,
+                      'Content-Type': 'application/json',
+                    },
+                  }
+                );
+                if (response.ok) {
+                  const result = await response.json();
+                  const user = result.data?.[0];
+                  if (user?.email) {
+                    setCustomerSearch(user.email);
+                  }
                 }
-              );
-              if (response.ok) {
-                const result = await response.json();
-                const user = result.data?.[0];
-                if (user?.email) {
-                  setCustomerSearch(user.email);
-                }
+              } catch (error) {
+                console.error('Error fetching user email:', error);
               }
-            } catch (error) {
-              console.error('Error fetching user email:', error);
             }
           }
 

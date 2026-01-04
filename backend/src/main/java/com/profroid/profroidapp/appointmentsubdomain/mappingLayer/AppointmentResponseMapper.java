@@ -15,6 +15,7 @@ public interface AppointmentResponseMapper {
     @Mapping(source = "appointment.customer.firstName", target = "customerFirstName")
     @Mapping(source = "appointment.customer.lastName", target = "customerLastName")
     @Mapping(source = "appointment.customer.phoneNumbers", target = "customerPhoneNumbers")
+    @Mapping(source = "appointment.technician.employeeIdentifier.employeeId", target = "technicianId")
     @Mapping(source = "appointment.technician.firstName", target = "technicianFirstName")
     @Mapping(source = "appointment.technician.lastName", target = "technicianLastName")
     @Mapping(source = "appointment.technician.employeeRole", target = "technicianRole")
