@@ -2,6 +2,7 @@ package com.profroid.profroidapp.jobssubdomain.businessLayer;
 
 import com.profroid.profroidapp.appointmentsubdomain.dataAccessLayer.Appointment;
 import com.profroid.profroidapp.appointmentsubdomain.dataAccessLayer.AppointmentRepository;
+import com.profroid.profroidapp.appointmentsubdomain.dataAccessLayer.AppointmentStatusType;
 import com.profroid.profroidapp.jobssubdomain.dataAccessLayer.Job;
 import com.profroid.profroidapp.jobssubdomain.dataAccessLayer.JobIdentifier;
 import com.profroid.profroidapp.jobssubdomain.dataAccessLayer.JobRepository;
@@ -126,6 +127,13 @@ public class JobServiceImpl implements JobService {
         int updatedSlots = calculateRequiredSlots(updatedDurationMinutes);
 
         for (Appointment target : appointments) {
+            // Completed or cancelled appointments should not block job duration updates
+            if (target.getAppointmentStatus() != null) {
+                AppointmentStatusType status = target.getAppointmentStatus().getAppointmentStatusType();
+                if (status == AppointmentStatusType.COMPLETED || status == AppointmentStatusType.CANCELLED) {
+                    continue;
+                }
+            }
             LocalDate date = target.getAppointmentDate().toLocalDate();
             LocalTime startTime = target.getAppointmentDate().toLocalTime();
             int startHour = startTime.getHour();
@@ -157,6 +165,13 @@ public class JobServiceImpl implements JobService {
             for (Appointment other : sameDayAppointments) {
                 if (other.getId().equals(target.getId())) {
                     continue; // skip self
+                }
+
+                if (other.getAppointmentStatus() != null) {
+                    AppointmentStatusType otherStatus = other.getAppointmentStatus().getAppointmentStatusType();
+                    if (otherStatus == AppointmentStatusType.COMPLETED || otherStatus == AppointmentStatusType.CANCELLED) {
+                        continue; // completed/cancelled appointments do not block overlaps
+                    }
                 }
 
                 int otherDuration = resolveDurationMinutes(other.getJob());

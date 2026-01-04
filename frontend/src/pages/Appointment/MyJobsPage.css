@@ -506,6 +506,54 @@
 }
 
 /* ===============================
+   ACTION BUTTONS
+================================= */
+
+.job-actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 8px;
+}
+
+.btn-edit,
+.btn-complete {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 16px;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  font-weight: 600;
+  transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+}
+
+.btn-edit {
+  background: linear-gradient(90deg, #5b8c5a 60%, #4a7c49 100%);
+  color: white;
+  box-shadow: 0 2px 8px rgba(91, 140, 90, 0.15);
+}
+
+.btn-edit:hover {
+  background: linear-gradient(90deg, #4a7c49 60%, #5b8c5a 100%);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(91, 140, 90, 0.25);
+}
+
+.btn-complete {
+  background: linear-gradient(90deg, #3b7ea1 60%, #2e6484 100%);
+  color: white;
+  box-shadow: 0 2px 8px rgba(59, 126, 161, 0.15);
+}
+
+.btn-complete:hover {
+  background: linear-gradient(90deg, #2e6484 60%, #3b7ea1 100%);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(59, 126, 161, 0.25);
+}
+
+/* ===============================
    RESPONSIVE
 ================================= */
 

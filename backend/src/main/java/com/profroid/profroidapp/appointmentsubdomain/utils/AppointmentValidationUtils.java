@@ -80,9 +80,9 @@ public class AppointmentValidationUtils {
         AppointmentAddress address = requestModel.getAppointmentAddress();
         
         // Find appointments at same address on same day (SCHEDULED or COMPLETED status)
+        // Only scheduled appointments block new bookings; completed/cancelled should not block
         List<AppointmentStatusType> blockingStatuses = Arrays.asList(
-            AppointmentStatusType.SCHEDULED, 
-            AppointmentStatusType.COMPLETED
+            AppointmentStatusType.SCHEDULED
         );
         
         List<Appointment> existingAppointments = appointmentRepository.findByAddressAndDateAndStatusIn(
@@ -112,6 +112,16 @@ public class AppointmentValidationUtils {
             LocalDate appointmentDate,
             LocalDateTime appointmentDateTime,
             Customer customer) {
+        validateDuplicateQuotation(jobType, requestModel, appointmentDate, appointmentDateTime, customer, null);
+    }
+
+    public void validateDuplicateQuotation(
+            JobType jobType,
+            AppointmentRequestModel requestModel,
+            LocalDate appointmentDate,
+            LocalDateTime appointmentDateTime,
+            Customer customer,
+            String excludeAppointmentId) {
         
         // Only validate if the current job is a quotation
         if (jobType != JobType.QUOTATION) {
@@ -131,13 +141,15 @@ public class AppointmentValidationUtils {
         );
         
         // Filter by status - only SCHEDULED or COMPLETED block new quotations
+        // Completed or cancelled quotations should not block new ones
         List<AppointmentStatusType> blockingStatuses = Arrays.asList(
-            AppointmentStatusType.SCHEDULED, 
-            AppointmentStatusType.COMPLETED
+            AppointmentStatusType.SCHEDULED
         );
         
         List<Appointment> blockingQuotations = quotationsOnSameDay.stream()
             .filter(apt -> blockingStatuses.contains(apt.getAppointmentStatus().getAppointmentStatusType()))
+            .filter(apt -> excludeAppointmentId == null || 
+                          !apt.getAppointmentIdentifier().getAppointmentId().equals(excludeAppointmentId))
             .toList();
         
         if (!blockingQuotations.isEmpty()) {
@@ -486,8 +498,7 @@ public class AppointmentValidationUtils {
             }
             AppointmentAddress address = requestModel.getAppointmentAddress();
             List<AppointmentStatusType> blockingStatuses = Arrays.asList(
-                AppointmentStatusType.SCHEDULED,
-                AppointmentStatusType.COMPLETED
+                AppointmentStatusType.SCHEDULED
             );
             List<Appointment> existingServices = appointmentRepository.findByAddressAndDateAndStatusIn(
                 address.getStreetAddress(),
@@ -517,8 +528,7 @@ public class AppointmentValidationUtils {
         }
         AppointmentAddress address = requestModel.getAppointmentAddress();
         List<AppointmentStatusType> blockingStatuses = Arrays.asList(
-            AppointmentStatusType.SCHEDULED,
-            AppointmentStatusType.COMPLETED
+            AppointmentStatusType.SCHEDULED
         );
         List<Appointment> existingServices = appointmentRepository.findByAddressAndDateAndStatusIn(
             address.getStreetAddress(),

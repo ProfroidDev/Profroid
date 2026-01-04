@@ -35,4 +35,7 @@ export interface AppointmentResponseModel {
   
   // Appointment Address
   appointmentAddress: AppointmentAddress;
+
+  // Track who created this appointment (CUSTOMER or TECHNICIAN)
+  createdByRole?: string; // Role of the person who created the appointment
 }

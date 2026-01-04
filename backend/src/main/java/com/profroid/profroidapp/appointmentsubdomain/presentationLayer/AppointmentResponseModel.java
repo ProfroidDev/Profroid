@@ -51,4 +51,7 @@ public class AppointmentResponseModel {
 
     // Appointment Address (where the work will be done)
     private AppointmentAddress appointmentAddress;
+
+    // Track who created this appointment (CUSTOMER or TECHNICIAN)
+    private String createdByRole;
 }
