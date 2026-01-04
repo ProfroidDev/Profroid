@@ -288,6 +288,23 @@ export default function AddAppointmentModal({
     BookedSlot[]
   >([]);
 
+  // When selecting a customer, also snap to their first cellar (if any) and clear errors
+  const handleSelectCustomer = (cust: CustomerResponseModel) => {
+    setSelectedCustomerId(cust.customerId);
+    const actualId = getActualCustomerId(cust.customerId);
+    const matchingCellars = cellars.filter(
+      (c) => getActualCustomerId(c.ownerCustomerId) === actualId
+    );
+
+    if (matchingCellars.length > 0) {
+      setSelectedCellarId(matchingCellars[0].cellarId);
+    } else {
+      setSelectedCellarId("");
+    }
+
+    setError(null);
+  };
+
   // Search users by email
   useEffect(() => {
     if (!customerSearch || customerSearch.trim().length < 2) {
@@ -655,6 +672,8 @@ export default function AddAppointmentModal({
   useEffect(() => {
     if (customerCellars.length > 0) {
       setSelectedCellarId(customerCellars[0].cellarId);
+      // Clear error when cellar is auto-selected
+      setError(null);
     } else {
       setSelectedCellarId("");
     }
@@ -975,6 +994,13 @@ export default function AddAppointmentModal({
 
     const cellar = customerCellars.find((c) => c.cellarId === selectedCellarId);
     if (!cellar) {
+      // If cellars are available but selection lagged, snap to the first one and retry
+      if (customerCellars.length > 0) {
+        const firstCellar = customerCellars[0];
+        setSelectedCellarId(firstCellar.cellarId);
+        setError(null);
+        return;
+      }
       setError("Select a cellar for this appointment.");
       return;
     }
@@ -1190,7 +1216,7 @@ export default function AddAppointmentModal({
                             onClick={(e) => {
                               e.preventDefault();
                               e.stopPropagation();
-                              setSelectedCustomerId(cust.customerId);
+                              handleSelectCustomer(cust);
                             }}
                             disabled={isEditingQuotationCreatedByCustomer}
                           >

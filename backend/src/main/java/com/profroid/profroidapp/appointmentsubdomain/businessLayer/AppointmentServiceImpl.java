@@ -397,10 +397,22 @@ public class AppointmentServiceImpl implements AppointmentService {
                 throw new InvalidOperationException("Job " + appointmentRequest.getJobName() + " is not active.");
             }
 
+            // For technician edits, get the new customer from the request (if customer can be changed)
+            // For customer edits, use the existing customer
+            Customer customerForValidation = appointment.getCustomer();
+            if ("TECHNICIAN".equals(effectiveRole) && appointmentRequest.getCustomerId() != null) {
+                // Technician is changing the customer
+                Customer newCustomer = customerRepository.findCustomerByCustomerIdentifier_CustomerId(appointmentRequest.getCustomerId());
+                if (newCustomer == null) {
+                    throw new ResourceNotFoundException("Customer not found with ID: " + appointmentRequest.getCustomerId());
+                }
+                customerForValidation = newCustomer;
+            }
+
             // Find cellar by name and owner (prevents duplicate name issues)
             Cellar cellar = cellarRepository.findCellarByNameAndOwnerCustomerIdentifier_CustomerId(
                 appointmentRequest.getCellarName(), 
-                appointment.getCustomer().getCustomerIdentifier().getCustomerId()
+                customerForValidation.getCustomerIdentifier().getCustomerId()
             );
             if (cellar == null) {
                 throw new ResourceNotFoundException("Cellar not found: " + appointmentRequest.getCellarName() + " for this customer");
@@ -416,7 +428,7 @@ public class AppointmentServiceImpl implements AppointmentService {
                 throw new InvalidOperationException("Appointments cannot be scheduled on weekends (Saturday or Sunday). Please choose a weekday. Requested date: " + appointmentDateTime.toLocalDate() + " (" + appointmentDateTime.getDayOfWeek() + ")");
             }
             validationUtils.validateBookingDeadline(appointmentDateTime, now);
-            validationUtils.validateCellarOwnership(cellar, appointment.getCustomer());
+            validationUtils.validateCellarOwnership(cellar, customerForValidation);
             
             // For customer edits, allow technician reassignment
             // For technician edits, validate against the same technician
@@ -455,6 +467,11 @@ public class AppointmentServiceImpl implements AppointmentService {
             appointment.setAppointmentDate(appointmentDateTime);
             appointment.setDescription(appointmentRequest.getDescription());
             appointment.setAppointmentAddress(appointmentRequest.getAppointmentAddress());
+            
+            // Update customer if technician changed it
+            if ("TECHNICIAN".equals(effectiveRole) && appointmentRequest.getCustomerId() != null) {
+                appointment.setCustomer(customerForValidation);
+            }
             
             // For customer edits, find an available technician at the new time using workload balancing
             // For technician edits, keep the same technician
