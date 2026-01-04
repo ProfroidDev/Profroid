@@ -389,6 +389,20 @@ export default function AddAppointmentModal({
             );
             if (tech) {
               setSelectedTechnicianId(tech.employeeIdentifier.employeeId || "");
+            } else {
+              // Technician not found - log warning and set error
+              console.warn(
+                `Technician not found for edit mode: ${editAppointment.technicianFirstName} ${editAppointment.technicianLastName}`
+              );
+              setError(
+                `Unable to find technician ${editAppointment.technicianFirstName} ${editAppointment.technicianLastName}. Please select a technician manually.`
+              );
+              // Fallback: select first available technician if any exist
+              if (technicians.length > 0) {
+                setSelectedTechnicianId(
+                  technicians[0].employeeIdentifier.employeeId || ""
+                );
+              }
             }
           } else if (mode === "customer") {
             // In customer mode edits, explicitly clear technician to enable aggregated availability
