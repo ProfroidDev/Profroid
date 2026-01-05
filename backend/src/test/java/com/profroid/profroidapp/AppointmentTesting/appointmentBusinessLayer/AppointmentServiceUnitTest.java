@@ -1041,7 +1041,7 @@ public class AppointmentServiceUnitTest {
         when(employeeRepository.findAll()).thenReturn(java.util.Collections.singletonList(admin));
 
         com.profroid.profroidapp.appointmentsubdomain.presentationLayer.TechnicianBookedSlotsResponseModel result = 
-            appointmentService.getAggregatedAvailability(date, "Installation");
+            appointmentService.getAggregatedAvailability(date, "Installation", null, null);
 
         // Should return empty list since admin is not a technician
         assertEquals(0, result.getBookedSlots().size());
@@ -1231,7 +1231,7 @@ public class AppointmentServiceUnitTest {
                 eq("tech-id"), any()))
                 .thenReturn(Collections.emptyList());
 
-        var result = appointmentService.getAggregatedAvailability(date, "Installation");
+        var result = appointmentService.getAggregatedAvailability(date, "Installation", null, null);
 
         assertNotNull(result);
         assertEquals(0, result.getBookedSlots().size());
@@ -1383,7 +1383,7 @@ public class AppointmentServiceUnitTest {
         when(appointmentRepository.findByTechnicianAndAppointmentDateBetween(any(), any(), any()))
                 .thenReturn(List.of(apt));
 
-        var result = appointmentService.getAggregatedAvailability(date, "Installation");
+        var result = appointmentService.getAggregatedAvailability(date, "Installation", null, null);
 
         assertEquals(0, result.getBookedSlots().size());
     }
