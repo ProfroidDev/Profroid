@@ -11,6 +11,7 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.http.HttpMethod;
 
 @Profile("!test")
 @EnableWebSecurity
@@ -41,6 +42,7 @@ public class SecurityConfig {
                         .requestMatchers("/api/auth/**").permitAll()  // Auth endpoints public
                         .requestMatchers("POST", "/api/v1/customers").permitAll()  // Customer creation from auth service
                         .requestMatchers("GET", "/api/v1/jobs").permitAll() // Jobs list is public
+                        .requestMatchers(HttpMethod.GET, "/api/v1/files/**").permitAll() // allow file downloads for images
                         // All cellar endpoints require authentication; fine-grained roles enforced via @PreAuthorize
                         .anyRequest().authenticated()  // All other APIs require authentication
                 )
