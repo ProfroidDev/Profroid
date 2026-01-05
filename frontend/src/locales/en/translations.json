@@ -462,6 +462,10 @@
       "streetAddress": "Street Address",
       "city": "City",
       "province": "Province",
+      "selectProvince": "Select Province",
+      "quebec": "Quebec (QC)",
+      "ontario": "Ontario (ON)",
+      "operationalAreaMessage": "We only operate in these areas",
       "country": "Country",
       "postalCode": "Postal Code",
       "createAppointment": "Create Appointment",
@@ -619,11 +623,15 @@
   "validation": {
     "emailInvalid": "Please enter a valid email address",
     "postalCodeInvalid": "Please enter a valid postal code",
+    "invalidPostalCode": "Invalid postal code",
     "postalCodeMismatch": "Postal code does not match {{city}}, {{province}}",
     "phoneInvalid": "Please enter a valid phone number",
     "passwordTooShort": "Password must be at least 8 characters",
     "required": "This field is required",
-    "fieldRequired": "{{field}} is required"
+    "fieldRequired": "{{field}} is required",
+    "provinceNotAllowed": "Appointments can only be scheduled in Quebec (QC) or Ontario (ON) provinces.",
+    "postalCodeNotQC": "Quebec postal codes start with G, H, or J. Please enter a valid Quebec postal code.",
+    "postalCodeNotON": "Ontario postal codes start with K, L, M, N, or P. Please enter a valid Ontario postal code."
   },
   "messages": {
     "success": "Operation completed successfully",

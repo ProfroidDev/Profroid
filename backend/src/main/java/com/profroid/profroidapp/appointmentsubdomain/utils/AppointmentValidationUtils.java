@@ -548,4 +548,70 @@ public class AppointmentValidationUtils {
             );
         }
     }
+
+    /**
+     * Validates that the appointment postal code corresponds to either Quebec (QC) or Ontario (ON) province.
+     * Uses the postal code format to determine the province:
+     * - Quebec postal codes start with: G, H, J
+     * - Ontario postal codes start with: K, L, M, N, P
+     *
+     * @param appointmentAddress the appointment address containing postal code and province
+     * @throws InvalidOperationException if the postal code doesn't match the specified province
+     *                                   or if the province is not Quebec or Ontario
+     */
+    public void validateProvinceRestriction(AppointmentAddress appointmentAddress) {
+        if (appointmentAddress == null || appointmentAddress.getPostalCode() == null) {
+            throw new InvalidOperationException("Appointment address and postal code are required.");
+        }
+
+        String province = appointmentAddress.getProvince() != null ? 
+            appointmentAddress.getProvince().trim().toUpperCase() : "";
+        String postalCode = appointmentAddress.getPostalCode().trim().toUpperCase();
+
+        // Valid provinces for appointments
+        if (!province.equals("QC") && !province.equals("ON") && 
+            !province.equals("QUEBEC") && !province.equals("ONTARIO")) {
+            throw new InvalidOperationException(
+                "Appointments can only be scheduled in Quebec (QC) or Ontario (ON) provinces. " +
+                "Provided province: " + appointmentAddress.getProvince()
+            );
+        }
+
+        // Validate postal code format matches the province
+        if (postalCode.isEmpty()) {
+            throw new InvalidOperationException("Postal code is required.");
+        }
+
+        char firstChar = postalCode.charAt(0);
+
+        // Quebec postal codes start with G, H, or J
+        boolean isQuebecPostalCode = firstChar == 'G' || firstChar == 'H' || firstChar == 'J';
+
+        // Ontario postal codes start with K, L, M, N, or P
+        boolean isOntarioPostalCode = firstChar == 'K' || firstChar == 'L' || 
+                                     firstChar == 'M' || firstChar == 'N' || firstChar == 'P';
+
+        // Check if postal code matches the specified province
+        if ((province.equals("QC") || province.equals("QUEBEC")) && !isQuebecPostalCode) {
+            throw new InvalidOperationException(
+                "Postal code does not match Quebec province. Quebec postal codes start with G, H, or J. " +
+                "Provided postal code: " + appointmentAddress.getPostalCode()
+            );
+        }
+
+        if ((province.equals("ON") || province.equals("ONTARIO")) && !isOntarioPostalCode) {
+            throw new InvalidOperationException(
+                "Postal code does not match Ontario province. Ontario postal codes start with K, L, M, N, or P. " +
+                "Provided postal code: " + appointmentAddress.getPostalCode()
+            );
+        }
+
+        // If postal code doesn't match either province format, reject it
+        if (!isQuebecPostalCode && !isOntarioPostalCode) {
+            throw new InvalidOperationException(
+                "Postal code must be from Quebec or Ontario. " +
+                "Provided postal code: " + appointmentAddress.getPostalCode()
+            );
+        }
+    }
 }
