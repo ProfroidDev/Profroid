@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Loader2, CalendarClock, ClipboardList, Users } from "lucide-react";
 import "./AddAppointmentModal.css";
+import "../../../components/ConfirmationModal.css";
 import { createAppointment } from "../api/createAppointment";
 import { updateAppointment } from "../api/updateAppointment";
 import type { AppointmentRequestModel } from "../models/AppointmentRequestModel";
@@ -295,6 +296,8 @@ export default function AddAppointmentModal({
     BookedSlot[]
   >([]);
   const [customerBusySlots, setCustomerBusySlots] = useState<BookedSlot[]>([]);
+  const [showBufferWarning, setShowBufferWarning] = useState<boolean>(false);
+  const [pendingRequest, setPendingRequest] = useState<AppointmentRequestModel | null>(null);
 
   // When selecting a customer, also snap to their first cellar (if any) and clear errors
   const handleSelectCustomer = (cust: CustomerResponseModel) => {
@@ -369,6 +372,8 @@ export default function AddAppointmentModal({
     async function loadData() {
       try {
         setLoading(true);
+        // Clear cache to ensure fresh data is fetched when modal opens
+        clearAppointmentDataCache();
         const [jobData, employeeData, customerData, cellarData] =
           await getCachedData();
 
@@ -625,14 +630,9 @@ export default function AddAppointmentModal({
   // Fetch all appointments to check for conflicts (technician mode only)
   useEffect(() => {
     async function fetchAppointments() {
-      // Only fetch in technician mode - fetch all appointments to see customer's appointments
-      if (mode !== "technician") {
-        setAllAppointments([]);
-        return;
-      }
-
+      // Fetch appointments for buffer warning check - needed in both customer and technician modes
       try {
-        // Use getAllAppointments to see all appointments, not just the technician's own
+        // Use getAllAppointments to see all appointments for buffer checking
         const appointments = await getAllAppointments();
         setAllAppointments(appointments);
       } catch (err) {
@@ -643,7 +643,7 @@ export default function AddAppointmentModal({
     }
 
     fetchAppointments();
-  }, [mode, appointmentDate]);
+  }, [appointmentDate]);
 
   // Fetch customer's busy slots when in technician mode and customer is selected
   useEffect(() => {
@@ -920,8 +920,9 @@ export default function AddAppointmentModal({
             slotStart.getTime() + jobDuration * 60 * 1000
           );
 
-          // Check if slotEnd goes past working hours (6:00 PM)
-          const lastSlotEnd = new Date(`${appointmentDate}T18:00:00`);
+          // Check if slotEnd goes past working hours (5:00 PM)
+          // Allow appointments to end at exactly 17:00, not after
+          const lastSlotEnd = new Date(`${appointmentDate}T17:00:00`);
           if (slotEnd > lastSlotEnd) return;
 
           // Add the time
@@ -957,6 +958,7 @@ export default function AddAppointmentModal({
       const slotEnd = new Date(slotStart.getTime() + jobDuration * 60 * 1000);
 
       // Check if slotEnd goes past the last slot (5:00 PM)
+      // Allow appointments to end at exactly 17:00 (5:00 PM), not after
       const lastSlotEnd = new Date(`${appointmentDate}T17:00:00`);
       if (slotEnd > lastSlotEnd) return;
 
@@ -1066,6 +1068,149 @@ export default function AddAppointmentModal({
       setAppointmentTime(availableSlots[0] || "");
     }
   }, [availableSlots, appointmentTime]);
+  
+  // Fallback durations by job type when end time is missing
+  const defaultDurationByJobType = (jobType?: string): number => {
+    switch (jobType) {
+      case "QUOTATION":
+        return 120; // 2h quotations in this app
+      case "MAINTENANCE":
+        return 90;
+      case "REPARATION":
+        return 90;
+      case "INSTALLATION":
+        return 240;
+      default:
+        return 60;
+    }
+  };
+
+  // Function to check if there's a buffer conflict (gap < 30 minutes but no overlap)
+  const checkBufferConflict = (
+    newStartTime: Date,
+    newEndTime: Date,
+    appointments: AppointmentResponseModel[]
+  ): boolean => {
+    const BUFFER_MINUTES = 30;
+    // Use the selected appointment date string directly to avoid timezone shifts
+    const newDateKey = appointmentDate;
+
+    const withinBuffer = (
+      otherStart: Date,
+      otherEnd: Date
+    ): boolean => {
+      const hasOverlap = newStartTime < otherEnd && newEndTime > otherStart;
+      if (hasOverlap) return false; // handled elsewhere; here we only care about gaps
+
+      const gapBefore = otherStart.getTime() - newEndTime.getTime();
+      if (gapBefore >= 0 && gapBefore < BUFFER_MINUTES * 60 * 1000) {
+        return true;
+      }
+
+      const gapAfter = newStartTime.getTime() - otherEnd.getTime();
+      if (gapAfter >= 0 && gapAfter < BUFFER_MINUTES * 60 * 1000) {
+        return true;
+      }
+
+      return false;
+    };
+
+    for (const appointment of appointments) {
+      if (appointment.status === "CANCELLED") continue;
+
+      // Work with the appointment date and time components explicitly to avoid midnight defaults
+      const appointmentDateIso =
+        typeof appointment.appointmentDate === "string"
+          ? appointment.appointmentDate
+          : new Date(appointment.appointmentDate).toISOString();
+      const appointmentDateOnly = appointmentDateIso.split("T")[0];
+
+      // Only compare appointments on the same calendar day
+      if (appointmentDateOnly !== newDateKey) continue;
+
+      const timeFromDate = appointmentDateIso.includes("T")
+        ? appointmentDateIso.split("T")[1].substring(0, 5)
+        : null;
+      const rawStart = appointment.appointmentStartTime || timeFromDate;
+      if (!rawStart) {
+        continue; // skip entries without explicit start time to avoid false warnings
+      }
+      const startTimeStr = rawStart.substring(0, 5);
+      const existingStart = new Date(
+        `${appointmentDateOnly}T${startTimeStr}:00`
+      );
+
+      let existingEnd: Date;
+      if (appointment.appointmentEndTime) {
+        const endTimeStr = appointment.appointmentEndTime.substring(0, 5);
+        existingEnd = new Date(
+          `${appointmentDateOnly}T${endTimeStr}:00`
+        );
+      } else {
+        const endDateFallback = (appointment as unknown as Record<string, unknown>)[
+          "appointmentEndDate"
+        ];
+        if (typeof endDateFallback === "string") {
+          existingEnd = new Date(endDateFallback);
+        } else {
+          const matchedJob = jobs.find(
+            (j) => j.jobName === appointment.jobName
+          );
+          const durationMinutes =
+            matchedJob?.estimatedDurationMinutes ??
+            defaultDurationByJobType(appointment.jobType as string);
+          if (!durationMinutes) {
+            continue; // cannot compute end without duration
+          }
+          existingEnd = new Date(
+            existingStart.getTime() + durationMinutes * 60 * 1000
+          );
+        }
+      }
+
+      if (
+        Number.isNaN(existingStart.getTime()) ||
+        Number.isNaN(existingEnd.getTime())
+      ) {
+        continue;
+      }
+
+      if (
+        isEditMode &&
+        editAppointment?.appointmentId === appointment.appointmentId
+      ) {
+        continue;
+      }
+
+      if (withinBuffer(existingStart, existingEnd)) return true;
+    }
+
+    // Fallback: if appointments list is empty (e.g., 403/401 fetching all appointments),
+    // also evaluate the technician/customer busy slots that were already fetched for the selected date.
+    const checkSlots = (slots: BookedSlot[]): boolean => {
+      return slots.some((slot) => {
+        if (!slot.startTime || !slot.endTime) return false;
+        const startStr = slot.startTime.substring(0, 5);
+        const endStr = slot.endTime.substring(0, 5);
+        const otherStart = new Date(`${newDateKey}T${startStr}:00`);
+        const otherEnd = new Date(`${newDateKey}T${endStr}:00`);
+        if (
+          Number.isNaN(otherStart.getTime()) ||
+          Number.isNaN(otherEnd.getTime())
+        ) {
+          return false;
+        }
+        return withinBuffer(otherStart, otherEnd);
+      });
+    };
+
+    if (appointments.length === 0) {
+      if (checkSlots(technicianBookedSlots)) return true;
+      if (checkSlots(customerBusySlots)) return true;
+    }
+
+    return false;
+  };
 
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
@@ -1176,6 +1321,28 @@ export default function AddAppointmentModal({
       appointmentAddress: { ...address },
     };
 
+    // Check for buffer conflicts before submitting
+    const appointmentStart = new Date(appointmentDateTime);
+    const appointmentDurationMinutes =
+      selectedJob.estimatedDurationMinutes ??
+      defaultDurationByJobType(selectedJob.jobType);
+    const appointmentEnd = new Date(
+      appointmentStart.getTime() + appointmentDurationMinutes * 60 * 1000
+    );
+
+    if (checkBufferConflict(appointmentStart, appointmentEnd, allAppointments)) {
+      console.log("Setting showBufferWarning to true");
+      setPendingRequest(request);
+      setShowBufferWarning(true);
+      setSubmitting(false);
+      return;
+    }
+
+    // Proceed with normal submission
+    submitAppointment(request);
+  };
+
+  const submitAppointment = async (request: AppointmentRequestModel) => {
     try {
       setSubmitting(true);
       let result: AppointmentResponseModel;
@@ -1595,6 +1762,59 @@ export default function AddAppointmentModal({
           </form>
         )}
       </div>
+      {/* Buffer Warning Confirmation Dialog */}
+      {showBufferWarning && pendingRequest && (
+        <div className="confirmation-modal-overlay" role="dialog" aria-modal="true">
+          <div className="confirmation-modal-container">
+            <div className="confirmation-modal-header">
+              <h3 className="confirmation-modal-title">
+                {t("pages.appointments.bufferWarningTitle")}
+              </h3>
+              <button
+                type="button"
+                className="confirmation-modal-close"
+                onClick={() => {
+                  setShowBufferWarning(false);
+                  setPendingRequest(null);
+                }}
+                aria-label="Close"
+              >
+                ×
+              </button>
+            </div>
+            <div className="confirmation-modal-content">
+              <p className="confirmation-modal-message">
+                {t("pages.appointments.bufferWarningMessage")}
+              </p>
+            </div>
+            <div className="confirmation-modal-footer">
+              <button
+                type="button"
+                className="confirmation-btn-cancel"
+                onClick={() => {
+                  setShowBufferWarning(false);
+                  setPendingRequest(null);
+                }}
+              >
+                {t("pages.appointments.cancelScheduling")}
+              </button>
+              <button
+                type="button"
+                className="confirmation-btn-confirm"
+                onClick={() => {
+                  setShowBufferWarning(false);
+                  if (pendingRequest) {
+                    submitAppointment(pendingRequest);
+                    setPendingRequest(null);
+                  }
+                }}
+              >
+                {t("pages.appointments.continueScheduling")}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

@@ -208,21 +208,18 @@ public class JobServiceImpl implements JobService {
     }
 
     private int calculateRequiredSlots(int durationMinutes) {
-        // Business rule: <=90 minutes fits in the current slot; beyond that, each started hour adds a slot
-        if (durationMinutes <= 90) {
-            return 1;
-        }
-        // Business rule: 
-        // - <=90 minutes fits in the current slot (1 slot)
-        // - >90 minutes: 1 slot + ceil((duration - 90) / 60) additional slots
+        // Business rule: Each slot is 2 hours (120 minutes)
+        // Calculate how many 2-hour slots are needed
         // Examples:
-        // - 90 min = 1 slot (9-11 AM covers it)
-        // - 91-150 min = 2 slots (9-11 AM + 11-1 PM = 4 hours covers anything up to 150 min)
-        // - 151-210 min = 3 slots
-        if (durationMinutes <= 90) {
-            return 1;
-        }
-        return 1 + (int) Math.ceil((durationMinutes - 90) / 60.0);
+        // - 30 min (QUOTATION) = 1 slot
+        // - 60 min (MAINTENANCE) = 1 slot
+        // - 90 min (REPARATION) = 1 slot
+        // - 120 min = 1 slot
+        // - 121-240 min = 2 slots
+        // - 240 min (INSTALLATION) = 2 slots (exactly fits 13:00-17:00)
+        // - 241-360 min = 3 slots
+        final int MINUTES_PER_SLOT = 120;
+        return (int) Math.ceil((double) durationMinutes / MINUTES_PER_SLOT);
     }
 
     private boolean timeSlotsOverlap(LocalTime startTime1, int durationMinutes1, LocalTime startTime2, int durationMinutes2) {
@@ -241,24 +238,10 @@ public class JobServiceImpl implements JobService {
             return true; // Direct overlap detected
         }
         
-        // Check for insufficient buffer time (30 minutes minimum)
-        // Case 1: Appointment 1 ends before Appointment 2 starts
-        if (endTime1.isBefore(startTime2) || endTime1.equals(startTime2)) {
-            long minutesBetween = java.time.Duration.between(endTime1, startTime2).toMinutes();
-            if (minutesBetween < BUFFER_MINUTES) {
-                return true; // Insufficient buffer - treat as overlap
-            }
-        }
+        // Allow back-to-back appointments (0 minute gap is OK)
+        // Don't enforce 30-minute buffer here - let warnings handle it
         
-        // Case 2: Appointment 2 ends before Appointment 1 starts
-        if (endTime2.isBefore(startTime1) || endTime2.equals(startTime1)) {
-            long minutesBetween = java.time.Duration.between(endTime2, startTime1).toMinutes();
-            if (minutesBetween < BUFFER_MINUTES) {
-                return true; // Insufficient buffer - treat as overlap
-            }
-        }
-        
-        return false; // No overlap and sufficient buffer
+        return false; // No actual overlap
     }
 
     private int[] getOccupiedSlotIndices(int startHour, int slots) {
