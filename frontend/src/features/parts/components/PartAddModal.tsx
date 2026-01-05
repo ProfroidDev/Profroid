@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { createPart } from "../api/createPart";
+import { createPartWithImage } from "../api/createPartWithImage";
 import type { PartRequestModel } from "../models/PartRequestModel";
 import "./PartAddModal.css";
 import { X } from "lucide-react";
@@ -19,6 +20,7 @@ export default function PartAddModal({
 }: PartAddModalProps): React.ReactElement | null {
   const [name, setName] = useState<string>("");
   const [available, setAvailable] = useState<boolean>(true);
+  const [file, setFile] = useState<File | null>(null);
   const [submitting, setSubmitting] = useState<boolean>(false);
 
   if (!isOpen) {
@@ -39,12 +41,17 @@ export default function PartAddModal({
         name: name.trim(),
         available,
       };
-      
-      await createPart(partData);
+
+      if (file) {
+        await createPartWithImage(partData, file);
+      } else {
+        await createPart(partData);
+      }
       
       // Reset form
       setName("");
       setAvailable(true);
+      setFile(null);
       
       onPartAdded();
       onClose();
@@ -60,6 +67,7 @@ export default function PartAddModal({
     if (!submitting) {
       setName("");
       setAvailable(true);
+      setFile(null);
       onClose();
     }
   };
@@ -103,6 +111,20 @@ export default function PartAddModal({
                 />
                 <span>Available</span>
               </label>
+            </div>
+
+            <div className="form-group">
+              <label className="form-label" htmlFor="part-image">
+                Image (optional)
+              </label>
+              <input
+                id="part-image"
+                type="file"
+                accept="image/*"
+                className="form-input"
+                disabled={submitting}
+                onChange={(e) => setFile(e.target.files?.[0] ?? null)}
+              />
             </div>
           </div>
 

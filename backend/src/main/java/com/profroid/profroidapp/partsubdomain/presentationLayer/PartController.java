@@ -5,6 +5,8 @@ import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
+import org.springframework.http.MediaType;
 
 import java.util.List;
 
@@ -36,11 +38,27 @@ public class PartController {
         return ResponseEntity.status(HttpStatus.CREATED).body(responseModel);
     }
 
+    @PostMapping(value = "/with-image", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<PartResponseModel> createPartWithImage(
+            @RequestPart("part") @Valid PartRequestModel requestModel,
+            @RequestPart("file") MultipartFile file) {
+        PartResponseModel responseModel = partService.createPartWithImage(requestModel, file);
+        return ResponseEntity.status(HttpStatus.CREATED).body(responseModel);
+    }
+
     @PutMapping("/{partId}")
     public ResponseEntity<PartResponseModel> updatePart(
             @PathVariable String partId,
             @Valid @RequestBody PartRequestModel requestModel) {
         PartResponseModel responseModel = partService.updatePart(partId, requestModel);
+        return ResponseEntity.ok(responseModel);
+    }
+
+    @PutMapping(value = "/{partId}/image", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<PartResponseModel> uploadPartImage(
+            @PathVariable String partId,
+            @RequestPart("file") MultipartFile file) {
+        PartResponseModel responseModel = partService.uploadPartImage(partId, file);
         return ResponseEntity.ok(responseModel);
     }
 

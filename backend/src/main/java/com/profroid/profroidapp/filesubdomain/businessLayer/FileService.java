@@ -12,6 +12,6 @@ public interface FileService {
     StoredFile upload(MultipartFile file, FileOwnerType ownerType, String ownerId, FileCategory category);
     StoredFile getOrThrow(UUID fileId);
     InputStream openStream(StoredFile file);
-    void delete(UUID fileId);
+    //void delete(UUID fileId);
     List<StoredFile> list(FileOwnerType ownerType, String ownerId, FileCategory category);
 }

@@ -4,6 +4,8 @@ import jakarta.persistence.*;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.UUID;
+
 @Entity
 @Table(name = "parts")
 @Data
@@ -19,4 +21,7 @@ public class Part {
 
     private String name;
     private Boolean available;
+
+    @Column(name = "image_file_id")
+    private UUID imageFileId;
 }

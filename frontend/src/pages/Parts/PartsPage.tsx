@@ -52,6 +52,11 @@ export default function PartsPage(): React.ReactElement {
     part.partId.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
+  const resolveImage = (part: PartResponseModel) =>
+    part.imageFileId
+      ? `${import.meta.env.VITE_BACKEND_URL}/files/${part.imageFileId}/download`
+      : `https://via.placeholder.com/300x300?text=${encodeURIComponent(part.name)}`;
+
   const totalPages = Math.ceil(filteredParts.length / ITEMS_PER_PAGE);
   const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
   const endIndex = startIndex + ITEMS_PER_PAGE;
@@ -206,7 +211,7 @@ export default function PartsPage(): React.ReactElement {
             <div key={part.partId} className="part-card-light">
               <div className="part-image-container">
                 <img
-                  src={`https://via.placeholder.com/300x300?text=${encodeURIComponent(part.name)}`}
+                  src={resolveImage(part)}
                   alt={part.name}
                   className="part-image"
                 />

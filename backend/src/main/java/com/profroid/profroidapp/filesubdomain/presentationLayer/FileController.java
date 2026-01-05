@@ -83,12 +83,6 @@ public class FileController {
                 .body(resource);
     }
 
-    @DeleteMapping("/{fileId}")
-    public ResponseEntity<Void> delete(@PathVariable UUID fileId) {
-        fileService.delete(fileId);
-        return ResponseEntity.noContent().build();
-    }
-
     private FileOwnerType parseOwnerType(String raw) {
         try {
             return FileOwnerType.valueOf(raw.toUpperCase(Locale.ROOT));

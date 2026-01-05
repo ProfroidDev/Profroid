@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { updatePart } from "../api/updatePart";
+import { uploadPartImage } from "../api/uploadPartImage";
 import type { PartRequestModel } from "../models/PartRequestModel";
 import type { PartResponseModel } from "../models/PartResponseModel";
 import "./PartEditModal.css";
@@ -22,12 +23,14 @@ export default function PartEditModal({
 }: PartEditModalProps): React.ReactElement | null {
   const [name, setName] = useState<string>(part?.name || "");
   const [available, setAvailable] = useState<boolean>(part?.available ?? true);
+  const [file, setFile] = useState<File | null>(null);
   const [submitting, setSubmitting] = useState<boolean>(false);
 
   React.useEffect(() => {
     if (part) {
       setName(part.name);
       setAvailable(part.available);
+      setFile(null);
     }
   }, [part]);
 
@@ -51,6 +54,10 @@ export default function PartEditModal({
       };
 
       await updatePart(part.partId, partData);
+
+      if (file) {
+        await uploadPartImage(part.partId, file);
+      }
 
       onPartUpdated();
       onClose();
@@ -112,6 +119,23 @@ export default function PartEditModal({
                 />
                 <span>Available</span>
               </label>
+            </div>
+
+            <div className="form-group">
+              <label className="form-label" htmlFor="part-image">
+                Replace Image (optional)
+              </label>
+              <input
+                id="part-image"
+                type="file"
+                accept="image/*"
+                className="form-input"
+                disabled={submitting}
+                onChange={(e) => setFile(e.target.files?.[0] ?? null)}
+              />
+              {part.imageFileId && (
+                <p className="helper-text">Current image will be replaced if you upload a new one.</p>
+              )}
             </div>
           </div>
 
