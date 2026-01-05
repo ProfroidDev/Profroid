@@ -470,6 +470,10 @@
       "streetAddress": "Adresse",
       "city": "Ville",
       "province": "Province",
+      "selectProvince": "Sélectionner la province",
+      "quebec": "Québec (QC)",
+      "ontario": "Ontario (ON)",
+      "operationalAreaMessage": "Nous opérons uniquement dans ces régions",
       "country": "Pays",
       "postalCode": "Code postal",
       "createAppointment": "Créer un rendez-vous",
@@ -627,6 +631,7 @@
   "validation": {
     "emailInvalid": "Veuillez entrer une adresse e-mail valide",
     "postalCodeInvalid": "Veuillez entrer un code postal valide",
+    "invalidPostalCode": "Code postal invalide",
     "postalCodeMismatch": "Le code postal ne correspond pas à {{city}}, {{province}}",
     "phoneInvalid": "Veuillez entrer un numéro de téléphone valide",
     "passwordTooShort": "Le mot de passe doit contenir au moins 8 caractères",
@@ -634,6 +639,9 @@
     "fieldRequired": "{{field}} est obligatoire",
     "invalidImageType": "Veuillez sélectionner un fichier image",
     "imageTooLarge": "L'image est trop volumineuse (max 10MB)"
+    "provinceNotAllowed": "Les rendez-vous ne peuvent être programmés qu'au Québec (QC) ou en Ontario (ON).",
+    "postalCodeNotQC": "Les codes postaux du Québec commencent par G, H ou J. Veuillez entrer un code postal valide du Québec.",
+    "postalCodeNotON": "Les codes postaux de l'Ontario commencent par K, L, M, N ou P. Veuillez entrer un code postal valide de l'Ontario."
   },
   "messages": {
     "success": "Opération complétée avec succès",

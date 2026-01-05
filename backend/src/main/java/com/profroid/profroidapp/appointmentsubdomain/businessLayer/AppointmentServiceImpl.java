@@ -183,6 +183,7 @@ public class AppointmentServiceImpl implements AppointmentService {
             throw new ResourceNotFoundException("Cellar not found: " + requestModel.getCellarName() + " for this customer");
         }
         validationUtils.validateCellarOwnership(cellar, customer);
+        validationUtils.validateProvinceRestriction(requestModel.getAppointmentAddress());
         validationUtils.validateTechnicianSchedule(technician, appointmentDateTime);
         validationUtils.validateServiceTypeRestrictions(job.getJobType(), userRole);
         validationUtils.validateQuotationCompleted(job.getJobType(), requestModel, customer, appointmentDateTime);
@@ -492,6 +493,7 @@ public class AppointmentServiceImpl implements AppointmentService {
             }
 
             validationUtils.validateServiceTypeRestrictions(job.getJobType(), effectiveRole);
+            validationUtils.validateProvinceRestriction(appointmentRequest.getAppointmentAddress());
             validationUtils.validateQuotationCompleted(job.getJobType(), appointmentRequest, customerForValidation, appointmentDateTime);
             validationUtils.validateDuplicateQuotation(job.getJobType(), appointmentRequest, appointmentDateTime.toLocalDate(), appointmentDateTime, customerForValidation, appointment.getAppointmentIdentifier().getAppointmentId());
 

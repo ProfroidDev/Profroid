@@ -18,7 +18,7 @@ import type { CellarResponseModel } from "../../cellar/models/CellarResponseMode
 import { getEmployeeScheduleForDate } from "../../employee/api/getEmployeeScheduleForDate";
 import { getEmployeeSchedule } from "../../employee/api/getEmployeeSchedule";
 import type { TimeSlotType } from "../../employee/models/EmployeeScheduleRequestModel";
-import { getPostalCodeError } from "../../../utils/postalCodeValidator";
+import { getProvincePostalCodeError } from "../../../utils/postalCodeValidator";
 import { getAllAppointments } from "../api/getAllAppointments";
 import {
   getTechnicianBookedSlots,
@@ -286,6 +286,7 @@ export default function AddAppointmentModal({
   const [scheduleLoading, setScheduleLoading] = useState<boolean>(false);
   const [scheduleError, setScheduleError] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [postalCodeValidationError, setPostalCodeValidationError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState<boolean>(false);
   const [allAppointments, setAllAppointments] = useState<
     AppointmentResponseModel[]
@@ -780,6 +781,15 @@ export default function AddAppointmentModal({
     setError(null);
   }, [selectedCustomerId, customerSearch]);
 
+  // Validate postal code when address changes
+  useEffect(() => {
+    const validationError = getProvincePostalCodeError(
+      address.postalCode,
+      address.province
+    );
+    setPostalCodeValidationError(validationError);
+  }, [address.postalCode, address.province]);
+
   useEffect(() => {
     async function loadSchedule() {
       if (!selectedTechnicianId || !appointmentDate) {
@@ -1093,17 +1103,17 @@ export default function AddAppointmentModal({
       return;
     }
 
-    const postalErrorKey = getPostalCodeError(
+    // Check province and postal code match using the new validation
+    const provincePostalErrorKey = getProvincePostalCodeError(
       address.postalCode,
-      address.city,
       address.province
     );
-    if (postalErrorKey) {
-      const translatedError = t(postalErrorKey, {
-        city: address.city,
+    if (provincePostalErrorKey) {
+      const translatedError = t(provincePostalErrorKey, {
         province: address.province,
       });
       setError(translatedError);
+      setPostalCodeValidationError(provincePostalErrorKey);
       return;
     }
 
@@ -1481,14 +1491,28 @@ export default function AddAppointmentModal({
             <div className="grid three">
               <label className="field">
                 <span>{t("pages.appointments.province")}</span>
-                <input
-                  type="text"
+                <select
                   value={address.province}
-                  onChange={(e) =>
-                    setAddress({ ...address, province: e.target.value })
-                  }
+                  onChange={(e) => {
+                    const newProvince = e.target.value;
+                    setAddress({ ...address, province: newProvince });
+                    
+                    // Re-validate postal code when province changes
+                    const validationError = getProvincePostalCodeError(
+                      address.postalCode,
+                      newProvince
+                    );
+                    setPostalCodeValidationError(validationError);
+                  }}
                   required
-                />
+                >
+                  <option value="">{t("pages.appointments.selectProvince")}</option>
+                  <option value="QC">{t("pages.appointments.quebec")}</option>
+                  <option value="ON">{t("pages.appointments.ontario")}</option>
+                </select>
+                <small style={{ color: "#6b7280", marginTop: "4px", display: "block" }}>
+                  {t("pages.appointments.operationalAreaMessage")}
+                </small>
               </label>
               <label className="field">
                 <span>{t("pages.appointments.country")}</span>
@@ -1506,11 +1530,29 @@ export default function AddAppointmentModal({
                 <input
                   type="text"
                   value={address.postalCode}
-                  onChange={(e) =>
-                    setAddress({ ...address, postalCode: e.target.value })
-                  }
+                  onChange={(e) => {
+                    const newPostalCode = e.target.value;
+                    setAddress({ ...address, postalCode: newPostalCode });
+                    
+                    // Real-time validation
+                    const validationError = getProvincePostalCodeError(
+                      newPostalCode,
+                      address.province
+                    );
+                    setPostalCodeValidationError(validationError);
+                  }}
                   required
+                  style={{
+                    borderColor: postalCodeValidationError ? "#ef4444" : undefined,
+                  }}
                 />
+                {postalCodeValidationError && (
+                  <small style={{ color: "#ef4444", marginTop: "4px" }}>
+                    {t(postalCodeValidationError, {
+                      province: address.province,
+                    })}
+                  </small>
+                )}
               </label>
             </div>
 
