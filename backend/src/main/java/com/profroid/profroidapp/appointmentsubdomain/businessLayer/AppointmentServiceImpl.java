@@ -530,7 +530,7 @@ public class AppointmentServiceImpl implements AppointmentService {
                 }
             }
             // Prevent duplicate service for same address/day/technician except for the current appointment
-            validationUtils.validateDuplicateServiceAddressAndDayExcludeCurrent(job.getJobType(), appointmentRequest, appointmentDateTime.toLocalDate(), appointment.getAppointmentIdentifier().getAppointmentId());
+            validationUtils.validateDuplicateServiceAddressAndDayExcludeCurrent(job.getJobType(), appointmentRequest, appointmentDateTime.toLocalDate(), appointmentDateTime, appointment.getCustomer(), appointment.getAppointmentIdentifier().getAppointmentId());
 
             // Additional explicit check that appointment doesn't exceed 5 PM (17:00)
             LocalTime appointmentStart = appointmentDateTime.toLocalTime();

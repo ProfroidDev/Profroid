@@ -501,7 +501,11 @@
       "noCustomersFound": "No customers found with this email",
       "cannotChangeQuotationType": "Cannot change the type of a quotation",
       "cannotChangeCustomerForQuotation": "Cannot change customer for a quotation",
-      "cannotChangeCustomerQuotation": "Cannot change a quotation created by a customer"
+      "cannotChangeCustomerQuotation": "Cannot change a quotation created by a customer",
+      "bufferWarningTitle": "Insufficient Time Between Appointments",
+      "bufferWarningMessage": "You have less than 30 minutes between these two appointments. Do you want to continue with this scheduling?",
+      "continueScheduling": "Continue",
+      "cancelScheduling": "Cancel"
     },
     "jobs": {
       "myJobs": "My Jobs",

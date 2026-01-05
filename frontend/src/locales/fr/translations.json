@@ -494,7 +494,11 @@
       "noCustomersFound": "Aucun client trouvé avec ce courriel",
       "cannotChangeQuotationType": "Impossible de modifier le type d'un devis",
       "cannotChangeCustomerForQuotation": "Impossible de changer le client pour un devis",
-      "cannotChangeCustomerQuotation": "Impossible de modifier un devis créé par un client"
+      "cannotChangeCustomerQuotation": "Impossible de modifier un devis créé par un client",
+      "bufferWarningTitle": "Temps Insuffisant Entre les Rendez-vous",
+      "bufferWarningMessage": "Vous avez moins de 30 minutes entre ces deux rendez-vous. Voulez-vous continuer avec cette programmation?",
+      "continueScheduling": "Continuer",
+      "cancelScheduling": "Annuler"
     },
     "jobs": {
       "myJobs": "Mes Emplois",
