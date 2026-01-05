@@ -19,7 +19,7 @@ import { getEmployeeScheduleForDate } from "../../employee/api/getEmployeeSchedu
 import { getEmployeeSchedule } from "../../employee/api/getEmployeeSchedule";
 import type { TimeSlotType } from "../../employee/models/EmployeeScheduleRequestModel";
 import { getPostalCodeError } from "../../../utils/postalCodeValidator";
-import { getMyJobs } from "../api/getMyJobs";
+import { getAllAppointments } from "../api/getAllAppointments";
 import {
   getTechnicianBookedSlots,
   type BookedSlot,
@@ -293,6 +293,7 @@ export default function AddAppointmentModal({
   const [technicianBookedSlots, setTechnicianBookedSlots] = useState<
     BookedSlot[]
   >([]);
+  const [customerBusySlots, setCustomerBusySlots] = useState<BookedSlot[]>([]);
 
   // When selecting a customer, also snap to their first cellar (if any) and clear errors
   const handleSelectCustomer = (cust: CustomerResponseModel) => {
@@ -623,15 +624,15 @@ export default function AddAppointmentModal({
   // Fetch all appointments to check for conflicts (technician mode only)
   useEffect(() => {
     async function fetchAppointments() {
-      // Only fetch in technician mode - the technician can see their own jobs
+      // Only fetch in technician mode - fetch all appointments to see customer's appointments
       if (mode !== "technician") {
         setAllAppointments([]);
         return;
       }
 
       try {
-        // Use the correct API endpoint - getMyJobs for technician's appointments
-        const appointments = await getMyJobs();
+        // Use getAllAppointments to see all appointments, not just the technician's own
+        const appointments = await getAllAppointments();
         setAllAppointments(appointments);
       } catch (err) {
         console.error("Failed to fetch appointments:", err);
@@ -642,6 +643,64 @@ export default function AddAppointmentModal({
 
     fetchAppointments();
   }, [mode, appointmentDate]);
+
+  // Fetch customer's busy slots when in technician mode and customer is selected
+  useEffect(() => {
+    async function fetchCustomerBusySlots() {
+      if (mode !== "technician" || !selectedCustomerId || !appointmentDate || !allAppointments) {
+        setCustomerBusySlots([]);
+        return;
+      }
+
+      try {
+        // Filter appointments for the selected customer on the selected date that are SCHEDULED or COMPLETED
+        const actualCustomerId = getActualCustomerId(selectedCustomerId);
+        const customerAppts = allAppointments.filter((apt) => {
+          if (!apt.customerId) return false;
+          
+          // Check if this appointment belongs to the selected customer
+          const apptCustomerId = getActualCustomerId(apt.customerId);
+          if (apptCustomerId !== actualCustomerId) return false;
+          
+          // Get the appointment date (handle both date string and full timestamp)
+          let apptDate: string;
+          if (apt.appointmentDate) {
+            // If it's a timestamp like "2025-01-07T09:00:00", extract just the date
+            apptDate = typeof apt.appointmentDate === "string" 
+              ? apt.appointmentDate.split("T")[0]
+              : new Date(apt.appointmentDate).toISOString().split("T")[0];
+          } else {
+            return false;
+          }
+          
+          const selectedDate = appointmentDate; // already in YYYY-MM-DD format
+          
+          return (
+            apptDate === selectedDate &&
+            (apt.status === "SCHEDULED" || apt.status === "COMPLETED")
+          );
+        });
+
+        // Convert appointments to booked slots format
+        const busySlots: BookedSlot[] = customerAppts.map((apt) => {
+          const startTime = apt.appointmentStartTime || "09:00:00";
+          const endTime = apt.appointmentEndTime || "10:00:00";
+          
+          return {
+            startTime: startTime,
+            endTime: endTime
+          };
+        });
+
+        setCustomerBusySlots(busySlots);
+      } catch (err) {
+        console.error("Failed to fetch customer busy slots:", err);
+        setCustomerBusySlots([]);
+      }
+    }
+
+    fetchCustomerBusySlots();
+  }, [mode, selectedCustomerId, appointmentDate, allAppointments]);
 
   const filteredCustomers = useMemo(() => {
     if (!customerSearch.trim()) return [];
@@ -914,6 +973,21 @@ export default function AddAppointmentModal({
 
       if (hasBookedConflict) return;
 
+      // Check for conflicts with customer's existing appointments
+      const hasCustomerConflict = customerBusySlots.some((busySlot) => {
+        if (!busySlot.startTime || !busySlot.endTime) return false;
+
+        const busyStart = new Date(
+          `${appointmentDate}T${busySlot.startTime}`
+        );
+        const busyEnd = new Date(`${appointmentDate}T${busySlot.endTime}`);
+
+        // Overlap check: slotStart < busyEnd AND slotEnd > busyStart
+        return slotStart < busyEnd && slotEnd > busyStart;
+      });
+
+      if (hasCustomerConflict) return;
+
       // Overlap detection with allAppointments (for technician mode)
       const hasConflict = allAppointments.some((apt) => {
         if (editingAppointmentId && apt.appointmentId === editingAppointmentId) {
@@ -969,6 +1043,7 @@ export default function AddAppointmentModal({
     allAppointments,
     selectedTechnician,
     technicianBookedSlots,
+    customerBusySlots,
     mode,
     isEditMode,
     editAppointment,

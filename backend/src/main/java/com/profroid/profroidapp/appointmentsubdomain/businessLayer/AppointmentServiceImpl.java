@@ -192,10 +192,16 @@ public class AppointmentServiceImpl implements AppointmentService {
         
         // Check if customer already has appointments at this time (for both CUSTOMER and TECHNICIAN roles)
         // This prevents double-booking the customer regardless of who creates the appointment
-        List<Appointment> customerAppointmentsAtTime = appointmentRepository.findAllByCustomerAndAppointmentDateAndStatusIn(
-            customer, appointmentDateTime.toLocalDate(), 
-            Arrays.asList(AppointmentStatusType.SCHEDULED, AppointmentStatusType.COMPLETED)
-        );
+        LocalDateTime startOfDay = appointmentDateTime.toLocalDate().atStartOfDay();
+        LocalDateTime endOfDay = startOfDay.plusDays(1);
+
+        List<Appointment> customerAppointmentsAtTime =
+                appointmentRepository.findAllByCustomerAndAppointmentDateBetweenAndStatusIn(
+                        customer,
+                        startOfDay,
+                        endOfDay,
+                        Arrays.asList(AppointmentStatusType.SCHEDULED, AppointmentStatusType.COMPLETED)
+                );
         if (!customerAppointmentsAtTime.isEmpty()) {
             for (Appointment existing : customerAppointmentsAtTime) {
                 LocalTime existingStart = existing.getAppointmentDate().toLocalTime();
@@ -389,16 +395,16 @@ public class AppointmentServiceImpl implements AppointmentService {
                 // Technician can edit their own appointments or customer-created quotations
                 boolean isTechnicianOwned = "TECHNICIAN".equals(appointment.getCreatedByRole());
                 boolean isCustomerQuotation = "CUSTOMER".equals(appointment.getCreatedByRole()) && appointment.getJob() != null && JobType.QUOTATION.equals(appointment.getJob().getJobType());
-                
+
                 if (!isTechnicianOwned && !isCustomerQuotation) {
                     throw new InvalidOperationException("You can only edit appointments you have created.");
                 }
-                
+
                 Employee technician = employeeRepository.findEmployeeByEmployeeIdentifier_EmployeeId(userId);
                 if (technician == null) {
                     throw new ResourceNotFoundException("Technician not found.");
                 }
-                
+
                 // For technician-owned appointments, verify technician assignment
                 if (isTechnicianOwned && !technician.getId().equals(appointment.getTechnician().getId())) {
                     throw new ResourceNotFoundException("You don't have permission to update this appointment.");
@@ -411,11 +417,11 @@ public class AppointmentServiceImpl implements AppointmentService {
                     if (!appointmentRequest.getJobName().equals(appointment.getJob().getJobName())) {
                         throw new InvalidOperationException("You cannot change the service type of a customer-created quotation.");
                     }
-                    
+
                     // Check if customer is being changed
-                    if (appointmentRequest.getCustomerId() != null && 
+                    if (appointmentRequest.getCustomerId() != null &&
                         appointment.getCustomer().getCustomerIdentifier() != null &&
-                        !Objects.equals(appointmentRequest.getCustomerId(), 
+                        !Objects.equals(appointmentRequest.getCustomerId(),
                                        appointment.getCustomer().getCustomerIdentifier().getCustomerId())) {
                         throw new InvalidOperationException("You cannot change the customer for a customer-created quotation.");
                     }
@@ -445,7 +451,7 @@ public class AppointmentServiceImpl implements AppointmentService {
 
             // Find cellar by name and owner (prevents duplicate name issues)
             Cellar cellar = cellarRepository.findCellarByNameAndOwnerCustomerIdentifier_CustomerId(
-                appointmentRequest.getCellarName(), 
+                appointmentRequest.getCellarName(),
                 customerForValidation.getCustomerIdentifier().getCustomerId()
             );
             if (cellar == null) {
@@ -463,7 +469,7 @@ public class AppointmentServiceImpl implements AppointmentService {
             }
             validationUtils.validateBookingDeadline(appointmentDateTime, now);
             validationUtils.validateCellarOwnership(cellar, customerForValidation);
-            
+
             // For customer edits, allow technician reassignment
             // For technician edits, validate against the same technician
             Employee assignedTechnician = appointment.getTechnician();
@@ -484,29 +490,35 @@ public class AppointmentServiceImpl implements AppointmentService {
                 validationUtils.validateTechnicianSchedule(assignedTechnician, appointmentDateTime);
                 validationUtils.validateTimeSlotAvailability(assignedTechnician, appointmentDateTime, job, appointment.getAppointmentIdentifier().getAppointmentId());
             }
-            
+
             validationUtils.validateServiceTypeRestrictions(job.getJobType(), effectiveRole);
             validationUtils.validateQuotationCompleted(job.getJobType(), appointmentRequest, customerForValidation, appointmentDateTime);
             validationUtils.validateDuplicateQuotation(job.getJobType(), appointmentRequest, appointmentDateTime.toLocalDate(), appointmentDateTime, customerForValidation, appointment.getAppointmentIdentifier().getAppointmentId());
-            
+
             // Check if customer already has appointments at this time (exclude the current appointment being updated)
-            List<Appointment> customerAppointmentsAtTime = appointmentRepository.findAllByCustomerAndAppointmentDateAndStatusIn(
-                customerForValidation, appointmentDateTime.toLocalDate(), 
-                Arrays.asList(AppointmentStatusType.SCHEDULED, AppointmentStatusType.COMPLETED)
-            );
+            LocalDateTime startOfDay = appointmentDateTime.toLocalDate().atStartOfDay();
+            LocalDateTime endOfDay = startOfDay.plusDays(1);
+
+            List<Appointment> customerAppointmentsAtTime =
+                    appointmentRepository.findAllByCustomerAndAppointmentDateBetweenAndStatusIn(
+                            customerForValidation,
+                            startOfDay,
+                            endOfDay,
+                            Arrays.asList(AppointmentStatusType.SCHEDULED, AppointmentStatusType.COMPLETED)
+                    );
             if (!customerAppointmentsAtTime.isEmpty()) {
                 for (Appointment existing : customerAppointmentsAtTime) {
                     // Skip the current appointment being updated
                     if (existing.getAppointmentIdentifier().getAppointmentId().equals(appointment.getAppointmentIdentifier().getAppointmentId())) {
                         continue;
                     }
-                    
+
                     LocalTime existingStart = existing.getAppointmentDate().toLocalTime();
                     LocalTime existingEnd = existingStart.plusMinutes(
                         existing.getJob() != null ? existing.getJob().getEstimatedDurationMinutes() : 60
                     );
                     LocalTime newEnd = appointmentDateTime.toLocalTime().plusMinutes(job.getEstimatedDurationMinutes());
-                    
+
                     // Check for overlap
                     if (appointmentDateTime.toLocalTime().isBefore(existingEnd) && existingStart.isBefore(newEnd)) {
                         throw new InvalidOperationException(
@@ -517,7 +529,7 @@ public class AppointmentServiceImpl implements AppointmentService {
             }
             // Prevent duplicate service for same address/day/technician except for the current appointment
             validationUtils.validateDuplicateServiceAddressAndDayExcludeCurrent(job.getJobType(), appointmentRequest, appointmentDateTime.toLocalDate(), appointment.getAppointmentIdentifier().getAppointmentId());
-            
+
             // Additional explicit check that appointment doesn't exceed 5 PM (17:00)
             LocalTime appointmentStart = appointmentDateTime.toLocalTime();
             Integer durationMinutesObj = job.getEstimatedDurationMinutes();
@@ -533,7 +545,7 @@ public class AppointmentServiceImpl implements AppointmentService {
             appointment.setAppointmentDate(appointmentDateTime);
             appointment.setDescription(appointmentRequest.getDescription());
             appointment.setAppointmentAddress(appointmentRequest.getAppointmentAddress());
-            
+
             // Update customer only if a technician user explicitly changed it
             if ("TECHNICIAN".equals(effectiveRole) && appointmentRequest.getCustomerId() != null) {
                 appointment.setCustomer(customerForValidation);
@@ -618,8 +630,9 @@ public class AppointmentServiceImpl implements AppointmentService {
             
             // Filter out cancelled appointments and build booked slots
             List<TechnicianBookedSlotsResponseModel.BookedSlot> bookedSlots = appointments.stream()
-                    .filter(apt -> apt.getAppointmentStatus() != null && 
-                            apt.getAppointmentStatus().getAppointmentStatusType() != AppointmentStatusType.CANCELLED)
+                    .filter(apt -> apt.getAppointmentStatus() != null &&
+                            (apt.getAppointmentStatus().getAppointmentStatusType() == AppointmentStatusType.SCHEDULED ||
+                                    apt.getAppointmentStatus().getAppointmentStatusType() == AppointmentStatusType.COMPLETED))
                     .map(apt -> {
                         // Extract start time from appointmentDate
                         LocalTime startTime = apt.getAppointmentDate().toLocalTime();
@@ -675,9 +688,16 @@ public class AppointmentServiceImpl implements AppointmentService {
                     customer = customerRepository.findCustomerByCustomerIdentifier_CustomerId(userId);
                 }
                 if (customer != null) {
-                    customerAppointments = appointmentRepository.findAllByCustomerAndAppointmentDateAndStatusIn(
-                        customer, date, Arrays.asList(AppointmentStatusType.SCHEDULED, AppointmentStatusType.COMPLETED)
-                    );
+                    LocalDateTime startOfDay = date.atStartOfDay();
+                    LocalDateTime endOfDay = startOfDay.plusDays(1);
+
+                    customerAppointments =
+                            appointmentRepository.findAllByCustomerAndAppointmentDateBetweenAndStatusIn(
+                                    customer,
+                                    startOfDay,
+                                    endOfDay,
+                                    Arrays.asList(AppointmentStatusType.SCHEDULED, AppointmentStatusType.COMPLETED)
+                            );
                 }
             }
             
