@@ -27,6 +27,7 @@ public class AppointmentResponseModel {
     private List<CustomerPhoneNumber> customerPhoneNumbers;
 
     // Technician Information
+    private String technicianId;  // Employee UUID
     private String technicianFirstName;
     private String technicianLastName;
     private EmployeeRole technicianRole;  // Must be TECHNICIAN to perform work
@@ -51,4 +52,7 @@ public class AppointmentResponseModel {
 
     // Appointment Address (where the work will be done)
     private AppointmentAddress appointmentAddress;
+
+    // Track who created this appointment (CUSTOMER or TECHNICIAN)
+    private String createdByRole;
 }

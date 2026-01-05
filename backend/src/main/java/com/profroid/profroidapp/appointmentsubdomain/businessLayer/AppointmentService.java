@@ -40,5 +40,5 @@ public interface AppointmentService {
      * Shows times when at least one technician is available.
      * Used by customers to see overall availability without selecting a technician first.
      */
-    TechnicianBookedSlotsResponseModel getAggregatedAvailability(LocalDate date, String jobName);
+    TechnicianBookedSlotsResponseModel getAggregatedAvailability(LocalDate date, String jobName, String userId, String userRole);
 }

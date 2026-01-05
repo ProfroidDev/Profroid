@@ -1,4 +1,4 @@
-# ECP Project - Student Guide
+ # ECP Project - Student Guide
 
 Welcome to the ECP Project! This README will help you get started, follow our conventions, and contribute effectively. Please read carefully and refer back as needed.
 

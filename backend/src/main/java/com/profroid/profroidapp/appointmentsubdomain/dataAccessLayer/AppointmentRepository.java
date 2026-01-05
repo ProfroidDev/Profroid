@@ -112,5 +112,55 @@ public interface AppointmentRepository extends JpaRepository<Appointment, Intege
         LocalDateTime startDateTime,
         LocalDateTime endDateTime
     );
+    
+    // Find appointments for a customer on a specific date with a specific status
+    @Query("SELECT a FROM Appointment a WHERE a.customer = :customer AND " +
+           "DATE(a.appointmentDate) = :date AND " +
+           "a.appointmentStatus.appointmentStatusType = :status")
+    List<Appointment> findAllByCustomerAndAppointmentDateAndStatus(
+        @Param("customer") Customer customer,
+        @Param("date") LocalDate date,
+        @Param("status") AppointmentStatusType status
+    );
+    
+    // Find appointments for a customer on a specific date with multiple statuses
+    @Query("SELECT a FROM Appointment a WHERE a.customer = :customer AND " +
+           "DATE(a.appointmentDate) = :date AND " +
+           "a.appointmentStatus.appointmentStatusType IN :statuses")
+    List<Appointment> findAllByCustomerAndAppointmentDateAndStatusIn(
+        @Param("customer") Customer customer,
+        @Param("date") LocalDate date,
+        @Param("statuses") List<AppointmentStatusType> statuses
+    );
+
+    @Query("""
+    SELECT a FROM Appointment a
+    WHERE a.customer = :customer
+      AND a.appointmentDate >= :start
+      AND a.appointmentDate < :end
+      AND a.appointmentStatus.appointmentStatusType IN :statuses
+""")
+    List<Appointment> findAllByCustomerAndAppointmentDateBetweenAndStatusIn(
+            @Param("customer") Customer customer,
+            @Param("start") LocalDateTime start,
+            @Param("end") LocalDateTime end,
+            @Param("statuses") List<AppointmentStatusType> statuses
+    );
+
+    @Query("""
+    SELECT a FROM Appointment a
+    WHERE a.technician = :technician
+      AND a.appointmentDate >= :start
+      AND a.appointmentDate < :end
+      AND a.appointmentStatus.appointmentStatusType IN (
+        com.profroid.profroidapp.appointmentsubdomain.dataAccessLayer.AppointmentStatusType.SCHEDULED,
+        com.profroid.profroidapp.appointmentsubdomain.dataAccessLayer.AppointmentStatusType.COMPLETED
+      )
+""")
+    List<Appointment> findByTechnicianAndAppointmentDateBetweenAndScheduled(
+            @Param("technician") Employee technician,
+            @Param("start") LocalDateTime start,
+            @Param("end") LocalDateTime end
+    );
 }
 

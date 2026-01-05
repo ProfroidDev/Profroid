@@ -13,4 +13,5 @@ export interface CustomerResponseModel {
   country: string;
   postalCode: string;
   userId: string;
+  isActive?: boolean;
 }

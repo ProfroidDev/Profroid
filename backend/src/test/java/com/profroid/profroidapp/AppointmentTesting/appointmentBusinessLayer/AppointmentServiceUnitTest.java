@@ -13,6 +13,7 @@ import com.profroid.profroidapp.employeesubdomain.dataAccessLayer.employeeDataAc
 import com.profroid.profroidapp.employeesubdomain.dataAccessLayer.employeeScheduleDataAccessLayer.Schedule;
 import com.profroid.profroidapp.employeesubdomain.dataAccessLayer.employeeScheduleDataAccessLayer.TimeSlotType;
 import com.profroid.profroidapp.jobssubdomain.dataAccessLayer.Job;
+import com.profroid.profroidapp.jobssubdomain.dataAccessLayer.JobType;
 import com.profroid.profroidapp.jobssubdomain.dataAccessLayer.JobRepository;
 import com.profroid.profroidapp.cellarsubdomain.dataAccessLayer.CellarRepository;
 import com.profroid.profroidapp.employeesubdomain.mappingLayer.employeeMappers.EmployeeResponseMapper;
@@ -590,36 +591,6 @@ public class AppointmentServiceUnitTest {
 //    }
 
     @Test
-    void updateAppointment_technicianRole_missingCustomerIdInRequest_throwsInvalidOperationException() {
-        // Setup appointment (non-COMPLETED)
-        Appointment mockAppointment = mock(Appointment.class);
-        AppointmentStatus scheduledStatus = mock(AppointmentStatus.class);
-        when(scheduledStatus.getAppointmentStatusType()).thenReturn(AppointmentStatusType.SCHEDULED);
-        when(mockAppointment.getAppointmentStatus()).thenReturn(scheduledStatus);
-
-        // Setup technician for permission (Made lenient as it may not be called)
-        com.profroid.profroidapp.employeesubdomain.dataAccessLayer.employeeDataAccessLayer.Employee currentTechnician = mock(com.profroid.profroidapp.employeesubdomain.dataAccessLayer.employeeDataAccessLayer.Employee.class);
-        lenient().when(currentTechnician.getId()).thenReturn(1);
-        lenient().when(currentTechnician.getIsActive()).thenReturn(true);
-
-        // FIX: Changed to lenient().when()
-        lenient().when(employeeRepository.findEmployeeByEmployeeIdentifier_EmployeeId("tech-id")).thenReturn(currentTechnician);
-
-        lenient().when(mockAppointment.getTechnician()).thenReturn(currentTechnician);
-        lenient().when(mockAppointment.getCustomer()).thenReturn(mock(Customer.class));
-        lenient().when(mockAppointment.getJob()).thenReturn(mockJob);
-        lenient().when(mockAppointment.getCellar()).thenReturn(mockCellar);
-        lenient().when(mockAppointment.getAppointmentIdentifier()).thenReturn(mock(com.profroid.profroidapp.appointmentsubdomain.dataAccessLayer.AppointmentIdentifier.class));
-
-        when(appointmentRepository.findAppointmentByAppointmentIdentifier_AppointmentId("appt-id")).thenReturn(java.util.Optional.of(mockAppointment));
-        when(requestModel.getCustomerId()).thenReturn(null); // Missing CustomerId -> Throws Exception here
-
-        assertThrows(InvalidOperationException.class, () ->
-                appointmentService.updateAppointment("appt-id", requestModel, "tech-id", "TECHNICIAN")
-        );
-    }
-
-    @Test
     void updateAppointment_technicianRole_jobNotFound_throwsResourceNotFoundException() {
         // Setup Appointment (non-COMPLETED)
         Appointment mockAppointment = mock(Appointment.class);
@@ -631,8 +602,6 @@ public class AppointmentServiceUnitTest {
         com.profroid.profroidapp.employeesubdomain.dataAccessLayer.employeeDataAccessLayer.Employee currentTechnician = mock(com.profroid.profroidapp.employeesubdomain.dataAccessLayer.employeeDataAccessLayer.Employee.class);
         lenient().when(currentTechnician.getId()).thenReturn(1);
         lenient().when(currentTechnician.getIsActive()).thenReturn(true);
-
-        // FIX: Changed to lenient().when()
         lenient().when(employeeRepository.findEmployeeByEmployeeIdentifier_EmployeeId("tech-id")).thenReturn(currentTechnician);
 
         lenient().when(mockAppointment.getTechnician()).thenReturn(currentTechnician);
@@ -641,11 +610,12 @@ public class AppointmentServiceUnitTest {
         lenient().when(mockAppointment.getCustomer()).thenReturn(mockCustomer);
         lenient().when(mockAppointment.getJob()).thenReturn(mockJob);
         lenient().when(mockAppointment.getCellar()).thenReturn(mockCellar);
+        lenient().when(mockAppointment.getCreatedByRole()).thenReturn("TECHNICIAN");
         lenient().when(mockAppointment.getAppointmentIdentifier()).thenReturn(mock(com.profroid.profroidapp.appointmentsubdomain.dataAccessLayer.AppointmentIdentifier.class));
 
         when(appointmentRepository.findAppointmentByAppointmentIdentifier_AppointmentId("appt-id")).thenReturn(java.util.Optional.of(mockAppointment));
-        when(requestModel.getCustomerId()).thenReturn("123e4567-e89b-12d3-a456-426614174000"); // Valid CustomerId
-        when(customerRepository.findCustomerByCustomerIdentifier_CustomerId(anyString())).thenReturn(mockCustomer);
+        lenient().when(requestModel.getCustomerId()).thenReturn("123e4567-e89b-12d3-a456-426614174000"); // Valid CustomerId
+        lenient().when(customerRepository.findCustomerByCustomerIdentifier_CustomerId(anyString())).thenReturn(mockCustomer);
 
         when(requestModel.getJobName()).thenReturn("NonExistentJob");
         when(jobRepository.findJobByJobName("NonExistentJob")).thenReturn(null); // Job not found -> Throws Exception here
@@ -677,11 +647,12 @@ public class AppointmentServiceUnitTest {
         lenient().when(mockAppointment.getCustomer()).thenReturn(mockCustomer);
         lenient().when(mockAppointment.getJob()).thenReturn(mockJob);
         lenient().when(mockAppointment.getCellar()).thenReturn(mockCellar);
+        lenient().when(mockAppointment.getCreatedByRole()).thenReturn("TECHNICIAN");
         lenient().when(mockAppointment.getAppointmentIdentifier()).thenReturn(mock(com.profroid.profroidapp.appointmentsubdomain.dataAccessLayer.AppointmentIdentifier.class));
 
         when(appointmentRepository.findAppointmentByAppointmentIdentifier_AppointmentId("appt-id")).thenReturn(java.util.Optional.of(mockAppointment));
-        when(requestModel.getCustomerId()).thenReturn("123e4567-e89b-12d3-a456-426614174000"); // Valid CustomerId
-        when(customerRepository.findCustomerByCustomerIdentifier_CustomerId(anyString())).thenReturn(mockCustomer);
+        lenient().when(requestModel.getCustomerId()).thenReturn("123e4567-e89b-12d3-a456-426614174000"); // Valid CustomerId; lenient because exception may trigger before use
+        lenient().when(customerRepository.findCustomerByCustomerIdentifier_CustomerId(anyString())).thenReturn(mockCustomer);
 
         // Setup Inactive Job
         com.profroid.profroidapp.jobssubdomain.dataAccessLayer.Job inactiveJob = mock(com.profroid.profroidapp.jobssubdomain.dataAccessLayer.Job.class);
@@ -705,12 +676,10 @@ public class AppointmentServiceUnitTest {
         when(scheduledStatus.getAppointmentStatusType()).thenReturn(AppointmentStatusType.SCHEDULED);
         when(mockAppointment.getAppointmentStatus()).thenReturn(scheduledStatus);
 
-        // Setup Technician for permission (Made lenient as it may not be called)
+        // Setup Technician for permission
         com.profroid.profroidapp.employeesubdomain.dataAccessLayer.employeeDataAccessLayer.Employee currentTechnician = mock(com.profroid.profroidapp.employeesubdomain.dataAccessLayer.employeeDataAccessLayer.Employee.class);
         lenient().when(currentTechnician.getId()).thenReturn(1);
         lenient().when(currentTechnician.getIsActive()).thenReturn(true);
-
-        // FIX: Changed to lenient().when()
         lenient().when(employeeRepository.findEmployeeByEmployeeIdentifier_EmployeeId("tech-id")).thenReturn(currentTechnician);
 
         lenient().when(mockAppointment.getTechnician()).thenReturn(currentTechnician);
@@ -723,19 +692,20 @@ public class AppointmentServiceUnitTest {
         lenient().when(mockAppointment.getCustomer()).thenReturn(mockCustomer);
         lenient().when(mockAppointment.getJob()).thenReturn(mockJob);
         lenient().when(mockAppointment.getCellar()).thenReturn(mockCellar);
+        lenient().when(mockAppointment.getCreatedByRole()).thenReturn("TECHNICIAN");
         lenient().when(mockAppointment.getAppointmentIdentifier()).thenReturn(mock(com.profroid.profroidapp.appointmentsubdomain.dataAccessLayer.AppointmentIdentifier.class));
 
         when(appointmentRepository.findAppointmentByAppointmentIdentifier_AppointmentId("appt-id")).thenReturn(java.util.Optional.of(mockAppointment));
         when(requestModel.getCustomerId()).thenReturn("123e4567-e89b-12d3-a456-426614174000"); // Valid CustomerId
-        when(customerRepository.findCustomerByCustomerIdentifier_CustomerId(anyString())).thenReturn(mockCustomer);
-        when(requestModel.getJobName()).thenReturn("Installation");
+        lenient().when(customerRepository.findCustomerByCustomerIdentifier_CustomerId(anyString())).thenReturn(mockCustomer);
+        lenient().when(requestModel.getJobName()).thenReturn("Installation");
 
         // Stub a successful, active job lookup (necessary to reach the Cellar lookup)
         com.profroid.profroidapp.jobssubdomain.dataAccessLayer.Job activeJob = mock(com.profroid.profroidapp.jobssubdomain.dataAccessLayer.Job.class);
-        when(activeJob.isActive()).thenReturn(true);
-        when(jobRepository.findJobByJobName("Installation")).thenReturn(activeJob);
+        lenient().when(activeJob.isActive()).thenReturn(true);
+        lenient().when(jobRepository.findJobByJobName("Installation")).thenReturn(activeJob);
 
-        when(requestModel.getCellarName()).thenReturn("NonExistentCellar");
+        lenient().when(requestModel.getCellarName()).thenReturn("NonExistentCellar");
         when(cellarRepository.findCellarByNameAndOwnerCustomerIdentifier_CustomerId(eq("NonExistentCellar"), anyString())).thenReturn(null); // Cellar not found -> Throws Exception here
 
         assertThrows(ResourceNotFoundException.class, () ->
@@ -764,6 +734,7 @@ public class AppointmentServiceUnitTest {
         lenient().when(mockAppointment.getTechnician()).thenReturn(mockTechnician);
         lenient().when(mockAppointment.getJob()).thenReturn(mockJob);
         lenient().when(mockAppointment.getCellar()).thenReturn(mockCellar);
+        lenient().when(mockAppointment.getCreatedByRole()).thenReturn("CUSTOMER");
         lenient().when(mockAppointment.getAppointmentIdentifier()).thenReturn(mock(com.profroid.profroidapp.appointmentsubdomain.dataAccessLayer.AppointmentIdentifier.class));
 
         when(appointmentRepository.findAppointmentByAppointmentIdentifier_AppointmentId("appt-id")).thenReturn(java.util.Optional.of(mockAppointment));
@@ -771,6 +742,93 @@ public class AppointmentServiceUnitTest {
 
         assertThrows(ResourceNotFoundException.class, () ->
                 appointmentService.updateAppointment("appt-id", requestModel, "wrong-user-id", "CUSTOMER")
+        );
+    }
+
+    @Test
+    void updateAppointment_technicianRole_customerQuotation_wrongTechnician_throwsResourceNotFoundException() {
+        // Setup Appointment (customer-created quotation)
+        Appointment mockAppointment = mock(Appointment.class);
+        AppointmentStatus scheduledStatus = mock(AppointmentStatus.class);
+        when(scheduledStatus.getAppointmentStatusType()).thenReturn(AppointmentStatusType.SCHEDULED);
+        when(mockAppointment.getAppointmentStatus()).thenReturn(scheduledStatus);
+
+        // Setup Job as QUOTATION type
+        Job quotationJob = mock(Job.class);
+        lenient().when(quotationJob.getJobType()).thenReturn(JobType.QUOTATION);
+        lenient().when(quotationJob.getJobName()).thenReturn("Quotation Service");
+
+        // Setup appointment as customer-created
+        lenient().when(mockAppointment.getCreatedByRole()).thenReturn("CUSTOMER");
+        lenient().when(mockAppointment.getJob()).thenReturn(quotationJob);
+
+        // Setup technician assigned to the appointment (ID=1)
+        com.profroid.profroidapp.employeesubdomain.dataAccessLayer.employeeDataAccessLayer.Employee assignedTechnician = mock(com.profroid.profroidapp.employeesubdomain.dataAccessLayer.employeeDataAccessLayer.Employee.class);
+        lenient().when(assignedTechnician.getId()).thenReturn(1);
+        lenient().when(mockAppointment.getTechnician()).thenReturn(assignedTechnician);
+
+        // Setup current technician trying to update (ID=2, different from assigned)
+        com.profroid.profroidapp.employeesubdomain.dataAccessLayer.employeeDataAccessLayer.Employee currentTechnician = mock(com.profroid.profroidapp.employeesubdomain.dataAccessLayer.employeeDataAccessLayer.Employee.class);
+        lenient().when(currentTechnician.getId()).thenReturn(2);
+        when(employeeRepository.findEmployeeByEmployeeIdentifier_EmployeeId("tech-id-2")).thenReturn(currentTechnician);
+
+        // Setup other required entities
+        Customer mockCustomer = mock(Customer.class);
+        lenient().when(mockCustomer.getId()).thenReturn(1);
+        lenient().when(mockAppointment.getCustomer()).thenReturn(mockCustomer);
+        lenient().when(mockAppointment.getCellar()).thenReturn(mockCellar);
+        lenient().when(mockAppointment.getAppointmentIdentifier()).thenReturn(mock(com.profroid.profroidapp.appointmentsubdomain.dataAccessLayer.AppointmentIdentifier.class));
+
+        when(appointmentRepository.findAppointmentByAppointmentIdentifier_AppointmentId("appt-id")).thenReturn(java.util.Optional.of(mockAppointment));
+
+        // Test that a technician who is not assigned to the customer quotation cannot update it
+        assertThrows(ResourceNotFoundException.class, () ->
+                appointmentService.updateAppointment("appt-id", requestModel, "tech-id-2", "TECHNICIAN"),
+                "Expected ResourceNotFoundException when technician tries to update a customer quotation they are not assigned to"
+        );
+    }
+
+    @Test
+    void updateAppointment_technicianRole_customerQuotation_changeJobType_throwsInvalidOperationException() {
+        // Setup Appointment (customer-created quotation)
+        Appointment mockAppointment = mock(Appointment.class);
+        AppointmentStatus scheduledStatus = mock(AppointmentStatus.class);
+        when(scheduledStatus.getAppointmentStatusType()).thenReturn(AppointmentStatusType.SCHEDULED);
+        when(mockAppointment.getAppointmentStatus()).thenReturn(scheduledStatus);
+
+        // Setup Job as QUOTATION type
+        Job quotationJob = mock(Job.class);
+        lenient().when(quotationJob.getJobType()).thenReturn(JobType.QUOTATION);
+        lenient().when(quotationJob.getJobName()).thenReturn("Quotation Service");
+
+        // Setup appointment as customer-created
+        lenient().when(mockAppointment.getCreatedByRole()).thenReturn("CUSTOMER");
+        lenient().when(mockAppointment.getJob()).thenReturn(quotationJob);
+
+        // Setup technician assigned to the appointment (ID=1)
+        com.profroid.profroidapp.employeesubdomain.dataAccessLayer.employeeDataAccessLayer.Employee assignedTechnician = mock(com.profroid.profroidapp.employeesubdomain.dataAccessLayer.employeeDataAccessLayer.Employee.class);
+        lenient().when(assignedTechnician.getId()).thenReturn(1);
+        lenient().when(mockAppointment.getTechnician()).thenReturn(assignedTechnician);
+
+        // Setup current technician (same as assigned, ID=1)
+        when(employeeRepository.findEmployeeByEmployeeIdentifier_EmployeeId("tech-id-1")).thenReturn(assignedTechnician);
+
+        // Setup other required entities
+        Customer mockCustomer = mock(Customer.class);
+        lenient().when(mockCustomer.getId()).thenReturn(1);
+        lenient().when(mockAppointment.getCustomer()).thenReturn(mockCustomer);
+        lenient().when(mockAppointment.getCellar()).thenReturn(mockCellar);
+        lenient().when(mockAppointment.getAppointmentIdentifier()).thenReturn(mock(com.profroid.profroidapp.appointmentsubdomain.dataAccessLayer.AppointmentIdentifier.class));
+
+        when(appointmentRepository.findAppointmentByAppointmentIdentifier_AppointmentId("appt-id")).thenReturn(java.util.Optional.of(mockAppointment));
+
+        // Try to change the job type (from "Quotation Service" to "Different Service")
+        when(requestModel.getJobName()).thenReturn("Different Service");
+
+        // Test that assigned technician cannot change job type of customer quotation
+        assertThrows(InvalidOperationException.class, () ->
+                appointmentService.updateAppointment("appt-id", requestModel, "tech-id-1", "TECHNICIAN"),
+                "Expected InvalidOperationException when technician tries to change job type of customer quotation"
         );
     }
 
@@ -983,7 +1041,7 @@ public class AppointmentServiceUnitTest {
         when(employeeRepository.findAll()).thenReturn(java.util.Collections.singletonList(admin));
 
         com.profroid.profroidapp.appointmentsubdomain.presentationLayer.TechnicianBookedSlotsResponseModel result = 
-            appointmentService.getAggregatedAvailability(date, "Installation");
+            appointmentService.getAggregatedAvailability(date, "Installation", null, null);
 
         // Should return empty list since admin is not a technician
         assertEquals(0, result.getBookedSlots().size());
@@ -1173,7 +1231,7 @@ public class AppointmentServiceUnitTest {
                 eq("tech-id"), any()))
                 .thenReturn(Collections.emptyList());
 
-        var result = appointmentService.getAggregatedAvailability(date, "Installation");
+        var result = appointmentService.getAggregatedAvailability(date, "Installation", null, null);
 
         assertNotNull(result);
         assertEquals(0, result.getBookedSlots().size());
@@ -1325,7 +1383,7 @@ public class AppointmentServiceUnitTest {
         when(appointmentRepository.findByTechnicianAndAppointmentDateBetween(any(), any(), any()))
                 .thenReturn(List.of(apt));
 
-        var result = appointmentService.getAggregatedAvailability(date, "Installation");
+        var result = appointmentService.getAggregatedAvailability(date, "Installation", null, null);
 
         assertEquals(0, result.getBookedSlots().size());
     }

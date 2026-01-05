@@ -9,11 +9,13 @@ export interface AppointmentResponseModel {
   appointmentId: string;
   
   // Customer Information
+  customerId: string;
   customerFirstName: string;
   customerLastName: string;
   customerPhoneNumbers: CustomerPhoneNumber[];
   
   // Technician Information
+  technicianId: string;
   technicianFirstName: string;
   technicianLastName: string;
   technicianRole?: string | { employeeRoleType?: string; [key: string]: unknown };
@@ -35,4 +37,7 @@ export interface AppointmentResponseModel {
   
   // Appointment Address
   appointmentAddress: AppointmentAddress;
+
+  // Track who created this appointment (CUSTOMER or TECHNICIAN)
+  createdByRole?: string; // Role of the person who created the appointment
 }

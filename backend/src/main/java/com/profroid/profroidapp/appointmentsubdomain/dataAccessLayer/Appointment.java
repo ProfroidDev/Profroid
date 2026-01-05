@@ -70,6 +70,9 @@ public class Appointment {
     @Embedded
     private AppointmentStatus appointmentStatus;
 
+    // Track who created this appointment (CUSTOMER or TECHNICIAN)
+    private String createdByRole;
+
     private Boolean isActive = true;
 
 }
