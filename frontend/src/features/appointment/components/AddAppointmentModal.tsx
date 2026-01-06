@@ -592,7 +592,8 @@ export default function AddAppointmentModal({
 
         const response = await getAggregatedAvailability(
           appointmentDate,
-          selectedJobToUse.jobName
+          selectedJobToUse.jobName,
+          isEditMode && editAppointment ? editAppointment.appointmentId : undefined
         );
         setTechnicianBookedSlots(response.bookedSlots || []);
       } catch (err) {
@@ -635,9 +636,24 @@ export default function AddAppointmentModal({
         if (mode === "technician") {
           const appointments = await getMyJobs();
           setAllAppointments(appointments);
-        } else {
+          return;
+        }
+
+        // Customer tokens sometimes lack permission for /appointments. If forbidden, fall back to empty list
+        // because availability for customers is now driven by aggregated slots instead.
+        try {
           const appointments = await getAllAppointments();
           setAllAppointments(appointments);
+        } catch (err) {
+          const status =
+            typeof err === "object" && err && "response" in err
+              ? (err as { response?: { status?: number } }).response?.status
+              : undefined;
+          if (status === 403) {
+            setAllAppointments([]);
+          } else {
+            throw err;
+          }
         }
       } catch {
         setAllAppointments([]);
@@ -883,8 +899,10 @@ export default function AddAppointmentModal({
       isEditMode && editAppointment && editAppointment.appointmentId != null
         ? editAppointment.appointmentId
         : null;
-    let editStartTime: string | null = null;
-    if (editAppointment) {
+    // Prefer the currently selected time when editing so the active slot
+    // stays available even if the parent does not refresh editAppointment.
+    let editStartTime: string | null = appointmentTime || null;
+    if (!editStartTime && editAppointment) {
       if (editAppointment.appointmentStartTime) {
         editStartTime = editAppointment.appointmentStartTime.substring(0, 5);
       } else {
@@ -897,47 +915,45 @@ export default function AddAppointmentModal({
       }
     }
 
-    // For customer mode: use aggregated availability
+    // For customer mode: prefer aggregated availability (bookedSlots returned as available starts); fallback to standard slots
     if (mode === "customer") {
       const slots: string[] = [];
       const jobDuration = selectedJob.estimatedDurationMinutes || 120;
 
-      // technicianBookedSlots is an array of BookedSlot objects with startTime/endTime as "HH:MM:SS" or "HH:MM"
-      if (Array.isArray(technicianBookedSlots)) {
-        technicianBookedSlots.forEach((slot: BookedSlot) => {
-          const startTimeRaw = slot.startTime;
-          if (!startTimeRaw) return;
+      const useAggregated = Array.isArray(technicianBookedSlots) && technicianBookedSlots.length > 0;
+      const baseSlots = useAggregated
+        ? technicianBookedSlots
+        : SLOT_ORDER.map((s) => ({ startTime: `${SLOT_TO_TIME[s]}:00`, endTime: `${SLOT_TO_TIME[s]}:00` } as BookedSlot));
 
-          // Extract HH:MM from HH:MM:SS format or use as-is if already HH:MM
-          const time = startTimeRaw.includes(":")
-            ? startTimeRaw.substring(0, 5) // Take first 5 chars: "09:00" from "09:00:00"
-            : startTimeRaw;
+      baseSlots.forEach((slot: BookedSlot) => {
+        const startTimeRaw = slot.startTime;
+        if (!startTimeRaw) return;
 
-          if (isPast(appointmentDate, time)) return;
-          if (!passesBookingDeadline(appointmentDate, time)) return;
+        const time = startTimeRaw.substring(0, 5);
 
-          // Calculate end time for this slot
-          const slotStart = new Date(`${appointmentDate}T${time}:00`);
-          const slotEnd = new Date(
-            slotStart.getTime() + jobDuration * 60 * 1000
-          );
+        if (isPast(appointmentDate, time)) return;
+        if (!passesBookingDeadline(appointmentDate, time)) return;
 
-          // Check if slotEnd goes past working hours (5:00 PM)
-          // Allow appointments to end at exactly 17:00, not after
-          const lastSlotEnd = new Date(`${appointmentDate}T17:00:00`);
-          if (slotEnd > lastSlotEnd) return;
+        const slotStart = new Date(`${appointmentDate}T${time}:00`);
+        const slotEnd = new Date(slotStart.getTime() + jobDuration * 60 * 1000);
 
-          // Add the time
-          slots.push(time);
-        });
-      }
+        const lastSlotEnd = new Date(`${appointmentDate}T17:00:00`);
+        if (slotEnd > lastSlotEnd) return;
 
-      // If editing, add the original appointment time back if not already present
+        slots.push(time);
+      });
+
+      // Always keep the current edit selection visible
       if (editingAppointmentId && editStartTime && !slots.includes(editStartTime)) {
         slots.push(editStartTime);
       }
 
-      return Array.from(new Set(slots)); // Remove duplicates
+      // Keep the current dropdown selection even if props are stale
+      if (isEditMode && appointmentTime && !slots.includes(appointmentTime)) {
+        slots.push(appointmentTime);
+      }
+
+      return Array.from(new Set(slots));
     }
 
     // For technician mode: use schedule slots and check for conflicts

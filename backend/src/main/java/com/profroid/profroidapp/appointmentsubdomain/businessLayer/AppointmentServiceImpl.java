@@ -682,7 +682,7 @@ public class AppointmentServiceImpl implements AppointmentService {
         }
         
         @Override
-        public TechnicianBookedSlotsResponseModel getAggregatedAvailability(LocalDate date, String jobName, String userId, String userRole) {
+        public TechnicianBookedSlotsResponseModel getAggregatedAvailability(LocalDate date, String jobName, String userId, String userRole, String appointmentId) {
             // Get the job to determine duration
             Job job = jobRepository.findJobByJobName(jobName);
             int jobDurationMinutes = (job != null && job.getEstimatedDurationMinutes() > 0) 
@@ -717,13 +717,20 @@ public class AppointmentServiceImpl implements AppointmentService {
                     LocalDateTime startOfDay = date.atStartOfDay();
                     LocalDateTime endOfDay = startOfDay.plusDays(1);
 
-                    customerAppointments =
+                        customerAppointments =
                             appointmentRepository.findAllByCustomerAndAppointmentDateBetweenAndStatusIn(
-                                    customer,
-                                    startOfDay,
-                                    endOfDay,
-                                    Arrays.asList(AppointmentStatusType.SCHEDULED, AppointmentStatusType.COMPLETED)
+                                customer,
+                                startOfDay,
+                                endOfDay,
+                                Arrays.asList(AppointmentStatusType.SCHEDULED, AppointmentStatusType.COMPLETED)
                             );
+
+                        // When editing, allow the current appointment's slot to remain available
+                        if (appointmentId != null && !appointmentId.isBlank()) {
+                        customerAppointments = customerAppointments.stream()
+                            .filter(apt -> !appointmentId.equals(apt.getAppointmentIdentifier().getAppointmentId()))
+                            .toList();
+                        }
                 }
             }
             

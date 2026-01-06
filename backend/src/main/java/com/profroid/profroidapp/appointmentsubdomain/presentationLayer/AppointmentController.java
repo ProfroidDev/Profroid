@@ -112,10 +112,11 @@ public class AppointmentController {
     public ResponseEntity<TechnicianBookedSlotsResponseModel> getAggregatedAvailability(
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date,
             @RequestParam String jobName,
+            @RequestParam(required = false) String appointmentId,
             Authentication authentication) {
         String userId = authentication.getName();
         String userRole = extractRole(authentication);
-        TechnicianBookedSlotsResponseModel availability = appointmentService.getAggregatedAvailability(date, jobName, userId, userRole);
+        TechnicianBookedSlotsResponseModel availability = appointmentService.getAggregatedAvailability(date, jobName, userId, userRole, appointmentId);
         return ResponseEntity.ok(availability);
     }
 
