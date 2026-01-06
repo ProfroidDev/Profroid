@@ -7,7 +7,6 @@ import com.profroid.profroidapp.partsubdomain.dataAccessLayer.PartRepository;
 import com.profroid.profroidapp.partsubdomain.mappingLayer.PartRequestMapper;
 import com.profroid.profroidapp.partsubdomain.mappingLayer.PartResponseMapper;
 import com.profroid.profroidapp.partsubdomain.presentationLayer.PartRequestModel;
-import com.profroid.profroidapp.utils.exceptions.InvalidIdentifierException;
 import com.profroid.profroidapp.utils.exceptions.ResourceAlreadyExistsException;
 import com.profroid.profroidapp.utils.exceptions.ResourceNotFoundException;
 

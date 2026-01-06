@@ -21,6 +21,7 @@ import { getEmployeeSchedule } from "../../employee/api/getEmployeeSchedule";
 import type { TimeSlotType } from "../../employee/models/EmployeeScheduleRequestModel";
 import { getProvincePostalCodeError } from "../../../utils/postalCodeValidator";
 import { getAllAppointments } from "../api/getAllAppointments";
+import { getMyJobs } from "../api/getMyJobs";
 import {
   getTechnicianBookedSlots,
   type BookedSlot,
@@ -627,23 +628,24 @@ export default function AddAppointmentModal({
     fetchBookedSlots();
   }, [mode, selectedTechnicianId, appointmentDate]);
 
-  // Fetch all appointments to check for conflicts (technician mode only)
+  // Fetch appointments to check for buffer conflicts
   useEffect(() => {
     async function fetchAppointments() {
-      // Fetch appointments for buffer warning check - needed in both customer and technician modes
       try {
-        // Use getAllAppointments to see all appointments for buffer checking
-        const appointments = await getAllAppointments();
-        setAllAppointments(appointments);
-      } catch (err) {
-        console.error("Failed to fetch appointments:", err);
-        // If fetch fails, continue without filtering (backend will validate)
+        if (mode === "technician") {
+          const appointments = await getMyJobs();
+          setAllAppointments(appointments);
+        } else {
+          const appointments = await getAllAppointments();
+          setAllAppointments(appointments);
+        }
+      } catch {
         setAllAppointments([]);
       }
     }
 
     fetchAppointments();
-  }, [appointmentDate]);
+  }, [mode, appointmentDate]);
 
   // Fetch customer's busy slots when in technician mode and customer is selected
   useEffect(() => {
@@ -1011,10 +1013,8 @@ export default function AddAppointmentModal({
         if (aptDate !== appointmentDate) return false;
         if (apt.status === "CANCELLED") return false;
 
-        // Check if it's the same technician by name
-        const isSameTechnician =
-          apt.technicianFirstName === selectedTechnician.firstName &&
-          apt.technicianLastName === selectedTechnician.lastName;
+        // Check if it's the same technician by ID (not by name to avoid conflicts with same-named technicians)
+        const isSameTechnician = apt.technicianId === selectedTechnician.employeeIdentifier.employeeId;
         if (!isSameTechnician) return false;
 
         // Use start/end time from backend if available
@@ -1070,37 +1070,21 @@ export default function AddAppointmentModal({
   }, [availableSlots, appointmentTime]);
   
   // Fallback durations by job type when end time is missing
-  const defaultDurationByJobType = (jobType?: string): number => {
-    switch (jobType) {
-      case "QUOTATION":
-        return 120; // 2h quotations in this app
-      case "MAINTENANCE":
-        return 90;
-      case "REPARATION":
-        return 90;
-      case "INSTALLATION":
-        return 240;
-      default:
-        return 60;
-    }
-  };
-
-  // Function to check if there's a buffer conflict (gap < 30 minutes but no overlap)
-  const checkBufferConflict = (
+  // Check for 30-minute buffer gap with technician's own appointments
+  const checkTechnicianBufferGap = (
     newStartTime: Date,
     newEndTime: Date,
-    appointments: AppointmentResponseModel[]
+    appointments: AppointmentResponseModel[],
+    technicianId?: string
   ): boolean => {
+    if (!technicianId) return false;
+
     const BUFFER_MINUTES = 30;
-    // Use the selected appointment date string directly to avoid timezone shifts
     const newDateKey = appointmentDate;
 
-    const withinBuffer = (
-      otherStart: Date,
-      otherEnd: Date
-    ): boolean => {
+    const withinBuffer = (otherStart: Date, otherEnd: Date): boolean => {
       const hasOverlap = newStartTime < otherEnd && newEndTime > otherStart;
-      if (hasOverlap) return false; // handled elsewhere; here we only care about gaps
+      if (hasOverlap) return false; // overlaps are handled elsewhere
 
       const gapBefore = otherStart.getTime() - newEndTime.getTime();
       if (gapBefore >= 0 && gapBefore < BUFFER_MINUTES * 60 * 1000) {
@@ -1117,61 +1101,36 @@ export default function AddAppointmentModal({
 
     for (const appointment of appointments) {
       if (appointment.status === "CANCELLED") continue;
+      if (appointment.technicianId !== technicianId) continue;
 
-      // Work with the appointment date and time components explicitly to avoid midnight defaults
       const appointmentDateIso =
         typeof appointment.appointmentDate === "string"
           ? appointment.appointmentDate
           : new Date(appointment.appointmentDate).toISOString();
       const appointmentDateOnly = appointmentDateIso.split("T")[0];
 
-      // Only compare appointments on the same calendar day
       if (appointmentDateOnly !== newDateKey) continue;
 
       const timeFromDate = appointmentDateIso.includes("T")
         ? appointmentDateIso.split("T")[1].substring(0, 5)
         : null;
       const rawStart = appointment.appointmentStartTime || timeFromDate;
-      if (!rawStart) {
-        continue; // skip entries without explicit start time to avoid false warnings
-      }
+      if (!rawStart) continue;
+
       const startTimeStr = rawStart.substring(0, 5);
-      const existingStart = new Date(
-        `${appointmentDateOnly}T${startTimeStr}:00`
-      );
+      const existingStart = new Date(`${appointmentDateOnly}T${startTimeStr}:00`);
 
       let existingEnd: Date;
       if (appointment.appointmentEndTime) {
         const endTimeStr = appointment.appointmentEndTime.substring(0, 5);
-        existingEnd = new Date(
-          `${appointmentDateOnly}T${endTimeStr}:00`
-        );
+        existingEnd = new Date(`${appointmentDateOnly}T${endTimeStr}:00`);
       } else {
-        const endDateFallback = (appointment as unknown as Record<string, unknown>)[
-          "appointmentEndDate"
-        ];
-        if (typeof endDateFallback === "string") {
-          existingEnd = new Date(endDateFallback);
-        } else {
-          const matchedJob = jobs.find(
-            (j) => j.jobName === appointment.jobName
-          );
-          const durationMinutes =
-            matchedJob?.estimatedDurationMinutes ??
-            defaultDurationByJobType(appointment.jobType as string);
-          if (!durationMinutes) {
-            continue; // cannot compute end without duration
-          }
-          existingEnd = new Date(
-            existingStart.getTime() + durationMinutes * 60 * 1000
-          );
-        }
+        const matchedJob = jobs.find((j) => j.jobName === appointment.jobName);
+        const durationMinutes = matchedJob?.estimatedDurationMinutes ?? 60;
+        existingEnd = new Date(existingStart.getTime() + durationMinutes * 60 * 1000);
       }
 
-      if (
-        Number.isNaN(existingStart.getTime()) ||
-        Number.isNaN(existingEnd.getTime())
-      ) {
+      if (Number.isNaN(existingStart.getTime()) || Number.isNaN(existingEnd.getTime())) {
         continue;
       }
 
@@ -1185,30 +1144,6 @@ export default function AddAppointmentModal({
       if (withinBuffer(existingStart, existingEnd)) return true;
     }
 
-    // Fallback: if appointments list is empty (e.g., 403/401 fetching all appointments),
-    // also evaluate the technician/customer busy slots that were already fetched for the selected date.
-    const checkSlots = (slots: BookedSlot[]): boolean => {
-      return slots.some((slot) => {
-        if (!slot.startTime || !slot.endTime) return false;
-        const startStr = slot.startTime.substring(0, 5);
-        const endStr = slot.endTime.substring(0, 5);
-        const otherStart = new Date(`${newDateKey}T${startStr}:00`);
-        const otherEnd = new Date(`${newDateKey}T${endStr}:00`);
-        if (
-          Number.isNaN(otherStart.getTime()) ||
-          Number.isNaN(otherEnd.getTime())
-        ) {
-          return false;
-        }
-        return withinBuffer(otherStart, otherEnd);
-      });
-    };
-
-    if (appointments.length === 0) {
-      if (checkSlots(technicianBookedSlots)) return true;
-      if (checkSlots(customerBusySlots)) return true;
-    }
-
     return false;
   };
 
@@ -1216,7 +1151,7 @@ export default function AddAppointmentModal({
     event.preventDefault();
     setError(null);
 
-    if (!selectedJob) {
+    if (!selectedJobId) {
       setError("Select a service to continue.");
       return;
     }
@@ -1287,10 +1222,9 @@ export default function AddAppointmentModal({
     // For customer mode edits, validate that the original technician still exists and is active
     let validatedTechnicianData: TechnicianData | undefined;
     if (mode === "customer" && isEditMode && editAppointment) {
+      // Find the original technician by ID (not by name to avoid conflicts with same-named technicians)
       const originalTechnician = employees.find(
-        (e) =>
-          e.firstName === editAppointment.technicianFirstName &&
-          e.lastName === editAppointment.technicianLastName
+        (e) => e.employeeIdentifier.employeeId === editAppointment.technicianId
       );
       
       if (!originalTechnician) {
@@ -1308,30 +1242,63 @@ export default function AddAppointmentModal({
       customerId: actualCustomerId,
       ...(mode === "technician" && selectedTechnician
         ? {
+            technicianId: selectedTechnician.employeeIdentifier.employeeId,
             technicianFirstName: selectedTechnician.firstName,
             technicianLastName: selectedTechnician.lastName,
           }
         : {}),
       // For customer mode edits, include the validated technician data
       ...(validatedTechnicianData ? validatedTechnicianData : {}),
-      jobName: selectedJob.jobName,
+      jobName: selectedJob ? selectedJob.jobName : "",
       cellarName: cellar.name,
       appointmentDate: appointmentDateTime,
       description,
       appointmentAddress: { ...address },
     };
 
-    // Check for buffer conflicts before submitting
+    // Ensure we have fresh appointments for buffer check (in case initial fetch wasn't ready)
+    let appointmentsForCheck = allAppointments;
+    if (appointmentsForCheck.length === 0) {
+      try {
+        if (mode === "technician") {
+          appointmentsForCheck = await getMyJobs();
+        } else {
+          appointmentsForCheck = await getAllAppointments();
+        }
+        setAllAppointments(appointmentsForCheck);
+      } catch {
+        // If fetch fails, fall back to existing (possibly empty) list; backend will still accept
+        appointmentsForCheck = allAppointments;
+      }
+    }
+
+    if (!selectedJob) {
+      setError("Select a service to continue.");
+      return;
+    }
+
+    // Check for 30-minute buffer gap with technician's own appointments
     const appointmentStart = new Date(appointmentDateTime);
     const appointmentDurationMinutes =
-      selectedJob.estimatedDurationMinutes ??
-      defaultDurationByJobType(selectedJob.jobType);
+      selectedJob.estimatedDurationMinutes ?? 60;
     const appointmentEnd = new Date(
       appointmentStart.getTime() + appointmentDurationMinutes * 60 * 1000
     );
 
-    if (checkBufferConflict(appointmentStart, appointmentEnd, allAppointments)) {
-      console.log("Setting showBufferWarning to true");
+    // Get the technicianId to check - for technician mode, use auth technicianId or selectedTechnicianId
+    const techIdForCheck = mode === "technician" 
+      ? (technicianId || selectedTechnicianId)
+      : selectedTechnicianId;
+
+    const hasBufferConflict = checkTechnicianBufferGap(
+      appointmentStart,
+      appointmentEnd,
+      appointmentsForCheck,
+      techIdForCheck
+    );
+
+    // Show warning modal if buffer gap < 30 minutes, but allow user to continue
+    if (hasBufferConflict && !isEditMode && techIdForCheck) {
       setPendingRequest(request);
       setShowBufferWarning(true);
       setSubmitting(false);
@@ -1762,6 +1729,8 @@ export default function AddAppointmentModal({
           </form>
         )}
       </div>
+      
+  {/* Buffer Warning Confirmation Dialog - renders at root level with high z-index */}
       {/* Buffer Warning Confirmation Dialog */}
       {showBufferWarning && pendingRequest && (
         <div className="confirmation-modal-overlay" role="dialog" aria-modal="true">

@@ -28,6 +28,8 @@ public class AppointmentRequestModel {
     private String customerId;  // Optional - used when technician books for customer (UUID format)
     
     // TECHNICIAN IDENTIFICATION (Optional for customers - auto-assigned)
+    private String technicianId;        // Optional - technician's unique ID (preferred over name-based lookup)
+    
     private String technicianFirstName;  // Optional for customer bookings, required for technician bookings
 
     private String technicianLastName;   // Optional for customer bookings, required for technician bookings

@@ -488,9 +488,10 @@
       "cannotChangeCustomerForQuotation": "Impossible de changer le client pour un devis",
       "cannotChangeCustomerQuotation": "Impossible de modifier un devis créé par un client",
       "bufferWarningTitle": "Temps Insuffisant Entre les Rendez-vous",
-      "bufferWarningMessage": "Vous avez moins de 30 minutes entre ces deux rendez-vous. Voulez-vous continuer avec cette programmation?",
+      "bufferWarningMessage": "Vous avez moins de 30 minutes entre ces deux rendez-vous. Voulez-vous continuer?",
       "continueScheduling": "Continuer",
-      "cancelScheduling": "Annuler"
+      "cancelScheduling": "Annuler",
+      "timeConflict": "Conflit d'horaire : Le technicien a déjà un rendez-vous de {{startTime}} à {{endTime}}. Votre rendez-vous demandé de {{requestStartTime}} à {{requestEndTime}} chevauche ce rendez-vous existant."
     },
     "jobs": {
       "myJobs": "Mes Emplois",
@@ -500,6 +501,8 @@
       "confirmComplete": "Êtes-vous sûr de vouloir marquer ce travail comme terminé ?",
       "confirmCompleteTitle": "Terminer le travail",
       "jobCompleted": "Travail marqué comme terminé avec succès",
+      "acceptJob": "Accepter le travail",
+      "jobAccepted": "Travail accepté avec succès",
       "errorCompleting": "Échec du marquage du travail comme terminé",
       "customer": "Client",
       "appointment": "Rendez-vous",
