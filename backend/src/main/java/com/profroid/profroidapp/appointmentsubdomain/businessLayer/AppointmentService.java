@@ -5,8 +5,6 @@ import com.profroid.profroidapp.appointmentsubdomain.presentationLayer.Appointme
 import com.profroid.profroidapp.appointmentsubdomain.presentationLayer.AppointmentStatusChangeRequestModel;
 import com.profroid.profroidapp.appointmentsubdomain.presentationLayer.TechnicianBookedSlotsResponseModel;
 
-import jakarta.validation.Valid;
-
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;

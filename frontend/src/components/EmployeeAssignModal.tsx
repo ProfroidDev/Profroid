@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { getErrorMessage } from '../shared/api/errorHandler';
 import { addEmployee } from '../features/employee/api/addEmployee';
@@ -97,21 +97,6 @@ export default function EmployeeAssignModal({ isOpen, onClose, onSuccess }: Empl
     }
   }, [isOpen]);
 
-  // Debounce search
-  useEffect(() => {
-    if (!searchQuery || searchQuery.trim().length < 2) {
-      setUnassignedUsers([]);
-      setAllUsers([]);
-      return;
-    }
-
-    const timeoutId = setTimeout(() => {
-      fetchUnassignedUsers(searchQuery);
-    }, 300); // 300ms debounce
-
-    return () => clearTimeout(timeoutId);
-  }, [searchQuery]);
-
   const fetchExistingEmployees = async () => {
     try {
       const employees = await getEmployees();
@@ -123,7 +108,7 @@ export default function EmployeeAssignModal({ isOpen, onClose, onSuccess }: Empl
     }
   };
 
-  const fetchUnassignedUsers = async (query: string = '') => {
+  const fetchUnassignedUsers = useCallback(async (query: string = '') => {
     try {
       setFetchError('');
       const token = localStorage.getItem('authToken');
@@ -166,7 +151,22 @@ export default function EmployeeAssignModal({ isOpen, onClose, onSuccess }: Empl
       console.error('Error fetching users:', error);
       setFetchError(getErrorMessage(error));
     }
-  };
+  }, [employeeUserIds]);
+
+  // Debounce search
+  useEffect(() => {
+    if (!searchQuery || searchQuery.trim().length < 2) {
+      setUnassignedUsers([]);
+      setAllUsers([]);
+      return;
+    }
+
+    const timeoutId = setTimeout(() => {
+      fetchUnassignedUsers(searchQuery);
+    }, 300); // 300ms debounce
+
+    return () => clearTimeout(timeoutId);
+  }, [searchQuery, fetchUnassignedUsers]);
 
   // Filter users based on search query
   const filteredUsers = searchQuery.trim()

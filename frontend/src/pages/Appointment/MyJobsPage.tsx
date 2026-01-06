@@ -19,7 +19,7 @@ export default function MyJobsPage(): React.ReactElement {
   const [error, setError] = useState<string | null>(null);
   const [showAddModal, setShowAddModal] = useState<boolean>(false);
   const [editingAppointment, setEditingAppointment] = useState<AppointmentResponseModel | null>(null);
-  const [confirmModal, setConfirmModal] = useState<{ isOpen: boolean; type: 'complete' | 'cancel' | null; appointmentId: string | null }>({ isOpen: false, type: null, appointmentId: null });
+  const [confirmModal, setConfirmModal] = useState<{ isOpen: boolean; type: 'complete' | 'cancel' | 'accept' | null; appointmentId: string | null }>({ isOpen: false, type: null, appointmentId: null });
   
   const { user, customerData } = useAuthStore();
 
@@ -27,7 +27,6 @@ export default function MyJobsPage(): React.ReactElement {
     if (user) {
       fetchJobs();
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user]);
 
   const fetchJobs = async () => {
@@ -91,7 +90,11 @@ export default function MyJobsPage(): React.ReactElement {
     if (!confirmModal.appointmentId) return;
 
     try {
-      if (confirmModal.type === 'complete') {
+      if (confirmModal.type === 'accept') {
+        await patchAppointmentStatus(confirmModal.appointmentId, { status: "SCHEDULED" });
+        fetchJobs();
+        setToast({ message: t('pages.jobs.jobAccepted'), type: "success" });
+      } else if (confirmModal.type === 'complete') {
         await patchAppointmentStatus(confirmModal.appointmentId, { status: "COMPLETED" });
         fetchJobs();
         setToast({ message: t('pages.jobs.jobCompleted'), type: "success" });
@@ -261,38 +264,35 @@ export default function MyJobsPage(): React.ReactElement {
                 <AlertCircle size={16} />
                 <p>{job.description}</p>
               </div>
-
               {/* Action Buttons */}
               <div className="job-actions">
-                {job.status === "SCHEDULED" && ((job.createdByRole === "TECHNICIAN" || job.createdByRole == null) || job.jobType === "QUOTATION") && (
-                  <button
-                    className="btn-edit"
-                    onClick={() => handleEditJob(job)}
-                    title={t('pages.jobs.editJob')}
-                  >
-                    <Edit size={16} />
-                    {t('common.edit')}
-                  </button>
-                )}
                 {job.status === "SCHEDULED" && (
-                  <button
-                    className="btn-complete"
-                    onClick={() => handleCompleteJob(job.appointmentId)}
-                    title={t('pages.jobs.markComplete')}
-                  >
-                    <CheckCircle size={16} />
-                    {t('pages.jobs.markComplete')}
-                  </button>
-                )}
-                {job.status === "SCHEDULED" && (
-                  <button
-                    className="btn-cancel"
-                    onClick={() => handleCancelJob(job.appointmentId)}
-                    title={t('pages.appointments.cancelAppointment')}
-                  >
-                    <X size={16} />
-                    {t('common.cancel')}
-                  </button>
+                  <>
+                    <button
+                      className="btn-edit"
+                      onClick={() => handleEditJob(job)}
+                      title={t('pages.jobs.editJob')}
+                    >
+                      <Edit size={16} />
+                      {t('common.edit')}
+                    </button>
+                    <button
+                      className="btn-complete"
+                      onClick={() => handleCompleteJob(job.appointmentId)}
+                      title={t('pages.jobs.markComplete')}
+                    >
+                      <CheckCircle size={16} />
+                      {t('pages.jobs.markComplete')}
+                    </button>
+                    <button
+                      className="btn-cancel"
+                      onClick={() => handleCancelJob(job.appointmentId)}
+                      title={t('pages.appointments.cancelAppointment')}
+                    >
+                      <X size={16} />
+                      {t('common.cancel')}
+                    </button>
+                  </>
                 )}
               </div>
 

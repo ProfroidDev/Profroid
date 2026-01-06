@@ -251,12 +251,8 @@ public class AppointmentValidationUtils {
             boolean hasOverlap = appointmentTime.isBefore(existingEnd) && existingStart.isBefore(appointmentEnd);
             
             if (hasOverlap) {
-                throw new InvalidOperationException(
-                    "Time conflict: The technician already has an appointment from " + 
-                    existingStart + " to " + existingEnd + ". " +
-                    "Your requested appointment from " + appointmentTime + " to " + appointmentEnd + 
-                    " overlaps with this existing appointment."
-                );
+                // Return error code that will be translated on the frontend
+                throw new InvalidOperationException("TIME_CONFLICT");
             }
             
             // Calculate time gaps between appointments for buffer validation

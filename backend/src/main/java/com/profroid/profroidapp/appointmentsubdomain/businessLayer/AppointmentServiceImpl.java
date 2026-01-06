@@ -127,41 +127,65 @@ public class AppointmentServiceImpl implements AppointmentService {
             }
         }
         
-        // Find technician by name (or auto-assign if customer booking and not specified)
-        if (requestModel.getTechnicianFirstName() == null || requestModel.getTechnicianFirstName().isBlank() ||
-            requestModel.getTechnicianLastName() == null || requestModel.getTechnicianLastName().isBlank()) {
-            
-            // Technician not specified - auto-assign for customer bookings
-            if ("CUSTOMER".equals(userRole)) {
-                technician = autoAssignTechnician(requestModel.getAppointmentDate(), requestModel.getJobName());
+        // Find technician by ID (preferred) or name (fallback for backward compatibility)
+        if (requestModel.getTechnicianId() == null || requestModel.getTechnicianId().isBlank()) {
+            // No technician ID provided - check for name-based lookup or auto-assign
+            if (requestModel.getTechnicianFirstName() == null || requestModel.getTechnicianFirstName().isBlank() ||
+                requestModel.getTechnicianLastName() == null || requestModel.getTechnicianLastName().isBlank()) {
+                
+                // Technician not specified - auto-assign for customer bookings
+                if ("CUSTOMER".equals(userRole)) {
+                    technician = autoAssignTechnician(requestModel.getAppointmentDate(), requestModel.getJobName());
+                } else {
+                    throw new InvalidOperationException(
+                        "Technician must be specified when booking from non-customer role."
+                    );
+                }
             } else {
-                throw new InvalidOperationException(
-                    "Technician must be specified when booking from non-customer role."
+                // Technician name specified - find by name (fallback)
+                List<Employee> technicianCandidates = employeeRepository.findByFirstNameAndLastName(
+                    requestModel.getTechnicianFirstName(), 
+                    requestModel.getTechnicianLastName()
                 );
+                
+                if (technicianCandidates.isEmpty()) {
+                    throw new ResourceNotFoundException(
+                        "Technician not found: " + requestModel.getTechnicianFirstName() + 
+                        " " + requestModel.getTechnicianLastName()
+                    );
+                }
+                
+                // Filter for active technicians with TECHNICIAN role
+                technician = technicianCandidates.stream()
+                    .filter(Employee::getIsActive)
+                    .filter(e -> e.getEmployeeRole().getEmployeeRoleType() == EmployeeRoleType.TECHNICIAN)
+                    .findFirst()
+                    .orElseThrow(() -> new ResourceNotFoundException(
+                        "No active technician found with the name: " + requestModel.getTechnicianFirstName() + 
+                        " " + requestModel.getTechnicianLastName()
+                    ));
             }
         } else {
-            // Technician specified - find by name
-            List<Employee> technicianCandidates = employeeRepository.findByFirstNameAndLastName(
-                requestModel.getTechnicianFirstName(), 
-                requestModel.getTechnicianLastName()
-            );
+            // Technician ID provided - lookup by ID (preferred method, avoids same-name conflicts)
+            technician = employeeRepository.findEmployeeByEmployeeIdentifier_EmployeeId(requestModel.getTechnicianId());
             
-            if (technicianCandidates.isEmpty()) {
+            if (technician == null) {
                 throw new ResourceNotFoundException(
-                    "Technician not found: " + requestModel.getTechnicianFirstName() + 
-                    " " + requestModel.getTechnicianLastName()
+                    "Technician not found with ID: " + requestModel.getTechnicianId()
                 );
             }
             
-            // Filter for active technicians with TECHNICIAN role
-            technician = technicianCandidates.stream()
-                .filter(Employee::getIsActive)
-                .filter(e -> e.getEmployeeRole().getEmployeeRoleType() == EmployeeRoleType.TECHNICIAN)
-                .findFirst()
-                .orElseThrow(() -> new ResourceNotFoundException(
-                    "No active technician found with the name: " + requestModel.getTechnicianFirstName() + 
-                    " " + requestModel.getTechnicianLastName()
-                ));
+            if (!technician.getIsActive()) {
+                throw new InvalidOperationException(
+                    "Selected technician is no longer active."
+                );
+            }
+            
+            if (technician.getEmployeeRole().getEmployeeRoleType() != EmployeeRoleType.TECHNICIAN) {
+                throw new InvalidOperationException(
+                    "Selected employee is not a technician."
+                );
+            }
         }
         
         // Find job by name
