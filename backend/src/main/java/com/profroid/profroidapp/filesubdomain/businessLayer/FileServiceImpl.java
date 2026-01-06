@@ -95,6 +95,28 @@ public class FileServiceImpl implements FileService {
         }
     }
 
+    @Override
+    public void delete(UUID fileId) {
+        StoredFile f = getOrThrow(fileId);
+
+        try {
+            // Remove from MinIO
+            minio.removeObject(
+                    RemoveObjectArgs.builder()
+                            .bucket(f.getBucket())
+                            .object(f.getObjectKey())
+                            .build()
+            );
+
+            // Soft delete in DB (recommended)
+            f.setDeletedAt(Instant.now());
+            repo.save(f);
+
+        } catch (Exception e) {
+            throw new RuntimeException("Delete failed.", e);
+        }
+    }
+
 
     @Override
     public List<StoredFile> list(FileOwnerType ownerType, String ownerId, FileCategory category) {
