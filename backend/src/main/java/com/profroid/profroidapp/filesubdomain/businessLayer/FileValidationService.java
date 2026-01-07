@@ -2,11 +2,16 @@ package com.profroid.profroidapp.filesubdomain.businessLayer;
 
 import com.profroid.profroidapp.filesubdomain.dataAccessLayer.FileCategory;
 import com.profroid.profroidapp.filesubdomain.dataAccessLayer.FileOwnerType;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 @Service
 public class FileValidationService {
+
+    // Default 10MB max, configurable via application properties
+    @Value("${file.upload.max-size-bytes:10485760}")
+    private long maxFileSizeBytes;
 
     public void validateUpload(MultipartFile file, FileOwnerType ownerType, String ownerId, FileCategory category) {
         if (ownerType == null) {
@@ -23,6 +28,15 @@ public class FileValidationService {
 
         if (file == null || file.isEmpty()) {
             throw new IllegalArgumentException("File is required.");
+        }
+
+        long fileSize = file.getSize();
+        if (fileSize > maxFileSizeBytes) {
+            long maxSizeMB = maxFileSizeBytes / (1024 * 1024);
+            long actualSizeMB = fileSize / (1024 * 1024);
+            throw new IllegalArgumentException(
+                String.format("File size (%d MB) exceeds maximum allowed size (%d MB).", actualSizeMB, maxSizeMB)
+            );
         }
 
         String ct = file.getContentType();

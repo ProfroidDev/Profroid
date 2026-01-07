@@ -26,6 +26,31 @@ export default function PartEditModal({
   const [file, setFile] = useState<File | null>(null);
   const [submitting, setSubmitting] = useState<boolean>(false);
 
+  const MAX_FILE_SIZE_MB = 10;
+  const MAX_FILE_SIZE_BYTES = MAX_FILE_SIZE_MB * 1024 * 1024;
+
+  const validateFile = (selectedFile: File): boolean => {
+    if (!selectedFile.type.startsWith("image/")) {
+      onError("Only image files are allowed.");
+      return false;
+    }
+    if (selectedFile.size > MAX_FILE_SIZE_BYTES) {
+      const sizeMB = (selectedFile.size / (1024 * 1024)).toFixed(2);
+      onError(`File size (${sizeMB} MB) exceeds maximum allowed size (${MAX_FILE_SIZE_MB} MB).`);
+      return false;
+    }
+    return true;
+  };
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const selectedFile = e.target.files?.[0] ?? null;
+    if (selectedFile && !validateFile(selectedFile)) {
+      e.target.value = ""; // Reset input
+      return;
+    }
+    setFile(selectedFile);
+  };
+
   React.useEffect(() => {
     if (part) {
       setName(part.name);
@@ -131,8 +156,9 @@ export default function PartEditModal({
                 accept="image/*"
                 className="form-input"
                 disabled={submitting}
-                onChange={(e) => setFile(e.target.files?.[0] ?? null)}
+                onChange={handleFileChange}
               />
+              <p className="helper-text">Maximum file size: {MAX_FILE_SIZE_MB} MB. Only image files allowed.</p>
               {part.imageFileId && (
                 <p className="helper-text">Current image will be replaced if you upload a new one.</p>
               )}

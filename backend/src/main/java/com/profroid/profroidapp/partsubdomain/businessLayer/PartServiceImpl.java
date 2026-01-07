@@ -141,20 +141,26 @@ public class PartServiceImpl implements PartService {
             throw new ResourceNotFoundException("Part " + partId + " not found.");
         }
 
-        // Delete previous image if present
+        // Store previous image ID for cleanup after successful upload
         UUID previousImageId = part.getImageFileId();
+
+        // Upload new image first to ensure it succeeds before making any changes
+        var stored = fileService.upload(file, FileOwnerType.PART, partId, FileCategory.IMAGE);
+        
+        // Update database with new image reference
+        part.setImageFileId(stored.getId());
+        Part saved = partRepository.save(part);
+
+        // Clean up old image only after successful database update (best effort)
         if (previousImageId != null) {
             try {
                 fileService.delete(previousImageId);
-            } catch (Exception ignored) {
-                // best effort cleanup
+            } catch (Exception e) {
+                // Log but don't fail - orphaned files can be cleaned up later
+                // In production, consider a scheduled cleanup job for orphaned files
             }
         }
 
-        var stored = fileService.upload(file, FileOwnerType.PART, partId, FileCategory.IMAGE);
-        part.setImageFileId(stored.getId());
-
-        Part saved = partRepository.save(part);
         return partResponseMapper.toResponseModel(saved);
     }
 

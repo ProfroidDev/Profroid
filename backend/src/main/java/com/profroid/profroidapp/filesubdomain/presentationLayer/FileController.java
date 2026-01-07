@@ -72,9 +72,15 @@ public class FileController {
         InputStreamResource resource = new InputStreamResource(fileService.openStream(file));
         MediaType mediaType = resolveMediaType(file.getContentType());
 
-        ContentDisposition contentDisposition = ContentDisposition.attachment()
-                .filename(file.getOriginalFilename(), StandardCharsets.UTF_8)
-                .build();
+        // Use inline for images (browser display), attachment for documents (force download)
+        boolean isImage = file.getCategory().equals(FileCategory.IMAGE.name());
+        ContentDisposition contentDisposition = isImage
+                ? ContentDisposition.inline()
+                        .filename(file.getOriginalFilename(), StandardCharsets.UTF_8)
+                        .build()
+                : ContentDisposition.attachment()
+                        .filename(file.getOriginalFilename(), StandardCharsets.UTF_8)
+                        .build();
 
         return ResponseEntity.ok()
                 .contentType(mediaType)

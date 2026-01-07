@@ -1,22 +1,18 @@
-import { uploadFile } from "../../files/api/uploadFile";
-import type { FileOwnerType } from "../../files/models/FileOwnerType";
-import type { FileCategory } from "../../files/models/FileCategory";
 import axiosInstance from "../../../shared/api/axiosInstance";
 import type { PartRequestModel } from "../models/PartRequestModel";
 import type { PartResponseModel } from "../models/PartResponseModel";
 
-// Creates a part, then uploads its image via the shared files feature.
+// Creates a part with image atomically using backend's multipart endpoint
 export async function createPartWithImage(
   partData: PartRequestModel,
   file: File
 ): Promise<PartResponseModel> {
-  // First create the part (JSON)
-  const partResponse = await axiosInstance.post<PartResponseModel>("/parts", partData);
-  const created = partResponse.data;
+  const form = new FormData();
+  form.append("part", new Blob([JSON.stringify(partData)], { type: "application/json" }));
+  form.append("file", file);
 
-  // Then upload the image tied to the part
-  await uploadFile("PART" as FileOwnerType, created.partId, "IMAGE" as FileCategory, file);
-
-  // Return the part (backend imageFileId will be present on next fetch)
-  return created;
+  const response = await axiosInstance.post<PartResponseModel>("/parts/with-image", form, {
+    headers: { "Content-Type": "multipart/form-data" },
+  });
+  return response.data;
 }

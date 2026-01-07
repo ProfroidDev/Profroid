@@ -1,11 +1,13 @@
-import { uploadFile } from "../../files/api/uploadFile";
-import type { FileOwnerType } from "../../files/models/FileOwnerType";
-import type { FileCategory } from "../../files/models/FileCategory";
+import axiosInstance from "../../../shared/api/axiosInstance";
 import type { PartResponseModel } from "../models/PartResponseModel";
-import { getPartById } from "./getPartById";
 
-// Uploads/replaces part image using shared files API, then fetches latest part data.
+// Uploads/replaces part image using backend's atomic endpoint
 export async function uploadPartImage(partId: string, file: File): Promise<PartResponseModel> {
-  await uploadFile("PART" as FileOwnerType, partId, "IMAGE" as FileCategory, file);
-  return getPartById(partId);
+  const form = new FormData();
+  form.append("file", file);
+
+  const response = await axiosInstance.put<PartResponseModel>(`/parts/${partId}/image`, form, {
+    headers: { "Content-Type": "multipart/form-data" },
+  });
+  return response.data;
 }

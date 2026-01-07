@@ -1,6 +1,7 @@
 package com.profroid.profroidapp.filesubdomain.dataAccessLayer;
 
 import jakarta.persistence.*;
+import lombok.Generated;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -15,6 +16,7 @@ public class StoredFile {
 
     @Id
     @Column(nullable = false, updatable = false)
+    @GeneratedValue(strategy = GenerationType.AUTO)
     private UUID id;
 
     @Column(nullable = false)
