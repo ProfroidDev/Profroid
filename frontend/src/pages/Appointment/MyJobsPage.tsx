@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { getMyJobs } from "../../features/appointment/api/getMyJobs";
 import type { AppointmentResponseModel } from "../../features/appointment/models/AppointmentResponseModel";
@@ -9,6 +9,8 @@ import useAuthStore from "../../features/authentication/store/authStore";
 import ConfirmationModal from "../../components/ConfirmationModal";
 import { MapPin, Clock, User, Wrench, DollarSign, Phone, AlertCircle, Edit, CheckCircle, X } from "lucide-react";
 import "./MyJobsPage.css";
+import { getCellars } from "../../features/cellar/api/getAllCellars";
+import type { CellarResponseModel } from "../../features/cellar/models/CellarResponseModel";
 
 export default function MyJobsPage(): React.ReactElement {
   const { t, i18n } = useTranslation();
@@ -20,6 +22,8 @@ export default function MyJobsPage(): React.ReactElement {
   const [showAddModal, setShowAddModal] = useState<boolean>(false);
   const [editingAppointment, setEditingAppointment] = useState<AppointmentResponseModel | null>(null);
   const [confirmModal, setConfirmModal] = useState<{ isOpen: boolean; type: 'complete' | 'cancel' | 'accept' | null; appointmentId: string | null }>({ isOpen: false, type: null, appointmentId: null });
+  const [cellars, setCellars] = useState<CellarResponseModel[] | null>(null);
+  const [matchedCellar, setMatchedCellar] = useState<CellarResponseModel | null>(null);
   
   const { user, customerData } = useAuthStore();
 
@@ -161,6 +165,43 @@ export default function MyJobsPage(): React.ReactElement {
         return "";
     }
   };
+
+  // Load cellar info when a job is selected
+  useEffect(() => {
+    const loadCellar = async () => {
+      if (!selectedJob) {
+        setMatchedCellar(null);
+        return;
+      }
+
+      try {
+        if (!cellars) {
+          const all = await getCellars();
+          setCellars(all);
+          const match = all.find(
+            (c) => c.ownerCustomerId === selectedJob.customerId && c.name === selectedJob.cellarName
+          ) || null;
+          setMatchedCellar(match);
+        } else {
+          const match = cellars.find(
+            (c) => c.ownerCustomerId === selectedJob.customerId && c.name === selectedJob.cellarName
+          ) || null;
+          setMatchedCellar(match);
+        }
+      } catch (e) {
+        console.warn("Unable to fetch cellar details", e);
+        setMatchedCellar(null);
+      }
+    };
+
+    loadCellar();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedJob]);
+
+  const cellarDimensions = useMemo(() => {
+    if (!matchedCellar) return null;
+    return `${matchedCellar.height}cm x ${matchedCellar.width}cm x ${matchedCellar.depth}cm`;
+  }, [matchedCellar]);
 
   return (
     <div className="jobs-page-light">
@@ -353,7 +394,19 @@ export default function MyJobsPage(): React.ReactElement {
 
               <div className="detail-section">
                 <h3>{t('pages.jobs.cellar')}</h3>
-                <p>{selectedJob.cellarName}</p>
+                <p><strong>{t('pages.jobs.name')}:</strong> {selectedJob.cellarName}</p>
+                {matchedCellar ? (
+                  <>
+                    <p><strong>{t('pages.jobs.type')}:</strong> {matchedCellar.cellarType}</p>
+                    <p><strong>{t('pages.jobs.dimensions')}:</strong> {cellarDimensions}</p>
+                    <p><strong>{t('pages.jobs.capacity')}:</strong> {matchedCellar.bottleCapacity} bottles</p>
+                    <p><strong>{t('pages.jobs.features')}:</strong> {[
+                      matchedCellar.hasCoolingSystem ? t('pages.appointments.cooling') : null,
+                      matchedCellar.hasHumidityControl ? t('pages.appointments.humidityControl') : null,
+                      matchedCellar.hasAutoRegulation ? t('pages.appointments.autoRegulation') : null,
+                    ].filter(Boolean).join(', ') || t('common.none')}</p>
+                  </>
+                ) : null}
               </div>
 
               <div className="detail-section">

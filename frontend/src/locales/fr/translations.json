@@ -461,6 +461,12 @@
       "appointmentTime": "Heure du rendez-vous",
       "serviceLocation": "Lieu du service",
       "contactInformation": "Informations de contact",
+      "dimensions": "Dimensions",
+      "capacity": "Capacité",
+      "features": "Caractéristiques",
+      "cooling": "Système de refroidissement",
+      "humidityControl": "Contrôle d'humidité",
+      "autoRegulation": "Auto-régulation",
       "name": "Nom",
       "role": "Rôle",
       "job": "Travail",
@@ -538,7 +544,10 @@
       "mobile": "Mobile",
       "job": "Travail",
       "type": "Type",
-      "rate": "Tarif"
+      "rate": "Tarif",
+      "dimensions": "Dimensions",
+      "capacity": "Capacité",
+      "features": "Caractéristiques"
     },
     "profile": {
       "title": "Mon Profil",

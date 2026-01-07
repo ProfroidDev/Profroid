@@ -468,6 +468,12 @@
       "appointmentTime": "Appointment Time",
       "serviceLocation": "Service Location",
       "contactInformation": "Contact Information",
+      "dimensions": "Dimensions",
+      "capacity": "Capacity",
+      "features": "Features",
+      "cooling": "Cooling System",
+      "humidityControl": "Humidity Control",
+      "autoRegulation": "Auto Regulation",
       "name": "Name",
       "role": "Role",
       "job": "Job",
@@ -545,7 +551,10 @@
       "mobile": "Mobile",
       "job": "Job",
       "type": "Type",
-      "rate": "Rate"
+      "rate": "Rate",
+      "dimensions": "Dimensions",
+      "capacity": "Capacity",
+      "features": "Features"
     },
     "profile": {
       "title": "My Profile",

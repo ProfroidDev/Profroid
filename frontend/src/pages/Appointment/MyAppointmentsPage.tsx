@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { getMyAppointments } from "../../features/appointment/api/getMyAppointments";
 import type { AppointmentResponseModel } from "../../features/appointment/models/AppointmentResponseModel";
@@ -9,6 +9,10 @@ import useAuthStore from "../../features/authentication/store/authStore";
 import ConfirmationModal from "../../components/ConfirmationModal";
 import { MapPin, Clock, User, Wrench, DollarSign, AlertCircle, Edit, X } from "lucide-react";
 import "./MyAppointmentsPage.css";
+import { getEmployee } from "../../features/employee/api/getEmployeeById";
+import type { EmployeeResponseModel } from "../../features/employee/models/EmployeeResponseModel";
+import { getCellars } from "../../features/cellar/api/getAllCellars";
+import type { CellarResponseModel } from "../../features/cellar/models/CellarResponseModel";
 
 export default function MyAppointmentsPage(): React.ReactElement {
   const { t, i18n } = useTranslation();
@@ -20,6 +24,9 @@ export default function MyAppointmentsPage(): React.ReactElement {
   const [showAddModal, setShowAddModal] = useState<boolean>(false);
   const [editingAppointment, setEditingAppointment] = useState<AppointmentResponseModel | null>(null);
   const [confirmModal, setConfirmModal] = useState<{ isOpen: boolean; appointmentId: string | null }>({ isOpen: false, appointmentId: null });
+  const [technicianDetails, setTechnicianDetails] = useState<EmployeeResponseModel | null>(null);
+  const [cellars, setCellars] = useState<CellarResponseModel[] | null>(null);
+  const [matchedCellar, setMatchedCellar] = useState<CellarResponseModel | null>(null);
   
   const { user, customerData } = useAuthStore();
 
@@ -127,6 +134,54 @@ export default function MyAppointmentsPage(): React.ReactElement {
         return "";
     }
   };
+
+  // Load technician details and cellar info when a specific appointment is selected
+  useEffect(() => {
+    const loadExtraDetails = async () => {
+      if (!selectedAppointment) {
+        setTechnicianDetails(null);
+        setMatchedCellar(null);
+        return;
+      }
+
+      // Fetch technician details for phone numbers
+      try {
+        const emp = await getEmployee(selectedAppointment.technicianId);
+        setTechnicianDetails(emp);
+      } catch (e) {
+        console.warn("Unable to fetch technician details", e);
+        setTechnicianDetails(null);
+      }
+
+      // Fetch cellars and find the matching one by owner + name
+      try {
+        if (!cellars) {
+          const all = await getCellars();
+          setCellars(all);
+          const match = all.find(
+            (c) => c.ownerCustomerId === selectedAppointment.customerId && c.name === selectedAppointment.cellarName
+          ) || null;
+          setMatchedCellar(match);
+        } else {
+          const match = cellars.find(
+            (c) => c.ownerCustomerId === selectedAppointment.customerId && c.name === selectedAppointment.cellarName
+          ) || null;
+          setMatchedCellar(match);
+        }
+      } catch (e) {
+        console.warn("Unable to fetch cellar details", e);
+        setMatchedCellar(null);
+      }
+    };
+
+    loadExtraDetails();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedAppointment]);
+
+  const cellarDimensions = useMemo(() => {
+    if (!matchedCellar) return null;
+    return `${matchedCellar.height}cm x ${matchedCellar.width}cm x ${matchedCellar.depth}cm`;
+  }, [matchedCellar]);
 
   return (
     <div className="appointments-page-light">
@@ -300,11 +355,30 @@ export default function MyAppointmentsPage(): React.ReactElement {
                 {selectedAppointment.technicianRole && (
                   <p><strong>{t('pages.appointments.role')}:</strong> {typeof selectedAppointment.technicianRole === 'string' ? selectedAppointment.technicianRole : 'TECHNICIAN'}</p>
                 )}
+                {technicianDetails?.phoneNumbers?.length ? (
+                  <div>
+                    {technicianDetails.phoneNumbers.map((ph, idx) => (
+                      <p key={idx}><strong>{ph.type}:</strong> {ph.number}</p>
+                    ))}
+                  </div>
+                ) : null}
               </div>
 
               <div className="detail-section">
                 <h3>{t('pages.appointments.cellar')}</h3>
-                <p>{selectedAppointment.cellarName}</p>
+                <p><strong>{t('pages.appointments.name')}:</strong> {selectedAppointment.cellarName}</p>
+                {matchedCellar ? (
+                  <>
+                    <p><strong>{t('pages.appointments.type')}:</strong> {matchedCellar.cellarType}</p>
+                    <p><strong>{t('pages.appointments.dimensions')}:</strong> {cellarDimensions}</p>
+                    <p><strong>{t('pages.appointments.capacity')}:</strong> {matchedCellar.bottleCapacity} bottles</p>
+                    <p><strong>{t('pages.appointments.features')}:</strong> {[
+                      matchedCellar.hasCoolingSystem ? t('pages.appointments.cooling') : null,
+                      matchedCellar.hasHumidityControl ? t('pages.appointments.humidityControl') : null,
+                      matchedCellar.hasAutoRegulation ? t('pages.appointments.autoRegulation') : null,
+                    ].filter(Boolean).join(', ') || t('common.none')}</p>
+                  </>
+                ) : null}
               </div>
 
               <div className="detail-section">
