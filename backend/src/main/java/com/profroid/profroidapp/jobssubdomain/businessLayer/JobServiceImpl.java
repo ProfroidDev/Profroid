@@ -19,6 +19,7 @@ import com.profroid.profroidapp.utils.exceptions.InvalidIdentifierException;
 import com.profroid.profroidapp.utils.exceptions.InvalidOperationException;
 import com.profroid.profroidapp.utils.exceptions.ResourceNotFoundException;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
@@ -308,6 +309,7 @@ public JobResponseModel reactivateJob(String jobId) {
     }
 
     @Override
+    @Transactional
     public JobResponseModel uploadJobImage(String jobId, org.springframework.web.multipart.MultipartFile file) {
         if (jobId == null || jobId.trim().length() != 36) {
             throw new com.profroid.profroidapp.utils.exceptions.InvalidIdentifierException("Job ID must be a 36-character UUID string.");
@@ -319,21 +321,41 @@ public JobResponseModel reactivateJob(String jobId) {
         }
 
         java.util.UUID previousImageId = job.getImageFileId();
+        java.util.UUID newImageId = null;
 
-        var stored = fileService.upload(file, FileOwnerType.JOB, jobId, FileCategory.IMAGE);
+        try {
+            // Upload new image first, within transaction context
+            var stored = fileService.upload(file, FileOwnerType.JOB, jobId, FileCategory.IMAGE);
+            newImageId = stored.getId();
 
-        job.setImageFileId(stored.getId());
-        Job saved = jobRepository.save(job);
+            // Update job with new image ID
+            job.setImageFileId(newImageId);
+            Job saved = jobRepository.save(job);
 
-        if (previousImageId != null) {
-            try {
-                fileService.delete(previousImageId);
-            } catch (Exception e) {
-                // best effort cleanup
+            // Delete old image after successful save (best effort)
+            if (previousImageId != null) {
+                try {
+                    fileService.delete(previousImageId);
+                } catch (Exception e) {
+                    // Log but don't fail transaction; old file will be orphaned but won't block the operation
+                    System.err.println("Warning: Failed to delete previous image " + previousImageId + ": " + e.getMessage());
+                }
             }
-        }
 
-        return jobResponseMapper.toResponseModel(saved);
+            return jobResponseMapper.toResponseModel(saved);
+        } catch (Exception e) {
+            // Compensating transaction: delete newly uploaded file if database save failed
+            if (newImageId != null) {
+                try {
+                    fileService.delete(newImageId);
+                    System.err.println("Compensating transaction: Deleted orphaned file " + newImageId);
+                } catch (Exception deleteErr) {
+                    System.err.println("Critical: Failed to delete orphaned file " + newImageId + " after upload failure: " + deleteErr.getMessage());
+                }
+            }
+            // Re-throw original exception to maintain transactional semantics
+            throw e;
+        }
     }
 }
 
