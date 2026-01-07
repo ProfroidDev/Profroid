@@ -46,7 +46,9 @@
       "threePm": "3:00 PM",
       "fivePm": "5:00 PM"
     },
-    "max": "Max"
+    "max": "Max",
+    "all": "All",
+    "clear": "Clear"
   },
   "navigation": {
     "parts": "Parts",
@@ -447,6 +449,11 @@
       "service": "Service",
       "technician": "Technician",
       "status": "Status",
+      "statusScheduled": "Scheduled",
+      "statusCompleted": "Completed",
+      "statusCancelled": "Cancelled",
+      "startDate": "Start Date",
+      "endDate": "End Date",
       "noAppointments": "No Appointments Found",
       "noAppointmentsYet": "You don't have any scheduled appointments yet.",
       "viewAndManageAppointments": "View and manage your scheduled service appointments",
@@ -528,6 +535,11 @@
       "customer": "Customer",
       "appointment": "Appointment",
       "status": "Status",
+      "statusScheduled": "Scheduled",
+      "statusCompleted": "Completed",
+      "statusCancelled": "Cancelled",
+      "startDate": "Start Date",
+      "endDate": "End Date",
       "noJobs": "No jobs assigned",
       "noJobsAssigned": "No Jobs Assigned",
       "noJobsScheduled": "You don't have any jobs scheduled at the moment.",

@@ -7,7 +7,7 @@ import { patchAppointmentStatus } from "../../features/appointment/api/patchAppo
 import Toast from "../../shared/components/Toast";
 import useAuthStore from "../../features/authentication/store/authStore";
 import ConfirmationModal from "../../components/ConfirmationModal";
-import { MapPin, Clock, User, Wrench, DollarSign, AlertCircle, Edit, X, ChevronLeft, ChevronRight } from "lucide-react";
+import { MapPin, Clock, User, Wrench, DollarSign, AlertCircle, Edit, X, ChevronLeft, ChevronRight, Filter, Calendar } from "lucide-react";
 import "./MyAppointmentsPage.css";
 import { getEmployee } from "../../features/employee/api/getEmployeeById";
 import type { EmployeeResponseModel } from "../../features/employee/models/EmployeeResponseModel";
@@ -29,6 +29,9 @@ export default function MyAppointmentsPage(): React.ReactElement {
   const [matchedCellar, setMatchedCellar] = useState<CellarResponseModel | null>(null);
   const [currentPage, setCurrentPage] = useState<number>(1);
   const pageSize = 6;
+  const [statusFilters, setStatusFilters] = useState<string[]>([]);
+  const [startDateFilter, setStartDateFilter] = useState<string>("");
+  const [endDateFilter, setEndDateFilter] = useState<string>("");
   
   const { user, customerData } = useAuthStore();
 
@@ -187,14 +190,24 @@ export default function MyAppointmentsPage(): React.ReactElement {
     return `${matchedCellar.height}cm x ${matchedCellar.width}cm x ${matchedCellar.depth}cm`;
   }, [matchedCellar]);
 
+  const filteredAppointments = useMemo(() => {
+    return appointments.filter((a) => {
+      const statusMatch = statusFilters.length === 0 ? true : statusFilters.includes(a.status);
+      const dateOnly = new Date(a.appointmentDate).toISOString().split("T")[0];
+      const startOk = startDateFilter ? dateOnly >= startDateFilter : true;
+      const endOk = endDateFilter ? dateOnly <= endDateFilter : true;
+      return statusMatch && startOk && endOk;
+    });
+  }, [appointments, statusFilters, startDateFilter, endDateFilter]);
+
   const totalPages = useMemo(() => {
-    return Math.max(1, Math.ceil(appointments.length / pageSize));
-  }, [appointments.length]);
+    return Math.max(1, Math.ceil(filteredAppointments.length / pageSize));
+  }, [filteredAppointments.length]);
 
   const paginatedAppointments = useMemo(() => {
     const start = (currentPage - 1) * pageSize;
-    return appointments.slice(start, start + pageSize);
-  }, [appointments, currentPage]);
+    return filteredAppointments.slice(start, start + pageSize);
+  }, [filteredAppointments, currentPage]);
 
   const goPrev = () => setCurrentPage((p) => Math.max(1, p - 1));
   const goNext = () => setCurrentPage((p) => Math.min(totalPages, p + 1));
@@ -212,6 +225,90 @@ export default function MyAppointmentsPage(): React.ReactElement {
             {t('pages.appointments.bookAppointment')}
           </button>
         </div>
+          {/* Filters */}
+          <div className="filters-section">
+            <div className="filters-card">
+              <div className="filters-card-header">
+                <Filter size={18} />
+                <span>{t('pages.appointments.status')}</span>
+              </div>
+              <div className="chip-group">
+                <button
+                  type="button"
+                  className={`chip ${statusFilters.includes('SCHEDULED') ? 'active' : ''}`}
+                  onClick={() => {
+                    setStatusFilters((prev) => {
+                      const next = new Set(prev);
+                      next.has('SCHEDULED') ? next.delete('SCHEDULED') : next.add('SCHEDULED');
+                      setCurrentPage(1);
+                      return Array.from(next);
+                    });
+                  }}
+                >{t('pages.appointments.statusScheduled')}</button>
+                <button
+                  type="button"
+                  className={`chip ${statusFilters.includes('COMPLETED') ? 'active' : ''}`}
+                  onClick={() => {
+                    setStatusFilters((prev) => {
+                      const next = new Set(prev);
+                      next.has('COMPLETED') ? next.delete('COMPLETED') : next.add('COMPLETED');
+                      setCurrentPage(1);
+                      return Array.from(next);
+                    });
+                  }}
+                >{t('pages.appointments.statusCompleted')}</button>
+                <button
+                  type="button"
+                  className={`chip ${statusFilters.includes('CANCELLED') ? 'active' : ''}`}
+                  onClick={() => {
+                    setStatusFilters((prev) => {
+                      const next = new Set(prev);
+                      next.has('CANCELLED') ? next.delete('CANCELLED') : next.add('CANCELLED');
+                      setCurrentPage(1);
+                      return Array.from(next);
+                    });
+                  }}
+                >{t('pages.appointments.statusCancelled')}</button>
+              </div>
+            </div>
+
+            <div className="filters-card">
+              <div className="filters-card-header">
+                <Calendar size={18} />
+                <span>{t('pages.appointments.date')}</span>
+              </div>
+              <div className="date-range">
+                <label className="filter-item">
+                  {t('pages.appointments.startDate')}
+                  <input
+                    type="date"
+                    value={startDateFilter}
+                    onChange={(e) => { setStartDateFilter(e.target.value); setCurrentPage(1); }}
+                    className="filter-input"
+                  />
+                </label>
+                <span className="date-separator">—</span>
+                <label className="filter-item">
+                  {t('pages.appointments.endDate')}
+                  <input
+                    type="date"
+                    value={endDateFilter}
+                    onChange={(e) => { setEndDateFilter(e.target.value); setCurrentPage(1); }}
+                    className="filter-input"
+                  />
+                </label>
+              </div>
+            </div>
+
+            {(startDateFilter || endDateFilter || statusFilters.length > 0) ? (
+              <button
+                className="btn-secondary"
+                onClick={() => { setStatusFilters([]); setStartDateFilter(''); setEndDateFilter(''); setCurrentPage(1); }}
+              >
+                {t('common.clear')}
+              </button>
+            ) : null}
+          </div>
       </div>
 
       {loading ? (

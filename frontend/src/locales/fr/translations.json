@@ -39,7 +39,9 @@
       "threePm": "15h00",
       "fivePm": "17h00"
     },
-    "max": "Max"
+    "max": "Max",
+    "all": "Tous",
+    "clear": "Effacer"
   },
   "navigation": {
     "parts": "Pièces",
@@ -440,6 +442,11 @@
       "service": "Service",
       "technician": "Technicien",
       "status": "Statut",
+      "statusScheduled": "Planifié",
+      "statusCompleted": "Terminé",
+      "statusCancelled": "Annulé",
+      "startDate": "Date de début",
+      "endDate": "Date de fin",
       "noAppointments": "Aucun Rendez-vous Trouvé",
       "noAppointmentsYet": "Vous n'avez pas de rendez-vous programmé.",
       "viewAndManageAppointments": "Consultez et gérez vos rendez-vous de services programmés",
@@ -521,6 +528,11 @@
       "customer": "Client",
       "appointment": "Rendez-vous",
       "status": "Statut",
+      "statusScheduled": "Planifié",
+      "statusCompleted": "Terminé",
+      "statusCancelled": "Annulé",
+      "startDate": "Date de début",
+      "endDate": "Date de fin",
       "noJobs": "Aucun emploi assigné",
       "noJobsAssigned": "Aucun Emploi Assigné",
       "noJobsScheduled": "Vous n'avez pas d'emplois programmés pour le moment.",
