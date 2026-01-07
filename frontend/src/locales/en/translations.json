@@ -671,6 +671,7 @@
   "error": {
     "schedule": {
       "cannotEditScheduleAppointmentConflict": "Cannot edit schedule; there is an appointment on this date at a time slot you are removing.",
+      "cannotUpdateWeeklyScheduleDueToAppointment": "Cannot update schedule: there is an appointment on {{day}} at {{time}} that would be removed by this update. Please cancel or reschedule the appointment first.",
       "dayMustHaveTimeSlot": "{{day}} must have at least one time slot.",
       "nonTechnicianMustStartNineAm": "Non-technicians must start at NINE_AM (09:00).",
       "startBeforeEnd": "{{day}}: start must be before end.",

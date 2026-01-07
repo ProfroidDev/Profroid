@@ -279,6 +279,26 @@ export default function UpdateScheduleModal({ employeeId, isTechnician, existing
       if (message === 'Cannot edit schedule; there is an appointment on this date at a time slot you are removing.') {
         message = t('error.schedule.cannotEditScheduleAppointmentConflict');
       }
+
+      // Translate weekly update conflict emitted by backend in English
+      const weeklyConflict = message?.match(/Cannot update schedule: Employee has an existing appointment on (MONDAY|TUESDAY|WEDNESDAY|THURSDAY|FRIDAY) at (9:00 AM|11:00 AM|1:00 PM|3:00 PM|5:00 PM) that would be removed by this schedule update/i);
+      if (weeklyConflict) {
+        const dayEn = weeklyConflict[1] as DayOfWeekType;
+        const timeEn = weeklyConflict[2];
+        const dayKey = `common.dayOfWeek.${dayEn.toLowerCase()}`;
+        const timeKeyMap: Record<string, string> = {
+          '9:00 AM': 'common.timeSlot.nineAm',
+          '11:00 AM': 'common.timeSlot.elevenAm',
+          '1:00 PM': 'common.timeSlot.onePm',
+          '3:00 PM': 'common.timeSlot.threePm',
+          '5:00 PM': 'common.timeSlot.fivePm',
+        };
+        const timeKey = timeKeyMap[timeEn];
+        message = t('error.schedule.cannotUpdateWeeklyScheduleDueToAppointment', {
+          day: t(dayKey),
+          time: timeKey ? t(timeKey) : timeEn,
+        });
+      }
       
       // Use toast callback if provided, otherwise fallback to alert
       if (onError) {

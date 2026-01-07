@@ -326,12 +326,14 @@ public class ScheduleServiceImpl implements ScheduleService {
             for (Appointment appointment : allScheduledAppointments) {
                 TimeSlotType appointmentSlot = getTimeSlotFromAppointment(appointment);
                 DayOfWeekType appointmentDay = getDayOfWeekFromDate(appointment.getAppointmentDate());
-                
+
                 Set<TimeSlotType> newSlotsForDay = newScheduleMap.get(appointmentDay);
                 if (newSlotsForDay == null || !newSlotsForDay.contains(appointmentSlot)) {
-                    throw new InvalidOperationException("Cannot update schedule: Employee has an existing appointment on " + 
-                        appointmentDay + " at " + appointmentSlot.getDisplayTime() + " that would be removed by this schedule update. " +
-                        "Please cancel or reschedule the appointment first.");
+                    throw new InvalidOperationException(
+                            "Cannot update schedule: Employee has an existing appointment on "
+                                    + appointmentDay + " at " + appointmentSlot.getDisplayTime() +
+                                    " that would be removed by this schedule update. Please cancel or reschedule the appointment first."
+                    );
                 }
             }
         }
@@ -713,5 +715,6 @@ public class ScheduleServiceImpl implements ScheduleService {
         };
     }
 
-
+    // --- Simple FR helpers for user-facing messages ---
+    
 }

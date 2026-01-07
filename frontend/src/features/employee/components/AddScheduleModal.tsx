@@ -17,7 +17,8 @@ type NonTechSlot = { start: string; end: string };
 type TechSlot = TimeSlotType;
 
 const DAYS: DayOfWeekType[] = ['MONDAY', 'TUESDAY', 'WEDNESDAY', 'THURSDAY', 'FRIDAY'];
-const AVAILABLE_SLOTS: TimeSlotType[] = ['NINE_AM', 'ELEVEN_AM', 'ONE_PM', 'THREE_PM', 'FIVE_PM'];
+// Do not offer 17h (FIVE_PM) for new technician schedules by default
+const AVAILABLE_SLOTS: TimeSlotType[] = ['NINE_AM', 'ELEVEN_AM', 'ONE_PM', 'THREE_PM'];
 
 const SLOT_KEYS: Record<TimeSlotType, string> = {
   NINE_AM: 'common.timeSlot.nineAm',

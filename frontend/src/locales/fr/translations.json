@@ -664,6 +664,7 @@
   "error": {
     "schedule": {
       "cannotEditScheduleAppointmentConflict": "Impossible de modifier l'horaire; il y a un rendez-vous à cette date dans un créneau horaire que vous supprimez.",
+      "cannotUpdateWeeklyScheduleDueToAppointment": "Impossible de mettre à jour l'horaire hebdomadaire : il existe un rendez-vous le {{day}} à {{time}} qui serait supprimé par cette mise à jour. Veuillez d'abord annuler ou reprogrammer le rendez-vous.",
       "dayMustHaveTimeSlot": "{{day}} doit avoir au moins un créneau horaire.",
       "nonTechnicianMustStartNineAm": "Les non-techniciens doivent commencer à NINE_AM (09h00).",
       "startBeforeEnd": "{{day}}: l'heure de début doit être avant l'heure de fin.",
