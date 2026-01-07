@@ -38,7 +38,8 @@
       "onePm": "13h00",
       "threePm": "15h00",
       "fivePm": "17h00"
-    }
+    },
+    "max": "Max"
   },
   "navigation": {
     "parts": "Pièces",
@@ -76,7 +77,13 @@
     "emailAlreadyExists": "Cet email est déjà enregistré",
     "passwordMismatch": "Les mots de passe ne correspondent pas",
     "completeRegistration": "Veuillez compléter votre inscription en tant que client",
-    "registrationFailed": "Impossible de terminer l'inscription"
+    "registrationFailed": "Impossible de terminer l'inscription",
+    "profileImage": "Image de Profil",
+    "imageUrl": "URL de l'image",
+    "updateProfileImage": "Mettre à jour l'image de profil",
+    "profileImageUpdated": "Image de profil mise à jour",
+    "selectImage": "Choisir une image",
+    "uploadProfileImage": "Téléverser l'image de profil"
   },
   "pages": {
     "home": {
@@ -395,7 +402,8 @@
       "jobNameRequired": "Le nom du travail est obligatoire",
       "jobDescriptionRequired": "La description du travail est obligatoire",
       "hourlyRateRequired": "Le taux horaire doit être supérieur à 0",
-      "durationRequired": "La durée estimée doit être supérieure à 0"
+      "durationRequired": "La durée estimée doit être supérieure à 0",
+      "imageOptional": "Image (optionnelle)"
     },
     "parts": {
       "title": "Pièces",
@@ -607,7 +615,13 @@
       "selectADate": "Sélectionnez une date",
       "noScheduleForDate": "Aucun horaire pour cette date",
       "loadingSchedule": "Chargement de l'horaire...",
-      "updatePassword": "Mettre à Jour le Mot de Passe"
+      "updatePassword": "Mettre à Jour le Mot de Passe",
+      "profileImage": "Image de Profil",
+      "imageUrl": "URL de l'image",
+      "updateProfileImage": "Mettre à jour l'image de profil",
+      "profileImageUpdated": "Image de profil mise à jour",
+      "selectImage": "Choisir une image",
+      "uploadProfileImage": "Téléverser l'image de profil"
     }
   },
   "validation": {
@@ -617,7 +631,9 @@
     "phoneInvalid": "Veuillez entrer un numéro de téléphone valide",
     "passwordTooShort": "Le mot de passe doit contenir au moins 8 caractères",
     "required": "Ce champ est obligatoire",
-    "fieldRequired": "{{field}} est obligatoire"
+    "fieldRequired": "{{field}} est obligatoire",
+    "invalidImageType": "Veuillez sélectionner un fichier image",
+    "imageTooLarge": "L'image est trop volumineuse (max 10MB)"
   },
   "messages": {
     "success": "Opération complétée avec succès",
@@ -627,7 +643,8 @@
     "error": "Une erreur s'est produite. Veuillez réessayer",
     "confirmDelete": "Êtes-vous sûr de vouloir supprimer cet élément?",
     "confirmLogout": "Êtes-vous sûr de vouloir vous déconnecter?",
-    "noDetailsAvailable": "Aucun détail disponible."
+    "noDetailsAvailable": "Aucun détail disponible.",
+    "imageUploadFailed": "Échec du téléversement de l'image"
   },
   "error": {
     "schedule": {

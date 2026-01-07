@@ -10,6 +10,9 @@ import com.profroid.profroidapp.jobssubdomain.mappingLayer.JobRequestMapper;
 import com.profroid.profroidapp.jobssubdomain.mappingLayer.JobResponseMapper;
 import com.profroid.profroidapp.jobssubdomain.presentationLayer.JobRequestModel;
 import com.profroid.profroidapp.jobssubdomain.presentationLayer.JobResponseModel;
+import com.profroid.profroidapp.filesubdomain.businessLayer.FileService;
+import com.profroid.profroidapp.filesubdomain.dataAccessLayer.FileCategory;
+import com.profroid.profroidapp.filesubdomain.dataAccessLayer.FileOwnerType;
 import com.profroid.profroidapp.utils.exceptions.InvalidOperationException;
 import jakarta.persistence.EntityNotFoundException;
 import com.profroid.profroidapp.utils.exceptions.InvalidIdentifierException;
@@ -28,15 +31,18 @@ public class JobServiceImpl implements JobService {
     private final JobResponseMapper jobResponseMapper;
     private final JobRequestMapper jobRequestMapper;
     private final AppointmentRepository appointmentRepository;
+    private final FileService fileService;
 
     public JobServiceImpl(JobRepository jobRepository,
                           JobResponseMapper jobResponseMapper,
                           JobRequestMapper jobRequestMapper,
-                          AppointmentRepository appointmentRepository) {
+                          AppointmentRepository appointmentRepository,
+                          FileService fileService) {
         this.jobRepository = jobRepository;
         this.jobResponseMapper = jobResponseMapper;
         this.jobRequestMapper = jobRequestMapper;
         this.appointmentRepository = appointmentRepository;
+        this.fileService = fileService;
     }
 
     @Override
@@ -299,6 +305,35 @@ public JobResponseModel reactivateJob(String jobId) {
         foundJob.setActive(true);
         Job reactivatedJob = jobRepository.save(foundJob);
         return jobResponseMapper.toResponseModel(reactivatedJob);
+    }
+
+    @Override
+    public JobResponseModel uploadJobImage(String jobId, org.springframework.web.multipart.MultipartFile file) {
+        if (jobId == null || jobId.trim().length() != 36) {
+            throw new com.profroid.profroidapp.utils.exceptions.InvalidIdentifierException("Job ID must be a 36-character UUID string.");
+        }
+
+        Job job = jobRepository.findJobByJobIdentifier_JobId(jobId);
+        if (job == null) {
+            throw new com.profroid.profroidapp.utils.exceptions.ResourceNotFoundException("Job " + jobId + " not found.");
+        }
+
+        java.util.UUID previousImageId = job.getImageFileId();
+
+        var stored = fileService.upload(file, FileOwnerType.JOB, jobId, FileCategory.IMAGE);
+
+        job.setImageFileId(stored.getId());
+        Job saved = jobRepository.save(job);
+
+        if (previousImageId != null) {
+            try {
+                fileService.delete(previousImageId);
+            } catch (Exception e) {
+                // best effort cleanup
+            }
+        }
+
+        return jobResponseMapper.toResponseModel(saved);
     }
 }
 

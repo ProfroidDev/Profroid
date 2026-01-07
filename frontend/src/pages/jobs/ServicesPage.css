@@ -136,9 +136,14 @@
 /* IMAGE CONTAINER - LEFT SIDE */
 .service-image-container {
   position: relative;
-  width: 200px;
-  min-width: 200px;
-  background: linear-gradient(135deg, #efe6da 0%, #e6d9c8 100%);
+  width: 240px;
+  min-width: 240px;
+  height: 240px;
+  background: linear-gradient(135deg, #f7f6f3 0%, #ebe7e0 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
 }
 
 .service-image-modern {
@@ -147,7 +152,14 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 32px;
+  padding: 0;
+}
+
+.service-image-tag {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
 }
 
 .image-placeholder {
@@ -193,6 +205,25 @@
   font-size: 0.9rem;
   text-transform: uppercase;
   letter-spacing: 1px;
+}
+
+/* Details modal image sizing to match parts */
+.service-detail-image-wrapper {
+  width: 100%;
+  height: 240px;
+  background: linear-gradient(135deg, #f7f6f3 0%, #ebe7e0 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  margin-bottom: 12px;
+}
+
+.service-detail-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
 }
 
 /* INFO SECTION - MIDDLE */

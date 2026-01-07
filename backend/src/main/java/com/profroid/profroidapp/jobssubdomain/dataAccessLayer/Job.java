@@ -3,6 +3,7 @@ package com.profroid.profroidapp.jobssubdomain.dataAccessLayer;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import lombok.*;
+import java.util.UUID;
 
 @Entity
 @Table(name = "jobs")
@@ -42,4 +43,7 @@ public class Job {
 
     @Column(nullable = false)
     private boolean active;
+
+    @Column(name = "image_file_id")
+    private UUID imageFileId;
 }
