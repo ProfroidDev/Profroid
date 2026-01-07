@@ -9,9 +9,11 @@ import type { JobResponseModel } from "../../features/jobs/models/JobResponseMod
 import type { JobRequestModel } from "../../features/jobs/models/JobRequestModel";
 import "./ServicesPage.css";
 import { updateJob } from "../../features/jobs/api/updateJob";
+import { uploadJobImage } from "../../features/jobs/api/uploadJobImage";
 import ConfirmationModal from "../../components/ConfirmationModal";
 import Toast from "../../shared/components/Toast";
 import useAuthStore from "../../features/authentication/store/authStore";
+import { fileDownloadUrl } from "../../shared/utils/fileUrl";
 
 export default function ServicesPage(): React.ReactElement {
   const { t } = useTranslation();
@@ -48,6 +50,10 @@ export default function ServicesPage(): React.ReactElement {
     jobType: "QUOTATION",
     active: true,
   });
+
+  // Image file state
+  const [createImageFile, setCreateImageFile] = useState<File | null>(null);
+  const [updateImageFile, setUpdateImageFile] = useState<File | null>(null);
 
   // Deactivate/Reactivate state
   const [deactivateLoading, setDeactivateLoading] = useState<boolean>(false);
@@ -120,6 +126,7 @@ export default function ServicesPage(): React.ReactElement {
       jobType: "QUOTATION",
       active: true,
     });
+    setCreateImageFile(null);
   }
 
   function closeCreateModal() {
@@ -133,6 +140,7 @@ export default function ServicesPage(): React.ReactElement {
       active: true,
     });
     setCreateError("");
+    setCreateImageFile(null);
   }
 
   function openUpdateModal(jobId: string) {
@@ -149,6 +157,7 @@ export default function ServicesPage(): React.ReactElement {
       });
       setUpdateModalOpen(true);
       setUpdateError("");
+      setUpdateImageFile(null);
     }
   }
 
@@ -164,6 +173,50 @@ export default function ServicesPage(): React.ReactElement {
       active: true,
     });
     setUpdateError("");
+    setUpdateImageFile(null);
+  }
+
+  function validateImageFile(file: File): string | null {
+    const maxSizeBytes = 10 * 1024 * 1024; // 10MB
+    if (!file.type.startsWith("image/")) {
+      return t("validation.invalidImageType");
+    }
+    if (file.size > maxSizeBytes) {
+      return t("validation.imageTooLarge");
+    }
+    return null;
+  }
+
+  function handleCreateImageChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0] ?? null;
+    if (!file) {
+      setCreateImageFile(null);
+      return;
+    }
+    const err = validateImageFile(file);
+    if (err) {
+      setCreateError(err);
+      setCreateImageFile(null);
+    } else {
+      setCreateError("");
+      setCreateImageFile(file);
+    }
+  }
+
+  function handleUpdateImageChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0] ?? null;
+    if (!file) {
+      setUpdateImageFile(null);
+      return;
+    }
+    const err = validateImageFile(file);
+    if (err) {
+      setUpdateError(err);
+      setUpdateImageFile(null);
+    } else {
+      setUpdateError("");
+      setUpdateImageFile(file);
+    }
   }
 
   function handleUpdateFormChange(
@@ -214,12 +267,17 @@ export default function ServicesPage(): React.ReactElement {
 
     try {
       const updatedJob = await updateJob(jobToUpdate.jobId, updateFormData);
+      let finalJob = updatedJob;
+      if (updateImageFile) {
+        try {
+          finalJob = await uploadJobImage(jobToUpdate.jobId, updateImageFile);
+        } catch (imgErr) {
+          console.error("Image upload failed during update:", imgErr);
+          setToast({ message: t("messages.imageUploadFailed"), type: "warning" });
+        }
+      }
       // Update the job in the list
-      setJobs((prevJobs) =>
-        prevJobs.map((job) =>
-          job.jobId === updatedJob.jobId ? updatedJob : job
-        )
-      );
+      setJobs((prevJobs) => prevJobs.map((job) => (job.jobId === finalJob.jobId ? finalJob : job)));
       closeUpdateModal();
       // Show success notification
       setToast({
@@ -292,8 +350,17 @@ export default function ServicesPage(): React.ReactElement {
 
     try {
       const newJob = await createJob(formData);
+      let finalJob = newJob;
+      if (createImageFile) {
+        try {
+          finalJob = await uploadJobImage(newJob.jobId, createImageFile);
+        } catch (imgErr) {
+          console.error("Image upload failed during create:", imgErr);
+          setToast({ message: t("messages.imageUploadFailed"), type: "warning" });
+        }
+      }
       // Add the newly created job to the end of the list
-      setJobs((prevJobs) => [...prevJobs, newJob]);
+      setJobs((prevJobs) => [...prevJobs, finalJob]);
       closeCreateModal();
       // Show success notification
       setToast({
@@ -403,6 +470,13 @@ export default function ServicesPage(): React.ReactElement {
     return description.length > 150;
   }
 
+  function resolveJobImage(job: JobResponseModel): string {
+    const url = fileDownloadUrl(job.imageFileId);
+    return url ?? `https://via.placeholder.com/300x200?text=${encodeURIComponent(job.jobName)}`;
+  }
+
+  const DEFAULT_IMAGE_URL = "/assets/fallback.png";
+
   return (
     <div className="services-page">
       <div className="services-header">
@@ -439,14 +513,26 @@ export default function ServicesPage(): React.ReactElement {
               {/* Image on the Left */}
               <div className="service-image-container">
                 <div className="service-image-modern">
-                  <div className="image-placeholder">
-                    <svg className="image-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                      <path d="M21 21H3v-2l3-3 5 4 5-5 5 4v2z"/>
-                      <path d="M3 21V3h18v18"/>
-                      <circle cx="9" cy="9" r="2"/>
-                    </svg>
-                    <span>Image</span>
-                  </div>
+                  {j.imageFileId ? (
+                    <img
+                      src={resolveJobImage(j)}
+                      alt={j.jobName}
+                      className="service-image-tag"
+                      onError={(e) => {
+                        e.currentTarget.onerror = null;
+                        e.currentTarget.src = DEFAULT_IMAGE_URL;
+                      }}
+                    />
+                  ) : (
+                    <div className="image-placeholder">
+                      <svg className="image-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                        <path d="M21 21H3v-2l3-3 5 4 5-5 5 4v2z"/>
+                        <path d="M3 21V3h18v18"/>
+                        <circle cx="9" cy="9" r="2"/>
+                      </svg>
+                      <span>Image</span>
+                    </div>
+                  )}
                 </div>
                 {!j.active && (
                   <div className="inactive-overlay">
@@ -589,6 +675,19 @@ export default function ServicesPage(): React.ReactElement {
 
             {!detailLoading && selectedJob && (
               <div className="service-details">
+                {selectedJob.imageFileId ? (
+                  <div className="service-detail-image-wrapper">
+                    <img
+                      src={resolveJobImage(selectedJob)}
+                      alt={selectedJob.jobName}
+                      className="service-detail-image"
+                      onError={(e) => {
+                        e.currentTarget.onerror = null;
+                        e.currentTarget.src = DEFAULT_IMAGE_URL;
+                      }}
+                    />
+                  </div>
+                ) : null}
                 <p>
                   <strong>{t("pages.services.jobId")}:</strong>{" "}
                   {selectedJob.jobId}
@@ -759,6 +858,19 @@ export default function ServicesPage(): React.ReactElement {
                 </div>
               </div>
 
+              <div className="form-group">
+                <label htmlFor="createImage">
+                  {t("pages.services.imageOptional")} ({t("common.max")}: 10MB)
+                </label>
+                <input
+                  id="createImage"
+                  type="file"
+                  accept="image/*"
+                  onChange={handleCreateImageChange}
+                  disabled={createLoading}
+                />
+              </div>
+
               <div className="form-actions">
                 <button
                   type="button"
@@ -920,6 +1032,19 @@ export default function ServicesPage(): React.ReactElement {
                     {t("common.active")}
                   </label>
                 </div>
+              </div>
+
+              <div className="form-group">
+                <label htmlFor="updateImage">
+                  {t("pages.services.imageOptional")} ({t("common.max")}: 10MB)
+                </label>
+                <input
+                  id="updateImage"
+                  type="file"
+                  accept="image/*"
+                  onChange={handleUpdateImageChange}
+                  disabled={updateLoading}
+                />
               </div>
 
               <div className="form-actions">

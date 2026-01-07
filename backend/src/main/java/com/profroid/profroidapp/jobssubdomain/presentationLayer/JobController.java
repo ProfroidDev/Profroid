@@ -6,6 +6,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.http.MediaType;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
@@ -53,5 +55,14 @@ public class JobController {
     public ResponseEntity<JobResponseModel> reactivateJob(@PathVariable String jobId){
         JobResponseModel reactivated = jobService.reactivateJob(jobId);
         return ResponseEntity.status(HttpStatus.OK).body(reactivated);
+    }
+
+    @PutMapping(value = "/{jobId}/image", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<JobResponseModel> uploadJobImage(
+            @PathVariable String jobId,
+            @RequestPart("file") MultipartFile file) {
+        JobResponseModel updated = jobService.uploadJobImage(jobId, file);
+        return ResponseEntity.ok(updated);
     }
 }

@@ -11,4 +11,6 @@ export interface JobResponseModel {
 
   jobType: JobType;
   active: boolean;
+
+  imageFileId?: string;
 }

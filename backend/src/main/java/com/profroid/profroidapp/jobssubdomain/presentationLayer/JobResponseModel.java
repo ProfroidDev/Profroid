@@ -21,4 +21,6 @@ public class JobResponseModel {
     private JobType jobType;
 
     private boolean active;
+
+    private String imageFileId;
 }

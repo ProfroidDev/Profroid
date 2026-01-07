@@ -18,7 +18,8 @@ public interface JobResponseMapper {
             @Mapping(source = "job.hourlyRate", target = "hourlyRate"),
             @Mapping(source = "job.estimatedDurationMinutes", target = "estimatedDurationMinutes"),
             @Mapping(source = "job.jobType", target = "jobType"),
-            @Mapping(source = "job.active", target = "active")
+            @Mapping(source = "job.active", target = "active"),
+            @Mapping(source = "job.imageFileId", target = "imageFileId")
     })
     JobResponseModel toResponseModel(Job job);
 

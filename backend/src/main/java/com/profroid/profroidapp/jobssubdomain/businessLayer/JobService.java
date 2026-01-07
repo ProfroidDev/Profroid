@@ -12,4 +12,6 @@ public interface JobService {
     JobResponseModel updateJob(String jobId, JobRequestModel requestModel);
     JobResponseModel deactivateJob(String jobId);
     JobResponseModel reactivateJob(String jobId);
+
+    JobResponseModel uploadJobImage(String jobId, org.springframework.web.multipart.MultipartFile file);
 }

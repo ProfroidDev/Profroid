@@ -22,6 +22,13 @@
     "active": "Active",
     "yes": "Yes",
     "no": "No",
+    "updatePassword": "Update Password",
+    "profileImage": "Profile Image",
+    "imageUrl": "Image URL",
+    "updateProfileImage": "Update Profile Image",
+    "profileImageUpdated": "Profile image updated",
+    "selectImage": "Select Image",
+    "uploadProfileImage": "Upload Profile Image",
     "creating": "Creating...",
     "updating": "Updating...",
     "enterPlaceholder": "Enter {{field}}",
@@ -38,7 +45,8 @@
       "onePm": "1:00 PM",
       "threePm": "3:00 PM",
       "fivePm": "5:00 PM"
-    }
+    },
+    "max": "Max"
   },
   "navigation": {
     "parts": "Parts",
@@ -76,7 +84,13 @@
     "emailAlreadyExists": "This email is already registered",
     "passwordMismatch": "Passwords do not match",
     "completeRegistration": "Please complete your customer registration",
-    "registrationFailed": "Failed to complete registration"
+    "registrationFailed": "Failed to complete registration",
+    "profileImage": "Profile Image",
+    "imageUrl": "Image URL",
+    "updateProfileImage": "Update Profile Image",
+    "profileImageUpdated": "Profile image updated",
+    "selectImage": "Select Image",
+    "uploadProfileImage": "Upload Profile Image"
   },
   "pages": {
     "home": {
@@ -395,7 +409,8 @@
       "jobNameRequired": "Job name is required",
       "jobDescriptionRequired": "Job description is required",
       "hourlyRateRequired": "Hourly rate must be greater than 0",
-      "durationRequired": "Estimated duration must be greater than 0"
+      "durationRequired": "Estimated duration must be greater than 0",
+      "imageOptional": "Image (optional)"
     },
     "parts": {
       "title": "Parts",
@@ -623,7 +638,9 @@
     "phoneInvalid": "Please enter a valid phone number",
     "passwordTooShort": "Password must be at least 8 characters",
     "required": "This field is required",
-    "fieldRequired": "{{field}} is required"
+    "fieldRequired": "{{field}} is required",
+    "invalidImageType": "Please select an image file",
+    "imageTooLarge": "Image is too large (max 10MB)"
   },
   "messages": {
     "success": "Operation completed successfully",
@@ -633,7 +650,8 @@
     "error": "An error occurred. Please try again",
     "confirmDelete": "Are you sure you want to delete this item?",
     "confirmLogout": "Are you sure you want to logout?",
-    "noDetailsAvailable": "No details available."
+    "noDetailsAvailable": "No details available.",
+    "imageUploadFailed": "Image upload failed"
   },
   "error": {
     "schedule": {

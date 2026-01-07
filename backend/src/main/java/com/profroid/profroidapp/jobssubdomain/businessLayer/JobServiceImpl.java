@@ -10,12 +10,16 @@ import com.profroid.profroidapp.jobssubdomain.mappingLayer.JobRequestMapper;
 import com.profroid.profroidapp.jobssubdomain.mappingLayer.JobResponseMapper;
 import com.profroid.profroidapp.jobssubdomain.presentationLayer.JobRequestModel;
 import com.profroid.profroidapp.jobssubdomain.presentationLayer.JobResponseModel;
+import com.profroid.profroidapp.filesubdomain.businessLayer.FileService;
+import com.profroid.profroidapp.filesubdomain.dataAccessLayer.FileCategory;
+import com.profroid.profroidapp.filesubdomain.dataAccessLayer.FileOwnerType;
 import com.profroid.profroidapp.utils.exceptions.InvalidOperationException;
 import jakarta.persistence.EntityNotFoundException;
 import com.profroid.profroidapp.utils.exceptions.InvalidIdentifierException;
 import com.profroid.profroidapp.utils.exceptions.InvalidOperationException;
 import com.profroid.profroidapp.utils.exceptions.ResourceNotFoundException;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
@@ -28,15 +32,18 @@ public class JobServiceImpl implements JobService {
     private final JobResponseMapper jobResponseMapper;
     private final JobRequestMapper jobRequestMapper;
     private final AppointmentRepository appointmentRepository;
+    private final FileService fileService;
 
     public JobServiceImpl(JobRepository jobRepository,
                           JobResponseMapper jobResponseMapper,
                           JobRequestMapper jobRequestMapper,
-                          AppointmentRepository appointmentRepository) {
+                          AppointmentRepository appointmentRepository,
+                          FileService fileService) {
         this.jobRepository = jobRepository;
         this.jobResponseMapper = jobResponseMapper;
         this.jobRequestMapper = jobRequestMapper;
         this.appointmentRepository = appointmentRepository;
+        this.fileService = fileService;
     }
 
     @Override
@@ -299,6 +306,56 @@ public JobResponseModel reactivateJob(String jobId) {
         foundJob.setActive(true);
         Job reactivatedJob = jobRepository.save(foundJob);
         return jobResponseMapper.toResponseModel(reactivatedJob);
+    }
+
+    @Override
+    @Transactional
+    public JobResponseModel uploadJobImage(String jobId, org.springframework.web.multipart.MultipartFile file) {
+        if (jobId == null || jobId.trim().length() != 36) {
+            throw new com.profroid.profroidapp.utils.exceptions.InvalidIdentifierException("Job ID must be a 36-character UUID string.");
+        }
+
+        Job job = jobRepository.findJobByJobIdentifier_JobId(jobId);
+        if (job == null) {
+            throw new com.profroid.profroidapp.utils.exceptions.ResourceNotFoundException("Job " + jobId + " not found.");
+        }
+
+        java.util.UUID previousImageId = job.getImageFileId();
+        java.util.UUID newImageId = null;
+
+        try {
+            // Upload new image first, within transaction context
+            var stored = fileService.upload(file, FileOwnerType.JOB, jobId, FileCategory.IMAGE);
+            newImageId = stored.getId();
+
+            // Update job with new image ID
+            job.setImageFileId(newImageId);
+            Job saved = jobRepository.save(job);
+
+            // Delete old image after successful save (best effort)
+            if (previousImageId != null) {
+                try {
+                    fileService.delete(previousImageId);
+                } catch (Exception e) {
+                    // Log but don't fail transaction; old file will be orphaned but won't block the operation
+                    System.err.println("Warning: Failed to delete previous image " + previousImageId + ": " + e.getMessage());
+                }
+            }
+
+            return jobResponseMapper.toResponseModel(saved);
+        } catch (Exception e) {
+            // Compensating transaction: delete newly uploaded file if database save failed
+            if (newImageId != null) {
+                try {
+                    fileService.delete(newImageId);
+                    System.err.println("Compensating transaction: Deleted orphaned file " + newImageId);
+                } catch (Exception deleteErr) {
+                    System.err.println("Critical: Failed to delete orphaned file " + newImageId + " after upload failure: " + deleteErr.getMessage());
+                }
+            }
+            // Re-throw original exception to maintain transactional semantics
+            throw e;
+        }
     }
 }
 
