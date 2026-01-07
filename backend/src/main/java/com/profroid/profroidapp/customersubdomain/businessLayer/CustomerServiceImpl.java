@@ -112,6 +112,10 @@ public class CustomerServiceImpl implements CustomerService {
 
     @Override
     public CustomerResponseModel createCustomer(CustomerRequestModel requestModel) {
+        System.out.println("=== CustomerServiceImpl.createCustomer called ===");
+        System.out.println("Request: " + requestModel);
+        System.out.println("Province: " + requestModel.getProvince());
+        System.out.println("Postal Code: " + requestModel.getPostalCode());
 
         // Enforce unique userId
         if (customerRepository.findCustomerByUserId(requestModel.getUserId()) != null) {
@@ -127,6 +131,7 @@ public class CustomerServiceImpl implements CustomerService {
         customer.setIsActive(true);
 
         Customer savedCustomer = customerRepository.save(customer);
+        System.out.println("=== Customer created successfully ===");
         return customerResponseMapper.toResponseModel(savedCustomer);
     }
 
