@@ -645,7 +645,7 @@
     "required": "Ce champ est obligatoire",
     "fieldRequired": "{{field}} est obligatoire",
     "invalidImageType": "Veuillez sélectionner un fichier image",
-    "imageTooLarge": "L'image est trop volumineuse (max 10MB)"
+    "imageTooLarge": "L'image est trop volumineuse (max 10MB)",
     "provinceNotAllowed": "Les rendez-vous ne peuvent être programmés qu'au Québec (QC) ou en Ontario (ON).",
     "postalCodeNotQC": "Les codes postaux du Québec commencent par G, H ou J. Veuillez entrer un code postal valide du Québec.",
     "postalCodeNotON": "Les codes postaux de l'Ontario commencent par K, L, M, N ou P. Veuillez entrer un code postal valide de l'Ontario."
