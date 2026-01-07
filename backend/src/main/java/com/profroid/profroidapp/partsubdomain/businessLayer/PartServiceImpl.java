@@ -151,7 +151,7 @@ public class PartServiceImpl implements PartService {
         part.setImageFileId(stored.getId());
         Part saved = partRepository.save(part);
 
-        // Clean up old image only after successful database update (best effort)
+        // Clean up old image in a separate transaction to avoid persistence context conflicts
         if (previousImageId != null) {
             try {
                 fileService.delete(previousImageId);

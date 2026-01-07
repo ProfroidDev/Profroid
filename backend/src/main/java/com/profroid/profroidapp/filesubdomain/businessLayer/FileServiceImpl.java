@@ -9,6 +9,8 @@ import com.profroid.profroidapp.utils.exceptions.ResourceNotFoundException;
 import io.minio.*;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.InputStream;
@@ -96,6 +98,7 @@ public class FileServiceImpl implements FileService {
     }
 
     @Override
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
     public void delete(UUID fileId) {
         StoredFile f = getOrThrow(fileId);
 
