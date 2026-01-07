@@ -640,7 +640,7 @@ public class AppointmentServiceImpl implements AppointmentService {
         }
         
         @Override
-        public TechnicianBookedSlotsResponseModel getTechnicianBookedSlots(String technicianId, LocalDate date) {
+        public TechnicianBookedSlotsResponseModel getTechnicianBookedSlots(String technicianId, LocalDate date, String appointmentId) {
             // Validate technician exists
             Employee technician = employeeRepository.findEmployeeByEmployeeIdentifier_EmployeeId(technicianId);
             if (technician == null) {
@@ -654,11 +654,13 @@ public class AppointmentServiceImpl implements AppointmentService {
             List<Appointment> appointments = appointmentRepository.findByTechnicianAndAppointmentDateBetween(
                     technician, startOfDay, endOfDay);
             
-            // Filter out cancelled appointments and build booked slots
+            // Filter out cancelled appointments and the appointment being edited, then build booked slots
             List<TechnicianBookedSlotsResponseModel.BookedSlot> bookedSlots = appointments.stream()
                     .filter(apt -> apt.getAppointmentStatus() != null &&
                             (apt.getAppointmentStatus().getAppointmentStatusType() == AppointmentStatusType.SCHEDULED ||
                                     apt.getAppointmentStatus().getAppointmentStatusType() == AppointmentStatusType.COMPLETED))
+                    .filter(apt -> appointmentId == null || appointmentId.isBlank() || 
+                            !appointmentId.equals(apt.getAppointmentIdentifier().getAppointmentId()))
                     .map(apt -> {
                         // Extract start time from appointmentDate
                         LocalTime startTime = apt.getAppointmentDate().toLocalTime();

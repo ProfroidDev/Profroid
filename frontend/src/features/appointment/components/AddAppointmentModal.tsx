@@ -617,7 +617,8 @@ export default function AddAppointmentModal({
       try {
         const response = await getTechnicianBookedSlots(
           selectedTechnicianId,
-          appointmentDate
+          appointmentDate,
+          isEditMode && editAppointment ? editAppointment.appointmentId : undefined
         );
         setTechnicianBookedSlots(response.bookedSlots || []);
       } catch (err) {
@@ -899,10 +900,11 @@ export default function AddAppointmentModal({
       isEditMode && editAppointment && editAppointment.appointmentId != null
         ? editAppointment.appointmentId
         : null;
-    // Prefer the currently selected time when editing so the active slot
-    // stays available even if the parent does not refresh editAppointment.
-    let editStartTime: string | null = appointmentTime || null;
-    if (!editStartTime && editAppointment) {
+    
+    // Extract the ORIGINAL appointment time (not the currently selected one)
+    // This ensures we always keep the original slot available, regardless of dropdown changes
+    let editStartTime: string | null = null;
+    if (editAppointment) {
       if (editAppointment.appointmentStartTime) {
         editStartTime = editAppointment.appointmentStartTime.substring(0, 5);
       } else {
@@ -943,14 +945,9 @@ export default function AddAppointmentModal({
         slots.push(time);
       });
 
-      // Always keep the current edit selection visible
+      // Always keep the original edit time visible
       if (editingAppointmentId && editStartTime && !slots.includes(editStartTime)) {
         slots.push(editStartTime);
-      }
-
-      // Keep the current dropdown selection even if props are stale
-      if (isEditMode && appointmentTime && !slots.includes(appointmentTime)) {
-        slots.push(appointmentTime);
       }
 
       return Array.from(new Set(slots));
@@ -1006,6 +1003,11 @@ export default function AddAppointmentModal({
       // Check for conflicts with customer's existing appointments
       const hasCustomerConflict = customerBusySlots.some((busySlot) => {
         if (!busySlot.startTime || !busySlot.endTime) return false;
+
+        // Allow the existing appointment's slot when editing
+        if (isEditMode && editStartTime && busySlot.startTime.substring(0, 5) === editStartTime) {
+          return false;
+        }
 
         const busyStart = new Date(
           `${appointmentDate}T${busySlot.startTime}`
@@ -1078,11 +1080,12 @@ export default function AddAppointmentModal({
   ]);
 
   useEffect(() => {
+    // Only auto-select first slot if no time is currently selected
     if (!appointmentTime && availableSlots.length > 0) {
       setAppointmentTime(availableSlots[0]);
-    } else if (appointmentTime && !availableSlots.includes(appointmentTime)) {
-      setAppointmentTime(availableSlots[0] || "");
     }
+    // Don't force-change the time if user has made a selection and it's valid
+    // This prevents the cascading slot disappearance issue
   }, [availableSlots, appointmentTime]);
   
   // Fallback durations by job type when end time is missing
