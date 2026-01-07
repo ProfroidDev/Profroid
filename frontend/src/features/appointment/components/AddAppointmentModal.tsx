@@ -273,6 +273,9 @@ export default function AddAppointmentModal({
 
   const [appointmentDate, setAppointmentDate] = useState<string>("");
   const [appointmentTime, setAppointmentTime] = useState<string>("");
+  const appointmentTimeRef = React.useRef<string>("");
+  // Remember if the user selected a valid slot from the dropdown
+  const [timeWasAvailable, setTimeWasAvailable] = useState<boolean>(false);
   const [description, setDescription] = useState<string>("");
   const [address, setAddress] = useState({
     streetAddress: "",
@@ -603,7 +606,7 @@ export default function AddAppointmentModal({
     }
 
     fetchAggregatedSlots();
-  }, [mode, appointmentDate, selectedJobId, jobOptions]);
+  }, [mode, appointmentDate, selectedJobId, jobOptions, isEditMode, editAppointment]);
 
   // Fetch technician's booked slots for technician mode
   useEffect(() => {
@@ -628,7 +631,7 @@ export default function AddAppointmentModal({
     }
 
     fetchBookedSlots();
-  }, [mode, selectedTechnicianId, appointmentDate]);
+  }, [mode, selectedTechnicianId, appointmentDate, isEditMode, editAppointment]);
 
   // Fetch appointments to check for buffer conflicts
   useEffect(() => {
@@ -1080,13 +1083,16 @@ export default function AddAppointmentModal({
   ]);
 
   useEffect(() => {
-    // Only auto-select first slot if no time is currently selected
-    if (!appointmentTime && availableSlots.length > 0) {
-      setAppointmentTime(availableSlots[0]);
+    // Keep the ref in sync with the controlled value
+    if (appointmentTime) {
+      appointmentTimeRef.current = appointmentTime;
     }
-    // Don't force-change the time if user has made a selection and it's valid
-    // This prevents the cascading slot disappearance issue
-  }, [availableSlots, appointmentTime]);
+  }, [appointmentTime]);
+
+  // Reset the confirmation flag when key inputs change
+  useEffect(() => {
+    setTimeWasAvailable(false);
+  }, [appointmentDate, selectedJobId, selectedTechnicianId, mode]);
   
   // Fallback durations by job type when end time is missing
   // Check for 30-minute buffer gap with technician's own appointments
@@ -1229,7 +1235,39 @@ export default function AddAppointmentModal({
       return;
     }
 
-    const appointmentDateTime = `${appointmentDate}T${appointmentTime}:00`;
+    // Use the controlled value directly to avoid stale ref selections
+    const timeToUse = appointmentTime;
+    // Debug: log selected time at submit
+    try {
+      console.debug("[AddAppointmentModal] Submit time", { timeToUse, appointmentTime, ref: appointmentTimeRef.current });
+    } catch { void 0; }
+    const appointmentDateTime = `${appointmentDate}T${timeToUse}:00`;
+
+    // Safety: ensure selected time is valid
+    // Allow submission if current list includes it OR user previously chose from a valid list
+    if (!availableSlots.includes(appointmentTime) && !timeWasAvailable) {
+      // Non-blocking warning; proceed to let backend validate
+      try {
+        console.warn("[AddAppointmentModal] Proceeding despite transient slot list drop", {
+          appointmentTime,
+          availableSlots,
+          timeWasAvailable,
+        });
+      } catch { void 0; }
+    }
+
+    // Debug: guard against mismatches between selected time and derived string
+    try {
+      const derived = appointmentDateTime.split("T")[1].substring(0,5);
+      if (derived !== timeToUse) {
+        console.warn("[AddAppointmentModal] Time mismatch", {
+          appointmentTime: timeToUse,
+          derived,
+          appointmentDateTime,
+          availableSlots,
+        });
+      }
+    } catch { void 0; }
 
     // Extract actual customer ID in case it's nested - only needed for technician mode
     // However, when editing a customer-created quotation, don't send customerId as customer cannot be changed
@@ -1257,6 +1295,17 @@ export default function AddAppointmentModal({
       };
     }
 
+    // Compute explicit start/end times to send alongside appointmentDate
+    const startTimeStr = `${timeToUse}:00`;
+    const endTimeStr = (() => {
+      const appointmentStart = new Date(`${appointmentDate}T${timeToUse}:00`);
+      const durationMinutes = selectedJob?.estimatedDurationMinutes ?? 60;
+      const end = new Date(appointmentStart.getTime() + durationMinutes * 60 * 1000);
+      const hh = end.getHours().toString().padStart(2, '0');
+      const mm = end.getMinutes().toString().padStart(2, '0');
+      return `${hh}:${mm}:00`;
+    })();
+
     const request: AppointmentRequestModel = {
       customerId: actualCustomerId,
       ...(mode === "technician" && selectedTechnician
@@ -1271,6 +1320,8 @@ export default function AddAppointmentModal({
       jobName: selectedJob ? selectedJob.jobName : "",
       cellarName: cellar.name,
       appointmentDate: appointmentDateTime,
+      appointmentStartTime: startTimeStr,
+      appointmentEndTime: endTimeStr,
       description,
       appointmentAddress: { ...address },
     };
@@ -1557,7 +1608,12 @@ export default function AddAppointmentModal({
                   <CalendarClock size={16} />
                   <select
                     value={appointmentTime}
-                    onChange={(e) => setAppointmentTime(e.target.value)}
+                    onChange={(e) => {
+                      setAppointmentTime(e.target.value);
+                      appointmentTimeRef.current = e.target.value;
+                      // The dropdown options come from availableSlots, so this was valid at selection time
+                      setTimeWasAvailable(true);
+                    }}
                     disabled={
                       disableTimePicker ||
                       scheduleLoading ||

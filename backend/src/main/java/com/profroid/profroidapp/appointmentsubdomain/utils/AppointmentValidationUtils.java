@@ -310,6 +310,7 @@ public class AppointmentValidationUtils {
             // Specific date schedule exists - check if time slot is available
             boolean timeSlotAvailable = specificDateSchedules.stream()
                 .anyMatch(schedule -> schedule.getTimeSlot().getTimeslot() == requiredTimeSlot);
+            // Specific-date schedules checked above
             
             if (!timeSlotAvailable) {
                 throw new InvalidOperationException(
@@ -334,6 +335,7 @@ public class AppointmentValidationUtils {
                 .filter(schedule -> schedule.getSpecificDate() == null) // Regular schedules only
                 .filter(schedule -> schedule.getDayOfWeek().getDayOfWeek() == scheduleDay)
                 .anyMatch(schedule -> schedule.getTimeSlot().getTimeslot() == requiredTimeSlot);
+            // Weekly schedules checked above
             
             if (!timeSlotAvailable) {
                 throw new InvalidOperationException(

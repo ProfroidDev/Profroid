@@ -78,6 +78,18 @@ public class AppointmentServiceImpl implements AppointmentService {
         // Use Canada/Eastern timezone for accurate time comparisons
         LocalDateTime now = LocalDateTime.now(ZoneId.of("America/Toronto"));
         LocalDateTime appointmentDateTime = requestModel.getAppointmentDate();
+        // Normalize time from optional startTime field if provided
+        try {
+            String start = requestModel.getAppointmentStartTime();
+            if (start != null && !start.isBlank()) {
+                String[] parts = start.split(":");
+                int hh = Integer.parseInt(parts[0]);
+                int mm = parts.length > 1 ? Integer.parseInt(parts[1]) : 0;
+                appointmentDateTime = appointmentDateTime.toLocalDate().atTime(hh, mm);
+            }
+        } catch (Exception ignore) { }
+
+        // Received appointment date-time now normalized from optional start time
 
         if (appointmentDateTime.isBefore(now)) {
             throw new InvalidOperationException(

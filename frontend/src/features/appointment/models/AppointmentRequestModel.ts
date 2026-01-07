@@ -12,6 +12,10 @@ export interface AppointmentRequestModel {
   jobName: string;
   cellarName: string;
   appointmentDate: string;
+  /** Optional: explicit start time (HH:mm:ss) to avoid timezone/default-slot mismatches */
+  appointmentStartTime?: string;
+  /** Optional: explicit end time (HH:mm:ss) based on job duration */
+  appointmentEndTime?: string;
   description: string;
   appointmentAddress: AppointmentAddress;
   /** Optional: status of the appointment (SCHEDULED, CANCELLED, COMPLETED) */

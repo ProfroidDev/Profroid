@@ -44,6 +44,11 @@ public class AppointmentRequestModel {
     @Future(message = "Appointment date must be in the future.")
     private LocalDateTime appointmentDate;  // Must match one of technician's Schedule entries
 
+    // Optional: explicit start and end times (HH:mm:ss)
+    // If provided, backend will normalize appointmentDate's time to match start time
+    private String appointmentStartTime;
+    private String appointmentEndTime;
+
     @NotBlank(message = "Description is required.")
     private String description;
 

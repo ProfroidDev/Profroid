@@ -7,7 +7,7 @@ import { patchAppointmentStatus } from "../../features/appointment/api/patchAppo
 import Toast from "../../shared/components/Toast";
 import useAuthStore from "../../features/authentication/store/authStore";
 import ConfirmationModal from "../../components/ConfirmationModal";
-import { MapPin, Clock, User, Wrench, DollarSign, Phone, AlertCircle, Edit, CheckCircle, X } from "lucide-react";
+import { MapPin, Clock, User, Wrench, DollarSign, Phone, AlertCircle, Edit, CheckCircle, X, ChevronLeft, ChevronRight } from "lucide-react";
 import "./MyJobsPage.css";
 import { getCellars } from "../../features/cellar/api/getAllCellars";
 import type { CellarResponseModel } from "../../features/cellar/models/CellarResponseModel";
@@ -24,6 +24,8 @@ export default function MyJobsPage(): React.ReactElement {
   const [confirmModal, setConfirmModal] = useState<{ isOpen: boolean; type: 'complete' | 'cancel' | 'accept' | null; appointmentId: string | null }>({ isOpen: false, type: null, appointmentId: null });
   const [cellars, setCellars] = useState<CellarResponseModel[] | null>(null);
   const [matchedCellar, setMatchedCellar] = useState<CellarResponseModel | null>(null);
+  const [currentPage, setCurrentPage] = useState<number>(1);
+  const pageSize = 6;
   
   const { user, customerData } = useAuthStore();
 
@@ -42,6 +44,8 @@ export default function MyJobsPage(): React.ReactElement {
         (a, b) => new Date(a.appointmentDate).getTime() - new Date(b.appointmentDate).getTime()
       );
       setJobs(sorted);
+      const newTotalPages = Math.max(1, Math.ceil(sorted.length / pageSize));
+      setCurrentPage((prev) => Math.min(prev, newTotalPages));
     } catch (error: unknown) {
       console.error("Error fetching jobs:", error);
       
@@ -203,6 +207,18 @@ export default function MyJobsPage(): React.ReactElement {
     return `${matchedCellar.height}cm x ${matchedCellar.width}cm x ${matchedCellar.depth}cm`;
   }, [matchedCellar]);
 
+  const totalPages = useMemo(() => {
+    return Math.max(1, Math.ceil(jobs.length / pageSize));
+  }, [jobs.length]);
+
+  const paginatedJobs = useMemo(() => {
+    const start = (currentPage - 1) * pageSize;
+    return jobs.slice(start, start + pageSize);
+  }, [jobs, currentPage]);
+
+  const goPrev = () => setCurrentPage((p) => Math.max(1, p - 1));
+  const goNext = () => setCurrentPage((p) => Math.min(totalPages, p + 1));
+
   return (
     <div className="jobs-page-light">
       <div className="jobs-header">
@@ -234,8 +250,9 @@ export default function MyJobsPage(): React.ReactElement {
           <p>{t('pages.jobs.noJobsScheduled')}</p>
         </div>
       ) : (
+        <>
         <div className="jobs-grid">
-          {jobs.map((job) => (
+          {paginatedJobs.map((job) => (
             <div key={job.appointmentId} className="job-card">
               {/* Status Badge */}
               <div className={`status-badge ${getStatusBadge(job.status)}`}>
@@ -347,6 +364,31 @@ export default function MyJobsPage(): React.ReactElement {
             </div>
           ))}
         </div>
+
+        <div className="pagination-controls">
+          <button
+            className="pagination-button"
+            onClick={goPrev}
+            disabled={currentPage === 1}
+            title="Previous"
+            aria-label="Previous"
+          >
+            <ChevronLeft size={18} />
+          </button>
+          <span className="page-indicator">
+            {currentPage} / {totalPages}
+          </span>
+          <button
+            className="pagination-button"
+            onClick={goNext}
+            disabled={currentPage === totalPages}
+            title="Next"
+            aria-label="Next"
+          >
+            <ChevronRight size={18} />
+          </button>
+        </div>
+        </>
       )}
 
       {/* Detail Modal */}

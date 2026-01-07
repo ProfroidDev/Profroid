@@ -7,7 +7,7 @@ import { patchAppointmentStatus } from "../../features/appointment/api/patchAppo
 import Toast from "../../shared/components/Toast";
 import useAuthStore from "../../features/authentication/store/authStore";
 import ConfirmationModal from "../../components/ConfirmationModal";
-import { MapPin, Clock, User, Wrench, DollarSign, AlertCircle, Edit, X } from "lucide-react";
+import { MapPin, Clock, User, Wrench, DollarSign, AlertCircle, Edit, X, ChevronLeft, ChevronRight } from "lucide-react";
 import "./MyAppointmentsPage.css";
 import { getEmployee } from "../../features/employee/api/getEmployeeById";
 import type { EmployeeResponseModel } from "../../features/employee/models/EmployeeResponseModel";
@@ -27,6 +27,8 @@ export default function MyAppointmentsPage(): React.ReactElement {
   const [technicianDetails, setTechnicianDetails] = useState<EmployeeResponseModel | null>(null);
   const [cellars, setCellars] = useState<CellarResponseModel[] | null>(null);
   const [matchedCellar, setMatchedCellar] = useState<CellarResponseModel | null>(null);
+  const [currentPage, setCurrentPage] = useState<number>(1);
+  const pageSize = 6;
   
   const { user, customerData } = useAuthStore();
 
@@ -46,6 +48,8 @@ export default function MyAppointmentsPage(): React.ReactElement {
         (a, b) => new Date(a.appointmentDate).getTime() - new Date(b.appointmentDate).getTime()
       );
       setAppointments(sorted);
+      const newTotalPages = Math.max(1, Math.ceil(sorted.length / pageSize));
+      setCurrentPage((prev) => Math.min(prev, newTotalPages));
     } catch (error: unknown) {
       console.error("Error fetching appointments:", error);
       
@@ -183,6 +187,18 @@ export default function MyAppointmentsPage(): React.ReactElement {
     return `${matchedCellar.height}cm x ${matchedCellar.width}cm x ${matchedCellar.depth}cm`;
   }, [matchedCellar]);
 
+  const totalPages = useMemo(() => {
+    return Math.max(1, Math.ceil(appointments.length / pageSize));
+  }, [appointments.length]);
+
+  const paginatedAppointments = useMemo(() => {
+    const start = (currentPage - 1) * pageSize;
+    return appointments.slice(start, start + pageSize);
+  }, [appointments, currentPage]);
+
+  const goPrev = () => setCurrentPage((p) => Math.max(1, p - 1));
+  const goNext = () => setCurrentPage((p) => Math.min(totalPages, p + 1));
+
   return (
     <div className="appointments-page-light">
       <div className="appointments-header">
@@ -214,8 +230,9 @@ export default function MyAppointmentsPage(): React.ReactElement {
           <p>{t('pages.appointments.noAppointmentsYet')}</p>
         </div>
       ) : (
+        <>
         <div className="appointments-grid">
-          {appointments.map((appointment) => (
+          {paginatedAppointments.map((appointment) => (
             <div key={appointment.appointmentId} className="appointment-card">
               {/* Status Badge */}
               <div className={`status-badge ${getStatusBadge(appointment.status)}`}>
@@ -312,6 +329,31 @@ export default function MyAppointmentsPage(): React.ReactElement {
             </div>
           ))}
         </div>
+
+        <div className="pagination-controls">
+          <button
+            className="pagination-button"
+            onClick={goPrev}
+            disabled={currentPage === 1}
+            title="Previous"
+            aria-label="Previous"
+          >
+            <ChevronLeft size={18} />
+          </button>
+          <span className="page-indicator">
+            {currentPage} / {totalPages}
+          </span>
+          <button
+            className="pagination-button"
+            onClick={goNext}
+            disabled={currentPage === totalPages}
+            title="Next"
+            aria-label="Next"
+          >
+            <ChevronRight size={18} />
+          </button>
+        </div>
+        </>
       )}
 
       {/* Detail Modal */}
