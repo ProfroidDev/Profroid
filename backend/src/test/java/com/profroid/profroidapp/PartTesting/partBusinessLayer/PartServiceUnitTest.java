@@ -1,5 +1,6 @@
 package com.profroid.profroidapp.PartTesting.partBusinessLayer;
 
+import com.profroid.profroidapp.filesubdomain.businessLayer.FileService;
 import com.profroid.profroidapp.partsubdomain.businessLayer.PartServiceImpl;
 import com.profroid.profroidapp.partsubdomain.dataAccessLayer.Part;
 import com.profroid.profroidapp.partsubdomain.dataAccessLayer.PartIdentifier;
@@ -25,6 +26,7 @@ public class PartServiceUnitTest {
     private PartResponseMapper responseMapper;
     private PartRequestMapper requestMapper;
     private PartServiceImpl partService;
+    private FileService fileService;
 
     private final String VALID_PART_ID = "PC-999999";
 
@@ -36,8 +38,9 @@ public class PartServiceUnitTest {
         partRepository = mock(PartRepository.class);
         responseMapper = mock(PartResponseMapper.class);
         requestMapper = mock(PartRequestMapper.class);
+        fileService = mock(FileService.class);
 
-        partService = new PartServiceImpl(partRepository, responseMapper, requestMapper);
+        partService = new PartServiceImpl(partRepository, responseMapper, requestMapper, fileService);
 
         existingPart = new Part();
         existingPart.setPartIdentifier(new PartIdentifier(VALID_PART_ID));

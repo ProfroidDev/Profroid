@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { createPart } from "../api/createPart";
+import { createPartWithImage } from "../api/createPartWithImage";
 import type { PartRequestModel } from "../models/PartRequestModel";
 import "./PartAddModal.css";
 import { X } from "lucide-react";
@@ -19,11 +20,37 @@ export default function PartAddModal({
 }: PartAddModalProps): React.ReactElement | null {
   const [name, setName] = useState<string>("");
   const [available, setAvailable] = useState<boolean>(true);
+  const [file, setFile] = useState<File | null>(null);
   const [submitting, setSubmitting] = useState<boolean>(false);
+
+  const MAX_FILE_SIZE_MB = 10;
+  const MAX_FILE_SIZE_BYTES = MAX_FILE_SIZE_MB * 1024 * 1024;
 
   if (!isOpen) {
     return null;
   }
+
+  const validateFile = (selectedFile: File): boolean => {
+    if (!selectedFile.type.startsWith("image/")) {
+      onError("Only image files are allowed.");
+      return false;
+    }
+    if (selectedFile.size > MAX_FILE_SIZE_BYTES) {
+      const sizeMB = (selectedFile.size / (1024 * 1024)).toFixed(2);
+      onError(`File size (${sizeMB} MB) exceeds maximum allowed size (${MAX_FILE_SIZE_MB} MB).`);
+      return false;
+    }
+    return true;
+  };
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const selectedFile = e.target.files?.[0] ?? null;
+    if (selectedFile && !validateFile(selectedFile)) {
+      e.target.value = ""; // Reset input
+      return;
+    }
+    setFile(selectedFile);
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -39,12 +66,17 @@ export default function PartAddModal({
         name: name.trim(),
         available,
       };
-      
-      await createPart(partData);
+
+      if (file) {
+        await createPartWithImage(partData, file);
+      } else {
+        await createPart(partData);
+      }
       
       // Reset form
       setName("");
       setAvailable(true);
+      setFile(null);
       
       onPartAdded();
       onClose();
@@ -60,6 +92,7 @@ export default function PartAddModal({
     if (!submitting) {
       setName("");
       setAvailable(true);
+      setFile(null);
       onClose();
     }
   };
@@ -103,6 +136,21 @@ export default function PartAddModal({
                 />
                 <span>Available</span>
               </label>
+            </div>
+
+            <div className="form-group">
+              <label className="form-label" htmlFor="part-image">
+                Image (optional)
+              </label>
+              <input
+                id="part-image"
+                type="file"
+                accept="image/*"
+                className="form-input"
+                disabled={submitting}
+                onChange={handleFileChange}
+              />
+              <p className="helper-text">Maximum file size: {MAX_FILE_SIZE_MB} MB. Only image files allowed.</p>
             </div>
           </div>
 

@@ -17,6 +17,10 @@ export default function PartDetailModal({
     return null;
   }
 
+  const imageUrl = part.imageFileId
+    ? `${import.meta.env.VITE_BACKEND_URL}/files/${part.imageFileId}/download`
+    : `https://via.placeholder.com/300x300?text=${encodeURIComponent(part.name)}`;
+
   return (
     <div className="modal-overlay" onClick={onClose}>
       <div className="modal-content" onClick={(e) => e.stopPropagation()}>
@@ -30,7 +34,7 @@ export default function PartDetailModal({
         <div className="modal-body">
           <div className="modal-image-container">
             <img
-              src={`https://via.placeholder.com/300x300?text=${encodeURIComponent(part.name)}`}
+              src={imageUrl}
               alt={part.name}
               className="modal-image"
             />

@@ -62,6 +62,8 @@ dependencies {
     // Test annotation processors
     testAnnotationProcessor "org.mapstruct:mapstruct-processor:${mapstructVersion}"
     testAnnotationProcessor "org.projectlombok:lombok:${lombokVersion}"
+
+    implementation 'io.minio:minio:8.5.7'
 }
 
 jacoco {

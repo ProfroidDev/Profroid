@@ -7,6 +7,9 @@ import com.profroid.profroidapp.partsubdomain.mappingLayer.PartRequestMapper;
 import com.profroid.profroidapp.partsubdomain.mappingLayer.PartResponseMapper;
 import com.profroid.profroidapp.partsubdomain.presentationLayer.PartRequestModel;
 import com.profroid.profroidapp.partsubdomain.presentationLayer.PartResponseModel;
+import com.profroid.profroidapp.filesubdomain.businessLayer.FileService;
+import com.profroid.profroidapp.filesubdomain.dataAccessLayer.FileCategory;
+import com.profroid.profroidapp.filesubdomain.dataAccessLayer.FileOwnerType;
 import com.profroid.profroidapp.utils.exceptions.InvalidIdentifierException;
 import com.profroid.profroidapp.utils.exceptions.ResourceAlreadyExistsException;
 import com.profroid.profroidapp.utils.exceptions.ResourceNotFoundException;
@@ -14,8 +17,10 @@ import com.profroid.profroidapp.utils.exceptions.InvalidOperationException;
 import com.profroid.profroidapp.utils.generators.SkuGenerator.SkuGenerator;
 
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
+import java.util.UUID;
 
 @Service
 public class PartServiceImpl implements PartService {
@@ -23,13 +28,16 @@ public class PartServiceImpl implements PartService {
     private final PartRepository partRepository;
     private final PartResponseMapper partResponseMapper;
     private final PartRequestMapper partRequestMapper;
+    private final FileService fileService;
 
     public PartServiceImpl(PartRepository partRepository,
                            PartResponseMapper partResponseMapper,
-                           PartRequestMapper partRequestMapper) {
+                           PartRequestMapper partRequestMapper,
+                           FileService fileService) {
         this.partRepository = partRepository;
         this.partResponseMapper = partResponseMapper;
         this.partRequestMapper = partRequestMapper;
+        this.fileService = fileService;
     }
 
     // =====================================================
@@ -81,6 +89,15 @@ public class PartServiceImpl implements PartService {
         return partResponseMapper.toResponseModel(saved);
     }
 
+    @Override
+    public PartResponseModel createPartWithImage(PartRequestModel requestModel, MultipartFile file) {
+        PartResponseModel created = createPart(requestModel);
+        if (file == null || file.isEmpty()) {
+            return created;
+        }
+        return uploadPartImage(created.getPartId(), file);
+    }
+
     // =====================================================
     // UPDATE PART
     // =====================================================
@@ -111,6 +128,40 @@ public class PartServiceImpl implements PartService {
 
         Part updated = partRepository.save(existingPart);
         return partResponseMapper.toResponseModel(updated);
+    }
+
+    @Override
+    public PartResponseModel uploadPartImage(String partId, MultipartFile file) {
+        if (file == null || file.isEmpty()) {
+            throw new InvalidOperationException("File is required for upload.");
+        }
+
+        Part part = partRepository.findPartByPartIdentifier_PartId(partId);
+        if (part == null) {
+            throw new ResourceNotFoundException("Part " + partId + " not found.");
+        }
+
+        // Store previous image ID for cleanup after successful upload
+        UUID previousImageId = part.getImageFileId();
+
+        // Upload new image first to ensure it succeeds before making any changes
+        var stored = fileService.upload(file, FileOwnerType.PART, partId, FileCategory.IMAGE);
+        
+        // Update database with new image reference
+        part.setImageFileId(stored.getId());
+        Part saved = partRepository.save(part);
+
+        // Clean up old image in a separate transaction to avoid persistence context conflicts
+        if (previousImageId != null) {
+            try {
+                fileService.delete(previousImageId);
+            } catch (Exception e) {
+                // Log but don't fail - orphaned files can be cleaned up later
+                // In production, consider a scheduled cleanup job for orphaned files
+            }
+        }
+
+        return partResponseMapper.toResponseModel(saved);
     }
 
     // =====================================================

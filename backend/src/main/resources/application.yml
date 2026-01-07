@@ -14,7 +14,7 @@ logging:
     org.hibernate.type.descriptor.sql.BasicBinder: TRACE
 
 jwt:
-  secret: ${JWT_SECRET:Qt0K6UmrLyz5f4EfphuWm2xBBOY7yaaV}
+  secret: ${JWT_SECRET}
 
 spring:
   profiles:

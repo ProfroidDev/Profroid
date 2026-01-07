@@ -6,6 +6,21 @@ version: "3.9"
 
 services:
 
+  minio:
+    image: minio/minio:latest
+    container_name: profroid-minio
+    command: server /data --console-address ":9001"
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ACCESS_KEY}
+      MINIO_ROOT_PASSWORD: ${MINIO_SECRET_KEY}
+    ports:
+      - "9000:9000"  # S3 API
+      - "9001:9001"  # MinIO console
+    volumes:
+      - minio_data:/data
+    networks:
+      - profroid-net
+
   mysql:
     image: mysql:8.0
     container_name: profroid-mysql
@@ -78,6 +93,10 @@ services:
       SPRING_DATASOURCE_USERNAME: root
       SPRING_DATASOURCE_PASSWORD: ${MYSQL_ROOT_PASSWORD}
       JWT_SECRET: ${JWT_SECRET}
+      MINIO_ENDPOINT: http://minio:9000
+      MINIO_ACCESS_KEY: ${MINIO_ACCESS_KEY}
+      MINIO_SECRET_KEY: ${MINIO_SECRET_KEY}
+      MINIO_BUCKET_PRIVATE: ${MINIO_BUCKET_PRIVATE:-profroid-private}
     ports:
       - "8080:8080"
     networks:
@@ -98,6 +117,7 @@ services:
 
 volumes:
   mysql_data:
+  minio_data:
 
 networks:
   profroid-net:

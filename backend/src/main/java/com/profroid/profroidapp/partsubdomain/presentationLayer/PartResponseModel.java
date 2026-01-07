@@ -9,4 +9,5 @@ public class PartResponseModel {
     private String partId;
     private String name;
     private Boolean available;
+    private String imageFileId;
 }
