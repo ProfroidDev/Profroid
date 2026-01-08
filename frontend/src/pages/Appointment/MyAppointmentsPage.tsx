@@ -142,6 +142,19 @@ export default function MyAppointmentsPage(): React.ReactElement {
     }
   };
 
+  const getStatusLabel = (status: string): string => {
+    switch (status) {
+      case "SCHEDULED":
+        return t('pages.appointments.statusScheduled');
+      case "COMPLETED":
+        return t('pages.appointments.statusCompleted');
+      case "CANCELLED":
+        return t('pages.appointments.statusCancelled');
+      default:
+        return status;
+    }
+  };
+
   // Load technician details and cellar info when a specific appointment is selected
   useEffect(() => {
     const loadExtraDetails = async () => {
@@ -333,7 +346,7 @@ export default function MyAppointmentsPage(): React.ReactElement {
             <div key={appointment.appointmentId} className="appointment-card">
               {/* Status Badge */}
               <div className={`status-badge ${getStatusBadge(appointment.status)}`}>
-                {appointment.status}
+                {getStatusLabel(appointment.status)}
               </div>
 
               {/* Appointment Header */}
@@ -470,7 +483,7 @@ export default function MyAppointmentsPage(): React.ReactElement {
                 <p><strong>{t('pages.appointments.job')}:</strong> {selectedAppointment.jobName}</p>
                 <p><strong>{t('pages.appointments.type')}:</strong> {selectedAppointment.jobType}</p>
                 <p><strong>{t('pages.appointments.rate')}:</strong> ${selectedAppointment.hourlyRate.toFixed(2)}/hour</p>
-                <p><strong>{t('pages.appointments.status')}:</strong> <span className={`modal-status-badge ${getStatusBadge(selectedAppointment.status)}`}>{selectedAppointment.status}</span></p>
+                <p><strong>{t('pages.appointments.status')}:</strong> <span className={`modal-status-badge ${getStatusBadge(selectedAppointment.status)}`}>{getStatusLabel(selectedAppointment.status)}</span></p>
               </div>
 
               <div className="detail-section">

@@ -997,48 +997,58 @@ public class AppointmentServiceImpl implements AppointmentService {
                 );
             }
             
-            // Find the least-booked technician during the current week
+            // Determine least-booked technician using WEEK totals, then DAY totals as tie-breaker.
+            // Cancelled appointments are excluded from both computations.
             LocalDate weekStart = appointmentDate.with(java.time.temporal.TemporalAdjusters.previousOrSame(java.time.DayOfWeek.MONDAY));
             LocalDate weekEnd = weekStart.plusDays(6);
             LocalDateTime weekStartDT = weekStart.atStartOfDay();
             LocalDateTime weekEndDT = weekEnd.plusDays(1).atStartOfDay();
-            
-            Employee leastBookedTechnician = null;
-            int minHours = Integer.MAX_VALUE;
-            java.util.Random random = new java.util.Random();
-            
+
+            Employee best = null;
+            int bestWeekMinutes = Integer.MAX_VALUE;
+            int bestDayMinutes = Integer.MAX_VALUE;
+
             for (Employee tech : availableTechnicians) {
-                List<Appointment> weekAppointments = appointmentRepository.findByTechnicianAndAppointmentDateBetween(
-                        tech, weekStartDT, weekEndDT).stream()
-                        .filter(apt -> apt.getAppointmentStatus() != null && 
+                // Weekly minutes
+                List<Appointment> weekAppointments = appointmentRepository
+                        .findByTechnicianAndAppointmentDateBetween(tech, weekStartDT, weekEndDT)
+                        .stream()
+                        .filter(apt -> apt.getAppointmentStatus() != null &&
                                 apt.getAppointmentStatus().getAppointmentStatusType() != AppointmentStatusType.CANCELLED)
                         .toList();
-                
-                int totalMinutes = 0;
+
+                int weekMinutes = 0;
                 for (Appointment apt : weekAppointments) {
-                    if (apt.getJob() != null && apt.getJob().getEstimatedDurationMinutes() > 0) {
-                        totalMinutes += apt.getJob().getEstimatedDurationMinutes();
-                    } else {
-                        totalMinutes += 120;
-                    }
+                    Integer dur = (apt.getJob() != null) ? apt.getJob().getEstimatedDurationMinutes() : null;
+                    weekMinutes += (dur != null && dur > 0) ? dur : 120;
                 }
-                
-                // If this technician has fewer hours, or same hours with random chance, select them
-                if (totalMinutes < minHours) {
-                    minHours = totalMinutes;
-                    leastBookedTechnician = tech;
-                } else if (totalMinutes == minHours && random.nextBoolean()) {
-                    // Equal workload - randomly select between them
-                    leastBookedTechnician = tech;
+
+                // Day minutes
+                List<Appointment> dayAppointments = appointmentRepository
+                        .findByTechnicianAndAppointmentDateBetween(tech, dayStart, dayEnd)
+                        .stream()
+                        .filter(apt -> apt.getAppointmentStatus() != null &&
+                                apt.getAppointmentStatus().getAppointmentStatusType() != AppointmentStatusType.CANCELLED)
+                        .toList();
+
+                int dayMinutes = 0;
+                for (Appointment apt : dayAppointments) {
+                    Integer dur = (apt.getJob() != null) ? apt.getJob().getEstimatedDurationMinutes() : null;
+                    dayMinutes += (dur != null && dur > 0) ? dur : 120;
+                }
+
+                // Selection: smaller week minutes wins; if tie, smaller day minutes; if still tie, lowest employee ID.
+                if (weekMinutes < bestWeekMinutes ||
+                    (weekMinutes == bestWeekMinutes && dayMinutes < bestDayMinutes) ||
+                    (weekMinutes == bestWeekMinutes && dayMinutes == bestDayMinutes && 
+                        (best == null || tech.getId() < best.getId()))) {
+                    best = tech;
+                    bestWeekMinutes = weekMinutes;
+                    bestDayMinutes = dayMinutes;
                 }
             }
-            
-            if (leastBookedTechnician == null) {
-                // Fallback - just pick the first available
-                leastBookedTechnician = availableTechnicians.get(0);
-            }
-            
-            return leastBookedTechnician;
+
+            return best != null ? best : availableTechnicians.get(0);
         }
 
         /**

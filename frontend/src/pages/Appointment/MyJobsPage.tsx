@@ -173,6 +173,19 @@ export default function MyJobsPage(): React.ReactElement {
     }
   };
 
+  const getStatusLabel = (status: string): string => {
+    switch (status) {
+      case "SCHEDULED":
+        return t('pages.appointments.statusScheduled');
+      case "COMPLETED":
+        return t('pages.appointments.statusCompleted');
+      case "CANCELLED":
+        return t('pages.appointments.statusCancelled');
+      default:
+        return status;
+    }
+  };
+
   // Load cellar info when a job is selected
   useEffect(() => {
     const loadCellar = async () => {
@@ -259,7 +272,11 @@ export default function MyJobsPage(): React.ReactElement {
                 onClick={() => {
                   setStatusFilters((prev) => {
                     const next = new Set(prev);
-                    next.has('SCHEDULED') ? next.delete('SCHEDULED') : next.add('SCHEDULED');
+                    if (next.has('SCHEDULED')) {
+                      next.delete('SCHEDULED');
+                    } else {
+                      next.add('SCHEDULED');
+                    }
                     setCurrentPage(1);
                     return Array.from(next);
                   });
@@ -271,7 +288,11 @@ export default function MyJobsPage(): React.ReactElement {
                 onClick={() => {
                   setStatusFilters((prev) => {
                     const next = new Set(prev);
-                    next.has('COMPLETED') ? next.delete('COMPLETED') : next.add('COMPLETED');
+                    if (next.has('COMPLETED')) {
+                      next.delete('COMPLETED');
+                    } else {
+                      next.add('COMPLETED');
+                    }
                     setCurrentPage(1);
                     return Array.from(next);
                   });
@@ -283,7 +304,11 @@ export default function MyJobsPage(): React.ReactElement {
                 onClick={() => {
                   setStatusFilters((prev) => {
                     const next = new Set(prev);
-                    next.has('CANCELLED') ? next.delete('CANCELLED') : next.add('CANCELLED');
+                    if (next.has('CANCELLED')) {
+                      next.delete('CANCELLED');
+                    } else {
+                      next.add('CANCELLED');
+                    }
                     setCurrentPage(1);
                     return Array.from(next);
                   });
@@ -353,7 +378,7 @@ export default function MyJobsPage(): React.ReactElement {
             <div key={job.appointmentId} className="job-card">
               {/* Status Badge */}
               <div className={`status-badge ${getStatusBadge(job.status)}`}>
-                {job.status}
+                {getStatusLabel(job.status)}
               </div>
 
               {/* Job Header */}
@@ -505,7 +530,7 @@ export default function MyJobsPage(): React.ReactElement {
                 <p><strong>{t('pages.jobs.job')}:</strong> {selectedJob.jobName}</p>
                 <p><strong>{t('pages.jobs.type')}:</strong> {selectedJob.jobType}</p>
                 <p><strong>{t('pages.jobs.rate')}:</strong> ${selectedJob.hourlyRate.toFixed(2)}/hour</p>
-                <p><strong>{t('pages.jobs.status')}:</strong> <span className={`modal-status-badge ${getStatusBadge(selectedJob.status)}`}>{selectedJob.status}</span></p>
+                <p><strong>{t('pages.jobs.status')}:</strong> <span className={`modal-status-badge ${getStatusBadge(selectedJob.status)}`}>{getStatusLabel(selectedJob.status)}</span></p>
               </div>
 
               <div className="detail-section">

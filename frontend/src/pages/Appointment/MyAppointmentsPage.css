@@ -631,7 +631,7 @@
   display: flex;
   flex-wrap: wrap;
   gap: 10px;
-  margin-top: 8px; /* lower chips spacing under header */
+  margin-top: 16px; /* further lower chips under header */
 }
 
 
