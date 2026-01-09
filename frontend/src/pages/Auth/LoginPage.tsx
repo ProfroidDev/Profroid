@@ -8,7 +8,7 @@ import '../Auth.css';
 export default function LoginPage() {
   const { t } = useTranslation();
   const navigate = useNavigate();
-  const { error, isLoading, clearError, login, fetchCustomerData } = useAuthStore();
+  const { error, isLoading, clearError, fetchCustomerData } = useAuthStore();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [formError, setFormError] = useState('');
@@ -23,20 +23,22 @@ export default function LoginPage() {
       return;
     }
 
-    // Use store's login action which updates auth state
-    const success = await login(email, password);
+    // Call authClient directly to handle all response cases
+    const response = await authClient.signIn(email, password);
     
-    if (success) {
-      // Ensure customer/employee data is loaded before routing
+    if (response.success) {
+      // Fetch customer data and navigate to home
       await fetchCustomerData();
       navigate('/');
+    } else if (response.requiresVerification || (response.error && response.error.toLowerCase().includes('verify'))) {
+      // Email not verified - redirect to verification page
+      navigate('/auth/verify-email', { state: { email, userId: response.userId } });
+    } else if ((response as any).requiresCompletion) {
+      // Profile not completed - redirect to complete profile
+      navigate('/auth/register', { state: { completionMode: true, userId: response.userId, email } });
     } else {
-      // Check if requiresCompletion by calling authClient directly for registration flow
-      const response = await authClient.signIn(email, password);
-      if (response.requiresCompletion && response.userId) {
-        navigate('/register', { state: { completionMode: true, userId: response.userId, email } });
-      }
-      // If neither, error is already in store and will display below
+      // Show error
+      setFormError(response.error || t('auth.loginFailed'));
     }
   };
 
@@ -76,7 +78,7 @@ export default function LoginPage() {
           </div>
 
           <div style={{ textAlign: 'right', marginTop: '-0.5rem', marginBottom: '0.5rem' }}>
-            <Link to="/forgot-password" className="link" style={{ fontSize: '0.9rem' }}>
+            <Link to="/auth/forgot-password" className="link" style={{ fontSize: '0.9rem' }}>
               {t('auth.forgotPassword')}
             </Link>
           </div>
@@ -99,7 +101,7 @@ export default function LoginPage() {
         <div className="auth-footer">
           <p>
             {t('auth.noAccount')}{' '}
-            <Link to="/register" className="link">
+            <Link to="/auth/register" className="link">
               {t('auth.register')}
             </Link>
           </p>

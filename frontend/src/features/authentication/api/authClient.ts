@@ -15,6 +15,7 @@ export interface AuthResponse {
     isActive?: boolean;
   };
   requiresCompletion?: boolean;
+  requiresVerification?: boolean;
   userId?: string;
   message?: string;
   error?: string;
@@ -262,6 +263,60 @@ class AuthAPI {
         token,
         newPassword,
       });
+      return response.data;
+    } catch (error: unknown) {
+      return {
+        success: false,
+        error: getErrorMessage(error),
+      };
+    }
+  }
+
+  /**
+   * Verify email with token
+   */
+  async verifyEmail(token: string): Promise<{ success: boolean; userId?: string; message?: string; error?: string }> {
+    try {
+      const response = await this.client.post<{ success: boolean; userId: string; message: string }>('/verify-email/' + token);
+      return response.data;
+    } catch (error: unknown) {
+      return {
+        success: false,
+        error: getErrorMessage(error),
+      };
+    }
+  }
+
+  /**
+   * Resend verification email
+   */
+  async resendVerificationEmail(email: string): Promise<{ success: boolean; message?: string; error?: string }> {
+    try {
+      const response = await this.client.post<{ success: boolean; message: string }>('/resend-verification', {
+        email,
+      });
+      return response.data;
+    } catch (error: unknown) {
+      return {
+        success: false,
+        error: getErrorMessage(error),
+      };
+    }
+  }
+
+  /**
+   * Get verification status for authenticated user
+   */
+  async getVerificationStatus(): Promise<{ 
+    success: boolean; 
+    verified?: boolean;
+    emailVerifiedAt?: string;
+    attempts?: number;
+    lockedUntil?: string;
+    error?: string;
+  }> {
+    try {
+      const response = await this.client.get('/verify-status');
       return response.data;
     } catch (error: unknown) {
       return {

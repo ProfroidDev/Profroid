@@ -91,9 +91,11 @@ export default function RegisterPage() {
     setSubmitting(true);
     try {
       const response = await authClient.register(email, password);
-      if (response.success && response.requiresCompletion && response.userId) {
-        setUserId(response.userId);
-        setStep(2);
+      if (response.success) {
+        // Redirect to email verification page
+        navigate('/auth/verify-email', {
+          state: { email, userId: response.userId }
+        });
       } else {
         setFormError(translateBackendMessage(response.error));
       }
@@ -459,7 +461,7 @@ export default function RegisterPage() {
         <div className="auth-footer">
           <p>
             {t('auth.alreadyHaveAccount')}{' '}
-            <Link to="/login" className="link">
+            <Link to="/auth/login" className="link">
               {t('auth.login')}
             </Link>
           </p>

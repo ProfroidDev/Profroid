@@ -5,8 +5,9 @@
   align-items: center;
   justify-content: center;
   min-height: 100vh;
-  background: #f7f6f3;
+  background: #f7f6f3 !important;
   padding: 1rem;
+  width: 100%;
 }
 
 .auth-card {
