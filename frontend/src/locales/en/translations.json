@@ -46,7 +46,9 @@
       "threePm": "3:00 PM",
       "fivePm": "5:00 PM"
     },
-    "max": "Max"
+    "max": "Max",
+    "all": "All",
+    "clear": "Clear"
   },
   "navigation": {
     "parts": "Parts",
@@ -447,6 +449,11 @@
       "service": "Service",
       "technician": "Technician",
       "status": "Status",
+      "statusScheduled": "Scheduled",
+      "statusCompleted": "Completed",
+      "statusCancelled": "Cancelled",
+      "startDate": "Start Date",
+      "endDate": "End Date",
       "noAppointments": "No Appointments Found",
       "noAppointmentsYet": "You don't have any scheduled appointments yet.",
       "viewAndManageAppointments": "View and manage your scheduled service appointments",
@@ -468,6 +475,12 @@
       "appointmentTime": "Appointment Time",
       "serviceLocation": "Service Location",
       "contactInformation": "Contact Information",
+      "dimensions": "Dimensions",
+      "capacity": "Capacity",
+      "features": "Features",
+      "cooling": "Cooling System",
+      "humidityControl": "Humidity Control",
+      "autoRegulation": "Auto Regulation",
       "name": "Name",
       "role": "Role",
       "job": "Job",
@@ -477,6 +490,10 @@
       "streetAddress": "Street Address",
       "city": "City",
       "province": "Province",
+      "selectProvince": "Select Province",
+      "quebec": "Quebec (QC)",
+      "ontario": "Ontario (ON)",
+      "operationalAreaMessage": "We only operate in these areas",
       "country": "Country",
       "postalCode": "Postal Code",
       "createAppointment": "Create Appointment",
@@ -497,7 +514,12 @@
       "noCustomersFound": "No customers found with this email",
       "cannotChangeQuotationType": "Cannot change the type of a quotation",
       "cannotChangeCustomerForQuotation": "Cannot change customer for a quotation",
-      "cannotChangeCustomerQuotation": "Cannot change a quotation created by a customer"
+      "cannotChangeCustomerQuotation": "Cannot change a quotation created by a customer",
+      "bufferWarningTitle": "Insufficient Time Between Appointments",
+      "bufferWarningMessage": "You have less than 30 minutes between these two appointments. Do you want to continue?",
+      "continueScheduling": "Continue",
+      "cancelScheduling": "Cancel",
+      "timeConflict": "Time conflict: The technician already has an appointment from {{startTime}} to {{endTime}}. Your requested appointment from {{requestStartTime}} to {{requestEndTime}} overlaps with this existing appointment."
     },
     "jobs": {
       "myJobs": "My Jobs",
@@ -507,10 +529,17 @@
       "confirmComplete": "Are you sure you want to mark this job as completed?",
       "confirmCompleteTitle": "Complete Job",
       "jobCompleted": "Job marked as completed successfully",
+      "acceptJob": "Accept Job",
+      "jobAccepted": "Job accepted successfully",
       "errorCompleting": "Failed to mark job as completed",
       "customer": "Customer",
       "appointment": "Appointment",
       "status": "Status",
+      "statusScheduled": "Scheduled",
+      "statusCompleted": "Completed",
+      "statusCancelled": "Cancelled",
+      "startDate": "Start Date",
+      "endDate": "End Date",
       "noJobs": "No jobs assigned",
       "noJobsAssigned": "No Jobs Assigned",
       "noJobsScheduled": "You don't have any jobs scheduled at the moment.",
@@ -534,7 +563,10 @@
       "mobile": "Mobile",
       "job": "Job",
       "type": "Type",
-      "rate": "Rate"
+      "rate": "Rate",
+      "dimensions": "Dimensions",
+      "capacity": "Capacity",
+      "features": "Features"
     },
     "profile": {
       "title": "My Profile",
@@ -634,13 +666,17 @@
   "validation": {
     "emailInvalid": "Please enter a valid email address",
     "postalCodeInvalid": "Please enter a valid postal code",
+    "invalidPostalCode": "Invalid postal code",
     "postalCodeMismatch": "Postal code does not match {{city}}, {{province}}",
     "phoneInvalid": "Please enter a valid phone number",
     "passwordTooShort": "Password must be at least 8 characters",
     "required": "This field is required",
     "fieldRequired": "{{field}} is required",
     "invalidImageType": "Please select an image file",
-    "imageTooLarge": "Image is too large (max 10MB)"
+    "imageTooLarge": "Image is too large (max 10MB)",
+    "provinceNotAllowed": "Appointments can only be scheduled in Quebec (QC) or Ontario (ON) provinces.",
+    "postalCodeNotQC": "Quebec postal codes start with G, H, or J. Please enter a valid Quebec postal code.",
+    "postalCodeNotON": "Ontario postal codes start with K, L, M, N, or P. Please enter a valid Ontario postal code."
   },
   "messages": {
     "success": "Operation completed successfully",
@@ -656,6 +692,7 @@
   "error": {
     "schedule": {
       "cannotEditScheduleAppointmentConflict": "Cannot edit schedule; there is an appointment on this date at a time slot you are removing.",
+      "cannotUpdateWeeklyScheduleDueToAppointment": "Cannot update schedule: there is an appointment on {{day}} at {{time}} that would be removed by this update. Please cancel or reschedule the appointment first.",
       "dayMustHaveTimeSlot": "{{day}} must have at least one time slot.",
       "nonTechnicianMustStartNineAm": "Non-technicians must start at NINE_AM (09:00).",
       "startBeforeEnd": "{{day}}: start must be before end.",

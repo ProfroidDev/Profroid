@@ -28,6 +28,8 @@ public class AppointmentRequestModel {
     private String customerId;  // Optional - used when technician books for customer (UUID format)
     
     // TECHNICIAN IDENTIFICATION (Optional for customers - auto-assigned)
+    private String technicianId;        // Optional - technician's unique ID (preferred over name-based lookup)
+    
     private String technicianFirstName;  // Optional for customer bookings, required for technician bookings
 
     private String technicianLastName;   // Optional for customer bookings, required for technician bookings
@@ -41,6 +43,11 @@ public class AppointmentRequestModel {
     @NotNull(message = "Appointment date and time is required.")
     @Future(message = "Appointment date must be in the future.")
     private LocalDateTime appointmentDate;  // Must match one of technician's Schedule entries
+
+    // Optional: explicit start and end times (HH:mm:ss)
+    // If provided, backend will normalize appointmentDate's time to match start time
+    private String appointmentStartTime;
+    private String appointmentEndTime;
 
     @NotBlank(message = "Description is required.")
     private String description;

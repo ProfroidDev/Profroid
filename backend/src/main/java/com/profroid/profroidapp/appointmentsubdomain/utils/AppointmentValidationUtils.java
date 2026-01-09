@@ -169,45 +169,8 @@ public class AppointmentValidationUtils {
             Customer customer,
             LocalDateTime appointmentDateTime) {
         
-        // Skip validation if the job itself is a quotation
-        if (jobType == JobType.QUOTATION) {
-            return;
-        }
-        
-        AppointmentAddress address = requestModel.getAppointmentAddress();
-        LocalDate serviceDate = appointmentDateTime.toLocalDate();
-        
-        // Find all quotations at this address on this day (regardless of customer)
-        List<Appointment> quotationsOnSameDay = appointmentRepository.findQuotationsByAddressAndDate(
-            address.getStreetAddress(),
-            address.getCity(),
-            address.getProvince(),
-            address.getPostalCode(),
-            serviceDate
-        );
-        
-        // If no quotation exists at this address on this day, allow service
-        if (quotationsOnSameDay.isEmpty()) {
-            return;
-        }
-        
-        // Check for SCHEDULED quotations only - services cannot be scheduled AFTER them
-        // COMPLETED quotations allow services to be scheduled after
-        for (Appointment quotation : quotationsOnSameDay) {
-            if (quotation.getAppointmentStatus().getAppointmentStatusType() == AppointmentStatusType.SCHEDULED) {
-                LocalDateTime quotationDateTime = quotation.getAppointmentDate();
-                
-                // Block if service is scheduled AT or AFTER a SCHEDULED quotation time
-                if (appointmentDateTime.isAfter(quotationDateTime) || appointmentDateTime.isEqual(quotationDateTime)) {
-                    String quotationCustomerId = quotation.getCustomer().getCustomerIdentifier().getCustomerId();
-                    throw new InvalidOperationException(
-                        "ERROR_QUOTATION_SCHEDULED_AFTER"
-                    );
-                }
-            }
-        }
-        
-        // Service is before all scheduled quotations OR quotations are completed, allow it
+        // Validation removed: Services can be scheduled before, after, or alongside quotations
+        // Quotations and services are now independent of each other
     }
 
     public void validateTimeSlotAvailability(Employee technician, LocalDateTime appointmentDateTime, Job job) {
@@ -252,10 +215,13 @@ public class AppointmentValidationUtils {
             if (appointmentHour != 9 && appointmentHour != 11 && appointmentHour != 13) {
                 throw new InvalidOperationException(
                     "Cellar installation requires 4 hours and must start at exactly 9:00 AM, 11:00 AM, or 1:00 PM " +
-                    "to complete within working hours (before 5:00 PM). Requested start time: " + appointmentHour + ":00"
+                    "to complete within working hours (by 5:00 PM). Requested start time: " + appointmentHour + ":00"
                 );
             }
         }
+        
+        // Note: For INSTALLATION type, the appointment will end exactly at 17:00 (5:00 PM)
+        // No 30-minute buffer is required after the installation ends
         
         // Find all scheduled appointments for this technician on this date
         List<Appointment> dayAppointments = appointmentRepository.findByTechnicianAndDateAndScheduled(
@@ -285,12 +251,8 @@ public class AppointmentValidationUtils {
             boolean hasOverlap = appointmentTime.isBefore(existingEnd) && existingStart.isBefore(appointmentEnd);
             
             if (hasOverlap) {
-                throw new InvalidOperationException(
-                    "Time conflict: The technician already has an appointment from " + 
-                    existingStart + " to " + existingEnd + ". " +
-                    "Your requested appointment from " + appointmentTime + " to " + appointmentEnd + 
-                    " overlaps with this existing appointment."
-                );
+                // Return error code that will be translated on the frontend
+                throw new InvalidOperationException("TIME_CONFLICT");
             }
             
             // Calculate time gaps between appointments for buffer validation
@@ -299,26 +261,22 @@ public class AppointmentValidationUtils {
             
             // Check for insufficient buffer time (30 minutes minimum)
             // Case 1: New appointment is scheduled BEFORE the existing one (no overlap)
+            // Allow exact back-to-back (0 minutes gap), warn if less than 30 minutes
             if (appointmentEnd.isBefore(existingStart) || appointmentEnd.equals(existingStart)) {
-                // Need at least 30 minutes gap
-                if (minutesBeforeExisting < BUFFER_MINUTES) {
-                    throw new InvalidOperationException(
-                        "Insufficient time between appointments: Your appointment ending at " + appointmentEnd + 
-                        " leaves only " + minutesBeforeExisting + " minute(s) before the next appointment at " + existingStart + ". " +
-                        "At least " + BUFFER_MINUTES + " minutes buffer is required between appointments."
-                    );
+                // Only warn if there's a gap but it's less than 30 minutes
+                if (minutesBeforeExisting > 0 && minutesBeforeExisting < BUFFER_MINUTES) {
+                    // Store warning but don't throw - let it proceed with warning
+                    System.out.println("WARNING: Buffer less than 30 minutes. Gap: " + minutesBeforeExisting + " minutes");
                 }
             }
             
             // Case 2: New appointment is scheduled AFTER the existing one (no overlap)
+            // Allow exact back-to-back (0 minutes gap), warn if less than 30 minutes
             if (existingEnd.isBefore(appointmentTime) || existingEnd.equals(appointmentTime)) {
-                // Need at least 30 minutes gap
-                if (minutesAfterExisting < BUFFER_MINUTES) {
-                    throw new InvalidOperationException(
-                        "Insufficient time between appointments: An existing appointment ending at " + existingEnd + 
-                        " leaves only " + minutesAfterExisting + " minute(s) before your requested start time of " + appointmentTime + ". " +
-                        "At least " + BUFFER_MINUTES + " minutes buffer is required between appointments."
-                    );
+                // Only warn if there's a gap but it's less than 30 minutes
+                if (minutesAfterExisting > 0 && minutesAfterExisting < BUFFER_MINUTES) {
+                    // Store warning but don't throw - let it proceed with warning
+                    System.out.println("WARNING: Buffer less than 30 minutes. Gap: " + minutesAfterExisting + " minutes");
                 }
             }
         }
@@ -352,6 +310,7 @@ public class AppointmentValidationUtils {
             // Specific date schedule exists - check if time slot is available
             boolean timeSlotAvailable = specificDateSchedules.stream()
                 .anyMatch(schedule -> schedule.getTimeSlot().getTimeslot() == requiredTimeSlot);
+            // Specific-date schedules checked above
             
             if (!timeSlotAvailable) {
                 throw new InvalidOperationException(
@@ -376,6 +335,7 @@ public class AppointmentValidationUtils {
                 .filter(schedule -> schedule.getSpecificDate() == null) // Regular schedules only
                 .filter(schedule -> schedule.getDayOfWeek().getDayOfWeek() == scheduleDay)
                 .anyMatch(schedule -> schedule.getTimeSlot().getTimeslot() == requiredTimeSlot);
+            // Weekly schedules checked above
             
             if (!timeSlotAvailable) {
                 throw new InvalidOperationException(
@@ -391,17 +351,18 @@ public class AppointmentValidationUtils {
      * Calculate required time slots (in hours) based on duration in minutes
      */
     private int calculateRequiredSlots(int durationMinutes) {
-        // Business rule: 
-        // - <=90 minutes fits in the current slot (1 slot)
-        // - >90 minutes: 1 slot + ceil((duration - 90) / 60) additional slots
+        // Business rule: Each slot is 2 hours (120 minutes)
+        // Calculate how many 2-hour slots are needed
         // Examples:
-        // - 90 min = 1 slot (9-11 AM covers it)
-        // - 91-150 min = 2 slots (9-11 AM + 11-1 PM = 4 hours covers anything up to 150 min)
-        // - 151-210 min = 3 slots
-        if (durationMinutes <= 90) {
-            return 1;
-        }
-        return 1 + (int) Math.ceil((durationMinutes - 90) / 60.0);
+        // - 30 min (QUOTATION) = 1 slot
+        // - 60 min (MAINTENANCE) = 1 slot
+        // - 90 min (REPARATION) = 1 slot
+        // - 120 min = 1 slot
+        // - 121-240 min = 2 slots
+        // - 240 min (INSTALLATION) = 2 slots (exactly fits 13:00-17:00)
+        // - 241-360 min = 3 slots
+        final int MINUTES_PER_SLOT = 120;
+        return (int) Math.ceil((double) durationMinutes / MINUTES_PER_SLOT);
     }
 
     /**
@@ -488,63 +449,98 @@ public class AppointmentValidationUtils {
     }
         /**
          * Duplicate service validation for update: excludes current appointment from check
+         * Only validates that duplicate QUOTATIONS are not created - other services can coexist
          */
         public void validateDuplicateServiceAddressAndDayExcludeCurrent(
                 JobType jobType,
                 AppointmentRequestModel requestModel,
                 LocalDate appointmentDate,
+                LocalDateTime appointmentDateTime,
+                Customer customer,
                 String currentAppointmentId) {
-            if (jobType == JobType.QUOTATION) {
-                return; // handled by quotation logic
+            // Only restrict duplicate QUOTATIONS at the same address on the same day
+            if (jobType != JobType.QUOTATION) {
+                return; // Allow other services to be scheduled at same address on same day
             }
-            AppointmentAddress address = requestModel.getAppointmentAddress();
-            List<AppointmentStatusType> blockingStatuses = Arrays.asList(
-                AppointmentStatusType.SCHEDULED
-            );
-            List<Appointment> existingServices = appointmentRepository.findByAddressAndDateAndStatusIn(
-                address.getStreetAddress(),
-                address.getCity(),
-                address.getProvince(),
-                address.getPostalCode(),
-                appointmentDate,
-                blockingStatuses
-            );
-            boolean serviceExists = existingServices.stream()
-                .anyMatch(a -> a.getJob() != null
-                    && a.getJob().getJobType() != JobType.QUOTATION
-                    && !a.getAppointmentIdentifier().getAppointmentId().equals(currentAppointmentId));
-            if (serviceExists) {
-                throw new InvalidOperationException(
-                    "ERROR_SERVICE_EXISTS"
-                );
+            validateDuplicateQuotation(jobType, requestModel, appointmentDate, appointmentDateTime, customer, currentAppointmentId);
+        }
+
+        /**
+         * Duplicate service validation: only prevents duplicate QUOTATIONS
+         * Allows multiple different services at the same address on the same day
+         */
+        public void validateDuplicateServiceAddressAndDay(
+                JobType jobType,
+                AppointmentRequestModel requestModel,
+                LocalDate appointmentDate) {
+            // Only restrict duplicate QUOTATIONS at the same address on the same day
+            if (jobType != JobType.QUOTATION) {
+                return; // Allow other services to be scheduled at same address on same day
             }
         }
 
-    public void validateDuplicateServiceAddressAndDay(
-            JobType jobType,
-            AppointmentRequestModel requestModel,
-            LocalDate appointmentDate) {
-        if (jobType == JobType.QUOTATION) {
-            return; // handled by quotation logic
+    /**
+     * Validates that the appointment postal code corresponds to either Quebec (QC) or Ontario (ON) province.
+     * Uses the postal code format to determine the province:
+     * - Quebec postal codes start with: G, H, J
+     * - Ontario postal codes start with: K, L, M, N, P
+     *
+     * @param appointmentAddress the appointment address containing postal code and province
+     * @throws InvalidOperationException if the postal code doesn't match the specified province
+     *                                   or if the province is not Quebec or Ontario
+     */
+    public void validateProvinceRestriction(AppointmentAddress appointmentAddress) {
+        if (appointmentAddress == null || appointmentAddress.getPostalCode() == null) {
+            throw new InvalidOperationException("Appointment address and postal code are required.");
         }
-        AppointmentAddress address = requestModel.getAppointmentAddress();
-        List<AppointmentStatusType> blockingStatuses = Arrays.asList(
-            AppointmentStatusType.SCHEDULED
-        );
-        List<Appointment> existingServices = appointmentRepository.findByAddressAndDateAndStatusIn(
-            address.getStreetAddress(),
-            address.getCity(),
-            address.getProvince(),
-            address.getPostalCode(),
-            appointmentDate,
-            blockingStatuses
-        );
-        // Only block if the job type is not QUOTATION and the existing appointment is also not a quotation
-        boolean serviceExists = existingServices.stream()
-            .anyMatch(a -> a.getJob() != null && a.getJob().getJobType() != JobType.QUOTATION);
-        if (serviceExists) {
+
+        String province = appointmentAddress.getProvince() != null ? 
+            appointmentAddress.getProvince().trim().toUpperCase() : "";
+        String postalCode = appointmentAddress.getPostalCode().trim().toUpperCase();
+
+        // Valid provinces for appointments
+        if (!province.equals("QC") && !province.equals("ON") && 
+            !province.equals("QUEBEC") && !province.equals("ONTARIO")) {
             throw new InvalidOperationException(
-                "ERROR_SERVICE_EXISTS"
+                "Appointments can only be scheduled in Quebec (QC) or Ontario (ON) provinces. " +
+                "Provided province: " + appointmentAddress.getProvince()
+            );
+        }
+
+        // Validate postal code format matches the province
+        if (postalCode.isEmpty()) {
+            throw new InvalidOperationException("Postal code is required.");
+        }
+
+        char firstChar = postalCode.charAt(0);
+
+        // Quebec postal codes start with G, H, or J
+        boolean isQuebecPostalCode = firstChar == 'G' || firstChar == 'H' || firstChar == 'J';
+
+        // Ontario postal codes start with K, L, M, N, or P
+        boolean isOntarioPostalCode = firstChar == 'K' || firstChar == 'L' || 
+                                     firstChar == 'M' || firstChar == 'N' || firstChar == 'P';
+
+        // Check if postal code matches the specified province
+        if ((province.equals("QC") || province.equals("QUEBEC")) && !isQuebecPostalCode) {
+            throw new InvalidOperationException(
+                "Postal code does not match Quebec province. Quebec postal codes start with G, H, or J. " +
+                "Provided postal code: " + appointmentAddress.getPostalCode()
+            );
+        }
+
+        if ((province.equals("ON") || province.equals("ONTARIO")) && !isOntarioPostalCode) {
+            throw new InvalidOperationException(
+                "Postal code does not match Ontario province. Ontario postal codes start with K, L, M, N, or P. " +
+                "Provided postal code: " + appointmentAddress.getPostalCode()
+            );
+        }
+
+        // If postal code doesn't match either province format, reject it
+        if (!isQuebecPostalCode && !isOntarioPostalCode) {
+            throw new InvalidOperationException(
+                "Postal code must be from Quebec or Ontario. " +
+                "Provided postal code: " + appointmentAddress.getPostalCode()
             );
         }
     }

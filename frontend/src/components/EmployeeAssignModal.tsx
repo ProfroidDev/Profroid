@@ -1,7 +1,8 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { getErrorMessage } from '../shared/api/errorHandler';
 import { addEmployee } from '../features/employee/api/addEmployee';
+import { getEmployees } from '../features/employee/api/getAllEmployees';
 import type { EmployeeRequestModel } from '../features/employee/models/EmployeeRequestModel';
 import type { EmployeePhoneNumber } from '../features/employee/models/EmployeePhoneNumber';
 import type { EmployeeRole, EmployeeRoleType } from '../features/employee/models/EmployeeRole';
@@ -68,6 +69,7 @@ export default function EmployeeAssignModal({ isOpen, onClose, onSuccess }: Empl
   const [submitError, setSubmitError] = useState('');
   const [fetchError, setFetchError] = useState('');
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [employeeUserIds, setEmployeeUserIds] = useState<Set<string>>(new Set());
 
   // Fetch unassigned users when modal opens
   useEffect(() => {
@@ -89,25 +91,24 @@ export default function EmployeeAssignModal({ isOpen, onClose, onSuccess }: Empl
         postalCode: '',
         phoneNumbers: [{ number: '', type: 'MOBILE' }],
       });
+
+      // Fetch existing employees to exclude them from search
+      fetchExistingEmployees();
     }
   }, [isOpen]);
 
-  // Debounce search
-  useEffect(() => {
-    if (!searchQuery || searchQuery.trim().length < 2) {
-      setUnassignedUsers([]);
-      setAllUsers([]);
-      return;
+  const fetchExistingEmployees = async () => {
+    try {
+      const employees = await getEmployees();
+      const employeeIds = new Set(employees.map(emp => emp.userId).filter(Boolean));
+      setEmployeeUserIds(employeeIds);
+    } catch (error: unknown) {
+      console.error('Error fetching existing employees:', error);
+      // Continue even if this fails - just won't filter out employees
     }
+  };
 
-    const timeoutId = setTimeout(() => {
-      fetchUnassignedUsers(searchQuery);
-    }, 300); // 300ms debounce
-
-    return () => clearTimeout(timeoutId);
-  }, [searchQuery]);
-
-  const fetchUnassignedUsers = async (query: string = '') => {
+  const fetchUnassignedUsers = useCallback(async (query: string = '') => {
     try {
       setFetchError('');
       const token = localStorage.getItem('authToken');
@@ -135,18 +136,37 @@ export default function EmployeeAssignModal({ isOpen, onClose, onSuccess }: Empl
       }
 
       const result = await response.json();
-      const users = (result.data || []).map((u: { userId: string; email: string }) => ({
+      let users: UnassignedUser[] = (result.data || []).map((u: { userId: string; email: string }) => ({
         id: u.userId,
         email: u.email,
         name: u.email, // Use email as name since we don't have separate name field
       }));
+
+      // Filter out users who are already employees
+      users = users.filter((user: UnassignedUser) => !employeeUserIds.has(user.id));
+
       setUnassignedUsers(users);
       setAllUsers(users);
     } catch (error: unknown) {
       console.error('Error fetching users:', error);
       setFetchError(getErrorMessage(error));
     }
-  };
+  }, [employeeUserIds]);
+
+  // Debounce search
+  useEffect(() => {
+    if (!searchQuery || searchQuery.trim().length < 2) {
+      setUnassignedUsers([]);
+      setAllUsers([]);
+      return;
+    }
+
+    const timeoutId = setTimeout(() => {
+      fetchUnassignedUsers(searchQuery);
+    }, 300); // 300ms debounce
+
+    return () => clearTimeout(timeoutId);
+  }, [searchQuery, fetchUnassignedUsers]);
 
   // Filter users based on search query
   const filteredUsers = searchQuery.trim()

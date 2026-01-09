@@ -5,6 +5,7 @@ import com.profroid.profroidapp.appointmentsubdomain.businessLayer.AppointmentSe
 import com.profroid.profroidapp.appointmentsubdomain.dataAccessLayer.AppointmentRepository;
 import com.profroid.profroidapp.appointmentsubdomain.dataAccessLayer.AppointmentStatus;
 import com.profroid.profroidapp.appointmentsubdomain.dataAccessLayer.AppointmentStatusType;
+import com.profroid.profroidapp.appointmentsubdomain.dataAccessLayer.AppointmentAddress;
 import com.profroid.profroidapp.appointmentsubdomain.mappingLayer.AppointmentRequestMapper;
 import com.profroid.profroidapp.appointmentsubdomain.mappingLayer.AppointmentResponseMapper;
 import com.profroid.profroidapp.cellarsubdomain.dataAccessLayer.Cellar;
@@ -1399,6 +1400,279 @@ public class AppointmentServiceUnitTest {
                 appointmentService.addAppointment(
                         requestModel,
                         "f9b67bf1-3f7e-4f69-9c5d-5b5bdf9a02fd",
+                        "CUSTOMER"
+                )
+        );
+    }
+
+    // ===== PROVINCE RESTRICTION TESTS =====
+
+    @Test
+    void addAppointment_validQuebecPostalCode_succeeds() {
+        AppointmentAddress address = AppointmentAddress.builder()
+                .streetAddress("123 Main St")
+                .city("Montreal")
+                .province("QC")
+                .country("Canada")
+                .postalCode("H1A 0A1")  // Valid Quebec postal code starting with H
+                .build();
+
+        when(requestModel.getAppointmentAddress()).thenReturn(address);
+        when(requestModel.getAppointmentDate()).thenReturn(LocalDateTime.of(2050, 1, 10, 9, 0));
+        when(requestModel.getJobName()).thenReturn("Installation");
+        when(mockJob.getJobType()).thenReturn(JobType.QUOTATION);
+
+        // Mock the customer and other dependencies
+        Customer mockCustomer = mock(Customer.class);
+        CustomerIdentifier customerId = mock(CustomerIdentifier.class);
+        when(customerId.getCustomerId()).thenReturn("f9b67bf1-3f7e-4f69-9c5d-5b5bdf9a02fd");
+        when(mockCustomer.getCustomerIdentifier()).thenReturn(customerId);
+        when(customerRepository.findCustomerByCustomerIdentifier_CustomerId(anyString())).thenReturn(mockCustomer);
+
+        when(jobRepository.findJobByJobName("Installation")).thenReturn(mockJob);
+        when(mockJob.isActive()).thenReturn(true);
+        when(mockJob.getEstimatedDurationMinutes()).thenReturn(60);
+
+        when(appointmentRepository.findAllByCustomerAndAppointmentDateBetweenAndStatusIn(any(), any(), any(), any()))
+                .thenReturn(Collections.emptyList());
+
+        Appointment savedAppointment = mock(Appointment.class);
+        when(appointmentRepository.save(any())).thenReturn(savedAppointment);
+        when(appointmentResponseMapper.toResponseModel(savedAppointment)).thenReturn(responseModel);
+
+        doNothing().when(validationUtils).validateProvinceRestriction(address);
+
+        AppointmentResponseModel result = appointmentService.addAppointment(
+                requestModel,
+                "f9b67bf1-3f7e-4f69-9c5d-5b5bdf9a02fd",
+                "CUSTOMER"
+        );
+
+        assertNotNull(result);
+        verify(validationUtils).validateProvinceRestriction(address);
+    }
+
+    @Test
+    void addAppointment_validOntarioPostalCode_succeeds() {
+        AppointmentAddress address = AppointmentAddress.builder()
+                .streetAddress("456 Oak Ave")
+                .city("Toronto")
+                .province("ON")
+                .country("Canada")
+                .postalCode("M5V 3A8")  // Valid Ontario postal code starting with M
+                .build();
+
+        when(requestModel.getAppointmentAddress()).thenReturn(address);
+        when(requestModel.getAppointmentDate()).thenReturn(LocalDateTime.of(2050, 1, 10, 11, 0));
+        when(requestModel.getJobName()).thenReturn("Installation");
+        when(mockJob.getJobType()).thenReturn(JobType.QUOTATION);
+
+        Customer mockCustomer = mock(Customer.class);
+        CustomerIdentifier customerId = mock(CustomerIdentifier.class);
+        when(customerId.getCustomerId()).thenReturn("f9b67bf1-3f7e-4f69-9c5d-5b5bdf9a02fd");
+        when(mockCustomer.getCustomerIdentifier()).thenReturn(customerId);
+        when(customerRepository.findCustomerByCustomerIdentifier_CustomerId(anyString())).thenReturn(mockCustomer);
+
+        when(jobRepository.findJobByJobName("Installation")).thenReturn(mockJob);
+        when(mockJob.isActive()).thenReturn(true);
+        when(mockJob.getEstimatedDurationMinutes()).thenReturn(60);
+
+        when(appointmentRepository.findAllByCustomerAndAppointmentDateBetweenAndStatusIn(any(), any(), any(), any()))
+                .thenReturn(Collections.emptyList());
+
+        Appointment savedAppointment = mock(Appointment.class);
+        when(appointmentRepository.save(any())).thenReturn(savedAppointment);
+        when(appointmentResponseMapper.toResponseModel(savedAppointment)).thenReturn(responseModel);
+
+        doNothing().when(validationUtils).validateProvinceRestriction(address);
+
+        AppointmentResponseModel result = appointmentService.addAppointment(
+                requestModel,
+                "f9b67bf1-3f7e-4f69-9c5d-5b5bdf9a02fd",
+                "CUSTOMER"
+        );
+
+        assertNotNull(result);
+        verify(validationUtils).validateProvinceRestriction(address);
+    }
+
+    @Test
+    void addAppointment_invalidProvince_throwsException() {
+        AppointmentAddress address = AppointmentAddress.builder()
+                .streetAddress("789 Elm St")
+                .city("Vancouver")
+                .province("BC")
+                .country("Canada")
+                .postalCode("V6B 4X8")
+                .build();
+
+        when(requestModel.getAppointmentAddress()).thenReturn(address);
+        when(requestModel.getAppointmentDate()).thenReturn(LocalDateTime.of(2050, 1, 10, 13, 0));
+        when(requestModel.getJobName()).thenReturn("Installation");
+
+        doThrow(new InvalidOperationException(
+                "Appointments can only be scheduled in Quebec (QC) or Ontario (ON) provinces. " +
+                "Provided province: BC"
+        )).when(validationUtils).validateProvinceRestriction(address);
+
+        Customer mockCustomer = mock(Customer.class);
+        CustomerIdentifier customerId = mock(CustomerIdentifier.class);
+        when(customerId.getCustomerId()).thenReturn("f9b67bf1-3f7e-4f69-9c5d-5b5bdf9a02fd");
+        when(mockCustomer.getCustomerIdentifier()).thenReturn(customerId);
+        when(customerRepository.findCustomerByCustomerIdentifier_CustomerId(anyString())).thenReturn(mockCustomer);
+
+        when(jobRepository.findJobByJobName("Installation")).thenReturn(mockJob);
+        when(mockJob.isActive()).thenReturn(true);
+
+        assertThrows(InvalidOperationException.class, () ->
+                appointmentService.addAppointment(
+                        requestModel,
+                        "f9b67bf1-3f7e-4f69-9c5d-5b5bdf9a02fd",
+                        "CUSTOMER"
+                )
+        );
+    }
+
+    @Test
+    void addAppointment_postalCodeMismatchedProvince_throwsException() {
+        AppointmentAddress address = AppointmentAddress.builder()
+                .streetAddress("100 King St")
+                .city("Toronto")
+                .province("QC")  // Quebec province
+                .country("Canada")
+                .postalCode("M5H 2N2")  // But Ontario postal code (starts with M)
+                .build();
+
+        when(requestModel.getAppointmentAddress()).thenReturn(address);
+        when(requestModel.getAppointmentDate()).thenReturn(LocalDateTime.of(2050, 1, 10, 15, 0));
+        when(requestModel.getJobName()).thenReturn("Installation");
+
+        doThrow(new InvalidOperationException(
+                "Postal code does not match Quebec province. Quebec postal codes start with G, H, or J. " +
+                "Provided postal code: M5H 2N2"
+        )).when(validationUtils).validateProvinceRestriction(address);
+
+        Customer mockCustomer = mock(Customer.class);
+        CustomerIdentifier customerId = mock(CustomerIdentifier.class);
+        when(customerId.getCustomerId()).thenReturn("f9b67bf1-3f7e-4f69-9c5d-5b5bdf9a02fd");
+        when(mockCustomer.getCustomerIdentifier()).thenReturn(customerId);
+        when(customerRepository.findCustomerByCustomerIdentifier_CustomerId(anyString())).thenReturn(mockCustomer);
+
+        when(jobRepository.findJobByJobName("Installation")).thenReturn(mockJob);
+        when(mockJob.isActive()).thenReturn(true);
+
+        assertThrows(InvalidOperationException.class, () ->
+                appointmentService.addAppointment(
+                        requestModel,
+                        "f9b67bf1-3f7e-4f69-9c5d-5b5bdf9a02fd",
+                        "CUSTOMER"
+                )
+        );
+    }
+
+    @Test
+    void updateAppointment_validQuebecPostalCode_succeeds() {
+        // Setup existing appointment
+        Appointment existingAppointment = mock(Appointment.class);
+        AppointmentIdentifier appointmentId = mock(AppointmentIdentifier.class);
+        when(appointmentId.getAppointmentId()).thenReturn("apt-123");
+        when(existingAppointment.getAppointmentIdentifier()).thenReturn(appointmentId);
+
+        AppointmentStatus status = mock(AppointmentStatus.class);
+        when(status.getAppointmentStatusType()).thenReturn(AppointmentStatusType.SCHEDULED);
+        when(existingAppointment.getAppointmentStatus()).thenReturn(status);
+        when(existingAppointment.getCreatedByRole()).thenReturn("CUSTOMER");
+
+        Customer mockCustomer = mock(Customer.class);
+        CustomerIdentifier customerId = mock(CustomerIdentifier.class);
+        when(customerId.getCustomerId()).thenReturn("cust-123");
+        when(mockCustomer.getCustomerIdentifier()).thenReturn(customerId);
+        when(mockCustomer.getId()).thenReturn(1);
+        when(existingAppointment.getCustomer()).thenReturn(mockCustomer);
+
+        when(appointmentRepository.findAppointmentByAppointmentIdentifier_AppointmentId("apt-123"))
+                .thenReturn(java.util.Optional.of(existingAppointment));
+
+        when(customerRepository.findCustomerByCustomerIdentifier_CustomerId("cust-123"))
+                .thenReturn(mockCustomer);
+
+        AppointmentAddress address = AppointmentAddress.builder()
+                .streetAddress("123 Main St")
+                .city("Montreal")
+                .province("QC")
+                .country("Canada")
+                .postalCode("G1R 4P5")  // Valid Quebec postal code starting with G
+                .build();
+
+        when(requestModel.getAppointmentAddress()).thenReturn(address);
+        when(requestModel.getAppointmentDate()).thenReturn(LocalDateTime.of(2050, 2, 10, 14, 0));
+        when(requestModel.getJobName()).thenReturn("Installation");
+        when(mockJob.getJobType()).thenReturn(JobType.QUOTATION);
+        when(mockJob.isActive()).thenReturn(true);
+        when(mockJob.getEstimatedDurationMinutes()).thenReturn(60);
+
+        when(jobRepository.findJobByJobName("Installation")).thenReturn(mockJob);
+
+        when(cellarRepository.findCellarByNameAndOwnerCustomerIdentifier_CustomerId(anyString(), anyString()))
+                .thenReturn(mockCellar);
+
+        Employee technician = mock(Employee.class);
+        when(existingAppointment.getTechnician()).thenReturn(technician);
+
+        when(appointmentRepository.findAllByCustomerAndAppointmentDateBetweenAndStatusIn(any(), any(), any(), any()))
+                .thenReturn(Collections.emptyList());
+
+        Appointment updatedAppointment = mock(Appointment.class);
+        when(appointmentRepository.save(any())).thenReturn(updatedAppointment);
+        when(appointmentResponseMapper.toResponseModel(updatedAppointment)).thenReturn(responseModel);
+
+        doNothing().when(validationUtils).validateProvinceRestriction(address);
+
+        AppointmentResponseModel result = appointmentService.updateAppointment(
+                "apt-123",
+                requestModel,
+                "cust-123",
+                "CUSTOMER"
+        );
+
+        assertNotNull(result);
+        verify(validationUtils).validateProvinceRestriction(address);
+    }
+
+    @Test
+    void updateAppointment_postalCodeMismatchedProvince_throwsException() {
+        Appointment existingAppointment = mock(Appointment.class);
+        AppointmentIdentifier appointmentId = mock(AppointmentIdentifier.class);
+        when(appointmentId.getAppointmentId()).thenReturn("apt-456");
+        when(existingAppointment.getAppointmentIdentifier()).thenReturn(appointmentId);
+
+        AppointmentStatus status = mock(AppointmentStatus.class);
+        when(status.getAppointmentStatusType()).thenReturn(AppointmentStatusType.SCHEDULED);
+        when(existingAppointment.getAppointmentStatus()).thenReturn(status);
+
+        when(appointmentRepository.findAppointmentByAppointmentIdentifier_AppointmentId("apt-456"))
+                .thenReturn(java.util.Optional.of(existingAppointment));
+
+        AppointmentAddress address = AppointmentAddress.builder()
+                .streetAddress("456 Oak Ave")
+                .city("Ottawa")
+                .province("ON")
+                .country("Canada")
+                .postalCode("J1H 1Z1")  // Quebec postal code (starts with J) but ON province
+                .build();
+
+        when(requestModel.getAppointmentAddress()).thenReturn(address);
+
+        doThrow(new InvalidOperationException(
+                "Postal code does not match Ontario province. Ontario postal codes start with K, L, M, N, or P. " +
+                "Provided postal code: J1H 1Z1"
+        )).when(validationUtils).validateProvinceRestriction(address);
+
+        assertThrows(InvalidOperationException.class, () ->
+                appointmentService.updateAppointment(
+                        "apt-456",
+                        requestModel,
+                        "cust-456",
                         "CUSTOMER"
                 )
         );

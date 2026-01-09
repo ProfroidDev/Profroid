@@ -14,6 +14,7 @@ export function translateAppointmentError(errorMessage: string): string {
     ERROR_SERVICE_EXISTS: "error.appointment.serviceAlreadyExists",
     ERROR_APPOINTMENT_ENDS_AFTER_CLOSING:
       "error.appointment.appointmentEndsAfterClosing",
+    TIME_CONFLICT: "pages.appointments.timeConflict",
   };
 
   // Check each error code

@@ -5,8 +5,6 @@ import com.profroid.profroidapp.appointmentsubdomain.presentationLayer.Appointme
 import com.profroid.profroidapp.appointmentsubdomain.presentationLayer.AppointmentStatusChangeRequestModel;
 import com.profroid.profroidapp.appointmentsubdomain.presentationLayer.TechnicianBookedSlotsResponseModel;
 
-import jakarta.validation.Valid;
-
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
@@ -33,12 +31,12 @@ public interface AppointmentService {
      * Get booked time slots for a technician on a specific date.
      * Used by customers to check technician availability when booking.
      */
-    TechnicianBookedSlotsResponseModel getTechnicianBookedSlots(String technicianId, LocalDate date);
+    TechnicianBookedSlotsResponseModel getTechnicianBookedSlots(String technicianId, LocalDate date, String appointmentId);
     
     /**
      * Get aggregated available time slots across all technicians for a given date.
      * Shows times when at least one technician is available.
      * Used by customers to see overall availability without selecting a technician first.
      */
-    TechnicianBookedSlotsResponseModel getAggregatedAvailability(LocalDate date, String jobName, String userId, String userRole);
+        TechnicianBookedSlotsResponseModel getAggregatedAvailability(LocalDate date, String jobName, String userId, String userRole, String appointmentId);
 }

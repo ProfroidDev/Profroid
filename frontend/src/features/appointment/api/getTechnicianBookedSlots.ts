@@ -17,11 +17,12 @@ export interface TechnicianBookedSlotsResponse {
  */
 export async function getTechnicianBookedSlots(
   technicianId: string,
-  date: string
+  date: string,
+  appointmentId?: string
 ): Promise<TechnicianBookedSlotsResponse> {
   const response = await axiosInstance.get(
     `/appointments/technician/${technicianId}/booked-slots`,
-    { params: { date } }
+    { params: { date, appointmentId } }
   );
   return response.data;
 }

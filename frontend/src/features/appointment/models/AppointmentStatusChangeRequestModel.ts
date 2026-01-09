@@ -1,3 +1,3 @@
 export interface AppointmentStatusChangeRequestModel {
-  status: "CANCELLED" | "COMPLETED";
+  status: "SCHEDULED" | "CANCELLED" | "COMPLETED";
 }

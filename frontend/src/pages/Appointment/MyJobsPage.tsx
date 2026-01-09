@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { getMyJobs } from "../../features/appointment/api/getMyJobs";
 import type { AppointmentResponseModel } from "../../features/appointment/models/AppointmentResponseModel";
@@ -7,8 +7,10 @@ import { patchAppointmentStatus } from "../../features/appointment/api/patchAppo
 import Toast from "../../shared/components/Toast";
 import useAuthStore from "../../features/authentication/store/authStore";
 import ConfirmationModal from "../../components/ConfirmationModal";
-import { MapPin, Clock, User, Wrench, DollarSign, Phone, AlertCircle, Edit, CheckCircle, X } from "lucide-react";
+import { MapPin, Clock, User, Wrench, DollarSign, Phone, AlertCircle, Edit, CheckCircle, X, ChevronLeft, ChevronRight, Filter, Calendar } from "lucide-react";
 import "./MyJobsPage.css";
+import { getCellars } from "../../features/cellar/api/getAllCellars";
+import type { CellarResponseModel } from "../../features/cellar/models/CellarResponseModel";
 
 export default function MyJobsPage(): React.ReactElement {
   const { t, i18n } = useTranslation();
@@ -19,7 +21,14 @@ export default function MyJobsPage(): React.ReactElement {
   const [error, setError] = useState<string | null>(null);
   const [showAddModal, setShowAddModal] = useState<boolean>(false);
   const [editingAppointment, setEditingAppointment] = useState<AppointmentResponseModel | null>(null);
-  const [confirmModal, setConfirmModal] = useState<{ isOpen: boolean; type: 'complete' | 'cancel' | null; appointmentId: string | null }>({ isOpen: false, type: null, appointmentId: null });
+  const [confirmModal, setConfirmModal] = useState<{ isOpen: boolean; type: 'complete' | 'cancel' | 'accept' | null; appointmentId: string | null }>({ isOpen: false, type: null, appointmentId: null });
+  const [cellars, setCellars] = useState<CellarResponseModel[] | null>(null);
+  const [matchedCellar, setMatchedCellar] = useState<CellarResponseModel | null>(null);
+  const [currentPage, setCurrentPage] = useState<number>(1);
+  const pageSize = 6;
+  const [statusFilters, setStatusFilters] = useState<string[]>([]);
+  const [startDateFilter, setStartDateFilter] = useState<string>("");
+  const [endDateFilter, setEndDateFilter] = useState<string>("");
   
   const { user, customerData } = useAuthStore();
 
@@ -27,7 +36,6 @@ export default function MyJobsPage(): React.ReactElement {
     if (user) {
       fetchJobs();
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user]);
 
   const fetchJobs = async () => {
@@ -39,6 +47,8 @@ export default function MyJobsPage(): React.ReactElement {
         (a, b) => new Date(a.appointmentDate).getTime() - new Date(b.appointmentDate).getTime()
       );
       setJobs(sorted);
+      const newTotalPages = Math.max(1, Math.ceil(sorted.length / pageSize));
+      setCurrentPage((prev) => Math.min(prev, newTotalPages));
     } catch (error: unknown) {
       console.error("Error fetching jobs:", error);
       
@@ -91,7 +101,11 @@ export default function MyJobsPage(): React.ReactElement {
     if (!confirmModal.appointmentId) return;
 
     try {
-      if (confirmModal.type === 'complete') {
+      if (confirmModal.type === 'accept') {
+        await patchAppointmentStatus(confirmModal.appointmentId, { status: "SCHEDULED" });
+        fetchJobs();
+        setToast({ message: t('pages.jobs.jobAccepted'), type: "success" });
+      } else if (confirmModal.type === 'complete') {
         await patchAppointmentStatus(confirmModal.appointmentId, { status: "COMPLETED" });
         fetchJobs();
         setToast({ message: t('pages.jobs.jobCompleted'), type: "success" });
@@ -159,6 +173,78 @@ export default function MyJobsPage(): React.ReactElement {
     }
   };
 
+  const getStatusLabel = (status: string): string => {
+    switch (status) {
+      case "SCHEDULED":
+        return t('pages.appointments.statusScheduled');
+      case "COMPLETED":
+        return t('pages.appointments.statusCompleted');
+      case "CANCELLED":
+        return t('pages.appointments.statusCancelled');
+      default:
+        return status;
+    }
+  };
+
+  // Load cellar info when a job is selected
+  useEffect(() => {
+    const loadCellar = async () => {
+      if (!selectedJob) {
+        setMatchedCellar(null);
+        return;
+      }
+
+      try {
+        if (!cellars) {
+          const all = await getCellars();
+          setCellars(all);
+          const match = all.find(
+            (c) => c.ownerCustomerId === selectedJob.customerId && c.name === selectedJob.cellarName
+          ) || null;
+          setMatchedCellar(match);
+        } else {
+          const match = cellars.find(
+            (c) => c.ownerCustomerId === selectedJob.customerId && c.name === selectedJob.cellarName
+          ) || null;
+          setMatchedCellar(match);
+        }
+      } catch (e) {
+        console.warn("Unable to fetch cellar details", e);
+        setMatchedCellar(null);
+      }
+    };
+
+    loadCellar();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedJob]);
+
+  const cellarDimensions = useMemo(() => {
+    if (!matchedCellar) return null;
+    return `${matchedCellar.height}cm x ${matchedCellar.width}cm x ${matchedCellar.depth}cm`;
+  }, [matchedCellar]);
+
+  const filteredJobs = useMemo(() => {
+    return jobs.filter((a) => {
+      const statusMatch = statusFilters.length === 0 ? true : statusFilters.includes(a.status);
+      const dateOnly = new Date(a.appointmentDate).toISOString().split("T")[0];
+      const startOk = startDateFilter ? dateOnly >= startDateFilter : true;
+      const endOk = endDateFilter ? dateOnly <= endDateFilter : true;
+      return statusMatch && startOk && endOk;
+    });
+  }, [jobs, statusFilters, startDateFilter, endDateFilter]);
+
+  const totalPages = useMemo(() => {
+    return Math.max(1, Math.ceil(filteredJobs.length / pageSize));
+  }, [filteredJobs.length]);
+
+  const paginatedJobs = useMemo(() => {
+    const start = (currentPage - 1) * pageSize;
+    return filteredJobs.slice(start, start + pageSize);
+  }, [filteredJobs, currentPage]);
+
+  const goPrev = () => setCurrentPage((p) => Math.max(1, p - 1));
+  const goNext = () => setCurrentPage((p) => Math.min(totalPages, p + 1));
+
   return (
     <div className="jobs-page-light">
       <div className="jobs-header">
@@ -171,6 +257,102 @@ export default function MyJobsPage(): React.ReactElement {
           <button className="btn-primary" onClick={() => setShowAddModal(true)}>
             {t('pages.appointments.bookAppointment')}
           </button>
+        </div>
+        {/* Filters */}
+        <div className="filters-section">
+          <div className="filters-card">
+            <div className="filters-card-header">
+              <Filter size={18} />
+              <span>{t('pages.jobs.status') || t('pages.appointments.status')}</span>
+            </div>
+            <div className="chip-group">
+              <button
+                type="button"
+                className={`chip ${statusFilters.includes('SCHEDULED') ? 'active' : ''}`}
+                onClick={() => {
+                  setStatusFilters((prev) => {
+                    const next = new Set(prev);
+                    if (next.has('SCHEDULED')) {
+                      next.delete('SCHEDULED');
+                    } else {
+                      next.add('SCHEDULED');
+                    }
+                    setCurrentPage(1);
+                    return Array.from(next);
+                  });
+                }}
+              >{t('pages.jobs.statusScheduled') || t('pages.appointments.statusScheduled')}</button>
+              <button
+                type="button"
+                className={`chip ${statusFilters.includes('COMPLETED') ? 'active' : ''}`}
+                onClick={() => {
+                  setStatusFilters((prev) => {
+                    const next = new Set(prev);
+                    if (next.has('COMPLETED')) {
+                      next.delete('COMPLETED');
+                    } else {
+                      next.add('COMPLETED');
+                    }
+                    setCurrentPage(1);
+                    return Array.from(next);
+                  });
+                }}
+              >{t('pages.jobs.statusCompleted') || t('pages.appointments.statusCompleted')}</button>
+              <button
+                type="button"
+                className={`chip ${statusFilters.includes('CANCELLED') ? 'active' : ''}`}
+                onClick={() => {
+                  setStatusFilters((prev) => {
+                    const next = new Set(prev);
+                    if (next.has('CANCELLED')) {
+                      next.delete('CANCELLED');
+                    } else {
+                      next.add('CANCELLED');
+                    }
+                    setCurrentPage(1);
+                    return Array.from(next);
+                  });
+                }}
+              >{t('pages.jobs.statusCancelled') || t('pages.appointments.statusCancelled')}</button>
+            </div>
+          </div>
+
+          <div className="filters-card">
+            <div className="filters-card-header">
+              <Calendar size={18} />
+              <span>{t('pages.jobs.scheduledTime') || t('pages.appointments.date')}</span>
+            </div>
+            <div className="date-range">
+              <label className="filter-item">
+                {t('pages.jobs.startDate') || t('pages.appointments.startDate')}
+                <input
+                  type="date"
+                  value={startDateFilter}
+                  onChange={(e) => { setStartDateFilter(e.target.value); setCurrentPage(1); }}
+                  className="filter-input"
+                />
+              </label>
+              <span className="date-separator">—</span>
+              <label className="filter-item">
+                {t('pages.jobs.endDate') || t('pages.appointments.endDate')}
+                <input
+                  type="date"
+                  value={endDateFilter}
+                  onChange={(e) => { setEndDateFilter(e.target.value); setCurrentPage(1); }}
+                  className="filter-input"
+                />
+              </label>
+            </div>
+          </div>
+
+          {(startDateFilter || endDateFilter || statusFilters.length > 0) ? (
+            <button
+              className="btn-secondary"
+              onClick={() => { setStatusFilters([]); setStartDateFilter(''); setEndDateFilter(''); setCurrentPage(1); }}
+            >
+              {t('common.clear')}
+            </button>
+          ) : null}
         </div>
       </div>
 
@@ -190,12 +372,13 @@ export default function MyJobsPage(): React.ReactElement {
           <p>{t('pages.jobs.noJobsScheduled')}</p>
         </div>
       ) : (
+        <>
         <div className="jobs-grid">
-          {jobs.map((job) => (
+          {paginatedJobs.map((job) => (
             <div key={job.appointmentId} className="job-card">
               {/* Status Badge */}
               <div className={`status-badge ${getStatusBadge(job.status)}`}>
-                {job.status}
+                {getStatusLabel(job.status)}
               </div>
 
               {/* Job Header */}
@@ -261,38 +444,35 @@ export default function MyJobsPage(): React.ReactElement {
                 <AlertCircle size={16} />
                 <p>{job.description}</p>
               </div>
-
               {/* Action Buttons */}
               <div className="job-actions">
-                {job.status === "SCHEDULED" && ((job.createdByRole === "TECHNICIAN" || job.createdByRole == null) || job.jobType === "QUOTATION") && (
-                  <button
-                    className="btn-edit"
-                    onClick={() => handleEditJob(job)}
-                    title={t('pages.jobs.editJob')}
-                  >
-                    <Edit size={16} />
-                    {t('common.edit')}
-                  </button>
-                )}
                 {job.status === "SCHEDULED" && (
-                  <button
-                    className="btn-complete"
-                    onClick={() => handleCompleteJob(job.appointmentId)}
-                    title={t('pages.jobs.markComplete')}
-                  >
-                    <CheckCircle size={16} />
-                    {t('pages.jobs.markComplete')}
-                  </button>
-                )}
-                {job.status === "SCHEDULED" && (
-                  <button
-                    className="btn-cancel"
-                    onClick={() => handleCancelJob(job.appointmentId)}
-                    title={t('pages.appointments.cancelAppointment')}
-                  >
-                    <X size={16} />
-                    {t('common.cancel')}
-                  </button>
+                  <>
+                    <button
+                      className="btn-edit"
+                      onClick={() => handleEditJob(job)}
+                      title={t('pages.jobs.editJob')}
+                    >
+                      <Edit size={16} />
+                      {t('common.edit')}
+                    </button>
+                    <button
+                      className="btn-complete"
+                      onClick={() => handleCompleteJob(job.appointmentId)}
+                      title={t('pages.jobs.markComplete')}
+                    >
+                      <CheckCircle size={16} />
+                      {t('pages.jobs.markComplete')}
+                    </button>
+                    <button
+                      className="btn-cancel"
+                      onClick={() => handleCancelJob(job.appointmentId)}
+                      title={t('pages.appointments.cancelAppointment')}
+                    >
+                      <X size={16} />
+                      {t('common.cancel')}
+                    </button>
+                  </>
                 )}
               </div>
 
@@ -306,6 +486,31 @@ export default function MyJobsPage(): React.ReactElement {
             </div>
           ))}
         </div>
+
+        <div className="pagination-controls">
+          <button
+            className="pagination-button"
+            onClick={goPrev}
+            disabled={currentPage === 1}
+            title="Previous"
+            aria-label="Previous"
+          >
+            <ChevronLeft size={18} />
+          </button>
+          <span className="page-indicator">
+            {currentPage} / {totalPages}
+          </span>
+          <button
+            className="pagination-button"
+            onClick={goNext}
+            disabled={currentPage === totalPages}
+            title="Next"
+            aria-label="Next"
+          >
+            <ChevronRight size={18} />
+          </button>
+        </div>
+        </>
       )}
 
       {/* Detail Modal */}
@@ -325,7 +530,7 @@ export default function MyJobsPage(): React.ReactElement {
                 <p><strong>{t('pages.jobs.job')}:</strong> {selectedJob.jobName}</p>
                 <p><strong>{t('pages.jobs.type')}:</strong> {selectedJob.jobType}</p>
                 <p><strong>{t('pages.jobs.rate')}:</strong> ${selectedJob.hourlyRate.toFixed(2)}/hour</p>
-                <p><strong>{t('pages.jobs.status')}:</strong> <span className={`modal-status-badge ${getStatusBadge(selectedJob.status)}`}>{selectedJob.status}</span></p>
+                <p><strong>{t('pages.jobs.status')}:</strong> <span className={`modal-status-badge ${getStatusBadge(selectedJob.status)}`}>{getStatusLabel(selectedJob.status)}</span></p>
               </div>
 
               <div className="detail-section">
@@ -353,7 +558,19 @@ export default function MyJobsPage(): React.ReactElement {
 
               <div className="detail-section">
                 <h3>{t('pages.jobs.cellar')}</h3>
-                <p>{selectedJob.cellarName}</p>
+                <p><strong>{t('pages.jobs.name')}:</strong> {selectedJob.cellarName}</p>
+                {matchedCellar ? (
+                  <>
+                    <p><strong>{t('pages.jobs.type')}:</strong> {matchedCellar.cellarType}</p>
+                    <p><strong>{t('pages.jobs.dimensions')}:</strong> {cellarDimensions}</p>
+                    <p><strong>{t('pages.jobs.capacity')}:</strong> {matchedCellar.bottleCapacity} bottles</p>
+                    <p><strong>{t('pages.jobs.features')}:</strong> {[
+                      matchedCellar.hasCoolingSystem ? t('pages.appointments.cooling') : null,
+                      matchedCellar.hasHumidityControl ? t('pages.appointments.humidityControl') : null,
+                      matchedCellar.hasAutoRegulation ? t('pages.appointments.autoRegulation') : null,
+                    ].filter(Boolean).join(', ') || t('common.none')}</p>
+                  </>
+                ) : null}
               </div>
 
               <div className="detail-section">

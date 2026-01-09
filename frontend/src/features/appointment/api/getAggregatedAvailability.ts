@@ -17,11 +17,12 @@ export interface AggregatedAvailabilityResponse {
  */
 export async function getAggregatedAvailability(
   date: string,
-  jobName: string
+  jobName: string,
+  appointmentId?: string
 ): Promise<AggregatedAvailabilityResponse> {
   const response = await axiosInstance.get(
     `/appointments/availability/aggregated`,
-    { params: { date, jobName } }
+    { params: { date, jobName, appointmentId } }
   );
   
   // The response has bookedSlots array with startTime and endTime

@@ -96,8 +96,9 @@ public class AppointmentController {
     @PreAuthorize("hasAnyRole('CUSTOMER', 'TECHNICIAN', 'ADMIN')")
     public ResponseEntity<TechnicianBookedSlotsResponseModel> getTechnicianBookedSlots(
             @PathVariable String technicianId,
-            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date) {
-        TechnicianBookedSlotsResponseModel bookedSlots = appointmentService.getTechnicianBookedSlots(technicianId, date);
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date,
+            @RequestParam(required = false) String appointmentId) {
+        TechnicianBookedSlotsResponseModel bookedSlots = appointmentService.getTechnicianBookedSlots(technicianId, date, appointmentId);
         return ResponseEntity.ok(bookedSlots);
     }
 
@@ -112,10 +113,11 @@ public class AppointmentController {
     public ResponseEntity<TechnicianBookedSlotsResponseModel> getAggregatedAvailability(
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date,
             @RequestParam String jobName,
+            @RequestParam(required = false) String appointmentId,
             Authentication authentication) {
         String userId = authentication.getName();
         String userRole = extractRole(authentication);
-        TechnicianBookedSlotsResponseModel availability = appointmentService.getAggregatedAvailability(date, jobName, userId, userRole);
+        TechnicianBookedSlotsResponseModel availability = appointmentService.getAggregatedAvailability(date, jobName, userId, userRole, appointmentId);
         return ResponseEntity.ok(availability);
     }
 

@@ -39,7 +39,9 @@
       "threePm": "15h00",
       "fivePm": "17h00"
     },
-    "max": "Max"
+    "max": "Max",
+    "all": "Tous",
+    "clear": "Effacer"
   },
   "navigation": {
     "parts": "Pièces",
@@ -440,6 +442,11 @@
       "service": "Service",
       "technician": "Technicien",
       "status": "Statut",
+      "statusScheduled": "Planifié",
+      "statusCompleted": "Terminé",
+      "statusCancelled": "Annulé",
+      "startDate": "Date de début",
+      "endDate": "Date de fin",
       "noAppointments": "Aucun Rendez-vous Trouvé",
       "noAppointmentsYet": "Vous n'avez pas de rendez-vous programmé.",
       "viewAndManageAppointments": "Consultez et gérez vos rendez-vous de services programmés",
@@ -461,6 +468,12 @@
       "appointmentTime": "Heure du rendez-vous",
       "serviceLocation": "Lieu du service",
       "contactInformation": "Informations de contact",
+      "dimensions": "Dimensions",
+      "capacity": "Capacité",
+      "features": "Caractéristiques",
+      "cooling": "Système de refroidissement",
+      "humidityControl": "Contrôle d'humidité",
+      "autoRegulation": "Auto-régulation",
       "name": "Nom",
       "role": "Rôle",
       "job": "Travail",
@@ -470,6 +483,10 @@
       "streetAddress": "Adresse",
       "city": "Ville",
       "province": "Province",
+      "selectProvince": "Sélectionner la province",
+      "quebec": "Québec (QC)",
+      "ontario": "Ontario (ON)",
+      "operationalAreaMessage": "Nous opérons uniquement dans ces régions",
       "country": "Pays",
       "postalCode": "Code postal",
       "createAppointment": "Créer un rendez-vous",
@@ -490,7 +507,12 @@
       "noCustomersFound": "Aucun client trouvé avec ce courriel",
       "cannotChangeQuotationType": "Impossible de modifier le type d'un devis",
       "cannotChangeCustomerForQuotation": "Impossible de changer le client pour un devis",
-      "cannotChangeCustomerQuotation": "Impossible de modifier un devis créé par un client"
+      "cannotChangeCustomerQuotation": "Impossible de modifier un devis créé par un client",
+      "bufferWarningTitle": "Temps Insuffisant Entre les Rendez-vous",
+      "bufferWarningMessage": "Vous avez moins de 30 minutes entre ces deux rendez-vous. Voulez-vous continuer?",
+      "continueScheduling": "Continuer",
+      "cancelScheduling": "Annuler",
+      "timeConflict": "Conflit d'horaire : Le technicien a déjà un rendez-vous de {{startTime}} à {{endTime}}. Votre rendez-vous demandé de {{requestStartTime}} à {{requestEndTime}} chevauche ce rendez-vous existant."
     },
     "jobs": {
       "myJobs": "Mes Emplois",
@@ -500,10 +522,17 @@
       "confirmComplete": "Êtes-vous sûr de vouloir marquer ce travail comme terminé ?",
       "confirmCompleteTitle": "Terminer le travail",
       "jobCompleted": "Travail marqué comme terminé avec succès",
+      "acceptJob": "Accepter le travail",
+      "jobAccepted": "Travail accepté avec succès",
       "errorCompleting": "Échec du marquage du travail comme terminé",
       "customer": "Client",
       "appointment": "Rendez-vous",
       "status": "Statut",
+      "statusScheduled": "Planifié",
+      "statusCompleted": "Terminé",
+      "statusCancelled": "Annulé",
+      "startDate": "Date de début",
+      "endDate": "Date de fin",
       "noJobs": "Aucun emploi assigné",
       "noJobsAssigned": "Aucun Emploi Assigné",
       "noJobsScheduled": "Vous n'avez pas d'emplois programmés pour le moment.",
@@ -527,7 +556,10 @@
       "mobile": "Mobile",
       "job": "Travail",
       "type": "Type",
-      "rate": "Tarif"
+      "rate": "Tarif",
+      "dimensions": "Dimensions",
+      "capacity": "Capacité",
+      "features": "Caractéristiques"
     },
     "profile": {
       "title": "Mon Profil",
@@ -627,13 +659,17 @@
   "validation": {
     "emailInvalid": "Veuillez entrer une adresse e-mail valide",
     "postalCodeInvalid": "Veuillez entrer un code postal valide",
+    "invalidPostalCode": "Code postal invalide",
     "postalCodeMismatch": "Le code postal ne correspond pas à {{city}}, {{province}}",
     "phoneInvalid": "Veuillez entrer un numéro de téléphone valide",
     "passwordTooShort": "Le mot de passe doit contenir au moins 8 caractères",
     "required": "Ce champ est obligatoire",
     "fieldRequired": "{{field}} est obligatoire",
     "invalidImageType": "Veuillez sélectionner un fichier image",
-    "imageTooLarge": "L'image est trop volumineuse (max 10MB)"
+    "imageTooLarge": "L'image est trop volumineuse (max 10MB)",
+    "provinceNotAllowed": "Les rendez-vous ne peuvent être programmés qu'au Québec (QC) ou en Ontario (ON).",
+    "postalCodeNotQC": "Les codes postaux du Québec commencent par G, H ou J. Veuillez entrer un code postal valide du Québec.",
+    "postalCodeNotON": "Les codes postaux de l'Ontario commencent par K, L, M, N ou P. Veuillez entrer un code postal valide de l'Ontario."
   },
   "messages": {
     "success": "Opération complétée avec succès",
@@ -649,6 +685,7 @@
   "error": {
     "schedule": {
       "cannotEditScheduleAppointmentConflict": "Impossible de modifier l'horaire; il y a un rendez-vous à cette date dans un créneau horaire que vous supprimez.",
+      "cannotUpdateWeeklyScheduleDueToAppointment": "Impossible de mettre à jour l'horaire hebdomadaire : il existe un rendez-vous le {{day}} à {{time}} qui serait supprimé par cette mise à jour. Veuillez d'abord annuler ou reprogrammer le rendez-vous.",
       "dayMustHaveTimeSlot": "{{day}} doit avoir au moins un créneau horaire.",
       "nonTechnicianMustStartNineAm": "Les non-techniciens doivent commencer à NINE_AM (09h00).",
       "startBeforeEnd": "{{day}}: l'heure de début doit être avant l'heure de fin.",

@@ -3,10 +3,10 @@ import { useNavigate, useLocation, Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import useAuthStore, { type AuthUser } from '../../features/authentication/store/authStore';
 import authClient from '../../features/authentication/api/authClient';
-import { getPostalCodeError } from '../../utils/postalCodeValidator';
+import { getProvincePostalCodeError } from '../../utils/postalCodeValidator';
 import '../Auth.css';
 
-const provinces = ['Ontario', 'Quebec', 'British Columbia', 'Alberta', 'Manitoba', 'Saskatchewan', 'Nova Scotia'];
+const provinces = ['Ontario (ON)', 'Quebec (QC)'];
 
 export default function RegisterPage() {
   const { t } = useTranslation();
@@ -117,9 +117,12 @@ export default function RegisterPage() {
     }
     
     if (name === 'postalCode') {
-      const errorKey = getPostalCodeError(value, customerData.city, customerData.province);
+      // Extract province code from dropdown value like "Ontario (ON)"
+      const provinceCode = (name === 'postalCode' ? customerData.province : value).match(/\(([A-Z]{2})\)/)?.[1] || 
+                           (name === 'postalCode' ? customerData.province : value);
+      const errorKey = getProvincePostalCodeError(value, provinceCode);
       if (errorKey) {
-        const translatedError = t(errorKey, { city: customerData.city, province: customerData.province });
+        const translatedError = t(errorKey, { province: provinceCode });
         setErrors(prev => ({ ...prev, postalCode: translatedError }));
       }
     }
@@ -154,9 +157,11 @@ export default function RegisterPage() {
     if (!customerData.city.trim()) newErrors.city = 'City is required';
     if (!customerData.postalCode.trim()) newErrors.postalCode = 'Postal code is required';
     else {
-      const postalErrorKey = getPostalCodeError(customerData.postalCode, customerData.city, customerData.province);
+      // Extract province code from dropdown value like "Ontario (ON)"
+      const provinceCode = customerData.province.match(/\(([A-Z]{2})\)/)?.[1] || customerData.province;
+      const postalErrorKey = getProvincePostalCodeError(customerData.postalCode, provinceCode);
       if (postalErrorKey) {
-        newErrors.postalCode = t(postalErrorKey, { city: customerData.city, province: customerData.province });
+        newErrors.postalCode = t(postalErrorKey, { province: provinceCode });
       }
     }
     
@@ -176,8 +181,28 @@ export default function RegisterPage() {
     
     setSubmitting(true);
     try {
+      // Extract province code (ON or QC) from dropdown value like "Ontario (ON)" or "Quebec (QC)"
+      const provinceCode = customerData.province.match(/\(([A-Z]{2})\)/)?.[1] || customerData.province;
+      
+      // Convert province code back to full name for backend
+      const provinceMap: { [key: string]: string } = {
+        'ON': 'Ontario',
+        'QC': 'Quebec',
+      };
+      const provinceName = provinceMap[provinceCode] || provinceCode;
+      
+      // Format postal code: remove spaces, uppercase, then add space in correct position (A1A 1A1)
+      const rawPostalCode = customerData.postalCode.toUpperCase().replace(/\s+/g, '');
+      const formattedPostalCode = rawPostalCode.length === 6 
+        ? `${rawPostalCode.substring(0, 3)} ${rawPostalCode.substring(3)}`
+        : rawPostalCode;
+      
       // Complete registration - auth service will create customer record and activate user
-      const response = await authClient.completeRegistration(userId, customerData);
+      const response = await authClient.completeRegistration(userId, {
+        ...customerData,
+        province: provinceName,
+        postalCode: formattedPostalCode,
+      });
       
       if (response.success && response.token && response.user) {
         localStorage.setItem('authToken', response.token);
