@@ -25,10 +25,13 @@ export default function EmailVerificationPage() {
     const emailFromUrl = searchParams.get('email');
     const state = location.state as { email?: string; userId?: string } | null;
     
-    if (emailFromUrl) {
-      setEmail(emailFromUrl);
-    } else if (state?.email) {
-      setEmail(state.email);
+    // Try to get email from multiple sources: URL > state > sessionStorage
+    const emailToUse = emailFromUrl || state?.email || sessionStorage.getItem('verificationEmail') || '';
+    
+    if (emailToUse) {
+      setEmail(emailToUse);
+      // Clear sessionStorage once we have the email
+      sessionStorage.removeItem('verificationEmail');
     }
     // Don't redirect if we have a token - let it auto-verify
 
@@ -74,8 +77,8 @@ export default function EmailVerificationPage() {
         }
       };
       verifyHandler(token);
-    } else if (!emailFromUrl && !state?.email) {
-      // Only redirect to register if NO token AND NO email
+    } else if (!emailToUse && !token) {
+      // Only redirect to register if NO token AND NO email from any source
       navigate('/auth/register');
     }
   }, [searchParams, location.state, navigate, t]);
@@ -140,6 +143,10 @@ export default function EmailVerificationPage() {
     e.preventDefault();
     if (!verificationCode.trim()) {
       setError(t('validation.required'));
+      return;
+    }
+    if (!email.trim()) {
+      setError(t('validation.emailRequired') || 'Email is required');
       return;
     }
 

@@ -32,6 +32,8 @@ export default function LoginPage() {
       navigate('/');
     } else if (response.requiresVerification || (response.error && response.error.toLowerCase().includes('verify'))) {
       // Email not verified - redirect to verification page
+      // Store email in sessionStorage so it persists if user refreshes
+      sessionStorage.setItem('verificationEmail', email);
       navigate('/auth/verify-email', { state: { email } });
     } else if ('requiresCompletion' in response && response.requiresCompletion) {
       // Profile not completed - redirect to complete profile
@@ -92,7 +94,7 @@ export default function LoginPage() {
           <button
             type="submit"
             disabled={isLoading}
-            className="btn-primary"
+            className="btn btn-primary"
           >
             {isLoading ? t('common.loading') : t('auth.login')}
           </button>
