@@ -4,6 +4,7 @@ import crypto from "crypto";
 import jwt from "jsonwebtoken";
 import rateLimit from "express-rate-limit";
 import { sendPasswordResetEmail, sendPasswordChangedEmail } from "../services/email.service.js";
+import { sendVerificationEmail, verifyEmailToken, resendVerificationEmail, generateAndStoreVerificationToken, isUserVerificationLocked } from "../services/verification.service.js";
 import { ForgotPasswordSchema, ResetPasswordSchema } from "../validation/schemas.js";
 import { ZodError } from "zod";
 
@@ -18,10 +19,7 @@ if (!JWT_SECRET) {
 }
 
 // Helper function to extract rate limiting key from request
-// Note: This function is called twice per rate-limited request (keyGenerator and handler),
-// but the computation cost is minimal (JWT verification) and code reuse is prioritized.
-// The express-rate-limit library doesn't provide a built-in mechanism to share the key
-// between keyGenerator and handler.
+// Uses JWT user ID if available, otherwise uses IP address (with IPv6 support)
 function getRateLimitKey(req: Request): string {
   const authHeader = req.headers.authorization;
   if (authHeader && authHeader.startsWith("Bearer ")) {
@@ -31,11 +29,13 @@ function getRateLimitKey(req: Request): string {
       return `user:${decoded.sub}`; // Use user ID as key with prefix
     } catch (err) {
       // If token is invalid, use IP with invalid-token prefix for stricter tracking
-      return `invalid-token:${req.ip || 'unknown'}`;
+      const ip = req.headers['x-forwarded-for'] as string || req.socket.remoteAddress || 'unknown';
+      return `invalid-token:${ip}`;
     }
   }
   // No auth header - use IP with no-auth prefix
-  return `no-auth:${req.ip || 'unknown'}`;
+  const ip = req.headers['x-forwarded-for'] as string || req.socket.remoteAddress || 'unknown';
+  return `no-auth:${ip}`;
 }
 
 // Rate limiter for user search endpoint to prevent enumeration attacks
@@ -114,6 +114,8 @@ function getPayloadFromRequest(req: Request, res: Response): JWTPayload | null {
 /**
  * Register a new user
  * POST /api/auth/register
+ * 
+ * Security: User must verify email before login
  */
 router.post("/register", async (req: Request, res: Response) => {
   try {
@@ -129,10 +131,29 @@ router.post("/register", async (req: Request, res: Response) => {
     });
 
     if (existingUser) {
+      // If user exists but not verified, resend verification email
+      if (!existingUser.emailVerified) {
+        try {
+          const { token } = await generateAndStoreVerificationToken(existingUser.id);
+          // Send email asynchronously in background
+          sendVerificationEmail(email, token, name).catch((error) => {
+            console.error("Error sending verification email:", error);
+          });
+          return res.status(409).json({
+            success: false,
+            requiresVerification: true,
+            userId: existingUser.id,
+            message: "Account already exists. A new verification email has been sent.",
+          });
+        } catch (error) {
+          console.error("Error generating verification token:", error);
+          return res.status(409).json({ error: "User already exists" });
+        }
+      }
       return res.status(409).json({ error: "User already exists" });
     }
 
-    // Create user
+    // Create user (NOT VERIFIED YET)
     const user = await prisma.user.create({
       data: {
         id: crypto.randomUUID(),
@@ -162,13 +183,27 @@ router.post("/register", async (req: Request, res: Response) => {
       },
     });
 
-    // DO NOT issue token yet - user must complete customer registration first
-    return res.status(201).json({
-      success: true,
-      requiresCompletion: true,
-      userId: user.id,
-      message: "Please complete your customer registration",
-    });
+    // Generate verification token and send email (non-blocking)
+    try {
+      const { token } = await generateAndStoreVerificationToken(user.id);
+      
+      // Send email asynchronously in background to avoid blocking the response
+      sendVerificationEmail(email, token, name).catch((error) => {
+        console.error("Error sending verification email:", error);
+      });
+
+      return res.status(201).json({
+        success: true,
+        requiresVerification: true,
+        userId: user.id,
+        message: "Registration successful. Please verify your email to continue.",
+      });
+    } catch (error) {
+      console.error("Error generating verification token:", error);
+      // Delete user if token generation failed
+      await prisma.user.delete({ where: { id: user.id } });
+      return res.status(500).json({ error: "Failed to generate verification token" });
+    }
   } catch (error) {
     console.error("Registration error:", error);
     return res.status(500).json({ error: "Registration failed" });
@@ -178,6 +213,8 @@ router.post("/register", async (req: Request, res: Response) => {
 /**
  * Sign in user
  * POST /api/auth/sign-in
+ * 
+ * Security: User must have verified email to sign in
  */
 router.post("/sign-in", async (req: Request, res: Response) => {
   try {
@@ -194,6 +231,17 @@ router.post("/sign-in", async (req: Request, res: Response) => {
 
     if (!user) {
       return res.status(401).json({ error: "Invalid credentials" });
+    }
+
+    // SECURITY: Check email verification BEFORE password check to prevent timing attacks
+    if (!user.emailVerified) {
+      return res.status(403).json({
+        success: false,
+        requiresVerification: true,
+        userId: user.id,
+        message: "Please verify your email before logging in.",
+        code: "EMAIL_NOT_VERIFIED",
+      });
     }
 
     // Get password hash
@@ -860,7 +908,9 @@ router.get("/users/:userId", async (req: Request, res: Response) => {
  * Complete registration by activating user (called after customer data is submitted to backend)
  * POST /api/auth/complete-registration
  * Body: { userId: string, customerData: { firstName, lastName, streetAddress, city, province, postalCode, country, phoneNumbers } }
- * No auth required - but validates userId is pending
+ * No auth required - but validates userId is pending AND email verified
+ * 
+ * Security: User MUST have verified email before completing registration
  */
 router.post("/complete-registration", async (req: Request, res: Response) => {
   try {
@@ -877,6 +927,16 @@ router.post("/complete-registration", async (req: Request, res: Response) => {
 
     if (!user) {
       return res.status(404).json({ error: "User not found" });
+    }
+
+    // SECURITY: Verify email is verified BEFORE allowing profile completion
+    if (!user.emailVerified) {
+      return res.status(403).json({
+        success: false,
+        requiresVerification: true,
+        message: "Please verify your email before completing registration",
+        code: "EMAIL_NOT_VERIFIED",
+      });
     }
 
     const profile = await prisma.userProfile.findUnique({
@@ -993,6 +1053,133 @@ router.delete("/cancel-registration/:userId", async (req: Request, res: Response
   } catch (error) {
     console.error("Cancel registration error:", error);
     return res.status(500).json({ error: "Failed to cancel registration" });
+  }
+});
+
+/**
+ * Verify email token
+ * POST /api/auth/verify-email/:token
+ * 
+ * Security:
+ * - Constant-time token comparison (prevents timing attacks)
+ * - Rate limiting: 5 attempts then lock 15 minutes
+ * - Token single-use: deleted after verification
+ * - Token hashed in DB: leaked DB doesn't expose tokens
+ */
+router.post("/verify-email/:token", async (req: Request, res: Response) => {
+  try {
+    const { token } = req.params;
+
+    if (!token) {
+      return res.status(400).json({ error: "Verification token is required" });
+    }
+
+    const result = await verifyEmailToken(token);
+
+    if (!result.success) {
+      if (result.error === "RATE_LIMIT") {
+        return res.status(429).json({
+          success: false,
+          message: result.message,
+          code: "RATE_LIMIT",
+        });
+      }
+      if (result.error === "INVALID_TOKEN") {
+        return res.status(400).json({
+          success: false,
+          message: result.message,
+          code: "INVALID_TOKEN",
+        });
+      }
+      return res.status(400).json({
+        success: false,
+        message: result.message,
+        code: result.error,
+      });
+    }
+
+    // Email verified successfully
+    return res.json({
+      success: true,
+      message: "Email verified successfully",
+      userId: result.userId,
+      email: result.email,
+    });
+  } catch (error) {
+    console.error("Email verification error:", error);
+    return res.status(500).json({
+      success: false,
+      error: "Email verification failed",
+    });
+  }
+});
+
+/**
+ * Resend verification email
+ * POST /api/auth/resend-verification
+ * 
+ * Security:
+ * - Rate limited: 3 per hour, 10 per day per email
+ * - No email enumeration: same response whether email exists or not
+ * - Resets rate limit on attempts if expired
+ */
+router.post("/resend-verification", async (req: Request, res: Response) => {
+  try {
+    const { email } = req.body;
+
+    if (!email) {
+      return res.status(400).json({ error: "Email is required" });
+    }
+
+    const result = await resendVerificationEmail(email);
+
+    // Always return 200 with generic message to prevent email enumeration
+    return res.json({
+      success: result.success,
+      message: result.message,
+    });
+  } catch (error) {
+    console.error("Resend verification error:", error);
+    // Still return generic message on error
+    return res.json({
+      success: false,
+      message: "If an account exists, we sent a verification email",
+    });
+  }
+});
+
+/**
+ * Check email verification status
+ * GET /api/auth/verify-status
+ * Headers: Authorization: Bearer <jwt>
+ */
+router.get("/verify-status", async (req: Request, res: Response) => {
+  try {
+    const payload = getPayloadFromRequest(req, res);
+    if (!payload) return;
+
+    const user = await prisma.user.findUnique({
+      where: { id: payload.sub },
+      select: {
+        id: true,
+        emailVerified: true,
+        emailVerifiedAt: true,
+      },
+    });
+
+    if (!user) {
+      return res.status(404).json({ error: "User not found" });
+    }
+
+    res.json({
+      success: true,
+      emailVerified: user.emailVerified,
+      emailVerifiedAt: user.emailVerifiedAt,
+      requiresVerification: !user.emailVerified,
+    });
+  } catch (error) {
+    console.error("Verify status error:", error);
+    return res.status(500).json({ error: "Failed to check verification status" });
   }
 });
 

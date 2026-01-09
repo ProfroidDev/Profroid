@@ -5,6 +5,13 @@ build/
 !**/src/main/**/build/
 !**/src/test/**/build/
 
+# Node modules and dependencies
+node_modules/
+package-lock.json
+yarn.lock
+dist/
+.next/
+
 # Environment variables
 .env
 .env.local
