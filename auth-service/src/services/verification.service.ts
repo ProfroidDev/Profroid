@@ -98,7 +98,8 @@ export async function sendVerificationEmail(
   name?: string
 ): Promise<void> {
   const transporter = createTransporter();
-  const verificationUrl = `${FRONTEND_URL}/auth/verify-email?token=${token}`;
+  const encodedEmail = encodeURIComponent(email);
+  const verificationUrl = `${FRONTEND_URL}/auth/verify-email?token=${token}&email=${encodedEmail}`;
   const maskedEmail = email.replace(/(.{2})(.*)(@.*)/, "$1***$3");
   
   // Display the token as verification code (first 8 characters uppercase)
@@ -178,18 +179,11 @@ export async function sendVerificationEmail(
                 ${displayCode}
               </h3>
               
-              <p style="text-align: center; color: #666; font-size: 14px;">Enter this code on the verification page, or click the button below:</p>
-              
-              <center>
-                <a href="${verificationUrl}" class="button">Verify Email Address</a>
-              </center>
-              
-              <p style="margin-top: 20px;">Or copy and paste this link in your browser:</p>
-              <p style="word-break: break-all; font-size: 12px; color: #666;">${verificationUrl}</p>
+              <p style="text-align: center; color: #666; font-size: 14px;">Enter this verification code on the registration page to complete your sign up.</p>
               
               <div class="warning">
-                <strong>⏱️ This link expires in 2 hours</strong><br>
-                For security reasons, verification links are valid for 2 hours only.
+                <strong>⏱️ This code expires in 2 hours</strong><br>
+                For security reasons, verification codes are valid for 2 hours only.
               </div>
               
               <div class="warning">

@@ -21,13 +21,32 @@ export default function RegisterPage() {
     clearError();
   }, [clearError]);
   
-  // Check if coming from login with requiresCompletion
+  // Check if coming from login with requiresCompletion or from email verification
   useEffect(() => {
     const state = location.state as { completionMode?: boolean; userId?: string; email?: string } | null;
+    
+    // First check location state (from navigate)
     if (state?.completionMode && state?.userId) {
       setUserId(state.userId);
       if (state.email) setEmail(state.email);
       setStep(2); // Go directly to customer form
+    } else {
+      // Fall back to sessionStorage (from closed window redirect)
+      const verificationData = sessionStorage.getItem('verificationData');
+      if (verificationData) {
+        try {
+          const data = JSON.parse(verificationData);
+          if (data.completionMode && data.userId) {
+            setUserId(data.userId);
+            if (data.email) setEmail(data.email);
+            setStep(2); // Go directly to customer form
+            // Clear sessionStorage after reading
+            sessionStorage.removeItem('verificationData');
+          }
+        } catch (e) {
+          console.error('Failed to parse verification data:', e);
+        }
+      }
     }
   }, [location.state]);
   
@@ -234,8 +253,20 @@ export default function RegisterPage() {
     <div className="auth-container">
       <div className="auth-card">
         <div className="auth-header">
-          <h1>{step === 1 ? t('auth.register') : (location.state as { completionMode?: boolean } | null)?.completionMode ? t('pages.profile.personalInfo') : t('pages.profile.updateProfile')}</h1>
-          <p>{step === 1 ? t('auth.signUpWith') : t('messages.success')}</p>
+          {step === 2 && (
+            <>
+              <h2 style={{ color: '#7a0901', fontSize: '1.8rem', fontWeight: '700', marginBottom: '0.5rem' }}>
+                {(location.state as { completionMode?: boolean } | null)?.completionMode ? t('pages.profile.personalInfo') : t('pages.profile.updateProfile')}
+              </h2>
+              <p style={{ color: '#999', marginTop: 0 }}>Step 2 of 2</p>
+            </>
+          )}
+          {step === 1 && (
+            <>
+              <h1>{t('auth.register')}</h1>
+              <p>{t('auth.signUpWith')}</p>
+            </>
+          )}
         </div>
 
         {step === 1 ? (
@@ -288,7 +319,7 @@ export default function RegisterPage() {
           <button
             type="submit"
             disabled={submitting}
-            className="btn-primary"
+            className="btn btn-primary"
           >
             {submitting ? t('common.loading') : t('common.save')}
           </button>
@@ -425,7 +456,7 @@ export default function RegisterPage() {
               type="button"
               onClick={addPhoneField}
               disabled={submitting}
-              className="btn-secondary"
+              className="btn btn-secondary"
               style={{ marginTop: '8px' }}
             >
               + {t('pages.customers.phone')}
@@ -441,7 +472,7 @@ export default function RegisterPage() {
           <button
             type="submit"
             disabled={submitting}
-            className="btn-primary"
+            className="btn btn-primary"
           >
             {submitting ? t('common.loading') : t('auth.createAccount')}
           </button>
@@ -450,7 +481,7 @@ export default function RegisterPage() {
             type="button"
             onClick={() => setStep(1)}
             disabled={submitting}
-            className="btn-secondary"
+            className="btn btn-secondary"
             style={{ marginTop: '8px' }}
           >
             {t('common.back')}

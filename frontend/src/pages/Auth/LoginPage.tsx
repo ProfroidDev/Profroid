@@ -8,7 +8,7 @@ import '../Auth.css';
 export default function LoginPage() {
   const { t } = useTranslation();
   const navigate = useNavigate();
-  const { error, isLoading, clearError, fetchCustomerData } = useAuthStore();
+  const { error, isLoading, clearError, initializeAuth } = useAuthStore();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [formError, setFormError] = useState('');
@@ -27,13 +27,13 @@ export default function LoginPage() {
     const response = await authClient.signIn(email, password);
     
     if (response.success) {
-      // Fetch customer data and navigate to home
-      await fetchCustomerData();
+      // Initialize auth to load user and customer data immediately
+      await initializeAuth();
       navigate('/');
     } else if (response.requiresVerification || (response.error && response.error.toLowerCase().includes('verify'))) {
       // Email not verified - redirect to verification page
-      navigate('/auth/verify-email', { state: { email, userId: response.userId } });
-    } else if ((response as any).requiresCompletion) {
+      navigate('/auth/verify-email', { state: { email } });
+    } else if ('requiresCompletion' in response && response.requiresCompletion) {
       // Profile not completed - redirect to complete profile
       navigate('/auth/register', { state: { completionMode: true, userId: response.userId, email } });
     } else {

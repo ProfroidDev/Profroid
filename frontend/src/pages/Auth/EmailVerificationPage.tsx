@@ -29,10 +29,8 @@ export default function EmailVerificationPage() {
       setEmail(emailFromUrl);
     } else if (state?.email) {
       setEmail(state.email);
-    } else {
-      // If no email provided, redirect to register
-      navigate('/auth/register');
     }
+    // Don't redirect if we have a token - let it auto-verify
 
     // Auto-verify if token is in URL
     if (token) {
@@ -44,16 +42,28 @@ export default function EmailVerificationPage() {
           if (response.success) {
             setVerified(true);
             setMessage(t('auth.emailVerificationSuccess'));
-            // Redirect to profile completion after 2 seconds
+            // Wait a moment to show loading overlay, then redirect
             setTimeout(() => {
-              navigate('/auth/register', { 
-                state: { 
-                  completionMode: true, 
-                  userId: response.userId,
-                  email: emailFromUrl || state?.email
-                } 
-              });
-            }, 2000);
+              // Store data in sessionStorage for RegisterPage to access
+              sessionStorage.setItem('verificationData', JSON.stringify({
+                completionMode: true,
+                userId: response.userId,
+                email: emailFromUrl || state?.email || ''
+              }));
+              // Close current tab/window if it was opened by email link
+              if (window.opener) {
+                window.close();
+              } else {
+                // Otherwise navigate normally
+                navigate('/auth/register', { 
+                  state: { 
+                    completionMode: true, 
+                    userId: response.userId,
+                    email: emailFromUrl || state?.email
+                  } 
+                });
+              }
+            }, 500);
           } else {
             setError(response.error || t('auth.verificationFailed'));
           }
@@ -64,6 +74,9 @@ export default function EmailVerificationPage() {
         }
       };
       verifyHandler(token);
+    } else if (!emailFromUrl && !state?.email) {
+      // Only redirect to register if NO token AND NO email
+      navigate('/auth/register');
     }
   }, [searchParams, location.state, navigate, t]);
 
@@ -83,18 +96,36 @@ export default function EmailVerificationPage() {
     try {
       const response = await authClient.verifyEmail(token);
       if (response.success) {
+        // Check if already verified
+        if (response.message && response.message.includes('already verified')) {
+          setError(t('auth.emailAlreadyVerified') || 'Email is already verified');
+          setLoading(false);
+          return;
+        }
         setVerified(true);
         setMessage(t('auth.emailVerificationSuccess'));
-        // Redirect to profile completion after 2 seconds
+        // Wait a moment to show loading overlay, then redirect
         setTimeout(() => {
-          navigate('/auth/register', { 
-            state: { 
-              completionMode: true, 
-              userId: response.userId,
-              email: email 
-            } 
-          });
-        }, 2000);
+          // Store data in sessionStorage for RegisterPage to access
+          sessionStorage.setItem('verificationData', JSON.stringify({
+            completionMode: true,
+            userId: response.userId,
+            email: email
+          }));
+          // Close current tab/window if it was opened by email link
+          if (window.opener) {
+            window.close();
+          } else {
+            // Otherwise navigate normally
+            navigate('/auth/register', { 
+              state: { 
+                completionMode: true, 
+                userId: response.userId,
+                email: email 
+              } 
+            });
+          }
+        }, 500);
       } else {
         setError(response.error || t('auth.verificationFailed'));
       }
@@ -122,10 +153,16 @@ export default function EmailVerificationPage() {
     try {
       const response = await authClient.resendVerificationEmail(email);
       if (response.success) {
-        setMessage(t('auth.verificationEmailResent'));
-        setVerificationCode('');
-        setResendDisabled(true);
-        setResendCountdown(60);
+        // Check if email was already verified
+        if (response.message && response.message.includes('already verified')) {
+          setError(t('auth.emailAlreadyVerified') || 'Email is already verified. Please proceed to login.');
+          setResendDisabled(true);
+        } else {
+          setMessage(t('auth.verificationEmailResent'));
+          setVerificationCode('');
+          setResendDisabled(true);
+          setResendCountdown(60);
+        }
       } else {
         setError(response.error || t('auth.resendFailed'));
       }
@@ -138,6 +175,11 @@ export default function EmailVerificationPage() {
 
   return (
     <div className="auth-container">
+      {verified && (
+        <div className="loading-overlay">
+          <div className="loading-spinner"></div>
+        </div>
+      )}
       <div className="auth-card">
         <h1>{t('auth.verifyEmail')}</h1>
         <p className="auth-subtitle">{t('auth.verifyEmailDescription', { email })}</p>
@@ -186,13 +228,6 @@ export default function EmailVerificationPage() {
                 {resendDisabled
                   ? `${t('auth.resendIn')} ${resendCountdown}s`
                   : t('auth.resendCode')}
-              </button>
-              <button
-                onClick={() => navigate('/auth/login')}
-                disabled={loading}
-                className="btn btn-secondary"
-              >
-                {t('auth.backToLogin')}
               </button>
             </div>
           </>

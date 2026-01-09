@@ -46,7 +46,9 @@ export interface UserResponse {
  */
 function getErrorMessage(error: unknown): string {
   if (axios.isAxiosError(error)) {
-    return error.response?.data?.error || error.message || 'An error occurred';
+    // Try to get error message from response data first
+    const responseData = error.response?.data as { error?: string; message?: string } | undefined;
+    return responseData?.error || responseData?.message || error.message || 'An error occurred';
   }
   return error instanceof Error ? error.message : 'An error occurred';
 }
@@ -87,6 +89,17 @@ class AuthAPI {
       // Don't store token yet - user must complete customer registration first
       return response.data;
     } catch (error: unknown) {
+      // If it's an axios error with response data, return that data
+      if (axios.isAxiosError(error) && error.response?.data) {
+        const data = error.response.data as AuthResponse;
+        return {
+          success: false,
+          error: data.error || data.message || getErrorMessage(error),
+          requiresVerification: data.requiresVerification,
+          userId: data.userId,
+          message: data.message,
+        };
+      }
       return {
         success: false,
         error: getErrorMessage(error),
@@ -135,6 +148,18 @@ class AuthAPI {
 
       return response.data;
     } catch (error: unknown) {
+      // If it's an axios error with response data, return that data
+      if (axios.isAxiosError(error) && error.response?.data) {
+        const data = error.response.data as AuthResponse;
+        // If the response has success:false but has requiresVerification or requiresCompletion, return it
+        if (!data.success && (data.requiresVerification || data.requiresCompletion)) {
+          return data;
+        }
+        return {
+          success: false,
+          error: data.error || data.message || getErrorMessage(error),
+        };
+      }
       return {
         success: false,
         error: getErrorMessage(error),
@@ -280,6 +305,16 @@ class AuthAPI {
       const response = await this.client.post<{ success: boolean; userId: string; message: string }>('/verify-email/' + token);
       return response.data;
     } catch (error: unknown) {
+      // If it's an axios error with response data, return that data
+      if (axios.isAxiosError(error) && error.response?.data) {
+        const data = error.response.data as { success: boolean; userId?: string; message?: string; error?: string };
+        return {
+          success: false,
+          error: data.error || data.message || getErrorMessage(error),
+          message: data.message,
+          userId: data.userId,
+        };
+      }
       return {
         success: false,
         error: getErrorMessage(error),
