@@ -67,7 +67,7 @@ export default function ForgotPasswordPage() {
             </div>
             
             <div className="auth-footer" style={{ marginTop: '1.5rem' }}>
-              <Link to="/login" className="btn-secondary">
+              <Link to="/auth/login" className="btn-secondary">
                 {t('auth.login')}
               </Link>
             </div>
@@ -106,7 +106,7 @@ export default function ForgotPasswordPage() {
             <div className="auth-footer">
               <p>
                 {t('auth.alreadyHaveAccount')}{' '}
-                <Link to="/login" className="link">
+                <Link to="/auth/login" className="link">
                   {t('auth.login')}
                 </Link>
               </p>

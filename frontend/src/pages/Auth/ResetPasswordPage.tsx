@@ -86,7 +86,7 @@ export default function ResetPasswordPage() {
         setSuccess(true);
         // Redirect to login after 3 seconds
         setTimeout(() => {
-          navigate('/login');
+          navigate('/auth/login');
         }, 3000);
       } else {
         setError(response.error || t('messages.error'));

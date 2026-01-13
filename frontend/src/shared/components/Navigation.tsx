@@ -23,11 +23,11 @@ export default function Navigation(): React.ReactElement {
 
   const handleLogout = async () => {
     await logout();
-    navigate("/login");
+    navigate("/auth/login");
   };
 
   const handleLogin = () => {
-    navigate("/login");
+    navigate("/auth/login");
   };
 
   const handleProfile = () => {

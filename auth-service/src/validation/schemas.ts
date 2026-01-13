@@ -4,14 +4,18 @@
 
 import { z } from "zod";
 
+// Email regex accepts: user@domain.com, user+tag@domain.com, user_name@domain.co.uk, etc.
+// This is more flexible than Zod's default .email() validator
+const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
 export const RegisterSchema = z.object({
-  email: z.string().email("Invalid email address"),
+  email: z.string().regex(emailRegex, "Invalid email address"),
   password: z.string().min(8, "Password must be at least 8 characters"),
   name: z.string().optional(),
 });
 
 export const SignInSchema = z.object({
-  email: z.string().email("Invalid email address"),
+  email: z.string().regex(emailRegex, "Invalid email address"),
   password: z.string().min(1, "Password is required"),
 });
 
@@ -40,7 +44,7 @@ export const VerifyEmailSchema = z.object({
 });
 
 export const ForgotPasswordSchema = z.object({
-  email: z.string().email("Invalid email address"),
+  email: z.string().regex(emailRegex, "Invalid email address"),
 });
 
 export const ResetPasswordSchema = z.object({

@@ -19,6 +19,7 @@ import RegisterPage from "./pages/Auth/RegisterPage";
 import ProfilePage from "./pages/Auth/ProfilePage";
 import ForgotPasswordPage from "./pages/Auth/ForgotPasswordPage";
 import ResetPasswordPage from "./pages/Auth/ResetPasswordPage";
+import EmailVerificationPage from "./pages/Auth/EmailVerificationPage";
 import {
   ProtectedRoute,
   PublicRoute,
@@ -40,7 +41,7 @@ function App(): React.ReactElement {
       <Routes>
         {/* Public Auth Routes */}
         <Route
-          path="/login"
+          path="/auth/login"
           element={
             <PublicRoute>
               <LoginPage />
@@ -48,7 +49,7 @@ function App(): React.ReactElement {
           }
         />
         <Route
-          path="/register"
+          path="/auth/register"
           element={
             <PublicRoute>
               <RegisterPage />
@@ -56,7 +57,7 @@ function App(): React.ReactElement {
           }
         />
         <Route
-          path="/forgot-password"
+          path="/auth/forgot-password"
           element={
             <PublicRoute>
               <ForgotPasswordPage />
@@ -64,10 +65,27 @@ function App(): React.ReactElement {
           }
         />
         <Route
+          path="/auth/reset-password"
+          element={
+            <PublicRoute>
+              <ResetPasswordPage />
+            </PublicRoute>
+          }
+        />
+        {/* Backward compatibility: old reset-password links without /auth/ */}
+        <Route
           path="/reset-password"
           element={
             <PublicRoute>
               <ResetPasswordPage />
+            </PublicRoute>
+          }
+        />
+        <Route
+          path="/auth/verify-email"
+          element={
+            <PublicRoute>
+              <EmailVerificationPage />
             </PublicRoute>
           }
         />
