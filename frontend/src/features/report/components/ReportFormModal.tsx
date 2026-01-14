@@ -33,9 +33,9 @@ export default function ReportFormModal({
 }: ReportFormModalProps): React.ReactElement | null {
   const { t } = useTranslation();
   const [loading, setLoading] = useState(false);
-  const [hoursWorked, setHoursWorked] = useState("0");
-  const [frais, setFrais] = useState("0");
-  const [fraisDeplacement, setFraisDeplacement] = useState("0");
+  const [hoursWorked, setHoursWorked] = useState("");
+  const [frais, setFrais] = useState("");
+  const [fraisDeplacement, setFraisDeplacement] = useState("");
   const [selectedParts, setSelectedParts] = useState<SelectedPart[]>([]);
   
   // Part search
@@ -78,9 +78,9 @@ export default function ReportFormModal({
       );
     } else {
       // Reset form for new report
-      setHoursWorked("0");
-      setFrais("0");
-      setFraisDeplacement("0");
+      setHoursWorked("");
+      setFrais("");
+      setFraisDeplacement("");
       setSelectedParts([]);
     }
   }, [existingReport, isOpen]);
@@ -165,21 +165,21 @@ export default function ReportFormModal({
     e.preventDefault();
 
     // Validation
-    const hoursValue = parseFloat(hoursWorked);
-    if (isNaN(hoursValue) || hoursValue < 0) {
+    const hoursValue = parseFloat(hoursWorked) || 0;
+    if (hoursValue < 0) {
       onError("Please enter valid hours worked");
       return;
     }
 
-    const fraisValue = parseFloat(frais);
-    if (isNaN(fraisValue) || fraisValue < 0) {
-      onError("Please enter valid frais amount");
+    const fraisValue = parseFloat(frais) || 0;
+    if (fraisValue < 0) {
+      onError("Please enter valid other costs amount");
       return;
     }
 
-    const fraisDeplacementValue = parseFloat(fraisDeplacement);
-    if (isNaN(fraisDeplacementValue) || fraisDeplacementValue < 0) {
-      onError("Please enter valid frais de deplacement amount");
+    const fraisDeplacementValue = parseFloat(fraisDeplacement) || 0;
+    if (fraisDeplacementValue < 0) {
+      onError("Please enter valid travel expenses amount");
       return;
     }
 
@@ -284,33 +284,38 @@ export default function ReportFormModal({
                 <label htmlFor="hoursWorked">Hours Worked *</label>
                 <input
                   id="hoursWorked"
-                  type="number"
+                  type="text"
                   step="0.25"
                   min="0"
+                  placeholder="0"
                   value={hoursWorked}
                   onChange={(e) => setHoursWorked(e.target.value)}
                   required
                 />
               </div>
               <div className="form-group">
-                <label htmlFor="frais">Frais ($) *</label>
+                <label htmlFor="frais">Other Costs ($) *</label>
                 <input
                   id="frais"
-                  type="number"
+                  type="text"
                   step="0.01"
                   min="0"
+                  className="no-arrows"
+                  placeholder="0.00"
                   value={frais}
                   onChange={(e) => setFrais(e.target.value)}
                   required
                 />
               </div>
               <div className="form-group">
-                <label htmlFor="fraisDeplacement">Frais de Déplacement ($) *</label>
+                <label htmlFor="fraisDeplacement">Travel Expenses ($) *</label>
                 <input
                   id="fraisDeplacement"
-                  type="number"
+                  type="text"
                   step="0.01"
                   min="0"
+                  className="no-arrows"
+                  placeholder="0.00"
                   value={fraisDeplacement}
                   onChange={(e) => setFraisDeplacement(e.target.value)}
                   required
@@ -402,7 +407,9 @@ export default function ReportFormModal({
                           type="number"
                           step="0.01"
                           min="0"
-                          value={part.price}
+                          className="no-arrows"
+                          placeholder="0.00"
+                          value={part.price || ""}
                           onChange={(e) =>
                             handlePartChange(part.partId, "price", parseFloat(e.target.value) || 0)
                           }
@@ -438,11 +445,11 @@ export default function ReportFormModal({
                 <span>${totals.laborCost.toFixed(2)}</span>
               </div>
               <div className="total-row">
-                <span>Frais:</span>
+                <span>Other Costs:</span>
                 <span>${parseFloat(frais || "0").toFixed(2)}</span>
               </div>
               <div className="total-row">
-                <span>Frais de Déplacement:</span>
+                <span>Travel Expenses:</span>
                 <span>${parseFloat(fraisDeplacement || "0").toFixed(2)}</span>
               </div>
               <div className="total-row">
@@ -473,7 +480,7 @@ export default function ReportFormModal({
             <button type="button" className="btn-secondary" onClick={onClose}>
               Cancel
             </button>
-            <button type="submit" className="btn-primary" disabled={loading}>
+            <button type="submit" className="btn-primary-report" disabled={loading}>
               {loading ? "Saving..." : existingReport ? "Update Report" : "Create Report"}
             </button>
           </div>
