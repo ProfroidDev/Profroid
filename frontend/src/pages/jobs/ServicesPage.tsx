@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
+import { Trash2 } from "lucide-react";
 import { getJobs } from "../../features/jobs/api/getAllJobs";
 import { getJobById } from "../../features/jobs/api/getJobById";
 import { createJob } from "../../features/jobs/api/createJob";
@@ -10,6 +11,7 @@ import type { JobRequestModel } from "../../features/jobs/models/JobRequestModel
 import "./ServicesPage.css";
 import { updateJob } from "../../features/jobs/api/updateJob";
 import { uploadJobImage } from "../../features/jobs/api/uploadJobImage";
+import { deleteFile } from "../../features/files/api/deleteFile";
 import ConfirmationModal from "../../components/ConfirmationModal";
 import Toast from "../../shared/components/Toast";
 import useAuthStore from "../../features/authentication/store/authStore";
@@ -72,6 +74,10 @@ export default function ServicesPage(): React.ReactElement {
     type: null,
     job: null,
   });
+
+  // Image deletion state
+  const [imageDeleteLoading, setImageDeleteLoading] = useState<boolean>(false);
+  const [showImageDeleteConfirmation, setShowImageDeleteConfirmation] = useState<boolean>(false);
 
   useEffect(() => {
     async function load() {
@@ -302,6 +308,62 @@ export default function ServicesPage(): React.ReactElement {
       setUpdateError(errorMsg);
     } finally {
       setUpdateLoading(false);
+    }
+  }
+
+  function handleDeleteJobImage() {
+    if (!jobToUpdate?.imageFileId || !jobToUpdate?.jobId) {
+      return;
+    }
+
+    setShowImageDeleteConfirmation(true);
+  }
+
+  async function confirmDeleteJobImage() {
+    if (!jobToUpdate?.imageFileId || !jobToUpdate?.jobId) {
+      return;
+    }
+
+    setImageDeleteLoading(true);
+    try {
+      await deleteFile(jobToUpdate.imageFileId);
+      
+      // Update the job in the list
+      setJobs((prevJobs) =>
+        prevJobs.map((job) =>
+          job.jobId === jobToUpdate.jobId
+            ? { ...job, imageFileId: undefined }
+            : job
+        )
+      );
+      
+      // Update the current job being edited
+      setJobToUpdate({ ...jobToUpdate, imageFileId: undefined });
+      
+      // Clear the update form
+      setUpdateImageFile(null);
+      
+      setToast({
+        message: "Image deleted successfully",
+        type: "success",
+      });
+    } catch (error) {
+      let errorMsg = "Failed to delete image";
+      if (error && typeof error === "object" && "response" in error) {
+        const axiosError = error as {
+          response?: { data?: { message?: string }; status?: number };
+        };
+        if (axiosError.response?.data?.message) {
+          errorMsg = axiosError.response.data.message;
+        }
+      }
+      setToast({
+        message: errorMsg,
+        type: "error",
+      });
+    } finally {
+      setImageDeleteLoading(false);
+      setShowImageDeleteConfirmation(false);
     }
   }
 
@@ -1045,7 +1107,40 @@ export default function ServicesPage(): React.ReactElement {
                   onChange={handleUpdateImageChange}
                   disabled={updateLoading}
                 />
+                {jobToUpdate?.imageFileId && (
+                  <div>
+                    <div className="image-preview-container" style={{ marginTop: "10px" }}>
+                      <img
+                        src={resolveJobImage(jobToUpdate)}
+                        alt="Current job image"
+                        style={{
+                          maxWidth: "200px",
+                          maxHeight: "150px",
+                          borderRadius: "6px",
+                          marginBottom: "10px",
+                        }}
+                        onError={(e) => {
+                          e.currentTarget.style.display = "none";
+                        }}
+                      />
+                    </div>
+                  </div>
+                )}
               </div>
+
+              {jobToUpdate?.imageFileId && (
+                <div className="form-group">
+                  <button
+                    type="button"
+                    className="btn-delete-image"
+                    onClick={handleDeleteJobImage}
+                    disabled={updateLoading || imageDeleteLoading}
+                  >
+                    <Trash2 size={18} />
+                    Delete Image
+                  </button>
+                </div>
+              )}
 
               <div className="form-actions">
                 <button
@@ -1103,6 +1198,18 @@ export default function ServicesPage(): React.ReactElement {
         onCancel={() =>
           setConfirmationModal({ isOpen: false, type: null, job: null })
         }
+      />
+
+      <ConfirmationModal
+        isOpen={showImageDeleteConfirmation}
+        title="Delete Image"
+        message="Are you sure you want to permanently delete this image?"
+        confirmText="Delete"
+        cancelText="Cancel"
+        isDanger={true}
+        isLoading={imageDeleteLoading}
+        onConfirm={confirmDeleteJobImage}
+        onCancel={() => setShowImageDeleteConfirmation(false)}
       />
 
       {toast && (

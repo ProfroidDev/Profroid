@@ -1,5 +1,5 @@
 import React, { useEffect } from "react";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { Routes, Route } from "react-router-dom";
 import "./App.css";
 import "./i18n/config";
 
@@ -12,6 +12,7 @@ import PartsPage from "./pages/Parts/PartsPage";
 import MyAppointmentsPage from "./pages/Appointment/MyAppointmentsPage";
 import MyJobsPage from "./pages/Appointment/MyJobsPage";
 import HomePage from "./pages/Home/HomePage";
+import ForbiddenPage from "./pages/Error/ForbiddenPage";
 
 // Auth pages and components
 import LoginPage from "./pages/Auth/LoginPage";
@@ -25,9 +26,11 @@ import {
   PublicRoute,
 } from "./features/authentication/components/ProtectedRoute";
 import useAuthStore from "./features/authentication/store/authStore";
+import { useInitialize403Handler } from "./utils/403Handler";
 
-function App(): React.ReactElement {
+function AppRoutes(): React.ReactElement {
   const { initializeAuth } = useAuthStore();
+  useInitialize403Handler(); // Initialize 403 handler - now inside router context
 
   useEffect(() => {
     // Initialize auth and fetch user + customer data on app load
@@ -35,10 +38,13 @@ function App(): React.ReactElement {
   }, [initializeAuth]);
 
   return (
-    <BrowserRouter>
+    <>
       <Navigation />
 
       <Routes>
+        {/* Error Routes */}
+        <Route path="/error/forbidden" element={<ForbiddenPage />} />
+
         {/* Public Auth Routes */}
         <Route
           path="/auth/login"
@@ -100,9 +106,26 @@ function App(): React.ReactElement {
             </ProtectedRoute>
           }
         />
-        <Route path="/parts" element={<PartsPage />} />
-        <Route path="/customers" element={<CustomerListPage />} />
-        <Route path="/services" element={<ServicesPage />} />
+        <Route
+          path="/parts"
+          element={
+            <ProtectedRoute requiredRole="admin">
+              <PartsPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/customers"
+          element={
+            <ProtectedRoute requiredRole="admin">
+              <CustomerListPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/services"
+          element={<ServicesPage />}
+        />
         <Route
           path="/employees"
           element={
@@ -123,7 +146,13 @@ function App(): React.ReactElement {
       </Routes>
 
       <Footer />
-    </BrowserRouter>
+    </>
+  );
+}
+
+function App(): React.ReactElement {
+  return (
+    <AppRoutes />
   );
 }
 

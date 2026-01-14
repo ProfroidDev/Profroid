@@ -20,7 +20,6 @@ import { getEmployeeScheduleForDate } from "../../employee/api/getEmployeeSchedu
 import { getEmployeeSchedule } from "../../employee/api/getEmployeeSchedule";
 import type { TimeSlotType } from "../../employee/models/EmployeeScheduleRequestModel";
 import { getProvincePostalCodeError } from "../../../utils/postalCodeValidator";
-import { getAllAppointments } from "../api/getAllAppointments";
 import { getMyJobs } from "../api/getMyJobs";
 import {
   getTechnicianBookedSlots,
@@ -299,6 +298,8 @@ export default function AddAppointmentModal({
   const [technicianBookedSlots, setTechnicianBookedSlots] = useState<
     BookedSlot[]
   >([]);
+  // Track whether we've fetched aggregated availability to distinguish between "no slots" and "not fetched yet"
+  const [hasAggregatedData, setHasAggregatedData] = useState<boolean>(false);
   const [customerBusySlots, setCustomerBusySlots] = useState<BookedSlot[]>([]);
   const [showBufferWarning, setShowBufferWarning] = useState<boolean>(false);
   const [pendingRequest, setPendingRequest] = useState<AppointmentRequestModel | null>(null);
@@ -582,6 +583,7 @@ export default function AddAppointmentModal({
       // Only fetch in customer mode when we have a date and job selected
       if (mode !== "customer" || !appointmentDate || !selectedJobId) {
         setTechnicianBookedSlots([]);
+        setHasAggregatedData(false);
         return;
       }
 
@@ -599,9 +601,13 @@ export default function AddAppointmentModal({
           isEditMode && editAppointment ? editAppointment.appointmentId : undefined
         );
         setTechnicianBookedSlots(response.bookedSlots || []);
+        // Mark that we have fetched aggregated data (even if empty)
+        setHasAggregatedData(true);
       } catch (err) {
         console.error("Failed to fetch aggregated availability:", err);
         setTechnicianBookedSlots([]);
+        // Still mark as fetched even on error to show "no available slots" message
+        setHasAggregatedData(true);
       }
     }
 
@@ -643,22 +649,9 @@ export default function AddAppointmentModal({
           return;
         }
 
-        // Customer tokens sometimes lack permission for /appointments. If forbidden, fall back to empty list
-        // because availability for customers is now driven by aggregated slots instead.
-        try {
-          const appointments = await getAllAppointments();
-          setAllAppointments(appointments);
-        } catch (err) {
-          const status =
-            typeof err === "object" && err && "response" in err
-              ? (err as { response?: { status?: number } }).response?.status
-              : undefined;
-          if (status === 403) {
-            setAllAppointments([]);
-          } else {
-            throw err;
-          }
-        }
+        // Customer mode: availability is driven by aggregated slots, no need to fetch all appointments
+        // Just set empty array to avoid unnecessary API calls and 403 errors
+        setAllAppointments([]);
       } catch {
         setAllAppointments([]);
       }
@@ -925,7 +918,8 @@ export default function AddAppointmentModal({
       const slots: string[] = [];
       const jobDuration = selectedJob.estimatedDurationMinutes || 120;
 
-      const useAggregated = Array.isArray(technicianBookedSlots) && technicianBookedSlots.length > 0;
+      // Only use aggregated data if we've fetched it (even if empty array means no availability)
+      const useAggregated = hasAggregatedData;
       const baseSlots = useAggregated
         ? technicianBookedSlots
         : SLOT_ORDER.map((s) => ({ startTime: `${SLOT_TO_TIME[s]}:00`, endTime: `${SLOT_TO_TIME[s]}:00` } as BookedSlot));
@@ -1076,6 +1070,7 @@ export default function AddAppointmentModal({
     allAppointments,
     selectedTechnician,
     technicianBookedSlots,
+    hasAggregatedData,
     customerBusySlots,
     mode,
     isEditMode,
@@ -1093,6 +1088,13 @@ export default function AddAppointmentModal({
   useEffect(() => {
     setTimeWasAvailable(false);
   }, [appointmentDate, selectedJobId, selectedTechnicianId, mode]);
+  
+  // Reset aggregated data flag when entering customer mode or when dependencies change
+  useEffect(() => {
+    if (mode !== "customer") {
+      setHasAggregatedData(false);
+    }
+  }, [mode]);
   
   // Fallback durations by job type when end time is missing
   // Check for 30-minute buffer gap with technician's own appointments
@@ -1332,10 +1334,9 @@ export default function AddAppointmentModal({
       try {
         if (mode === "technician") {
           appointmentsForCheck = await getMyJobs();
-        } else {
-          appointmentsForCheck = await getAllAppointments();
+          setAllAppointments(appointmentsForCheck);
         }
-        setAllAppointments(appointmentsForCheck);
+        // For customer mode, no need to fetch appointments - availability is from aggregated slots
       } catch {
         // If fetch fails, fall back to existing (possibly empty) list; backend will still accept
         appointmentsForCheck = allAppointments;
