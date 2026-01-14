@@ -20,7 +20,6 @@ import { getEmployeeScheduleForDate } from "../../employee/api/getEmployeeSchedu
 import { getEmployeeSchedule } from "../../employee/api/getEmployeeSchedule";
 import type { TimeSlotType } from "../../employee/models/EmployeeScheduleRequestModel";
 import { getProvincePostalCodeError } from "../../../utils/postalCodeValidator";
-import { getAllAppointments } from "../api/getAllAppointments";
 import { getMyJobs } from "../api/getMyJobs";
 import {
   getTechnicianBookedSlots,
@@ -650,22 +649,9 @@ export default function AddAppointmentModal({
           return;
         }
 
-        // Customer tokens sometimes lack permission for /appointments. If forbidden, fall back to empty list
-        // because availability for customers is now driven by aggregated slots instead.
-        try {
-          const appointments = await getAllAppointments();
-          setAllAppointments(appointments);
-        } catch (err) {
-          const status =
-            typeof err === "object" && err && "response" in err
-              ? (err as { response?: { status?: number } }).response?.status
-              : undefined;
-          if (status === 403) {
-            setAllAppointments([]);
-          } else {
-            throw err;
-          }
-        }
+        // Customer mode: availability is driven by aggregated slots, no need to fetch all appointments
+        // Just set empty array to avoid unnecessary API calls and 403 errors
+        setAllAppointments([]);
       } catch {
         setAllAppointments([]);
       }
@@ -1348,10 +1334,9 @@ export default function AddAppointmentModal({
       try {
         if (mode === "technician") {
           appointmentsForCheck = await getMyJobs();
-        } else {
-          appointmentsForCheck = await getAllAppointments();
+          setAllAppointments(appointmentsForCheck);
         }
-        setAllAppointments(appointmentsForCheck);
+        // For customer mode, no need to fetch appointments - availability is from aggregated slots
       } catch {
         // If fetch fails, fall back to existing (possibly empty) list; backend will still accept
         appointmentsForCheck = allAppointments;
