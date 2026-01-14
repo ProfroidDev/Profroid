@@ -31,8 +31,8 @@ export function ProtectedRoute({ children, requiredRole, requiredEmployeeType }:
   if (requiredRole) {
     console.log(`Route requires role: ${requiredRole}, user role: ${user.role}`);
     if (user.role !== requiredRole) {
-      console.log(`Role mismatch: ${user.role} !== ${requiredRole}, redirecting to home`);
-      return <Navigate to="/" replace />;
+      console.log(`Role mismatch: ${user.role} !== ${requiredRole}, redirecting to forbidden page`);
+      return <Navigate to="/error/forbidden" replace />;
     }
   }
 
@@ -40,8 +40,8 @@ export function ProtectedRoute({ children, requiredRole, requiredEmployeeType }:
   if (requiredEmployeeType) {
     console.log(`Route requires employee type: ${requiredEmployeeType}, user employee type: ${user.employeeType}`);
     if (user.employeeType !== requiredEmployeeType) {
-      console.log(`Employee type mismatch: ${user.employeeType} !== ${requiredEmployeeType}, redirecting to home`);
-      return <Navigate to="/" replace />;
+      console.log(`Employee type mismatch: ${user.employeeType} !== ${requiredEmployeeType}, redirecting to forbidden page`);
+      return <Navigate to="/error/forbidden" replace />;
     }
   }
 
