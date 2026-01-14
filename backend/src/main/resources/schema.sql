@@ -96,7 +96,15 @@ CREATE TABLE IF NOT EXISTS parts (
                        id INT AUTO_INCREMENT PRIMARY KEY,
                        part_id VARCHAR(255) NOT NULL UNIQUE,
                        name VARCHAR(255) NOT NULL,
-                       available BOOLEAN NOT NULL
+                       category VARCHAR(100),
+                       quantity INT NOT NULL DEFAULT 0,
+                       price DECIMAL(10, 2),
+                       supplier VARCHAR(255),
+                       low_stock_threshold INT DEFAULT 5,
+                       out_of_stock_threshold INT DEFAULT 0,
+                       high_stock_threshold INT DEFAULT 50,
+                       available BOOLEAN NOT NULL DEFAULT true,
+                       image_file_id BINARY(16)
 );
 
 CREATE TABLE IF NOT EXISTS appointments (

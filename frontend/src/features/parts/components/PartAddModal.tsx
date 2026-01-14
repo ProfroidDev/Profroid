@@ -19,6 +19,13 @@ export default function PartAddModal({
   onError,
 }: PartAddModalProps): React.ReactElement | null {
   const [name, setName] = useState<string>("");
+  const [category, setCategory] = useState<string>("General");
+  const [quantity, setQuantity] = useState<number>(0);
+  const [price, setPrice] = useState<number>(0);
+  const [supplier, setSupplier] = useState<string>("");
+  const [lowStockThreshold, setLowStockThreshold] = useState<number>(5);
+  const [outOfStockThreshold, setOutOfStockThreshold] = useState<number>(0);
+  const [highStockThreshold, setHighStockThreshold] = useState<number>(100);
   const [available, setAvailable] = useState<boolean>(true);
   const [file, setFile] = useState<File | null>(null);
   const [submitting, setSubmitting] = useState<boolean>(false);
@@ -64,6 +71,13 @@ export default function PartAddModal({
     try {
       const partData: PartRequestModel = {
         name: name.trim(),
+        category,
+        quantity,
+        price,
+        supplier: supplier.trim(),
+        lowStockThreshold,
+        outOfStockThreshold,
+        highStockThreshold,
         available,
       };
 
@@ -75,6 +89,13 @@ export default function PartAddModal({
       
       // Reset form
       setName("");
+      setCategory("General");
+      setQuantity(0);
+      setPrice(0);
+      setSupplier("");
+      setLowStockThreshold(5);
+      setOutOfStockThreshold(0);
+      setHighStockThreshold(100);
       setAvailable(true);
       setFile(null);
       
@@ -91,6 +112,13 @@ export default function PartAddModal({
   const handleClose = () => {
     if (!submitting) {
       setName("");
+      setCategory("General");
+      setQuantity(0);
+      setPrice(0);
+      setSupplier("");
+      setLowStockThreshold(5);
+      setOutOfStockThreshold(0);
+      setHighStockThreshold(100);
       setAvailable(true);
       setFile(null);
       onClose();
@@ -122,6 +150,129 @@ export default function PartAddModal({
                 onChange={(e) => setName(e.target.value)}
                 disabled={submitting}
                 required
+              />
+            </div>
+
+            <div className="form-group">
+              <label className="form-label" htmlFor="part-category">
+                Category <span className="required">*</span>
+              </label>
+              <select
+                id="part-category"
+                className="form-input"
+                value={category}
+                onChange={(e) => setCategory(e.target.value)}
+                disabled={submitting}
+                required
+              >
+                <option value="General">General</option>
+                <option value="Heating">Heating</option>
+                <option value="Cooling">Cooling</option>
+                <option value="Electronics">Electronics</option>
+                <option value="Filtration">Filtration</option>
+                <option value="Hardware">Hardware</option>
+                <option value="Shelving">Shelving</option>
+                <option value="Packaging">Packaging</option>
+                <option value="Sensors">Sensors</option>
+                <option value="Fluid Control">Fluid Control</option>
+                <option value="Doors & Seals">Doors & Seals</option>
+                <option value="Electrical">Electrical</option>
+              </select>
+            </div>
+
+            <div className="form-group">
+              <label className="form-label" htmlFor="part-quantity">
+                Quantity <span className="required">*</span>
+              </label>
+              <input
+                id="part-quantity"
+                type="number"
+                min="0"
+                className="form-input"
+                placeholder="Enter quantity"
+                value={quantity}
+                onChange={(e) => setQuantity(Number(e.target.value))}
+                disabled={submitting}
+                required
+              />
+            </div>
+
+            <div className="form-group">
+              <label className="form-label" htmlFor="part-price">
+                Price <span className="required">*</span>
+              </label>
+              <input
+                id="part-price"
+                type="number"
+                min="0"
+                step="0.01"
+                className="form-input"
+                placeholder="Enter price"
+                value={price}
+                onChange={(e) => setPrice(Number(e.target.value))}
+                disabled={submitting}
+                required
+              />
+            </div>
+
+            <div className="form-group">
+              <label className="form-label" htmlFor="part-supplier">
+                Supplier <span className="required">*</span>
+              </label>
+              <input
+                id="part-supplier"
+                type="text"
+                className="form-input"
+                placeholder="Enter supplier name"
+                value={supplier}
+                onChange={(e) => setSupplier(e.target.value)}
+                disabled={submitting}
+                required
+              />
+            </div>
+
+            <div className="form-group">
+              <label className="form-label" htmlFor="part-low-threshold">
+                Low Stock Threshold
+              </label>
+              <input
+                id="part-low-threshold"
+                type="number"
+                min="0"
+                className="form-input"
+                value={lowStockThreshold}
+                onChange={(e) => setLowStockThreshold(Number(e.target.value))}
+                disabled={submitting}
+              />
+            </div>
+
+            <div className="form-group">
+              <label className="form-label" htmlFor="part-out-threshold">
+                Out of Stock Threshold
+              </label>
+              <input
+                id="part-out-threshold"
+                type="number"
+                min="0"
+                className="form-input"
+                value={outOfStockThreshold}
+                onChange={(e) => setOutOfStockThreshold(Number(e.target.value))}
+                disabled={submitting}
+              />
+            </div>
+
+            <div className="form-group">
+              <label className="form-label" htmlFor="part-high-threshold">
+                High Stock Threshold
+              </label>
+              <input
+                id="part-high-threshold"
+                type="number"
+                min="0"
+                className="form-input"
+                value={highStockThreshold}
+                onChange={(e) => setHighStockThreshold(Number(e.target.value))}
+                disabled={submitting}
               />
             </div>
 

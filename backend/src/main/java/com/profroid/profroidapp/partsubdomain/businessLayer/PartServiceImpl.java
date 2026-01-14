@@ -82,8 +82,21 @@ public class PartServiceImpl implements PartService {
         PartIdentifier identifier = new PartIdentifier(SkuGenerator.generateSku());
         Part part = partRequestMapper.toEntity(requestModel, identifier);
 
-        // new parts are always available
-        part.setAvailable(true);
+        // new parts are always available by default
+        if (part.getAvailable() == null) {
+            part.setAvailable(true);
+        }
+        
+        // Set default thresholds if not provided
+        if (part.getLowStockThreshold() == null) {
+            part.setLowStockThreshold(5);
+        }
+        if (part.getOutOfStockThreshold() == null) {
+            part.setOutOfStockThreshold(0);
+        }
+        if (part.getHighStockThreshold() == null) {
+            part.setHighStockThreshold(50);
+        }
 
         Part saved = partRepository.save(part);
         return partResponseMapper.toResponseModel(saved);
@@ -122,9 +135,23 @@ public class PartServiceImpl implements PartService {
             );
         }
 
-        // Update fields
+        // Update all fields
         existingPart.setName(requestModel.getName());
+        existingPart.setCategory(requestModel.getCategory());
+        existingPart.setQuantity(requestModel.getQuantity());
+        existingPart.setPrice(requestModel.getPrice());
+        existingPart.setSupplier(requestModel.getSupplier());
         existingPart.setAvailable(requestModel.getAvailable());
+        
+        if (requestModel.getLowStockThreshold() != null) {
+            existingPart.setLowStockThreshold(requestModel.getLowStockThreshold());
+        }
+        if (requestModel.getOutOfStockThreshold() != null) {
+            existingPart.setOutOfStockThreshold(requestModel.getOutOfStockThreshold());
+        }
+        if (requestModel.getHighStockThreshold() != null) {
+            existingPart.setHighStockThreshold(requestModel.getHighStockThreshold());
+        }
 
         Part updated = partRepository.save(existingPart);
         return partResponseMapper.toResponseModel(updated);

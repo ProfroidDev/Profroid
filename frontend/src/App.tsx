@@ -9,6 +9,7 @@ import Navigation from "./shared/components/Navigation";
 import Footer from "./shared/components/Footer";
 import EmployeeListPage from "./pages/Employee/EmployeeListPage";
 import PartsPage from "./pages/Parts/PartsPage";
+import Inventory from "./pages/Parts/Inventory";
 import MyAppointmentsPage from "./pages/Appointment/MyAppointmentsPage";
 import MyJobsPage from "./pages/Appointment/MyJobsPage";
 import HomePage from "./pages/Home/HomePage";
@@ -125,6 +126,14 @@ function AppRoutes(): React.ReactElement {
         <Route
           path="/services"
           element={<ServicesPage />}
+        />
+        <Route
+          path="/inventory"
+          element={
+            <ProtectedRoute requiredRole="admin">
+              <Inventory />
+            </ProtectedRoute>
+          }
         />
         <Route
           path="/employees"
