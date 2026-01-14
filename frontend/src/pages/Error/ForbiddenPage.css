@@ -52,7 +52,7 @@
   align-items: center;
   gap: 8px;
   padding: 12px 32px;
-  background-color: #2563eb;
+  background-color: #dc2626;
   color: white;
   border: none;
   border-radius: 6px;
@@ -60,13 +60,13 @@
   font-weight: 600;
   cursor: pointer;
   transition: all 0.3s ease;
-  box-shadow: 0 2px 8px rgba(37, 99, 235, 0.3);
+  box-shadow: 0 2px 8px rgba(220, 38, 38, 0.3);
 }
 
 .btn-home:hover {
-  background-color: #1d4ed8;
+  background-color: #b91c1c;
   transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.4);
+  box-shadow: 0 4px 12px rgba(220, 38, 38, 0.4);
 }
 
 .btn-home:active {
