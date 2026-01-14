@@ -193,8 +193,14 @@ public class ReportServiceImpl implements ReportService {
 
         // Permission check: only the technician who created it or admin
         if ("TECHNICIAN".equals(userRole)) {
-            Employee technician = employeeRepository.findEmployeeByEmployeeIdentifier_EmployeeId(userId);
-            if (technician == null || !technician.getId().equals(report.getAppointment().getTechnician().getId())) {
+            // userId is the auth service user ID, need to find employee by userId
+            Employee technician = employeeRepository.findEmployeeByUserId(userId);
+            if (technician == null) {
+                throw new ResourceNotFoundException("Employee not found for user: " + userId);
+            }
+            // Compare employee IDs
+            if (!technician.getEmployeeIdentifier().getEmployeeId().equals(
+                    report.getAppointment().getTechnician().getEmployeeIdentifier().getEmployeeId())) {
                 throw new InvalidOperationException("You can only update your own reports");
             }
         }

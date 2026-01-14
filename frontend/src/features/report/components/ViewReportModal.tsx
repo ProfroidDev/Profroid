@@ -99,14 +99,14 @@ export default function ViewReportModal({
               <div className="info-item">
                 <DollarSign size={18} />
                 <div>
-                  <span className="info-label">Frais</span>
+                  <span className="info-label">Other Costs</span>
                   <span className="info-value">{formatCurrency(report.frais)}</span>
                 </div>
               </div>
               <div className="info-item">
                 <DollarSign size={18} />
                 <div>
-                  <span className="info-label">Frais de Déplacement</span>
+                  <span className="info-label">Travel Expenses</span>
                   <span className="info-value">{formatCurrency(report.fraisDeplacement)}</span>
                 </div>
               </div>
