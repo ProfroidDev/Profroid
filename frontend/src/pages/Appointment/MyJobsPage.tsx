@@ -7,8 +7,12 @@ import { patchAppointmentStatus } from "../../features/appointment/api/patchAppo
 import Toast from "../../shared/components/Toast";
 import useAuthStore from "../../features/authentication/store/authStore";
 import ConfirmationModal from "../../components/ConfirmationModal";
-import { MapPin, Clock, User, Wrench, DollarSign, Phone, AlertCircle, Edit, CheckCircle, X, ChevronLeft, ChevronRight, Filter, Calendar } from "lucide-react";
+import { MapPin, Clock, User, Wrench, DollarSign, Phone, AlertCircle, Edit, CheckCircle, X, ChevronLeft, ChevronRight, Filter, Calendar, FileText } from "lucide-react";
 import "./MyJobsPage.css";
+import ReportFormModal from "../../features/report/components/ReportFormModal";
+import ViewReportModal from "../../features/report/components/ViewReportModal";
+import { getReportByAppointmentId } from "../../features/report/api/getReportByAppointmentId";
+import type { ReportResponseModel } from "../../features/report/models/ReportResponseModel";
 import { getCellars } from "../../features/cellar/api/getAllCellars";
 import type { CellarResponseModel } from "../../features/cellar/models/CellarResponseModel";
 
@@ -29,6 +33,13 @@ export default function MyJobsPage(): React.ReactElement {
   const [statusFilters, setStatusFilters] = useState<string[]>([]);
   const [startDateFilter, setStartDateFilter] = useState<string>("");
   const [endDateFilter, setEndDateFilter] = useState<string>("");
+  const [showReportModal, setShowReportModal] = useState(false);
+  const [selectedAppointmentForReport, setSelectedAppointmentForReport] = useState<AppointmentResponseModel | null>(null);
+  const [existingReport, setExistingReport] = useState<ReportResponseModel | null>(null);
+  const [reportCheckLoading, setReportCheckLoading] = useState<string | null>(null);
+  const [jobReports, setJobReports] = useState<Map<string, ReportResponseModel>>(new Map());
+  const [showViewReportModal, setShowViewReportModal] = useState(false);
+  const [reportToView, setReportToView] = useState<ReportResponseModel | null>(null);
   
   const { user, customerData } = useAuthStore();
 
@@ -47,6 +58,27 @@ export default function MyJobsPage(): React.ReactElement {
         (a, b) => new Date(a.appointmentDate).getTime() - new Date(b.appointmentDate).getTime()
       );
       setJobs(sorted);
+      
+      // Check for existing reports for completed jobs
+      const reportMap = new Map<string, ReportResponseModel>();
+      const completedJobs = sorted.filter(job => job.status === "COMPLETED");
+      
+      await Promise.all(
+        completedJobs.map(async (job) => {
+          try {
+            const report = await getReportByAppointmentId(job.appointmentId);
+            if (report) {
+              reportMap.set(job.appointmentId, report);
+            }
+          } catch {
+            // Report doesn't exist yet, which is fine
+            console.debug(`No report found for appointment ${job.appointmentId}`);
+          }
+        })
+      );
+      
+      setJobReports(reportMap);
+      
       const newTotalPages = Math.max(1, Math.ceil(sorted.length / pageSize));
       setCurrentPage((prev) => Math.min(prev, newTotalPages));
     } catch (error: unknown) {
@@ -143,6 +175,43 @@ export default function MyJobsPage(): React.ReactElement {
   const handleEditJob = (job: AppointmentResponseModel) => {
     setEditingAppointment(job);
     setShowAddModal(true);
+  };
+
+  const handleOpenReportModal = async (job: AppointmentResponseModel) => {
+    setSelectedAppointmentForReport(job);
+    setReportCheckLoading(job.appointmentId);
+
+    try {
+      // Check if report already exists
+      const report = await getReportByAppointmentId(job.appointmentId);
+      setExistingReport(report);
+    } catch (error) {
+      console.error("Error checking for existing report:", error);
+      setExistingReport(null);
+    } finally {
+      setReportCheckLoading(null);
+      setShowReportModal(true);
+    }
+  };
+
+  const handleReportSuccess = (message: string) => {
+    setShowReportModal(false);
+    setSelectedAppointmentForReport(null);
+    setExistingReport(null);
+    setToast({ message, type: "success" });
+    fetchJobs(); // Refresh the jobs list
+  };
+
+  const handleReportError = (message: string) => {
+    setToast({ message, type: "error" });
+  };
+
+  const handleViewReport = (appointmentId: string) => {
+    const report = jobReports.get(appointmentId);
+    if (report) {
+      setReportToView(report);
+      setShowViewReportModal(true);
+    }
   };
 
   const formatDate = (dateString: string): string => {
@@ -474,6 +543,33 @@ export default function MyJobsPage(): React.ReactElement {
                     </button>
                   </>
                 )}
+                {job.status === "COMPLETED" && (
+                  <>
+                    <button
+                      className="btn-report"
+                      onClick={() => handleOpenReportModal(job)}
+                      disabled={reportCheckLoading === job.appointmentId}
+                      title="Create/Edit Work Report"
+                    >
+                      <FileText size={16} />
+                      {reportCheckLoading === job.appointmentId 
+                        ? "Loading..." 
+                        : jobReports.has(job.appointmentId) 
+                        ? "Edit Report" 
+                        : "Create Report"}
+                    </button>
+                    {jobReports.has(job.appointmentId) && (
+                      <button
+                        className="btn-view-report"
+                        onClick={() => handleViewReport(job.appointmentId)}
+                        title="View Report Details"
+                      >
+                        <FileText size={16} />
+                        View Report
+                      </button>
+                    )}
+                  </>
+                )}
               </div>
 
               {/* View Details Button */}
@@ -619,6 +715,32 @@ export default function MyJobsPage(): React.ReactElement {
         onConfirm={handleConfirmAction}
         onCancel={() => setConfirmModal({ isOpen: false, type: null, appointmentId: null })}
       />
+
+      {showReportModal && selectedAppointmentForReport && (
+        <ReportFormModal
+          isOpen={showReportModal}
+          onClose={() => {
+            setShowReportModal(false);
+            setSelectedAppointmentForReport(null);
+            setExistingReport(null);
+          }}
+          appointment={selectedAppointmentForReport}
+          existingReport={existingReport}
+          onSuccess={handleReportSuccess}
+          onError={handleReportError}
+        />
+      )}
+
+      {showViewReportModal && reportToView && (
+        <ViewReportModal
+          isOpen={showViewReportModal}
+          onClose={() => {
+            setShowViewReportModal(false);
+            setReportToView(null);
+          }}
+          report={reportToView}
+        />
+      )}
     </div>
   );
 }

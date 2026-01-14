@@ -566,6 +566,56 @@
   box-shadow: 0 4px 12px rgba(217, 83, 79, 0.25);
 }
 
+.btn-report {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 10px 18px;
+  background: linear-gradient(90deg, #7a0901 60%, #5a0701 100%);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 8px rgba(122, 9, 1, 0.15);
+}
+
+.btn-report:hover {
+  background: linear-gradient(90deg, #5a0701 60%, #7a0901 100%);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(122, 9, 1, 0.25);
+}
+
+.btn-report:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.btn-view-report {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 10px 18px;
+  background: linear-gradient(90deg, #0056b3 60%, #004494 100%);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 8px rgba(0, 86, 179, 0.15);
+}
+
+.btn-view-report:hover {
+  background: linear-gradient(90deg, #004494 60%, #0056b3 100%);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 86, 179, 0.25);
+}
+
 /* ===============================
    PAGINATION CONTROLS
 ================================= */
