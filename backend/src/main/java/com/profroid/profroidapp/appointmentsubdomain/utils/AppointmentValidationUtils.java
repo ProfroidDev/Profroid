@@ -248,6 +248,7 @@ public class AppointmentValidationUtils {
             
             // Check for overlap first
             // Two ranges [start1, end1] and [start2, end2] overlap if: start1 < end2 AND start2 < end1
+            // Adjacent slots (where end1 == start2) should NOT be considered overlapping
             boolean hasOverlap = appointmentTime.isBefore(existingEnd) && existingStart.isBefore(appointmentEnd);
             
             if (hasOverlap) {

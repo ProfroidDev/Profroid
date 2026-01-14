@@ -850,7 +850,9 @@ public class AppointmentServiceImpl implements AppointmentService {
                         );
                         
                         // Check for overlap with requested slot
-                        if (!(slotEnd.isBefore(aptStart) || slotTime.isAfter(aptEnd))) {
+                        // Two ranges overlap if: start1 < end2 AND start2 < end1
+                        // Adjacent slots (where end1 == start2) should NOT be considered overlapping
+                        if (slotTime.isBefore(aptEnd) && aptStart.isBefore(slotEnd)) {
                             technicianAvailable = false;
                             break;
                         }
@@ -874,7 +876,9 @@ public class AppointmentServiceImpl implements AppointmentService {
                             );
                             
                             // Check for overlap
-                            if (!(slotEnd.isBefore(customerAptStart) || slotTime.isAfter(customerAptEnd))) {
+                            // Two ranges overlap if: start1 < end2 AND start2 < end1
+                            // Adjacent slots should NOT be considered overlapping
+                            if (slotTime.isBefore(customerAptEnd) && customerAptStart.isBefore(slotEnd)) {
                                 customerHasConflict = true;
                                 break;
                             }
@@ -998,7 +1002,9 @@ public class AppointmentServiceImpl implements AppointmentService {
                     );
                     
                     // Check for overlap
-                    if (!(appointmentEnd.isBefore(aptStart) || appointmentTime.isAfter(aptEnd))) {
+                    // Two ranges overlap if: start1 < end2 AND start2 < end1
+                    // Adjacent slots (where end1 == start2) should NOT be considered overlapping
+                    if (appointmentTime.isBefore(aptEnd) && aptStart.isBefore(appointmentEnd)) {
                         available = false;
                         break;
                     }
