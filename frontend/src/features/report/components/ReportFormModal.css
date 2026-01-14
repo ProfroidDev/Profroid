@@ -1,0 +1,332 @@
+/* Report Form Modal Styles */
+.report-modal {
+  max-width: 900px;
+  max-height: 90vh;
+  overflow-y: auto;
+}
+
+.report-form {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.form-section {
+  background: #f9f9f9;
+  padding: 20px;
+  border-radius: 8px;
+  border: 1px solid #e0e0e0;
+}
+
+.form-section h3 {
+  margin: 0 0 16px 0;
+  color: #7a0901;
+  font-size: 1.1rem;
+  font-weight: 600;
+}
+
+.section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.section-header h3 {
+  margin: 0;
+}
+
+/* Customer Info Grid */
+.info-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 16px;
+}
+
+.info-item {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.info-item label {
+  font-size: 0.875rem;
+  color: #666;
+  font-weight: 500;
+}
+
+.info-item span {
+  font-size: 1rem;
+  color: #333;
+  font-weight: 600;
+}
+
+/* Form Inputs */
+.form-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 16px;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.form-group label {
+  font-size: 0.9rem;
+  color: #333;
+  font-weight: 500;
+}
+
+.form-group input {
+  padding: 10px;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  font-size: 1rem;
+  transition: border-color 0.2s;
+}
+
+.form-group input:focus {
+  outline: none;
+  border-color: #7a0901;
+}
+
+.form-group-inline {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.form-group-inline label {
+  font-size: 0.875rem;
+  color: #666;
+  white-space: nowrap;
+}
+
+.form-group-inline input {
+  padding: 6px 10px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 0.95rem;
+  width: 100px;
+}
+
+.form-group-inline.total {
+  margin-left: auto;
+}
+
+.form-group-inline.total span {
+  font-weight: 600;
+  color: #7a0901;
+}
+
+/* Part Search */
+.part-search-box {
+  background: white;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  padding: 12px;
+  margin-bottom: 16px;
+}
+
+.search-input-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  background: white;
+}
+
+.search-input-wrapper svg {
+  color: #999;
+}
+
+.search-input-wrapper input {
+  flex: 1;
+  border: none;
+  outline: none;
+  font-size: 1rem;
+}
+
+.part-search-results {
+  max-height: 200px;
+  overflow-y: auto;
+  margin-top: 8px;
+}
+
+.search-loading,
+.search-empty {
+  padding: 16px;
+  text-align: center;
+  color: #999;
+}
+
+.part-search-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 12px;
+  cursor: pointer;
+  border-radius: 4px;
+  transition: background-color 0.2s;
+}
+
+.part-search-item:hover {
+  background: #f5f5f5;
+}
+
+.part-search-item .part-name {
+  font-weight: 500;
+  color: #333;
+}
+
+.part-search-item .part-id {
+  font-size: 0.875rem;
+  color: #999;
+}
+
+/* Selected Parts */
+.empty-parts {
+  padding: 24px;
+  text-align: center;
+  color: #999;
+  font-style: italic;
+}
+
+.parts-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.part-item {
+  background: white;
+  padding: 16px;
+  border-radius: 6px;
+  border: 1px solid #ddd;
+}
+
+.part-item-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.part-item-name {
+  font-weight: 600;
+  color: #333;
+  font-size: 1rem;
+}
+
+.part-item-inputs {
+  display: flex;
+  gap: 16px;
+  align-items: center;
+  margin-bottom: 8px;
+  flex-wrap: wrap;
+}
+
+.btn-icon-danger {
+  background: none;
+  border: none;
+  color: #dc3545;
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background-color 0.2s;
+}
+
+.btn-icon-danger:hover {
+  background: #fee;
+}
+
+/* Totals Section */
+.totals-section {
+  background: #fff9f0;
+  border-color: #e0c896;
+}
+
+.totals-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.total-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 8px 0;
+  font-size: 0.95rem;
+}
+
+.total-row.subtotal {
+  border-top: 1px solid #ddd;
+  margin-top: 8px;
+  padding-top: 12px;
+  font-weight: 600;
+}
+
+.total-row.tax {
+  color: #666;
+  font-size: 0.9rem;
+}
+
+.total-row.grand-total {
+  border-top: 2px solid #7a0901;
+  margin-top: 8px;
+  padding-top: 12px;
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: #7a0901;
+}
+
+/* Buttons */
+.btn-secondary {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 16px;
+  background: white;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  color: #333;
+  font-size: 0.9rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.btn-secondary:hover {
+  background: #f5f5f5;
+  border-color: #7a0901;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .report-modal {
+    max-width: 95%;
+    margin: 20px auto;
+  }
+
+  .info-grid,
+  .form-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .part-item-inputs {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .form-group-inline.total {
+    margin-left: 0;
+  }
+}
