@@ -111,9 +111,8 @@ public class FileServiceImpl implements FileService {
                             .build()
             );
 
-            // Soft delete in DB (recommended)
-            f.setDeletedAt(Instant.now());
-            repo.save(f);
+            // Hard delete from DB (permanent removal, not soft delete)
+            repo.delete(f);
 
         } catch (Exception e) {
             throw new RuntimeException("Delete failed.", e);

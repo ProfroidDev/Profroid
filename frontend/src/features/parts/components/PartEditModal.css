@@ -223,6 +223,48 @@
   transform: none;
 }
 
+/* ===== Delete Image Button ===== */
+.btn-delete-image {
+  background: #dc2626;
+  color: #fff;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  font-weight: 500;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 8px;
+  box-shadow: 0 1px 3px rgba(220, 38, 38, 0.12);
+  transition: background 0.2s, box-shadow 0.2s, transform 0.2s;
+}
+
+.btn-delete-image:hover:not(:disabled) {
+  background: #b91c1c;
+  box-shadow: 0 2px 8px rgba(220, 38, 38, 0.2);
+  transform: translateY(-1px);
+}
+
+.btn-delete-image:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* Image Preview Container */
+.image-preview-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 12px;
+  background-color: #f9fafb;
+  border-radius: 6px;
+  border: 1px solid #e5e7eb;
+  margin-bottom: 12px;
+}
+
 /* ===== Responsive ===== */
 @media (max-width: 480px) {
   .modal-content {

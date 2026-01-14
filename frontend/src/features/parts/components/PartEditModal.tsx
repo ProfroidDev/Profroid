@@ -1,10 +1,12 @@
 import React, { useState } from "react";
 import { updatePart } from "../api/updatePart";
 import { uploadPartImage } from "../api/uploadPartImage";
+import { deleteFile } from "../../files/api/deleteFile";
 import type { PartRequestModel } from "../models/PartRequestModel";
 import type { PartResponseModel } from "../models/PartResponseModel";
 import "./PartEditModal.css";
-import { X } from "lucide-react";
+import { X, Trash2 } from "lucide-react";
+import ConfirmationModal from "../../../components/ConfirmationModal";
 
 interface PartEditModalProps {
   part: PartResponseModel | null;
@@ -25,6 +27,9 @@ export default function PartEditModal({
   const [available, setAvailable] = useState<boolean>(part?.available ?? true);
   const [file, setFile] = useState<File | null>(null);
   const [submitting, setSubmitting] = useState<boolean>(false);
+  const [imageDeleteLoading, setImageDeleteLoading] = useState<boolean>(false);
+  const [showDeleteConfirmation, setShowDeleteConfirmation] = useState<boolean>(false);
+  const [currentImageFileId, setCurrentImageFileId] = useState<string | null | undefined>(part?.imageFileId);
 
   const MAX_FILE_SIZE_MB = 10;
   const MAX_FILE_SIZE_BYTES = MAX_FILE_SIZE_MB * 1024 * 1024;
@@ -56,6 +61,7 @@ export default function PartEditModal({
       setName(part.name);
       setAvailable(part.available);
       setFile(null);
+      setCurrentImageFileId(part.imageFileId);
     }
   }, [part]);
 
@@ -91,6 +97,36 @@ export default function PartEditModal({
       onError("Failed to update part. Please try again.");
     } finally {
       setSubmitting(false);
+    }
+  };
+
+  const handleDeleteImage = () => {
+    if (!part.imageFileId) {
+      onError("No image to delete");
+      return;
+    }
+
+    setShowDeleteConfirmation(true);
+  };
+
+  const confirmDeleteImage = async () => {
+    if (!part.imageFileId) {
+      return;
+    }
+
+    setImageDeleteLoading(true);
+    try {
+      await deleteFile(part.imageFileId);
+      // Immediately remove from display
+      setCurrentImageFileId(undefined);
+      // Update the part by calling the callback to refresh the list
+      onPartUpdated();
+    } catch (error) {
+      console.error("Error deleting image:", error);
+      onError("Failed to delete image. Please try again.");
+    } finally {
+      setImageDeleteLoading(false);
+      setShowDeleteConfirmation(false);
     }
   };
 
@@ -155,12 +191,38 @@ export default function PartEditModal({
                 type="file"
                 accept="image/*"
                 className="form-input"
-                disabled={submitting}
+                disabled={submitting || imageDeleteLoading}
                 onChange={handleFileChange}
               />
               <p className="helper-text">Maximum file size: {MAX_FILE_SIZE_MB} MB. Only image files allowed.</p>
-              {part.imageFileId && (
-                <p className="helper-text">Current image will be replaced if you upload a new one.</p>
+              {currentImageFileId && (
+                <div>
+                  <div className="image-preview-container">
+                    <img
+                      src={`${import.meta.env.VITE_BACKEND_URL}/files/${currentImageFileId}/download`}
+                      alt="Current part image"
+                      style={{
+                        maxWidth: "150px",
+                        maxHeight: "120px",
+                        borderRadius: "6px",
+                      }}
+                      onError={(e) => {
+                        e.currentTarget.style.display = "none";
+                      }}
+                    />
+                  </div>
+                  <p className="helper-text">Upload a new image to replace it.</p>
+                  <button
+                    type="button"
+                    className="btn-delete-image"
+                    onClick={handleDeleteImage}
+                    disabled={submitting || imageDeleteLoading}
+                    aria-label="Delete current image"
+                  >
+                    <Trash2 className="h-4 w-4" />
+                    Delete Current Image
+                  </button>
+                </div>
               )}
             </div>
           </div>
@@ -180,6 +242,18 @@ export default function PartEditModal({
           </div>
         </form>
       </div>
+
+      <ConfirmationModal
+        isOpen={showDeleteConfirmation}
+        title="Delete Image"
+        message="Are you sure you want to permanently delete this image?"
+        confirmText="Delete"
+        cancelText="Cancel"
+        isDanger={true}
+        isLoading={imageDeleteLoading}
+        onConfirm={confirmDeleteImage}
+        onCancel={() => setShowDeleteConfirmation(false)}
+      />
     </div>
   );
 }
