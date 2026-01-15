@@ -37,6 +37,12 @@ public interface ReportService {
     List<ReportResponseModel> getCustomerReports(String customerId, String userId, String userRole);
     
     /**
+     * Get all reports (admin only)
+     * Returns all reports in the system
+     */
+    List<ReportResponseModel> getAllReports(String userId, String userRole);
+    
+    /**
      * Update an existing report
      * Only the technician who created it or admin can update
      */

@@ -47,6 +47,7 @@ public class ReportResponseMapper {
                 .reportId(report.getReportIdentifier().getReportId())
                 .appointmentId(appointment.getAppointmentIdentifier().getAppointmentId())
                 .appointmentDate(appointment.getAppointmentDate().toString())
+                .appointmentStatus(appointment.getAppointmentStatus().toString())
                 .customerId(customer.getCustomerIdentifier().getCustomerId())
                 .customerFirstName(customer.getFirstName())
                 .customerLastName(customer.getLastName())

@@ -2,6 +2,7 @@ export interface ReportResponseModel {
   reportId: string;
   appointmentId: string;
   appointmentDate: string;
+  appointmentStatus: string; // SCHEDULED, COMPLETED, CANCELLED
   
   // Customer info
   customerId: string;
