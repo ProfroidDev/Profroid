@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Plus, Upload, Download, Edit2, Search, X } from "lucide-react";
+import { Plus, Download, Edit2, Search, X } from "lucide-react";
 import { getAllParts } from "../../features/parts/api/getAllParts";
 import { createPart } from "../../features/parts/api/createPart";
 import { updatePart } from "../../features/parts/api/updatePart";
@@ -171,49 +171,6 @@ const Inventory = () => {
     }
   };
 
-  // Import from CSV
-  const handleImportCSV = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (!file) return;
-
-    const reader = new FileReader();
-    reader.onload = async (e) => {
-      const text = e.target?.result as string;
-      const lines = text.split("\n").filter((line) => line.trim());
-
-      let successCount = 0;
-      for (let i = 1; i < lines.length; i++) {
-        const values = lines[i].match(/(".*?"|[^",\s]+)(?=\s*,|\s*$)/g) || [];
-        const cleanValues = values.map((v) => v.replace(/^"|"$/g, "").trim());
-
-        if (cleanValues.length >= 7) {
-          try {
-            const partData: PartRequestModel = {
-              name: cleanValues[1] || "",
-              category: cleanValues[3] || "Accessories",
-              quantity: parseInt(cleanValues[4]) || 0,
-              price: parseFloat(cleanValues[5]) || 0,
-              supplier: cleanValues[6] || "",
-            } as PartRequestModel;
-            await createPart(partData);
-            successCount++;
-          } catch (error) {
-            console.error("Failed to import part:", error);
-          }
-        }
-      }
-
-      if (successCount > 0) {
-        loadParts();
-        showToast(`Imported ${successCount} parts from CSV`, "success");
-      } else {
-        showToast("No valid parts found in CSV file", "error");
-      }
-    };
-    reader.readAsText(file);
-    event.target.value = "";
-  };
-
   // Add new part
   const handleAddPart = async () => {
     if (!newPart.name) {
@@ -351,12 +308,6 @@ const Inventory = () => {
               <Plus size={16} />
               Add
             </motion.button>
-
-            <label className="btn btn-outline btn-compact">
-              <Upload size={16} />
-              Import
-              <input type="file" accept=".csv" onChange={handleImportCSV} style={{ display: "none" }} />
-            </label>
 
             <div className="dropdown">
               <button className="btn btn-outline btn-compact dropdown-toggle">
