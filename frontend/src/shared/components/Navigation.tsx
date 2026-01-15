@@ -61,6 +61,7 @@ export default function Navigation(): React.ReactElement {
           {isAdmin && (
             <>
               <a href="/parts">{t("navigation.parts")}</a>
+              <a href="/inventory">{t("navigation.inventory")}</a>
               <a href="/customers">{t("navigation.customers")}</a>
               <a href="/employees">{t("navigation.employees")}</a>
               <a href="/services">{t("navigation.services")}</a>
@@ -202,6 +203,7 @@ export default function Navigation(): React.ReactElement {
           {isAdmin && (
             <>
               <a href="/parts">{t("navigation.parts")}</a>
+              <a href="/inventory">{t("navigation.inventory")}</a>
               <a href="/customers">{t("navigation.customers")}</a>
               <a href="/employees">{t("navigation.employees")}</a>
               <a href="/services">{t("navigation.services")}</a>

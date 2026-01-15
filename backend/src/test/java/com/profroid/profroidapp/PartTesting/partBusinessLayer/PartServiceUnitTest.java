@@ -11,6 +11,7 @@ import com.profroid.profroidapp.partsubdomain.presentationLayer.PartRequestModel
 import com.profroid.profroidapp.utils.exceptions.ResourceAlreadyExistsException;
 import com.profroid.profroidapp.utils.exceptions.ResourceNotFoundException;
 
+import com.profroid.profroidapp.utils.generators.InventoryPdfGenerator;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -26,6 +27,7 @@ public class PartServiceUnitTest {
     private PartRequestMapper requestMapper;
     private PartServiceImpl partService;
     private FileService fileService;
+    private InventoryPdfGenerator  inventoryPdfGenerator;
 
     private final String VALID_PART_ID = "PC-999999";
 
@@ -39,7 +41,7 @@ public class PartServiceUnitTest {
         requestMapper = mock(PartRequestMapper.class);
         fileService = mock(FileService.class);
 
-        partService = new PartServiceImpl(partRepository, responseMapper, requestMapper, fileService);
+        partService = new PartServiceImpl(partRepository, responseMapper, requestMapper, fileService, inventoryPdfGenerator);
 
         existingPart = new Part();
         existingPart.setPartIdentifier(new PartIdentifier(VALID_PART_ID));

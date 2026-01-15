@@ -64,6 +64,9 @@ dependencies {
     testAnnotationProcessor "org.projectlombok:lombok:${lombokVersion}"
 
     implementation 'io.minio:minio:8.5.7'
+    
+    // PDF generation
+    implementation 'com.itextpdf:itext7-core:7.2.4'
 }
 
 jacoco {

@@ -67,4 +67,23 @@ public class PartController {
         partService.deletePart(partId);
         return ResponseEntity.noContent().build();
     }
+
+    @GetMapping(value = "/export/pdf", produces = MediaType.APPLICATION_PDF_VALUE)
+    public ResponseEntity<byte[]> exportInventoryToPdf() {
+        try {
+            byte[] pdfContent = partService.exportInventoryToPdf();
+            
+            String filename = "inventory_report_" + java.time.LocalDate.now() + ".pdf";
+            return ResponseEntity.ok()
+                    .contentType(MediaType.APPLICATION_PDF)
+                    .contentLength(pdfContent.length)
+                    .header("Content-Disposition", "attachment; filename=\"" + filename + "\"")
+                    .header("Cache-Control", "no-cache, no-store, must-revalidate")
+                    .header("Pragma", "no-cache")
+                    .header("Expires", "0")
+                    .body(pdfContent);
+        } catch (Exception e) {
+            throw new RuntimeException("Error exporting PDF: " + e.getMessage(), e);
+        }
+    }
 }

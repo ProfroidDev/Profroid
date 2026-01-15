@@ -1,4 +1,11 @@
 export interface PartRequestModel {
   name: string;
-  available: boolean;
+  category: string;
+  quantity: number;
+  price: number;
+  supplier: string;
+  lowStockThreshold?: number;
+  outOfStockThreshold?: number;
+  highStockThreshold?: number;
+  available?: boolean;
 }
