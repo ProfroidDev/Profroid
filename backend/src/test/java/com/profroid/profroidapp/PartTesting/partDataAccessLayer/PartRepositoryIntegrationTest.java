@@ -12,6 +12,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -35,6 +36,10 @@ public class PartRepositoryIntegrationTest {
         Part part = new Part();
         part.setPartIdentifier(identifier);
         part.setName("Filter Cartridge");
+        part.setCategory("Filters");
+        part.setQuantity(10);
+        part.setPrice(BigDecimal.valueOf(19.99));
+        part.setSupplier("Acme Supplies");
         part.setAvailable(true);
 
         savedPart = partRepository.save(part);

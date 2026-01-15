@@ -48,6 +48,10 @@ public class PartControllerIntegrationTest {
         testPart = new Part();
         testPart.setPartIdentifier(new PartIdentifier(testPartId));
         testPart.setName("Cooling Fan");
+        testPart.setCategory("Cooling");
+        testPart.setQuantity(15);
+        testPart.setPrice(java.math.BigDecimal.valueOf(42.50));
+        testPart.setSupplier("Acme Supplies");
         testPart.setAvailable(true);
 
         partRepository.save(testPart);
@@ -118,7 +122,11 @@ public class PartControllerIntegrationTest {
     void whenCreatePart_withValidData_thenReturn201() {
         PartRequestModel request = PartRequestModel.builder()
                 .name("Heater Module")
-                .available(true)
+            .category("Heating")
+            .quantity(8)
+            .price(java.math.BigDecimal.valueOf(55.75))
+            .supplier("Global Parts")
+            .available(true)
                 .build();
 
         webTestClient.post()
@@ -140,7 +148,11 @@ public class PartControllerIntegrationTest {
     void whenCreatePart_withDuplicateName_thenReturn409() {
         PartRequestModel request = PartRequestModel.builder()
                 .name("Cooling Fan") // duplicate
-                .available(true)
+            .category("Cooling")
+            .quantity(10)
+            .price(java.math.BigDecimal.valueOf(42.50))
+            .supplier("Acme Supplies")
+            .available(true)
                 .build();
 
         webTestClient.post()
@@ -159,7 +171,11 @@ public class PartControllerIntegrationTest {
     void whenUpdatePart_withValidData_thenReturnUpdated() {
         PartRequestModel updateRequest = PartRequestModel.builder()
                 .name("Updated Cooling Fan")
-                .available(false)
+            .category("Cooling")
+            .quantity(5)
+            .price(java.math.BigDecimal.valueOf(40.00))
+            .supplier("Acme Supplies")
+            .available(false)
                 .build();
 
         webTestClient.put()
@@ -181,7 +197,11 @@ public class PartControllerIntegrationTest {
     void whenUpdatePart_withNonExistingId_thenReturn404() {
         PartRequestModel updateRequest = PartRequestModel.builder()
                 .name("Fan Y")
-                .available(true)
+            .category("Cooling")
+            .quantity(7)
+            .price(java.math.BigDecimal.valueOf(10.00))
+            .supplier("Acme Supplies")
+            .available(true)
                 .build();
 
         webTestClient.put()
