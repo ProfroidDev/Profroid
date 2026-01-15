@@ -14,4 +14,5 @@ public interface PartService {
     void deletePart(String partId);
     PartResponseModel uploadPartImage(String partId, MultipartFile file);
     PartResponseModel createPartWithImage(PartRequestModel requestModel, MultipartFile file);
+    byte[] exportInventoryToPdf();
 }

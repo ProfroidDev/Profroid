@@ -43,6 +43,7 @@ public class SecurityConfig {
                         .requestMatchers("POST", "/api/v1/customers").permitAll()  // Customer creation from auth service
                         .requestMatchers("GET", "/api/v1/jobs").permitAll() // Jobs list is public
                         .requestMatchers(HttpMethod.GET, "/api/v1/files/**").permitAll() // allow file downloads for images
+                        .requestMatchers(HttpMethod.GET, "/api/v1/parts/export/pdf").permitAll() // allow PDF export
                         // All cellar endpoints require authentication; fine-grained roles enforced via @PreAuthorize
                         .anyRequest().authenticated()  // All other APIs require authentication
                 )

@@ -5,5 +5,6 @@ public enum FileOwnerType {
     APPOINTMENT,
     CUSTOMER,
     JOB,
-    EMPLOYEE
+    EMPLOYEE,
+    SYSTEM
 }

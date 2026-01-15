@@ -10,12 +10,17 @@ import com.profroid.profroidapp.partsubdomain.presentationLayer.PartResponseMode
 import com.profroid.profroidapp.filesubdomain.businessLayer.FileService;
 import com.profroid.profroidapp.filesubdomain.dataAccessLayer.FileCategory;
 import com.profroid.profroidapp.filesubdomain.dataAccessLayer.FileOwnerType;
+import com.profroid.profroidapp.filesubdomain.dataAccessLayer.StoredFile;
 import com.profroid.profroidapp.utils.exceptions.InvalidIdentifierException;
 import com.profroid.profroidapp.utils.exceptions.ResourceAlreadyExistsException;
 import com.profroid.profroidapp.utils.exceptions.ResourceNotFoundException;
 import com.profroid.profroidapp.utils.exceptions.InvalidOperationException;
 import com.profroid.profroidapp.utils.generators.SkuGenerator.SkuGenerator;
+import com.profroid.profroidapp.utils.generators.InventoryPdfGenerator;
+import com.profroid.profroidapp.utils.generators.InventoryPdfGenerator.InventoryPdfResult;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -25,19 +30,24 @@ import java.util.UUID;
 @Service
 public class PartServiceImpl implements PartService {
 
+    private static final Logger log = LoggerFactory.getLogger(PartServiceImpl.class);
+
     private final PartRepository partRepository;
     private final PartResponseMapper partResponseMapper;
     private final PartRequestMapper partRequestMapper;
     private final FileService fileService;
+    private final InventoryPdfGenerator inventoryPdfGenerator;
 
     public PartServiceImpl(PartRepository partRepository,
                            PartResponseMapper partResponseMapper,
                            PartRequestMapper partRequestMapper,
-                           FileService fileService) {
+                           FileService fileService,
+                           InventoryPdfGenerator inventoryPdfGenerator) {
         this.partRepository = partRepository;
         this.partResponseMapper = partResponseMapper;
         this.partRequestMapper = partRequestMapper;
         this.fileService = fileService;
+        this.inventoryPdfGenerator = inventoryPdfGenerator;
     }
 
     // =====================================================
@@ -210,6 +220,36 @@ public class PartServiceImpl implements PartService {
 
         part.setAvailable(false);
         partRepository.save(part);
+    }
+
+    // =====================================================
+    // EXPORT INVENTORY TO PDF
+    // =====================================================
+    @Override
+    public byte[] exportInventoryToPdf() {
+        try {
+            log.info("Starting PDF export...");
+            
+            // Get all parts
+            List<PartResponseModel> parts = getAllParts();
+            log.info("Retrieved {} parts for PDF export", parts.size());
+            
+            // Generate PDF and store in MinIO
+            InventoryPdfResult pdfResult = inventoryPdfGenerator.generateAndStoreInventoryPdf(parts, fileService);
+            log.info("Generated PDF with size: {} bytes", pdfResult.pdfContent().length);
+            
+            StoredFile storedFile = pdfResult.storedFile();
+            log.info("PDF stored successfully with ID: {}", storedFile.getId());
+            log.info("PDF location: {}/{}", storedFile.getBucket(), storedFile.getObjectKey());
+            
+            // Return the in-memory PDF directly - it's already validated from the generator
+            log.info("Returning in-memory PDF with size: {} bytes", pdfResult.pdfContent().length);
+            return pdfResult.pdfContent();
+            
+        } catch (Exception e) {
+            log.error("Failed to export inventory to PDF", e);
+            throw new RuntimeException("Error exporting inventory PDF: " + e.getMessage(), e);
+        }
     }
 
 
