@@ -36,7 +36,21 @@ public class CustomerServiceImpl implements CustomerService {
     @Override
     public List<CustomerResponseModel> getAllCustomers() {
         List<Customer> customers = customerRepository.findAll();
-        return customerResponseMapper.toResponseModelList(customers);
+        List<CustomerResponseModel> responses = customerResponseMapper.toResponseModelList(customers);
+        
+        // Security optimization: null out sensitive address fields in list responses
+        // Keep: customerId, firstName, lastName, userId (for email lookup), isActive
+        // Null: streetAddress, city, province, country, postalCode, phoneNumbers (unnecessary for appointment selection)
+        responses.forEach(cust -> {
+            cust.setStreetAddress(null);
+            cust.setCity(null);
+            cust.setProvince(null);
+            cust.setCountry(null);
+            cust.setPostalCode(null);
+            cust.setPhoneNumbers(null);
+        });
+        
+        return responses;
     }
 
 
@@ -112,10 +126,6 @@ public class CustomerServiceImpl implements CustomerService {
 
     @Override
     public CustomerResponseModel createCustomer(CustomerRequestModel requestModel) {
-        System.out.println("=== CustomerServiceImpl.createCustomer called ===");
-        System.out.println("Request: " + requestModel);
-        System.out.println("Province: " + requestModel.getProvince());
-        System.out.println("Postal Code: " + requestModel.getPostalCode());
 
         // Enforce unique userId
         if (customerRepository.findCustomerByUserId(requestModel.getUserId()) != null) {
@@ -131,7 +141,6 @@ public class CustomerServiceImpl implements CustomerService {
         customer.setIsActive(true);
 
         Customer savedCustomer = customerRepository.save(customer);
-        System.out.println("=== Customer created successfully ===");
         return customerResponseMapper.toResponseModel(savedCustomer);
     }
 

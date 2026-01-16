@@ -47,7 +47,18 @@ public class EmployeeServiceImpl implements EmployeeService {
     @Override
     public List<EmployeeResponseModel> getAllEmployees() {
         List<Employee> employees = employeeRepository.findAll();
-        return employeeResponseMapper.toResponseModelList(employees);
+        List<EmployeeResponseModel> responses = employeeResponseMapper.toResponseModelList(employees);
+        
+        // Security optimization: null out sensitive fields in list responses
+        // Keep: employeeIdentifier (contains employeeId), firstName, lastName, employeeRole, isActive
+        // Null: phoneNumbers, employeeAddress, userId (unnecessary for appointment selection)
+        responses.forEach(emp -> {
+            emp.setPhoneNumbers(null);
+            emp.setEmployeeAddress(null);
+            emp.setUserId(null);
+        });
+        
+        return responses;
     }
 
     @Override
