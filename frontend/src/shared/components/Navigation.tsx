@@ -39,12 +39,12 @@ export default function Navigation(): React.ReactElement {
     setLanguageOpen(false);
   };
 
-  // Check if user is admin
-  const isAdmin = user?.role === "admin";
+  // Check if user is admin (case-insensitive)
+  const isAdmin = user?.role?.toLowerCase() === "admin";
 
-  // Check if user is technician employee
+  // Check if user is technician employee (case-insensitive)
   const isTechnician =
-    user?.role === "employee" && user?.employeeType === "TECHNICIAN";
+    user?.role?.toLowerCase() === "employee" && user?.employeeType === "TECHNICIAN";
 
   return (
     <nav className="nav-container">
@@ -62,6 +62,7 @@ export default function Navigation(): React.ReactElement {
             <>
               <a href="/parts">{t("navigation.parts")}</a>
               <a href="/inventory">{t("navigation.inventory")}</a>
+              <a href="/service-reports">{t("navigation.serviceReports")}</a>
               <a href="/customers">{t("navigation.customers")}</a>
               <a href="/employees">{t("navigation.employees")}</a>
               <a href="/services">{t("navigation.services")}</a>
@@ -204,6 +205,7 @@ export default function Navigation(): React.ReactElement {
             <>
               <a href="/parts">{t("navigation.parts")}</a>
               <a href="/inventory">{t("navigation.inventory")}</a>
+              <a href="/service-reports">{t("navigation.serviceReports")}</a>
               <a href="/customers">{t("navigation.customers")}</a>
               <a href="/employees">{t("navigation.employees")}</a>
               <a href="/services">{t("navigation.services")}</a>

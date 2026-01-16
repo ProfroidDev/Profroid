@@ -107,6 +107,22 @@ public class ReportController {
     }
 
     /**
+     * Get all reports (admin only)
+     * Returns all reports in the system
+     */
+    @GetMapping
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<List<ReportResponseModel>> getAllReports(
+            Authentication authentication) {
+        
+        String userId = authentication.getName();
+        String role = extractRole(authentication);
+        
+        List<ReportResponseModel> reports = reportService.getAllReports(userId, role);
+        return ResponseEntity.ok(reports);
+    }
+
+    /**
      * Update an existing report
      * Only the technician who created it or admin can update
      */

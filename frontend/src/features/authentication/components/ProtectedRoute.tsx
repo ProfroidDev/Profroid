@@ -30,7 +30,10 @@ export function ProtectedRoute({ children, requiredRole, requiredEmployeeType }:
   // Check role if required
   if (requiredRole) {
     console.log(`Route requires role: ${requiredRole}, user role: ${user.role}`);
-    if (user.role !== requiredRole) {
+    // Case-insensitive role comparison
+    const userRoleLower = user.role?.toLowerCase();
+    const requiredRoleLower = requiredRole.toLowerCase();
+    if (userRoleLower !== requiredRoleLower) {
       console.log(`Role mismatch: ${user.role} !== ${requiredRole}, redirecting to forbidden page`);
       return <Navigate to="/error/forbidden" replace />;
     }

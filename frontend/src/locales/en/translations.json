@@ -53,6 +53,7 @@
   "navigation": {
     "parts": "Parts",
     "inventory": "Inventory",
+    "serviceReports": "Reports",
     "customers": "Customers",
     "employees": "Employees",
     "services": "Services",

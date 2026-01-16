@@ -10,12 +10,13 @@
 
 /* INNER WRAPPER */
 .nav-inner {
-  max-width: 1300px;
+  max-width: 1400px;
   margin: 0 auto;
-  padding: 18px 32px;
-  display: flex;
+  padding: 12px 24px;
+  display: grid;
+  grid-template-columns: auto 1fr auto;
   align-items: center;
-  justify-content: space-between;
+  gap: 24px;
 }
 
 /* LOGO */
@@ -38,20 +39,24 @@
   font-weight: 700;
   font-family: "Georgia", serif;
   color: #3a2e2a;
+  white-space: nowrap;
 }
 
 /* DESKTOP LINKS */
 .nav-links {
   display: flex;
   align-items: center;
-  gap: 28px;
+  gap: 20px;
+  justify-content: center;
+  flex-wrap: wrap;
 }
 
 .nav-links a {
-  font-size: 1rem;
+  font-size: 0.95rem;
   color: #3a2e2a;
   text-decoration: none;
   transition: 0.2s;
+  white-space: nowrap;
 }
 
 .nav-links a:hover {

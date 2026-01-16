@@ -183,6 +183,18 @@ public class ReportServiceImpl implements ReportService {
     }
 
     @Override
+    public List<ReportResponseModel> getAllReports(String userId, String userRole) {
+        // Permission check: only admin can view all reports
+        if (!"ADMIN".equals(userRole)) {
+            throw new InvalidOperationException("Insufficient permissions to view all reports");
+        }
+
+        List<Report> reports = reportRepository.findAll();
+        
+        return responseMapper.toResponseModelList(reports);
+    }
+
+    @Override
     @Transactional
     public ReportResponseModel updateReport(String reportId, ReportRequestModel requestModel, String userId, String userRole) {
         Report report = reportRepository.findReportByReportIdentifier_ReportId(reportId);

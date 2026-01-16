@@ -20,6 +20,7 @@ public class ReportResponseModel {
     // Appointment information
     private String appointmentId;
     private String appointmentDate;
+    private String appointmentStatus; // SCHEDULED, COMPLETED, CANCELLED
 
     // Customer information (auto-populated from appointment)
     private String customerId;
