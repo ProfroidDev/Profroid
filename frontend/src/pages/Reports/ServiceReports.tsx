@@ -177,12 +177,12 @@ const ServiceReports = () => {
           <table className="reports-table">
             <thead>
               <tr>
-                <th>Report ID</th>
+                <th className="report-id-col-header">Report ID</th>
                 <th>Customer</th>
                 <th>Service</th>
                 <th>Technician</th>
                 <th>Date</th>
-                <th>Status</th>
+                <th className="status-col-narrow-header">Status</th>
                 <th className="text-right">Total</th>
                 <th className="actions-col">Actions</th>
               </tr>
@@ -208,7 +208,7 @@ const ServiceReports = () => {
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: index * 0.05 }}
                   >
-                    <td className="report-id">{report.reportId.substring(0, 8)}</td>
+                    <td className="report-id-col">{report.reportId}</td>
                     <td className="customer-name">
                       {report.customerFirstName} {report.customerLastName}
                     </td>
@@ -217,7 +217,7 @@ const ServiceReports = () => {
                       {report.technicianFirstName} {report.technicianLastName}
                     </td>
                     <td>{formatDate(report.appointmentDate)}</td>
-                    <td className="status-col">
+                    <td className="status-col-narrow">
                       <span className={`status-badge ${getStatusColor(report.appointmentStatus)}`}>
                         {report.appointmentStatus}
                       </span>

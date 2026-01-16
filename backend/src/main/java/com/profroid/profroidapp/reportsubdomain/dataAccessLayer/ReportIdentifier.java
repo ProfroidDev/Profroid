@@ -1,6 +1,6 @@
 package com.profroid.profroidapp.reportsubdomain.dataAccessLayer;
 
-import com.profroid.profroidapp.utils.generators.SkuGenerator.SkuGenerator;
+import com.profroid.profroidapp.utils.generators.ReportIdGenerator.ReportIdGenerator;
 import jakarta.persistence.Column;
 import jakarta.persistence.Embeddable;
 import lombok.Getter;
@@ -13,7 +13,7 @@ public class ReportIdentifier {
     private String reportId;
 
     public ReportIdentifier() {
-        this.reportId = SkuGenerator.generateSku();
+        this.reportId = ReportIdGenerator.generateReportId();
     }
 
     public ReportIdentifier(String reportId) {
