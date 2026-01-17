@@ -48,7 +48,8 @@
     },
     "max": "Max",
     "all": "All",
-    "clear": "Clear"
+    "clear": "Clear",
+    "download": "Download"
   },
   "navigation": {
     "parts": "Parts",

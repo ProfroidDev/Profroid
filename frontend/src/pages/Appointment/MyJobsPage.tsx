@@ -7,11 +7,12 @@ import { patchAppointmentStatus } from "../../features/appointment/api/patchAppo
 import Toast from "../../shared/components/Toast";
 import useAuthStore from "../../features/authentication/store/authStore";
 import ConfirmationModal from "../../components/ConfirmationModal";
-import { MapPin, Clock, User, Wrench, DollarSign, Phone, AlertCircle, Edit, CheckCircle, X, ChevronLeft, ChevronRight, Filter, Calendar, FileText } from "lucide-react";
+import { MapPin, Clock, User, Wrench, DollarSign, Phone, AlertCircle, Edit, CheckCircle, X, ChevronLeft, ChevronRight, Filter, Calendar, FileText, Download } from "lucide-react";
 import "./MyJobsPage.css";
 import ReportFormModal from "../../features/report/components/ReportFormModal";
 import ViewReportModal from "../../features/report/components/ViewReportModal";
 import { getReportByAppointmentId } from "../../features/report/api/getReportByAppointmentId";
+import { exportReportPdf } from "../../features/report/api/exportReportPdf";
 import type { ReportResponseModel } from "../../features/report/models/ReportResponseModel";
 import { getCellars } from "../../features/cellar/api/getAllCellars";
 import type { CellarResponseModel } from "../../features/cellar/models/CellarResponseModel";
@@ -572,13 +573,44 @@ export default function MyJobsPage(): React.ReactElement {
                 )}
               </div>
 
-              {/* View Details Button */}
-              <button
-                className="btn-view-details"
-                onClick={() => setSelectedJob(job)}
-              >
-                {t('pages.jobs.viewFullDetails')}
-              </button>
+              {/* View Details & Download Report Button */}
+              <div style={{ display: "flex", gap: "8px" }}>
+                <button
+                  className="btn-view-details"
+                  onClick={() => setSelectedJob(job)}
+                >
+                  {t('pages.jobs.viewFullDetails')}
+                </button>
+                {job.status === "COMPLETED" && jobReports.has(job.appointmentId) && (
+                  <button
+                    className="btn-view-details"
+                    onClick={async () => {
+                      try {
+                        const reportId = jobReports.get(job.appointmentId)?.reportId;
+                        if (!reportId) return;
+                        const blob = await exportReportPdf(reportId);
+                        const url = window.URL.createObjectURL(blob);
+                        const link = document.createElement("a");
+                        link.href = url;
+                        link.download = `report_${reportId}.pdf`;
+                        document.body.appendChild(link);
+                        link.click();
+                        link.remove();
+                        window.URL.revokeObjectURL(url);
+                        setToast({ message: "Report PDF downloaded", type: "success" });
+                      } catch (err) {
+                        console.error("Download PDF failed", err);
+                        setToast({ message: "Failed to download PDF", type: "error" });
+                      }
+                    }}
+                    title="Download Report PDF"
+                    style={{ display: "flex", alignItems: "center", gap: "6px" }}
+                  >
+                    <Download size={16} />
+                    {t('common.download')}
+                  </button>
+                )}
+              </div>
             </div>
           ))}
         </div>

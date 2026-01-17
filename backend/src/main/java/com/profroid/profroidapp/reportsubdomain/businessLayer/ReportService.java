@@ -52,4 +52,10 @@ public interface ReportService {
      * Delete a report (soft delete by marking appointment as not having a report)
      */
     void deleteReport(String reportId, String userId, String userRole);
+
+    /**
+     * Get (or generate if missing) the PDF for a report.
+     * Accessible by TECHNICIAN (owner) and ADMIN.
+     */
+    byte[] getReportPdf(String reportId, String userId, String userRole);
 }
