@@ -13,6 +13,7 @@ import com.profroid.profroidapp.utils.exceptions.InvalidIdentifierException;
 import com.profroid.profroidapp.utils.exceptions.ResourceAlreadyExistsException;
 import com.profroid.profroidapp.utils.exceptions.ResourceNotFoundException;
 import com.profroid.profroidapp.utils.exceptions.InvalidOperationException;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -38,17 +39,24 @@ public class CustomerServiceImpl implements CustomerService {
         List<Customer> customers = customerRepository.findAll();
         List<CustomerResponseModel> responses = customerResponseMapper.toResponseModelList(customers);
         
-        // Security optimization: null out sensitive address fields in list responses
-        // Keep: customerId, firstName, lastName, userId (for email lookup), isActive
-        // Null: streetAddress, city, province, country, postalCode, phoneNumbers (unnecessary for appointment selection)
-        responses.forEach(cust -> {
-            cust.setStreetAddress(null);
-            cust.setCity(null);
-            cust.setProvince(null);
-            cust.setCountry(null);
-            cust.setPostalCode(null);
-            cust.setPhoneNumbers(null);
-        });
+        // Check if current user is admin
+        boolean isAdmin = SecurityContextHolder.getContext().getAuthentication() != null &&
+                SecurityContextHolder.getContext().getAuthentication().getAuthorities().stream()
+                        .anyMatch(auth -> auth.getAuthority().equals("ROLE_ADMIN"));
+        
+        // If not admin, null out sensitive address fields for security
+        // Keep: customerId, firstName, lastName, userId (for search/matching), isActive
+        // Null: address details (streetAddress, city, province, country, postalCode), phoneNumbers
+        if (!isAdmin) {
+            responses.forEach(cust -> {
+                cust.setStreetAddress(null);
+                cust.setCity(null);
+                cust.setProvince(null);
+                cust.setCountry(null);
+                cust.setPostalCode(null);
+                cust.setPhoneNumbers(null);
+            });
+        }
         
         return responses;
     }
