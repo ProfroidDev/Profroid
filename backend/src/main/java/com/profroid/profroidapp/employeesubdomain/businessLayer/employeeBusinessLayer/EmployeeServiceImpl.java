@@ -18,6 +18,7 @@ import com.profroid.profroidapp.utils.exceptions.InvalidIdentifierException;
 import com.profroid.profroidapp.utils.exceptions.ResourceAlreadyExistsException;
 import com.profroid.profroidapp.utils.exceptions.ResourceNotFoundException;
 import com.profroid.profroidapp.utils.exceptions.InvalidOperationException;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -47,7 +48,24 @@ public class EmployeeServiceImpl implements EmployeeService {
     @Override
     public List<EmployeeResponseModel> getAllEmployees() {
         List<Employee> employees = employeeRepository.findAll();
-        return employeeResponseMapper.toResponseModelList(employees);
+        List<EmployeeResponseModel> responses = employeeResponseMapper.toResponseModelList(employees);
+        
+        // Check if current user is admin
+        boolean isAdmin = SecurityContextHolder.getContext().getAuthentication() != null &&
+                SecurityContextHolder.getContext().getAuthentication().getAuthorities().stream()
+                        .anyMatch(auth -> auth.getAuthority().equals("ROLE_ADMIN"));
+        
+        // If not admin, null out sensitive fields for security
+        // Keep: employeeId, firstName, lastName, employeeRole, isActive, userId
+        // Null: phoneNumbers, employeeAddress
+        if (!isAdmin) {
+            responses.forEach(emp -> {
+                emp.setPhoneNumbers(null);
+                emp.setEmployeeAddress(null);
+            });
+        }
+        
+        return responses;
     }
 
     @Override
