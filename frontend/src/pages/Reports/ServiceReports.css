@@ -140,6 +140,27 @@
   color: #6b7280;
 }
 
+/* Personalized column sizing for Service Reports */
+.reports-table th.report-id-col-header,
+.reports-table td.report-id-col {
+  width: 200px;
+}
+
+.report-id-col {
+  font-family: 'Courier New', monospace;
+  font-size: 0.875rem;
+  color: #374151;
+}
+
+.reports-table th.status-col-narrow-header,
+.reports-table td.status-col-narrow {
+  width: 110px;
+}
+
+.status-col-narrow {
+  white-space: nowrap;
+}
+
 .customer-name,
 .technician-name {
   font-weight: 500;

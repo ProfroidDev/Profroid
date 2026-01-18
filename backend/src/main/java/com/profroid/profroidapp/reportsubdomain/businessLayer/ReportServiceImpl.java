@@ -8,6 +8,8 @@ import com.profroid.profroidapp.employeesubdomain.dataAccessLayer.employeeDataAc
 import com.profroid.profroidapp.employeesubdomain.dataAccessLayer.employeeDataAccessLayer.EmployeeRepository;
 import com.profroid.profroidapp.partsubdomain.dataAccessLayer.Part;
 import com.profroid.profroidapp.partsubdomain.dataAccessLayer.PartRepository;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import com.profroid.profroidapp.reportsubdomain.dataAccessLayer.Report;
 import com.profroid.profroidapp.reportsubdomain.dataAccessLayer.ReportIdentifier;
 import com.profroid.profroidapp.reportsubdomain.dataAccessLayer.ReportPart;
@@ -15,9 +17,15 @@ import com.profroid.profroidapp.reportsubdomain.dataAccessLayer.ReportRepository
 import com.profroid.profroidapp.reportsubdomain.mappingLayer.ReportResponseMapper;
 import com.profroid.profroidapp.reportsubdomain.presentationLayer.ReportRequestModel;
 import com.profroid.profroidapp.reportsubdomain.presentationLayer.ReportResponseModel;
+import com.profroid.profroidapp.filesubdomain.businessLayer.FileService;
+import com.profroid.profroidapp.filesubdomain.dataAccessLayer.FileCategory;
+import com.profroid.profroidapp.filesubdomain.dataAccessLayer.FileOwnerType;
+import com.profroid.profroidapp.filesubdomain.dataAccessLayer.StoredFile;
+import com.profroid.profroidapp.filesubdomain.dataAccessLayer.StoredFileRepository;
 import com.profroid.profroidapp.utils.exceptions.InvalidOperationException;
 import com.profroid.profroidapp.utils.exceptions.ResourceAlreadyExistsException;
 import com.profroid.profroidapp.utils.exceptions.ResourceNotFoundException;
+import com.profroid.profroidapp.utils.generators.ReportPdfGenerator;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -25,15 +33,22 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
+import java.io.InputStream;
 
 @Service
 public class ReportServiceImpl implements ReportService {
 
+    private static final Logger logger = LoggerFactory.getLogger(ReportServiceImpl.class);
+    
     private final ReportRepository reportRepository;
     private final AppointmentRepository appointmentRepository;
     private final EmployeeRepository employeeRepository;
     private final PartRepository partRepository;
     private final ReportResponseMapper responseMapper;
+    private final FileService fileService;
+    private final StoredFileRepository storedFileRepository;
+    private final ReportPdfGenerator reportPdfGenerator;
 
     // Tax rates
     private static final BigDecimal TPS_RATE = new BigDecimal("0.05"); // 5%
@@ -43,12 +58,18 @@ public class ReportServiceImpl implements ReportService {
                              AppointmentRepository appointmentRepository,
                              EmployeeRepository employeeRepository,
                              PartRepository partRepository,
-                             ReportResponseMapper responseMapper) {
+                             ReportResponseMapper responseMapper,
+                             FileService fileService,
+                             StoredFileRepository storedFileRepository,
+                             ReportPdfGenerator reportPdfGenerator) {
         this.reportRepository = reportRepository;
         this.appointmentRepository = appointmentRepository;
         this.employeeRepository = employeeRepository;
         this.partRepository = partRepository;
         this.responseMapper = responseMapper;
+        this.fileService = fileService;
+        this.storedFileRepository = storedFileRepository;
+        this.reportPdfGenerator = reportPdfGenerator;
     }
 
     @Override
@@ -123,7 +144,15 @@ public class ReportServiceImpl implements ReportService {
         // Save report
         Report savedReport = reportRepository.save(report);
 
-        return responseMapper.toResponseModel(savedReport);
+        // Generate and store PDF after creation
+        ReportResponseModel response = responseMapper.toResponseModel(savedReport);
+        try {
+            reportPdfGenerator.generateAndStoreReportPdf(response, fileService);
+        } catch (Exception e) {
+            // Do not fail report creation if PDF fails; log/continue
+        }
+
+        return response;
     }
 
     @Override
@@ -268,6 +297,38 @@ public class ReportServiceImpl implements ReportService {
         reportRepository.delete(report);
     }
 
+    @Override
+    public byte[] getReportPdf(String reportId, String userId, String userRole) {
+        Report report = reportRepository.findReportByReportIdentifier_ReportId(reportId);
+        if (report == null) {
+            throw new ResourceNotFoundException("Report not found: " + reportId);
+        }
+
+        // Access check (technician owner or admin)
+        validateReportAccess(report, userId, userRole);
+
+        // Try get existing stored file
+        var files = storedFileRepository.findAllByOwnerTypeAndOwnerIdAndCategoryAndDeletedAtIsNull(
+                FileOwnerType.REPORT.name(), reportId, FileCategory.REPORT.name());
+        StoredFile stored = files.isEmpty() ? null : files.get(0);
+
+        try {
+            if (stored != null) {
+                try (InputStream is = fileService.openStream(stored)) {
+                    return is.readAllBytes();
+                }
+            }
+            // Generate on-demand and store, then return
+            ReportResponseModel response = responseMapper.toResponseModel(report);
+            StoredFile created = reportPdfGenerator.generateAndStoreReportPdf(response, fileService);
+            try (InputStream is = fileService.openStream(created)) {
+                return is.readAllBytes();
+            }
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to fetch report PDF", e);
+        }
+    }
+
     /**
      * Calculate all totals including taxes
      */
@@ -305,28 +366,54 @@ public class ReportServiceImpl implements ReportService {
      * Validate user has access to view this report
      */
     private void validateReportAccess(Report report, String userId, String userRole) {
+        logger.info("Validating report access - UserId: {}, UserRole: {}, ReportId: {}", userId, userRole, report.getReportIdentifier().getReportId());
+        
         if ("ADMIN".equals(userRole)) {
+            logger.info("Access granted: User is ADMIN");
             return; // Admin can access all reports
         }
 
         if ("TECHNICIAN".equals(userRole)) {
-            // Technician can access their own reports - userId is the auth service user ID
-            Employee technician = employeeRepository.findEmployeeByUserId(userId);
-            if (technician != null && 
-                technician.getEmployeeIdentifier().getEmployeeId().equals(
-                    report.getAppointment().getTechnician().getEmployeeIdentifier().getEmployeeId())) {
+            // Technician can access reports for appointments they're assigned to
+            String appointmentTechUserId = report.getAppointment().getTechnician().getUserId();
+            String appointmentTechEmployeeId = report.getAppointment().getTechnician().getEmployeeIdentifier().getEmployeeId();
+            
+            logger.info("Technician permission check - Current userId: {}, Appointment tech userId: {}, Appointment tech employeeId: {}", 
+                    userId, appointmentTechUserId, appointmentTechEmployeeId);
+            
+            // Try to match by direct userId first
+            if (appointmentTechUserId != null && appointmentTechUserId.equals(userId)) {
+                logger.info("Access granted: Technician userId matches appointment technician");
                 return;
             }
+            
+            // Try to match by employee ID via userId lookup
+            Employee technician = employeeRepository.findEmployeeByUserId(userId);
+            if (technician != null) {
+                String techEmployeeId = technician.getEmployeeIdentifier().getEmployeeId();
+                logger.info("Found employee for userId {} with employeeId: {}", userId, techEmployeeId);
+                if (techEmployeeId.equals(appointmentTechEmployeeId)) {
+                    logger.info("Access granted: Technician employeeId matches");
+                    return;
+                }
+            } else {
+                logger.warn("No employee found for userId: {}", userId);
+            }
+            
+            logger.warn("Access denied: Technician {} is not assigned to appointment {}", userId, report.getAppointment().getAppointmentIdentifier().getAppointmentId());
         }
 
         if ("CUSTOMER".equals(userRole)) {
             // Customer can access reports for their appointments
             Customer customer = report.getAppointment().getCustomer();
             if (customer != null && customer.getUserId().equals(userId)) {
+                logger.info("Access granted: Customer owns this appointment");
                 return;
             }
+            logger.warn("Access denied: Customer does not own this appointment");
         }
 
+        logger.error("Access denied: Invalid role or permission check failed - Role: {}, UserId: {}", userRole, userId);
         throw new InvalidOperationException("You don't have permission to access this report");
     }
 }

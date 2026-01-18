@@ -2,6 +2,9 @@ package com.profroid.profroidapp.reportsubdomain.presentationLayer;
 
 import com.profroid.profroidapp.reportsubdomain.businessLayer.ReportService;
 import jakarta.validation.Valid;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.http.MediaType;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -15,10 +18,38 @@ import java.util.List;
 @RequestMapping("/api/v1/reports")
 public class ReportController {
 
+    private static final Logger logger = LoggerFactory.getLogger(ReportController.class);
     private final ReportService reportService;
 
     public ReportController(ReportService reportService) {
         this.reportService = reportService;
+    }
+
+    /**
+     * Download the report PDF (Admin and Technician only)
+     */
+    @GetMapping(value = "/{reportId}/pdf", produces = MediaType.APPLICATION_PDF_VALUE)
+    @PreAuthorize("hasAnyRole('TECHNICIAN', 'ADMIN')")
+    public ResponseEntity<byte[]> downloadReportPdf(
+            @PathVariable String reportId,
+            Authentication authentication) {
+
+        String userId = authentication.getName();
+        String role = extractRole(authentication);
+        
+        logger.info("PDF Download Request - UserId: {}, Role: {}, ReportId: {}", userId, role, reportId);
+
+        byte[] pdf = reportService.getReportPdf(reportId, userId, role);
+        String filename = "report_" + reportId + ".pdf";
+
+        return ResponseEntity.ok()
+                .contentType(MediaType.APPLICATION_PDF)
+                .contentLength(pdf.length)
+                .header("Content-Disposition", "attachment; filename=\"" + filename + "\"")
+                .header("Cache-Control", "no-cache, no-store, must-revalidate")
+                .header("Pragma", "no-cache")
+                .header("Expires", "0")
+                .body(pdf);
     }
 
     /**
@@ -159,13 +190,23 @@ public class ReportController {
 
     /**
      * Helper method to extract role from authentication
+     * JWT filter adds "ROLE_" prefix, so we extract it
      */
     private String extractRole(Authentication authentication) {
-        return authentication.getAuthorities().stream()
+        String role = authentication.getAuthorities().stream()
                 .map(GrantedAuthority::getAuthority)
-                .filter(auth -> auth.startsWith("ROLE_"))
-                .map(auth -> auth.substring(5))
+                .filter(auth -> auth != null)
                 .findFirst()
+                .map(auth -> {
+                    // Remove "ROLE_" prefix if present
+                    if (auth.startsWith("ROLE_")) {
+                        return auth.substring(5);
+                    }
+                    return auth;
+                })
                 .orElse("CUSTOMER");
+        
+        logger.debug("Extracted Role: {} from authorities: {}", role, authentication.getAuthorities());
+        return role;
     }
 }

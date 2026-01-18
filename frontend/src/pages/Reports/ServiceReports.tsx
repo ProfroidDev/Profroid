@@ -3,6 +3,8 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Search, Eye, Edit2, FileText } from "lucide-react";
 import { getAllReports } from "../../features/report/api/getAllReports";
 import ViewReportModal from "../../features/report/components/ViewReportModal";
+import { exportReportPdf } from "../../features/report/api/exportReportPdf";
+import { Download } from "lucide-react";
 import ReportFormModal from "../../features/report/components/ReportFormModal";
 import type { ReportResponseModel } from "../../features/report/models/ReportResponseModel";
 import type { AppointmentResponseModel } from "../../features/appointment/models/AppointmentResponseModel";
@@ -177,12 +179,12 @@ const ServiceReports = () => {
           <table className="reports-table">
             <thead>
               <tr>
-                <th>Report ID</th>
+                <th className="report-id-col-header">Report ID</th>
                 <th>Customer</th>
                 <th>Service</th>
                 <th>Technician</th>
                 <th>Date</th>
-                <th>Status</th>
+                <th className="status-col-narrow-header">Status</th>
                 <th className="text-right">Total</th>
                 <th className="actions-col">Actions</th>
               </tr>
@@ -208,7 +210,7 @@ const ServiceReports = () => {
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: index * 0.05 }}
                   >
-                    <td className="report-id">{report.reportId.substring(0, 8)}</td>
+                    <td className="report-id-col">{report.reportId}</td>
                     <td className="customer-name">
                       {report.customerFirstName} {report.customerLastName}
                     </td>
@@ -217,7 +219,7 @@ const ServiceReports = () => {
                       {report.technicianFirstName} {report.technicianLastName}
                     </td>
                     <td>{formatDate(report.appointmentDate)}</td>
-                    <td className="status-col">
+                    <td className="status-col-narrow">
                       <span className={`status-badge ${getStatusColor(report.appointmentStatus)}`}>
                         {report.appointmentStatus}
                       </span>
@@ -232,6 +234,30 @@ const ServiceReports = () => {
                         whileTap={{ scale: 0.95 }}
                       >
                         <Eye size={16} />
+                      </motion.button>
+                      <motion.button
+                        className="icon-btn"
+                        onClick={async () => {
+                          try {
+                            const blob = await exportReportPdf(report.reportId);
+                            const url = window.URL.createObjectURL(blob);
+                            const link = document.createElement("a");
+                            link.href = url;
+                            link.download = `report_${report.reportId}.pdf`;
+                            document.body.appendChild(link);
+                            link.click();
+                            link.remove();
+                            window.URL.revokeObjectURL(url);
+                            showToast("Report PDF downloaded", "success");
+                          } catch (e) {
+                            showToast("Failed to download PDF", "error");
+                          }
+                        }}
+                        title="Download PDF"
+                        whileHover={{ scale: 1.1 }}
+                        whileTap={{ scale: 0.95 }}
+                      >
+                        <Download size={16} />
                       </motion.button>
                       <motion.button
                         className="icon-btn"
