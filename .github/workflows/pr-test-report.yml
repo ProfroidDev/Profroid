@@ -14,7 +14,7 @@ jobs:
   test_report:
     runs-on: ubuntu-22.04
     name: Post Test Report to PR
-    
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -28,17 +28,15 @@ jobs:
       - name: Parse test results and generate report
         id: parse_results
         run: |
-          # Initialize variables
           BACKEND_TESTS_PASSED=0
           BACKEND_TESTS_FAILED=0
           FRONTEND_TESTS_PASSED=0
           FRONTEND_TESTS_FAILED=0
           COVERAGE_PERCENT="N/A"
-          BACKEND_STATUS="✅"
-          FRONTEND_STATUS="✅"
-          AUTH_STATUS="✅"
+          BACKEND_STATUS="[BUILD OK]"
+          FRONTEND_STATUS="[BUILD OK]"
+          AUTH_STATUS="[BUILD OK]"
 
-          # Parse backend test results
           if [ -d "backend-test-results" ]; then
             for file in backend-test-results/**/*.xml; do
               if [ -f "$file" ]; then
@@ -49,16 +47,14 @@ jobs:
               fi
             done
             if [ $BACKEND_TESTS_FAILED -gt 0 ]; then
-              BACKEND_STATUS="❌"
+              BACKEND_STATUS="[FAILED]"
             fi
           fi
 
-          # Parse coverage
           if [ -f "backend-coverage-report/index.html" ]; then
             COVERAGE_PERCENT=$(grep -oP 'Total[^%]*\K[0-9.]+(?=%)' backend-coverage-report/index.html | head -1 || echo "N/A")
           fi
 
-          # Parse frontend test results (playwright json)
           if [ -d "frontend-test-results" ]; then
             for file in frontend-test-results/**/*.json; do
               if [ -f "$file" ]; then
@@ -70,11 +66,10 @@ jobs:
               fi
             done
             if [ $FRONTEND_TESTS_FAILED -gt 0 ]; then
-              FRONTEND_STATUS="❌"
+              FRONTEND_STATUS="[FAILED]"
             fi
           fi
 
-          # Export to GitHub outputs
           echo "backend_passed=$BACKEND_TESTS_PASSED" >> $GITHUB_OUTPUT
           echo "backend_failed=$BACKEND_TESTS_FAILED" >> $GITHUB_OUTPUT
           echo "frontend_passed=$FRONTEND_TESTS_PASSED" >> $GITHUB_OUTPUT
