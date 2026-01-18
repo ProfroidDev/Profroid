@@ -18,7 +18,7 @@ jwt:
 
 spring:
   profiles:
-    active: h2 # IDE + CI will default to H2 (safe)
+    active: h2  # IDE + CI will default to H2 (safe)
 ---
 ## ===============================
 ## H2 PROFILE (local dev + CI tests)
@@ -51,7 +51,7 @@ spring:
   sql:
     init:
       platform: h2
-      mode: always # prevents loading MySQL scripts
+      mode: always  # prevents loading MySQL scripts
       data-locations: classpath:data.sql
       schema-locations: classpath:schema.sql
 
@@ -81,5 +81,6 @@ spring:
 
 server:
   port: 8080
-
-spring.datasource.hikari.initializationFailTimeout: 60000
+  datasource:
+    hikari:
+      initializationFailTimeout: 60000
