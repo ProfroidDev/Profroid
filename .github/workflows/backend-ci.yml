@@ -1,0 +1,216 @@
+name: Backend CI Pipeline
+
+on:
+  push:
+    branches: ["master", "develop"]
+    paths:
+      - "backend/**"
+      - ".github/workflows/backend-ci.yml"
+  pull_request:
+    branches: ["master", "develop"]
+    paths:
+      - "backend/**"
+      - ".github/workflows/backend-ci.yml"
+
+permissions:
+  contents: read
+  checks: write
+  pull-requests: write
+
+env:
+  JAVA_VERSION: 17
+  GRADLE_VERSION: 8.7
+
+jobs:
+  # =====================================================
+  # 1) Build and Test with Coverage
+  # =====================================================
+  build_and_test:
+    runs-on: ubuntu-22.04
+    timeout-minutes: 20
+    name: Build & Test Backend
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: ${{ env.JAVA_VERSION }}
+          distribution: "temurin"
+          cache: gradle
+
+      - name: Make gradlew executable
+        run: chmod +x ./gradlew
+        working-directory: ./backend
+
+      - name: Build backend with Gradle
+        run: ./gradlew clean build -x test --daemon
+        working-directory: ./backend
+
+      - name: Run unit and integration tests
+        run: ./gradlew test --daemon
+        working-directory: ./backend
+
+      - name: Generate test coverage report
+        run: ./gradlew jacocoTestReport --daemon
+        working-directory: ./backend
+
+      - name: Verify test coverage thresholds
+        run: ./gradlew jacocoTestCoverageVerification --daemon
+        working-directory: ./backend
+
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: backend-test-results
+          path: backend/build/test-results/
+          retention-days: 30
+
+      - name: Upload coverage report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: backend-coverage-report
+          path: backend/build/reports/jacoco/test/html/
+          retention-days: 30
+
+      - name: Publish test results
+        if: always()
+        uses: EnricoMi/publish-unit-test-result-action@v2
+        with:
+          files: backend/build/test-results/test/**/*.xml
+          check_name: Backend Test Results
+          comment_mode: always
+
+  # =====================================================
+  # 2) Code Quality Checks (Spotbugs, PMD, Checkstyle)
+  # =====================================================
+  code_quality:
+    runs-on: ubuntu-22.04
+    timeout-minutes: 15
+    name: Code Quality Analysis
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: ${{ env.JAVA_VERSION }}
+          distribution: "temurin"
+          cache: gradle
+
+      - name: Make gradlew executable
+        run: chmod +x ./gradlew
+        working-directory: ./backend
+
+      - name: Run Checkstyle
+        run: ./gradlew checkstyleMain checkstyleTest --daemon
+        working-directory: ./backend
+        continue-on-error: true
+
+      - name: Run SpotBugs (FindBugs)
+        run: ./gradlew spotbugsMain --daemon
+        working-directory: ./backend
+        continue-on-error: true
+
+      - name: Upload quality reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: backend-quality-reports
+          path: backend/build/reports/
+          retention-days: 30
+
+  # =====================================================
+  # 3) Dependency Vulnerability Check
+  # =====================================================
+  dependency_check:
+    runs-on: ubuntu-22.04
+    timeout-minutes: 15
+    name: Dependency Vulnerability Check
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: ${{ env.JAVA_VERSION }}
+          distribution: "temurin"
+          cache: gradle
+
+      - name: Make gradlew executable
+        run: chmod +x ./gradlew
+        working-directory: ./backend
+
+      - name: Check for dependency vulnerabilities
+        run: ./gradlew dependencyCheck --daemon
+        working-directory: ./backend
+        continue-on-error: true
+
+  # =====================================================
+  # 4) Docker Build Validation
+  # =====================================================
+  docker_build:
+    runs-on: ubuntu-22.04
+    timeout-minutes: 15
+    name: Docker Build Validation
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build Docker image (no push)
+        uses: docker/build-push-action@v5
+        with:
+          context: ./backend
+          file: ./backend/Dockerfile
+          push: false
+          tags: profroid/backend:ci-build
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+  # =====================================================
+  # 5) Summary Report
+  # =====================================================
+  summary:
+    runs-on: ubuntu-22.04
+    needs: [build_and_test, code_quality, dependency_check, docker_build]
+    if: always()
+    name: Pipeline Summary
+
+    steps:
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+
+      - name: Generate summary
+        run: |
+          echo "## Backend CI Pipeline Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Status" >> $GITHUB_STEP_SUMMARY
+          echo "- Build & Test: ${{ needs.build_and_test.result }}" >> $GITHUB_STEP_SUMMARY
+          echo "- Code Quality: ${{ needs.code_quality.result }}" >> $GITHUB_STEP_SUMMARY
+          echo "- Dependency Check: ${{ needs.dependency_check.result }}" >> $GITHUB_STEP_SUMMARY
+          echo "- Docker Build: ${{ needs.docker_build.result }}" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Artifacts" >> $GITHUB_STEP_SUMMARY
+          echo "- Test Results: Available" >> $GITHUB_STEP_SUMMARY
+          echo "- Coverage Report: Available" >> $GITHUB_STEP_SUMMARY
+          echo "- Quality Reports: Available" >> $GITHUB_STEP_SUMMARY
+
+      - name: Fail pipeline if critical jobs failed
+        if: needs.build_and_test.result == 'failure'
+        run: exit 1
