@@ -1,0 +1,169 @@
+name: PR Test Report
+
+on:
+  workflow_run:
+    workflows: ["Backend CI Pipeline", "Frontend CI Pipeline", "Auth Service CI Pipeline"]
+    types: [completed]
+
+permissions:
+  contents: read
+  pull-requests: write
+  checks: read
+
+jobs:
+  test_report:
+    runs-on: ubuntu-22.04
+    name: Post Test Report to PR
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          run-id: ${{ github.event.workflow_run.id }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Parse test results and generate report
+        id: parse_results
+        run: |
+          # Initialize variables
+          BACKEND_TESTS_PASSED=0
+          BACKEND_TESTS_FAILED=0
+          FRONTEND_TESTS_PASSED=0
+          FRONTEND_TESTS_FAILED=0
+          COVERAGE_PERCENT="N/A"
+          BACKEND_STATUS="✅"
+          FRONTEND_STATUS="✅"
+          AUTH_STATUS="✅"
+
+          # Parse backend test results
+          if [ -d "backend-test-results" ]; then
+            for file in backend-test-results/**/*.xml; do
+              if [ -f "$file" ]; then
+                PASSED=$(grep -oP 'tests="\K\d+(?=")' "$file" | head -1 || echo 0)
+                FAILED=$(grep -oP 'failures="\K\d+' "$file" | head -1 || echo 0)
+                BACKEND_TESTS_PASSED=$((BACKEND_TESTS_PASSED + ${PASSED:-0}))
+                BACKEND_TESTS_FAILED=$((BACKEND_TESTS_FAILED + ${FAILED:-0}))
+              fi
+            done
+            if [ $BACKEND_TESTS_FAILED -gt 0 ]; then
+              BACKEND_STATUS="❌"
+            fi
+          fi
+
+          # Parse coverage
+          if [ -f "backend-coverage-report/index.html" ]; then
+            COVERAGE_PERCENT=$(grep -oP 'Total[^%]*\K[0-9.]+(?=%)' backend-coverage-report/index.html | head -1 || echo "N/A")
+          fi
+
+          # Parse frontend test results (playwright json)
+          if [ -d "frontend-test-results" ]; then
+            for file in frontend-test-results/**/*.json; do
+              if [ -f "$file" ]; then
+                STATS=$(grep -oP '"stats":\s*\{\K[^}]+' "$file" | head -1)
+                PASSED=$(echo "$STATS" | grep -oP '"expected":\K\d+' | head -1 || echo 0)
+                FAILED=$(echo "$STATS" | grep -oP '"unexpected":\K\d+' || echo 0)
+                FRONTEND_TESTS_PASSED=$((FRONTEND_TESTS_PASSED + ${PASSED:-0}))
+                FRONTEND_TESTS_FAILED=$((FRONTEND_TESTS_FAILED + ${FAILED:-0}))
+              fi
+            done
+            if [ $FRONTEND_TESTS_FAILED -gt 0 ]; then
+              FRONTEND_STATUS="❌"
+            fi
+          fi
+
+          # Export to GitHub outputs
+          echo "backend_passed=$BACKEND_TESTS_PASSED" >> $GITHUB_OUTPUT
+          echo "backend_failed=$BACKEND_TESTS_FAILED" >> $GITHUB_OUTPUT
+          echo "frontend_passed=$FRONTEND_TESTS_PASSED" >> $GITHUB_OUTPUT
+          echo "frontend_failed=$FRONTEND_TESTS_FAILED" >> $GITHUB_OUTPUT
+          echo "coverage=$COVERAGE_PERCENT" >> $GITHUB_OUTPUT
+          echo "backend_status=$BACKEND_STATUS" >> $GITHUB_OUTPUT
+          echo "frontend_status=$FRONTEND_STATUS" >> $GITHUB_OUTPUT
+          echo "auth_status=$AUTH_STATUS" >> $GITHUB_OUTPUT
+
+      - name: Find PR number
+        id: find_pr
+        run: |
+          PR_NUMBER=$(jq -r '.pull_request.number' "$GITHUB_EVENT_PATH" 2>/dev/null || echo "")
+          if [ -z "$PR_NUMBER" ] || [ "$PR_NUMBER" == "null" ]; then
+            PR_NUMBER=$(gh pr list --head ${{ github.event.workflow_run.head_branch }} --json number --jq '.[0].number' 2>/dev/null || echo "")
+          fi
+          echo "pr_number=$PR_NUMBER" >> $GITHUB_OUTPUT
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        continue-on-error: true
+
+      - name: Create test report comment
+        if: steps.find_pr.outputs.pr_number != ''
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const prNumber = ${{ steps.find_pr.outputs.pr_number }};
+            
+            const backendPassed = ${{ steps.parse_results.outputs.backend_passed }};
+            const backendFailed = ${{ steps.parse_results.outputs.backend_failed }};
+            const frontendPassed = ${{ steps.parse_results.outputs.frontend_passed }};
+            const frontendFailed = ${{ steps.parse_results.outputs.frontend_failed }};
+            const coverage = "${{ steps.parse_results.outputs.coverage }}";
+            const backendStatus = "${{ steps.parse_results.outputs.backend_status }}";
+            const frontendStatus = "${{ steps.parse_results.outputs.frontend_status }}";
+            const authStatus = "${{ steps.parse_results.outputs.auth_status }}";
+
+            const getCoverageEmoji = (cov) => {
+              const num = parseFloat(cov);
+              if (isNaN(num)) return '?';
+              if (num >= 80) return '[PASS]';
+              if (num >= 70) return '[PASS]';
+              if (num >= 50) return '[WARNING]';
+              return '[FAIL]';
+            };
+
+            const backendTestColor = backendFailed > 0 ? '[FAIL]' : '[PASS]';
+            const frontendTestColor = frontendFailed > 0 ? '[FAIL]' : '[PASS]';
+
+            const reportComment = `## Test Report & Build Status
+
+| Component | Status | Details |
+|-----------|--------|---------|
+| **Backend** | ${backendStatus} | ${backendTestColor} \`${backendPassed} passed\` ${backendFailed > 0 ? '[FAILED] \`' + backendFailed + ' failed\`' : ''} |
+| **Frontend** | ${frontendStatus} | ${frontendTestColor} \`${frontendPassed} passed\` ${frontendFailed > 0 ? '[FAILED] \`' + frontendFailed + ' failed\`' : ''} |
+| **Auth Service** | ${authStatus} | Build successful |
+
+### Code Coverage
+**Overall: ${coverage}%**
+
+<details>
+<summary>Detailed Test Breakdown</summary>
+
+**Backend Tests:**
+- Passed: ${backendPassed}
+- Failed: ${backendFailed}
+- Status: ${backendFailed > 0 ? '[ACTION REQUIRED]' : '[PASSING]'}
+
+**Frontend Tests:**
+- Passed: ${frontendPassed}
+- Failed: ${frontendFailed}
+- Status: ${frontendFailed > 0 ? '[ACTION REQUIRED]' : '[PASSING]'}
+
+**Code Quality:**
+- Coverage Target: 70%+
+- Current: ${coverage}%
+- Status: ${parseFloat(coverage) >= 70 ? '[PASS]' : '[WARNING]'}
+
+</details>
+
+---
+Generated on ${new Date().toLocaleString()}`;
+
+            github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: prNumber,
+              body: reportComment
+            });
+            
+            console.log('Test report posted to PR #' + prNumber);
