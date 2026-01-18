@@ -101,9 +101,7 @@ jobs:
         uses: actions/github-script@v7
         with:
           script: |
-            const fs = require('fs');
             const prNumber = ${{ steps.find_pr.outputs.pr_number }};
-            
             const backendPassed = ${{ steps.parse_results.outputs.backend_passed }};
             const backendFailed = ${{ steps.parse_results.outputs.backend_failed }};
             const frontendPassed = ${{ steps.parse_results.outputs.frontend_passed }};
@@ -112,19 +110,8 @@ jobs:
             const backendStatus = "${{ steps.parse_results.outputs.backend_status }}";
             const frontendStatus = "${{ steps.parse_results.outputs.frontend_status }}";
             const authStatus = "${{ steps.parse_results.outputs.auth_status }}";
-
-            const getCoverageEmoji = (cov) => {
-              const num = parseFloat(cov);
-              if (isNaN(num)) return '?';
-              if (num >= 80) return '[PASS]';
-              if (num >= 70) return '[PASS]';
-              if (num >= 50) return '[WARNING]';
-              return '[FAIL]';
-            };
-
             const backendTestColor = backendFailed > 0 ? '[FAIL]' : '[PASS]';
             const frontendTestColor = frontendFailed > 0 ? '[FAIL]' : '[PASS]';
-
             const reportComment = `## Test Report & Build Status
 
 | Component | Status | Details |
@@ -158,12 +145,9 @@ jobs:
 
 ---
 Generated on ${new Date().toLocaleString()}`;
-
             github.rest.issues.createComment({
               owner: context.repo.owner,
               repo: context.repo.repo,
               issue_number: prNumber,
               body: reportComment
             });
-            
-            console.log('Test report posted to PR #' + prNumber);
