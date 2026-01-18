@@ -105,41 +105,35 @@ jobs:
             const backendStatus = "${{ steps.parse_results.outputs.backend_status }}";
             const frontendStatus = "${{ steps.parse_results.outputs.frontend_status }}";
             const authStatus = "${{ steps.parse_results.outputs.auth_status }}";
-            const backendTestColor = backendFailed > 0 ? '[FAIL]' : '[PASS]';
-            const frontendTestColor = frontendFailed > 0 ? '[FAIL]' : '[PASS]';
-            const reportComment = `## Test Report & Build Status
 
-| Component | Status | Details |
-|-----------|--------|---------|
-| **Backend** | ${backendStatus} | ${backendTestColor} \`${backendPassed} passed\` ${backendFailed > 0 ? '[FAILED] \`' + backendFailed + ' failed\`' : ''} |
-| **Frontend** | ${frontendStatus} | ${frontendTestColor} \`${frontendPassed} passed\` ${frontendFailed > 0 ? '[FAILED] \`' + frontendFailed + ' failed\`' : ''} |
-| **Auth Service** | ${authStatus} | Build successful |
+            const backendTestDetails = backendFailed > 0 
+              ? `[FAIL] ${backendFailed} failed` 
+              : `[PASS] ${backendPassed} passed`;
+            const frontendTestDetails = frontendFailed > 0 
+              ? `[FAIL] ${frontendFailed} failed` 
+              : `[PASS] ${frontendPassed} passed`;
 
-### Code Coverage
-**Overall: ${coverage}%**
+            const reportComment = "## Test Report & Build Status\n\n" +
+              "| Component | Status | Details |\n" +
+              "|-----------|--------|----------|\n" +
+              `| **Backend** | ${backendStatus} | ${backendTestDetails} |\n` +
+              `| **Frontend** | ${frontendStatus} | ${frontendTestDetails} |\n` +
+              `| **Auth Service** | ${authStatus} | Build successful |\n\n` +
+              "### Code Coverage\n" +
+              `**Overall: ${coverage}%**\n\n` +
+              "<details>\n" +
+              "<summary>Detailed Test Breakdown</summary>\n\n" +
+              `**Backend Tests:**\n- Passed: ${backendPassed}\n- Failed: ${backendFailed}\n` +
+              `- Status: ${backendFailed > 0 ? '[ACTION REQUIRED]' : '[PASSING]'}\n\n` +
+              `**Frontend Tests:**\n- Passed: ${frontendPassed}\n- Failed: ${frontendFailed}\n` +
+              `- Status: ${frontendFailed > 0 ? '[ACTION REQUIRED]' : '[PASSING]'}\n\n` +
+              "**Code Quality:**\n" +
+              "- Coverage Target: 70%+\n" +
+              `- Current: ${coverage}%\n` +
+              `- Status: ${parseFloat(coverage) >= 70 ? '[PASS]' : '[WARNING]'}\n\n` +
+              "</details>\n\n" +
+              `---\nGenerated on ${new Date().toLocaleString()}`;
 
-<details>
-<summary>Detailed Test Breakdown</summary>
-
-**Backend Tests:**
-- Passed: ${backendPassed}
-- Failed: ${backendFailed}
-- Status: ${backendFailed > 0 ? '[ACTION REQUIRED]' : '[PASSING]'}
-
-**Frontend Tests:**
-- Passed: ${frontendPassed}
-- Failed: ${frontendFailed}
-- Status: ${frontendFailed > 0 ? '[ACTION REQUIRED]' : '[PASSING]'}
-
-**Code Quality:**
-- Coverage Target: 70%+
-- Current: ${coverage}%
-- Status: ${parseFloat(coverage) >= 70 ? '[PASS]' : '[WARNING]'}
-
-</details>
-
----
-Generated on ${new Date().toLocaleString()}`;
             github.rest.issues.createComment({
               owner: context.repo.owner,
               repo: context.repo.repo,
