@@ -127,17 +127,35 @@ jobs:
         with:
           path: artifacts
 
+      - name: Extract JaCoCo Coverage
+        id: coverage
+        run: |
+          if [ -f "artifacts/backend-coverage-report/index.html" ]; then
+            COVERAGE=$(grep -oP 'Total[^%]*\K[0-9.]+(?=%)' artifacts/backend-coverage-report/index.html | head -1)
+            if [ -z "$COVERAGE" ]; then
+              COVERAGE="N/A"
+            fi
+          else
+            COVERAGE="N/A"
+          fi
+          echo "percentage=$COVERAGE" >> $GITHUB_OUTPUT
+
       - name: Generate summary
         run: |
           echo "## Backend CI Pipeline Summary" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
-          echo "### Status" >> $GITHUB_STEP_SUMMARY
+          echo "### ✅ Status" >> $GITHUB_STEP_SUMMARY
           echo "- Build & Test: ${{ needs.build_and_test.result }}" >> $GITHUB_STEP_SUMMARY
           echo "- Docker Build: ${{ needs.docker_build.result }}" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
-          echo "### Artifacts" >> $GITHUB_STEP_SUMMARY
-          echo "- Test Results: Available" >> $GITHUB_STEP_SUMMARY
-          echo "- Coverage Report: Available" >> $GITHUB_STEP_SUMMARY
+          echo "### 📊 Code Coverage" >> $GITHUB_STEP_SUMMARY
+          echo "- **JaCoCo Overall Coverage: ${{ steps.coverage.outputs.percentage }}%**" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### 📦 Artifacts" >> $GITHUB_STEP_SUMMARY
+          echo "- Test Results: ✅ Available" >> $GITHUB_STEP_SUMMARY
+          echo "- Coverage Report: ✅ Available" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Note:** Coverage report available in artifacts for detailed analysis"
 
       - name: Fail pipeline if critical jobs failed
         if: needs.build_and_test.result == 'failure'
