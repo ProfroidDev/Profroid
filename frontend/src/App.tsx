@@ -4,6 +4,7 @@ import "./App.css";
 import "./i18n/config";
 
 import CustomerListPage from "./pages/Customer/CustomerListPage";
+import CustomerBills from "./pages/Customer/CustomerBills";
 import ServicesPage from "./pages/jobs/ServicesPage";
 import Navigation from "./shared/components/Navigation";
 import Footer from "./shared/components/Footer";
@@ -153,6 +154,14 @@ function AppRoutes(): React.ReactElement {
           }
         />
         <Route path="/my-appointments" element={<MyAppointmentsPage />} />
+        <Route
+          path="/my-bills"
+          element={
+            <ProtectedRoute>
+              <CustomerBills />
+            </ProtectedRoute>
+          }
+        />
         <Route
           path="/my-jobs"
           element={

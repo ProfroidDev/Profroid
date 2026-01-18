@@ -82,6 +82,7 @@ export default function Navigation(): React.ReactElement {
             <>
               <a href="/services">{t("navigation.services")}</a>
               <a href="/my-appointments">{t("navigation.myAppointments")}</a>
+              <a href="/my-bills">{t("navigation.myBills")}</a>
             </>
           )}
 
@@ -225,6 +226,7 @@ export default function Navigation(): React.ReactElement {
             <>
               <a href="/services">{t("navigation.services")}</a>
               <a href="/my-appointments">{t("navigation.myAppointments")}</a>
+              <a href="/my-bills">{t("navigation.myBills")}</a>
             </>
           )}
 
