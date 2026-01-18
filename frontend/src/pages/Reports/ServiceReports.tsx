@@ -1,19 +1,21 @@
 import { useState, useEffect, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Search, Eye, Edit2, FileText } from "lucide-react";
+import { Search, Eye, Edit2, FileText, Download } from "lucide-react";
 import { getAllReports } from "../../features/report/api/getAllReports";
 import ViewReportModal from "../../features/report/components/ViewReportModal";
 import { exportReportPdf } from "../../features/report/api/exportReportPdf";
-import { Download } from "lucide-react";
 import ReportFormModal from "../../features/report/components/ReportFormModal";
 import type { ReportResponseModel } from "../../features/report/models/ReportResponseModel";
+import type { BillResponseModel } from "../../features/report/models/BillResponseModel";
 import type { AppointmentResponseModel } from "../../features/appointment/models/AppointmentResponseModel";
+import { getAllBills } from "../../features/report/api/getAllBills";
 import "./ServiceReports.css";
 
 const ITEMS_PER_PAGE = 15;
 
 const ServiceReports = () => {
   const [reports, setReports] = useState<ReportResponseModel[]>([]);
+  const [bills, setBills] = useState<Map<string, BillResponseModel>>(new Map());
   const [loading, setLoading] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
@@ -36,9 +38,24 @@ const ServiceReports = () => {
     }
   };
 
-  // Fetch reports on mount
+  const loadBills = async () => {
+    try {
+      const data = await getAllBills();
+      // Map bills by report ID for easy lookup
+      const billMap = new Map<string, BillResponseModel>();
+      data.forEach((bill) => {
+        billMap.set(bill.reportId, bill);
+      });
+      setBills(billMap);
+    } catch (error) {
+      console.error("Failed to load bills:", error);
+    }
+  };
+
+  // Fetch reports and bills on mount
   useEffect(() => {
     loadReports();
+    loadBills();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -145,6 +162,18 @@ const ServiceReports = () => {
     }
   };
 
+  const getBillStatusBadge = (reportId: string) => {
+    const bill = bills.get(reportId);
+    if (!bill) {
+      return <span className="bill-status-badge pending">Pending</span>;
+    }
+    return (
+      <span className={`bill-status-badge ${bill.status.toLowerCase()}`}>
+        {bill.status}
+      </span>
+    );
+  };
+
   return (
     <div className="service-reports-page">
       {/* Main Content */}
@@ -185,6 +214,7 @@ const ServiceReports = () => {
                 <th>Technician</th>
                 <th>Date</th>
                 <th className="status-col-narrow-header">Status</th>
+                <th className="status-col-narrow-header">Bill Status</th>
                 <th className="text-right">Total</th>
                 <th className="actions-col">Actions</th>
               </tr>
@@ -192,13 +222,13 @@ const ServiceReports = () => {
             <tbody>
               {loading ? (
                 <tr>
-                  <td colSpan={8} className="empty-state">
+                  <td colSpan={9} className="empty-state">
                     Loading reports...
                   </td>
                 </tr>
               ) : filteredReports.length === 0 ? (
                 <tr>
-                  <td colSpan={8} className="empty-state">
+                  <td colSpan={9} className="empty-state">
                     No reports found. Try adjusting your search.
                   </td>
                 </tr>
@@ -223,6 +253,9 @@ const ServiceReports = () => {
                       <span className={`status-badge ${getStatusColor(report.appointmentStatus)}`}>
                         {report.appointmentStatus}
                       </span>
+                    </td>
+                    <td className="status-col-narrow">
+                      {getBillStatusBadge(report.reportId)}
                     </td>
                     <td className="text-right price-col">{formatCurrency(report.total)}</td>
                     <td className="actions-col">
