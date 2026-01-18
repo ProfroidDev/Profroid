@@ -106,11 +106,11 @@ jobs:
             const frontendStatus = "${{ steps.parse_results.outputs.frontend_status }}";
             const authStatus = "${{ steps.parse_results.outputs.auth_status }}";
 
-            const backendTestDetails = backendFailed > 0 
-              ? `[FAIL] ${backendFailed} failed` 
+            const backendTestDetails = backendFailed > 0
+              ? `[FAIL] ${backendFailed} failed`
               : `[PASS] ${backendPassed} passed`;
-            const frontendTestDetails = frontendFailed > 0 
-              ? `[FAIL] ${frontendFailed} failed` 
+            const frontendTestDetails = frontendFailed > 0
+              ? `[FAIL] ${frontendFailed} failed`
               : `[PASS] ${frontendPassed} passed`;
 
             const reportComment = "## Test Report & Build Status\n\n" +
