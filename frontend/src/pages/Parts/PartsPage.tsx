@@ -37,7 +37,7 @@ export default function PartsPage(): React.ReactElement {
         setParts(data);
       } catch (error) {
         console.error("Error fetching parts:", error);
-        setToast({ message: "Failed to load parts", type: "error" });
+        setToast({ message: t("messages.failedToLoadParts"), type: "error" });
       } finally {
         setLoading(false);
       }
@@ -45,7 +45,7 @@ export default function PartsPage(): React.ReactElement {
 
     load();
     setCurrentPage(1);
-  }, []);
+  }, [t]);
 
   const filteredParts = parts.filter((part) =>
     part.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -107,7 +107,7 @@ export default function PartsPage(): React.ReactElement {
   };
 
   const handlePartAdded = async () => {
-    setToast({ message: "Part added successfully!", type: "success" });
+    setToast({ message: t("messages.partAddedSuccessfully"), type: "success" });
     // Reload parts
     try {
       const data = await getAllParts();
@@ -133,7 +133,7 @@ export default function PartsPage(): React.ReactElement {
   };
 
   const handlePartUpdated = async () => {
-    setToast({ message: "Part updated successfully!", type: "success" });
+    setToast({ message: t("messages.partUpdatedSuccessfully"), type: "success" });
     // Reload parts
     try {
       const data = await getAllParts();
@@ -169,11 +169,11 @@ export default function PartsPage(): React.ReactElement {
     try {
       await deletePart(deleteTarget.partId);
       setParts((prev) => prev.filter((p) => p.partId !== deleteTarget.partId));
-      setToast({ message: "Part deleted successfully!", type: "success" });
+      setToast({ message: t("messages.partDeletedSuccessfully"), type: "success" });
       handleCloseDeleteConfirm();
     } catch (error) {
       console.error("Error deleting part:", error);
-      setDeleteError("Failed to delete part. Please try again.");
+      setDeleteError(t("messages.failedToDeletePart"));
     } finally {
       setDeleteLoading(false);
     }
@@ -203,7 +203,7 @@ export default function PartsPage(): React.ReactElement {
       ) : parts.length === 0 ? (
         <div className="parts-empty">{t('pages.parts.noParts')}</div>
       ) : filteredParts.length === 0 ? (
-        <div className="parts-empty">No parts match your search</div>
+        <div className="parts-empty">{t("pages.parts.partsPage.noPartsMatch")}</div>
       ) : (
         <>
           <div className="parts-grid">
@@ -220,14 +220,14 @@ export default function PartsPage(): React.ReactElement {
                 <h2 className="part-card-title">{part.name}</h2>
                 <div className="part-card-details">
                   <p className="part-id">
-                    <span className="part-label">Part ID:</span>
+                    <span className="part-label">{t("pages.parts.partsPage.partId")}</span>
                     <span className="part-value">{part.partId}</span>
                   </p>
                 </div>
                 <div className="part-card-buttons">
-                  <button className="btn-view-part" onClick={() => handleViewDetails(part)}>View Details</button>
-                  <button className="btn-edit-part" onClick={() => handleOpenEditModal(part)}>Edit</button>
-                  <button className="btn-delete-part" onClick={() => handleOpenDeleteConfirm(part)}>Delete</button>
+                  <button className="btn-view-part" onClick={() => handleViewDetails(part)}>{t("pages.parts.partsPage.viewDetails")}</button>
+                  <button className="btn-edit-part" onClick={() => handleOpenEditModal(part)}>{t("pages.parts.partsPage.edit")}</button>
+                  <button className="btn-delete-part" onClick={() => handleOpenDeleteConfirm(part)}>{t("pages.parts.partsPage.delete")}</button>
                 </div>
               </div>
             </div>

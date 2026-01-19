@@ -1,6 +1,7 @@
 import { useState, useEffect, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Search, Eye, Edit2, FileText, Download } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import { getAllReports } from "../../features/report/api/getAllReports";
 import ViewReportModal from "../../features/report/components/ViewReportModal";
 import { exportReportPdf } from "../../features/report/api/exportReportPdf";
@@ -14,6 +15,7 @@ import "./ServiceReports.css";
 const ITEMS_PER_PAGE = 15;
 
 const ServiceReports = () => {
+  const { t } = useTranslation();
   const [reports, setReports] = useState<ReportResponseModel[]>([]);
   const [bills, setBills] = useState<Map<string, BillResponseModel>>(new Map());
   const [loading, setLoading] = useState(false);
@@ -31,7 +33,7 @@ const ServiceReports = () => {
       const data = await getAllReports();
       setReports(data);
     } catch (error) {
-      showToast("Failed to load reports", "error");
+      showToast(t("messages.failedToLoadReports"), "error");
       console.error(error);
     } finally {
       setLoading(false);
@@ -183,9 +185,9 @@ const ServiceReports = () => {
           <div className="page-title-section">
             <h1 className="page-title">
               <FileText className="title-icon" />
-              Reports
+              {t("pages.serviceReports.title")}
             </h1>
-            <p className="page-subtitle">View and manage all service reports</p>
+            <p className="page-subtitle">{t("pages.serviceReports.subtitle")}</p>
           </div>
         </div>
 
@@ -195,7 +197,7 @@ const ServiceReports = () => {
             <Search size={18} className="search-icon" />
             <input
               type="text"
-              placeholder="Search by customer name, technician, or service..."
+              placeholder={t("pages.serviceReports.searchPlaceholder")}
               value={searchQuery}
               onChange={(e: React.ChangeEvent<HTMLInputElement>) => setSearchQuery(e.target.value)}
               className="search-input"
@@ -208,15 +210,15 @@ const ServiceReports = () => {
           <table className="reports-table">
             <thead>
               <tr>
-                <th className="report-id-col-header">Report ID</th>
-                <th>Customer</th>
-                <th>Service</th>
-                <th>Technician</th>
-                <th>Date</th>
-                <th className="status-col-narrow-header">Status</th>
-                <th className="status-col-narrow-header">Bill Status</th>
-                <th className="text-right">Total</th>
-                <th className="actions-col">Actions</th>
+                <th className="report-id-col-header">{t("pages.serviceReports.table.reportId")}</th>
+                <th>{t("pages.serviceReports.table.customer")}</th>
+                <th>{t("pages.serviceReports.table.service")}</th>
+                <th>{t("pages.appointments.technician")}</th>
+                <th>{t("pages.serviceReports.table.date")}</th>
+                <th className="status-col-narrow-header">{t("pages.serviceReports.table.status")}</th>
+                <th className="status-col-narrow-header">{t("pages.serviceReports.table.billStatus")}</th>
+                <th className="text-right">{t("pages.serviceReports.table.total")}</th>
+                <th className="actions-col">{t("pages.serviceReports.table.actions")}</th>
               </tr>
             </thead>
             <tbody>
@@ -262,7 +264,7 @@ const ServiceReports = () => {
                       <motion.button
                         className="icon-btn"
                         onClick={() => setViewingReport(report)}
-                        title="View Details"
+                        title={t("pages.serviceReports.actions.viewDetails")}
                         whileHover={{ scale: 1.1 }}
                         whileTap={{ scale: 0.95 }}
                       >
@@ -281,12 +283,12 @@ const ServiceReports = () => {
                             link.click();
                             link.remove();
                             window.URL.revokeObjectURL(url);
-                            showToast("Report PDF downloaded", "success");
-                          } catch (e) {
-                            showToast("Failed to download PDF", "error");
+                            showToast(t("messages.reportPDFDownloaded"), "success");
+                          } catch {
+                            showToast(t("messages.failedToDownloadPDF"), "error");
                           }
                         }}
-                        title="Download PDF"
+                        title={t("pages.serviceReports.actions.downloadPdf")}
                         whileHover={{ scale: 1.1 }}
                         whileTap={{ scale: 0.95 }}
                       >
@@ -295,7 +297,7 @@ const ServiceReports = () => {
                       <motion.button
                         className="icon-btn"
                         onClick={() => handleEditReport(report)}
-                        title="Edit Report"
+                        title={t("pages.serviceReports.actions.editReport")}
                         whileHover={{ scale: 1.1 }}
                         whileTap={{ scale: 0.95 }}
                       >
@@ -311,7 +313,7 @@ const ServiceReports = () => {
 
         {/* Stats Footer */}
         <div className="stats-footer">
-          <span>Total Reports: {filteredReports.length}</span>
+          <span>{t("pages.serviceReports.summary.totalReports")}: {filteredReports.length}</span>
         </div>
 
         {/* Pagination Controls */}
@@ -325,7 +327,7 @@ const ServiceReports = () => {
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
               >
-                ← Previous
+                {t("pages.serviceReports.pagination.previous")}
               </motion.button>
 
               <div className="pagination-pages">
@@ -356,11 +358,11 @@ const ServiceReports = () => {
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
               >
-                Next →
+                {t("pages.serviceReports.pagination.next")}
               </motion.button>
             </div>
             <div className="pagination-info">
-              Page {currentPage} of {totalPages} • Showing {paginatedReports.length} of {filteredReports.length} reports
+              {t("pages.serviceReports.pagination.pageInfo", { current: currentPage, total: totalPages })} • {t("pages.serviceReports.pagination.showing", { showing: paginatedReports.length, total: filteredReports.length })}
             </div>
           </>
         )}
