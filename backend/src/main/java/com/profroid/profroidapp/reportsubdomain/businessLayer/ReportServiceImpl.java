@@ -14,6 +14,8 @@ import com.profroid.profroidapp.reportsubdomain.dataAccessLayer.Report;
 import com.profroid.profroidapp.reportsubdomain.dataAccessLayer.ReportIdentifier;
 import com.profroid.profroidapp.reportsubdomain.dataAccessLayer.ReportPart;
 import com.profroid.profroidapp.reportsubdomain.dataAccessLayer.ReportRepository;
+import com.profroid.profroidapp.reportsubdomain.dataAccessLayer.Bill;
+import com.profroid.profroidapp.reportsubdomain.dataAccessLayer.BillRepository;
 import com.profroid.profroidapp.reportsubdomain.mappingLayer.ReportResponseMapper;
 import com.profroid.profroidapp.reportsubdomain.presentationLayer.ReportRequestModel;
 import com.profroid.profroidapp.reportsubdomain.presentationLayer.ReportResponseModel;
@@ -26,6 +28,7 @@ import com.profroid.profroidapp.utils.exceptions.InvalidOperationException;
 import com.profroid.profroidapp.utils.exceptions.ResourceAlreadyExistsException;
 import com.profroid.profroidapp.utils.exceptions.ResourceNotFoundException;
 import com.profroid.profroidapp.utils.generators.ReportPdfGenerator;
+import com.profroid.profroidapp.utils.generators.BillIdGenerator.BillIdGenerator;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -49,6 +52,7 @@ public class ReportServiceImpl implements ReportService {
     private final FileService fileService;
     private final StoredFileRepository storedFileRepository;
     private final ReportPdfGenerator reportPdfGenerator;
+    private final BillRepository billRepository;
 
     // Tax rates
     private static final BigDecimal TPS_RATE = new BigDecimal("0.05"); // 5%
@@ -61,7 +65,8 @@ public class ReportServiceImpl implements ReportService {
                              ReportResponseMapper responseMapper,
                              FileService fileService,
                              StoredFileRepository storedFileRepository,
-                             ReportPdfGenerator reportPdfGenerator) {
+                             ReportPdfGenerator reportPdfGenerator,
+                             BillRepository billRepository) {
         this.reportRepository = reportRepository;
         this.appointmentRepository = appointmentRepository;
         this.employeeRepository = employeeRepository;
@@ -70,6 +75,7 @@ public class ReportServiceImpl implements ReportService {
         this.fileService = fileService;
         this.storedFileRepository = storedFileRepository;
         this.reportPdfGenerator = reportPdfGenerator;
+        this.billRepository = billRepository;
     }
 
     @Override
@@ -143,6 +149,9 @@ public class ReportServiceImpl implements ReportService {
 
         // Save report
         Report savedReport = reportRepository.save(report);
+
+        // Create bill for the report
+        createBillForReport(savedReport, appointment);
 
         // Generate and store PDF after creation
         ReportResponseModel response = responseMapper.toResponseModel(savedReport);
@@ -415,5 +424,26 @@ public class ReportServiceImpl implements ReportService {
 
         logger.error("Access denied: Invalid role or permission check failed - Role: {}, UserId: {}", userRole, userId);
         throw new InvalidOperationException("You don't have permission to access this report");
+    }
+
+    /**
+     * Create a bill for a newly created report
+     */
+    private void createBillForReport(Report report, Appointment appointment) {
+        try {
+            Bill bill = new Bill();
+            bill.setBillId(BillIdGenerator.generateBillId());
+            bill.setReport(report);
+            bill.setCustomer(appointment.getCustomer());
+            bill.setAppointment(appointment);
+            bill.setAmount(report.getTotal());
+            bill.setStatus(Bill.BillStatus.UNPAID);
+
+            billRepository.save(bill);
+            logger.info("Bill created successfully with ID: {} for report: {}", bill.getBillId(), report.getReportIdentifier().getReportId());
+        } catch (Exception e) {
+            logger.error("Error creating bill for report: {}", report.getReportIdentifier().getReportId(), e);
+            // Don't fail report creation if bill creation fails
+        }
     }
 }
