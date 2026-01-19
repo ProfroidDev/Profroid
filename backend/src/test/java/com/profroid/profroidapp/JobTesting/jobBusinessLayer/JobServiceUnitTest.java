@@ -13,15 +13,21 @@ import com.profroid.profroidapp.jobssubdomain.presentationLayer.JobResponseModel
 import com.profroid.profroidapp.utils.exceptions.InvalidIdentifierException;
 import com.profroid.profroidapp.utils.exceptions.InvalidOperationException;
 import com.profroid.profroidapp.utils.exceptions.ResourceNotFoundException;
+import com.profroid.profroidapp.filesubdomain.businessLayer.FileService;
+import com.profroid.profroidapp.filesubdomain.dataAccessLayer.FileCategory;
+import com.profroid.profroidapp.filesubdomain.dataAccessLayer.FileOwnerType;
+import com.profroid.profroidapp.filesubdomain.dataAccessLayer.StoredFile;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
@@ -39,6 +45,9 @@ public class JobServiceUnitTest {
 
     @Mock
     private AppointmentRepository appointmentRepository;
+
+    @Mock
+    private FileService fileService;
 
     @InjectMocks
     private JobServiceImpl jobService;
@@ -594,5 +603,93 @@ public class JobServiceUnitTest {
         verify(appointmentRepository).findAllByJob(existingJob);
         verify(appointmentRepository).findByTechnicianAndDateAndScheduled(any(), any());
         verify(jobRepository, never()).save(any());
+    }
+
+    // ==================== uploadJobImage TESTS ====================
+
+    @Test
+    void uploadJobImage_validJobId_success() {
+        MultipartFile mockFile = mock(MultipartFile.class);
+
+        StoredFile stored = new StoredFile();
+        stored.setId(UUID.randomUUID());
+
+        when(jobRepository.findJobByJobIdentifier_JobId(VALID_JOB_ID)).thenReturn(existingJob);
+        when(fileService.upload(mockFile, FileOwnerType.JOB, VALID_JOB_ID, FileCategory.IMAGE)).thenReturn(stored);
+        when(jobRepository.save(existingJob)).thenReturn(existingJob);
+        when(jobResponseMapper.toResponseModel(existingJob)).thenReturn(existingJobResponse);
+
+        JobResponseModel result = jobService.uploadJobImage(VALID_JOB_ID, mockFile);
+
+        assertNotNull(result);
+        assertEquals(stored.getId(), existingJob.getImageFileId());
+        verify(fileService).upload(mockFile, FileOwnerType.JOB, VALID_JOB_ID, FileCategory.IMAGE);
+        verify(jobRepository).save(existingJob);
+    }
+
+    @Test
+    void uploadJobImage_invalidJobIdLength_throwsInvalidIdentifier() {
+        MultipartFile mockFile = mock(MultipartFile.class);
+
+        assertThrows(InvalidIdentifierException.class, () ->
+                jobService.uploadJobImage(INVALID_JOB_ID, mockFile)
+        );
+        verify(jobRepository, never()).findJobByJobIdentifier_JobId(any());
+    }
+
+    @Test
+    void uploadJobImage_jobNotFound_throwsResourceNotFound() {
+        MultipartFile mockFile = mock(MultipartFile.class);
+
+        when(jobRepository.findJobByJobIdentifier_JobId(VALID_JOB_ID)).thenReturn(null);
+
+        assertThrows(ResourceNotFoundException.class, () ->
+                jobService.uploadJobImage(VALID_JOB_ID, mockFile)
+        );
+        verify(fileService, never()).upload(any(), any(), any(), any());
+    }
+
+    @Test
+    void uploadJobImage_withPreviousImage_deletesPreviousImage() {
+        MultipartFile mockFile = mock(MultipartFile.class);
+
+        UUID previousImageId = UUID.randomUUID();
+        existingJob.setImageFileId(previousImageId);
+
+        StoredFile stored = new StoredFile();
+        stored.setId(UUID.randomUUID());
+
+        when(jobRepository.findJobByJobIdentifier_JobId(VALID_JOB_ID)).thenReturn(existingJob);
+        when(fileService.upload(mockFile, FileOwnerType.JOB, VALID_JOB_ID, FileCategory.IMAGE)).thenReturn(stored);
+        when(jobRepository.save(existingJob)).thenReturn(existingJob);
+        when(jobResponseMapper.toResponseModel(existingJob)).thenReturn(existingJobResponse);
+
+        JobResponseModel result = jobService.uploadJobImage(VALID_JOB_ID, mockFile);
+
+        assertNotNull(result);
+        verify(fileService).delete(previousImageId);
+    }
+
+    @Test
+    void uploadJobImage_previousImageDeleteFails_doesNotThrow() {
+        MultipartFile mockFile = mock(MultipartFile.class);
+
+        UUID previousImageId = UUID.randomUUID();
+        existingJob.setImageFileId(previousImageId);
+
+        StoredFile stored = new StoredFile();
+        stored.setId(UUID.randomUUID());
+
+        when(jobRepository.findJobByJobIdentifier_JobId(VALID_JOB_ID)).thenReturn(existingJob);
+        when(fileService.upload(mockFile, FileOwnerType.JOB, VALID_JOB_ID, FileCategory.IMAGE)).thenReturn(stored);
+        when(jobRepository.save(existingJob)).thenReturn(existingJob);
+        when(jobResponseMapper.toResponseModel(existingJob)).thenReturn(existingJobResponse);
+        doThrow(new RuntimeException("File deletion failed")).when(fileService).delete(previousImageId);
+
+        // Should not throw, operation should complete successfully
+        JobResponseModel result = jobService.uploadJobImage(VALID_JOB_ID, mockFile);
+
+        assertNotNull(result);
+        verify(fileService).upload(mockFile, FileOwnerType.JOB, VALID_JOB_ID, FileCategory.IMAGE);
     }
 }
