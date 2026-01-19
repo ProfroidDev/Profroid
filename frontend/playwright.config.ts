@@ -5,8 +5,10 @@ export default defineConfig({
   fullyParallel: true,
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 2 : 0,
-  workers: process.env.CI ? 1 : undefined,
-  reporter: "html",
+  workers: process.env.CI ? 4 : undefined,
+  reporter: ["html", "json", "junit"],
+  timeout: 30000,
+  expect: { timeout: 5000 },
 
   use: {
     baseURL: "http://localhost:5173",
@@ -14,40 +16,41 @@ export default defineConfig({
     headless: true,
     video: "retain-on-failure",
     screenshot: "only-on-failure",
+    navigationTimeout: 30000,
   },
 
   projects: [
-    // ---------------------
-    // DESKTOP BROWSERS
-    // ---------------------
-    {
-      name: "chromium",
-      use: { ...devices["Desktop Chrome"] },
-    },
-    {
-      name: "firefox",
-      use: { ...devices["Desktop Firefox"] },
-    },
-    {
-      name: "webkit",
-      use: { ...devices["Desktop Safari"] },
-    },
+    // Single browser for CI speed (chromium only)
+    process.env.CI
+      ? {
+          name: "chromium",
+          use: { ...devices["Desktop Chrome"] },
+        }
+      : // Multiple browsers locally
+        ...[
+          {
+            name: "chromium",
+            use: { ...devices["Desktop Chrome"] },
+          },
+          {
+            name: "firefox",
+            use: { ...devices["Desktop Firefox"] },
+          },
+          {
+            name: "webkit",
+            use: { ...devices["Desktop Safari"] },
+          },
 
-    // ---------------------
-    // MOBILE DEVICES
-    // ---------------------
-    {
-      name: "Mobile Chrome",
-      use: { ...devices["Pixel 5"] },
-    },
-    {
-      name: "Mobile Safari",
-      use: { ...devices["iPhone 12"] },
-    },
-
-    // ---------------------
-    // BRANDED BROWSERS
-    // ---------------------
+          {
+            name: "Mobile Chrome",
+            use: { ...devices["Pixel 5"] },
+          },
+          {
+            name: "Mobile Safari",
+            use: { ...devices["iPhone 12"] },
+          },
+        ],
+  ],
     {
       name: "Microsoft Edge",
       use: { ...devices["Desktop Edge"], channel: "msedge" },
