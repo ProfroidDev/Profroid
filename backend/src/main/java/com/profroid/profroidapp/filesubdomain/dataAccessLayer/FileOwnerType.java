@@ -7,5 +7,6 @@ public enum FileOwnerType {
     JOB,
     EMPLOYEE,
     SYSTEM,
-    REPORT
+    REPORT,
+    BILL
 }

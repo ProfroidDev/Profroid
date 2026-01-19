@@ -1,7 +1,8 @@
 import { useState, useEffect, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Search, FileText, DollarSign } from "lucide-react";
+import { Search, FileText, DollarSign, Download } from "lucide-react";
 import { getCustomerBills } from "../../features/report/api/getCustomerBills";
+import { downloadBillPdf } from "../../features/report/api/downloadBillPdf";
 import useAuthStore from "../../features/authentication/store/authStore";
 import type { BillResponseModel } from "../../features/report/models/BillResponseModel";
 import "./CustomerBills.css";
@@ -40,6 +41,24 @@ const CustomerBills = () => {
   const showToast = (text: string, type: "success" | "error") => {
     setToastMessage({ text, type });
     setTimeout(() => setToastMessage(null), 3000);
+  };
+
+  const handleDownloadPdf = async (billId: string) => {
+    try {
+      const blob = await downloadBillPdf(billId);
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = `bill_${billId}.pdf`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
+      showToast("Bill downloaded successfully", "success");
+    } catch (error) {
+      showToast("Failed to download bill", "error");
+      console.error("Download error:", error);
+    }
   };
 
   // Filtered bills based on search and status
@@ -193,6 +212,7 @@ const CustomerBills = () => {
                 <th>Amount</th>
                 <th>Status</th>
                 <th>Created Date</th>
+                <th>Actions</th>
               </tr>
             </thead>
             <tbody>
@@ -218,6 +238,16 @@ const CustomerBills = () => {
                       </span>
                     </td>
                     <td>{formatDate(bill.createdAt)}</td>
+                    <td>
+                      <button
+                        onClick={() => handleDownloadPdf(bill.billId)}
+                        className="bill-download-btn"
+                        title="Download PDF"
+                      >
+                        <Download size={16} />
+                        Download
+                      </button>
+                    </td>
                   </motion.tr>
                 ))}
               </AnimatePresence>

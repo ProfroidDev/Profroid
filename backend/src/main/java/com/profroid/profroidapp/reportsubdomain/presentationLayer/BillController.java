@@ -4,6 +4,7 @@ import com.profroid.profroidapp.reportsubdomain.businessLayer.BillService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
@@ -114,6 +115,34 @@ public class BillController {
         
         List<BillResponseModel> bills = billService.getAllBills(userId, role);
         return ResponseEntity.ok(bills);
+    }
+    
+    /**
+     * Download bill as PDF
+     * Customers can download their own bills, admins can download any bill
+     */
+    @GetMapping(value = "/{billId}/pdf", produces = MediaType.APPLICATION_PDF_VALUE)
+    @PreAuthorize("hasAnyRole('CUSTOMER', 'ADMIN')")
+    public ResponseEntity<byte[]> downloadBillPdf(
+            @PathVariable String billId,
+            Authentication authentication) {
+        
+        String userId = authentication.getName();
+        String role = extractRole(authentication);
+        
+        logger.info("PDF Download Request - UserId: {}, Role: {}, BillId: {}", userId, role, billId);
+        
+        byte[] pdf = billService.getBillPdf(billId, userId, role);
+        String filename = "bill_" + billId + ".pdf";
+        
+        return ResponseEntity.ok()
+                .contentType(MediaType.APPLICATION_PDF)
+                .contentLength(pdf.length)
+                .header("Content-Disposition", "attachment; filename=\"" + filename + "\"")
+                .header("Cache-Control", "no-cache, no-store, must-revalidate")
+                .header("Pragma", "no-cache")
+                .header("Expires", "0")
+                .body(pdf);
     }
     
     /**

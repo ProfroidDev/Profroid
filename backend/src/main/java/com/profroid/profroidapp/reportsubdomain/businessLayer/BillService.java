@@ -35,4 +35,10 @@ public interface BillService {
      * Get bill by appointment ID
      */
     BillResponseModel getBillByAppointmentId(String appointmentId, String userId, String userRole);
+    
+    /**
+     * Generate and download bill PDF
+     * Customers can download their own bills, admins can download any bill
+     */
+    byte[] getBillPdf(String billId, String userId, String userRole);
 }

@@ -6,9 +6,16 @@ import com.profroid.profroidapp.reportsubdomain.mappingLayer.BillResponseMapper;
 import com.profroid.profroidapp.reportsubdomain.presentationLayer.BillResponseModel;
 import com.profroid.profroidapp.utils.exceptions.InvalidOperationException;
 import com.profroid.profroidapp.utils.exceptions.ResourceNotFoundException;
+import com.profroid.profroidapp.utils.generators.BillPdfGenerator;
+import com.profroid.profroidapp.filesubdomain.businessLayer.FileService;
+import com.profroid.profroidapp.filesubdomain.dataAccessLayer.FileCategory;
+import com.profroid.profroidapp.filesubdomain.dataAccessLayer.FileOwnerType;
+import com.profroid.profroidapp.filesubdomain.dataAccessLayer.StoredFile;
+import com.profroid.profroidapp.filesubdomain.dataAccessLayer.StoredFileRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.io.InputStream;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -18,10 +25,20 @@ public class BillServiceImpl implements BillService {
     
     private final BillRepository billRepository;
     private final BillResponseMapper billResponseMapper;
+    private final BillPdfGenerator billPdfGenerator;
+    private final FileService fileService;
+    private final StoredFileRepository storedFileRepository;
     
-    public BillServiceImpl(BillRepository billRepository, BillResponseMapper billResponseMapper) {
+    public BillServiceImpl(BillRepository billRepository,
+                           BillResponseMapper billResponseMapper,
+                           BillPdfGenerator billPdfGenerator,
+                           FileService fileService,
+                           StoredFileRepository storedFileRepository) {
         this.billRepository = billRepository;
         this.billResponseMapper = billResponseMapper;
+        this.billPdfGenerator = billPdfGenerator;
+        this.fileService = fileService;
+        this.storedFileRepository = storedFileRepository;
     }
     
     @Override
@@ -120,5 +137,35 @@ public class BillServiceImpl implements BillService {
         }
         
         return billResponseMapper.toResponseModel(bill);
+    }
+    
+    @Override
+    public byte[] getBillPdf(String billId, String userId, String userRole) {
+        Bill bill = billRepository.findByBillId(billId)
+                .orElseThrow(() -> new ResourceNotFoundException("Bill not found: " + billId));
+        
+        // Permission check: customer can only download their own bills, admin can download any
+        if ("CUSTOMER".equals(userRole) && !userId.equals(bill.getCustomer().getUserId())) {
+            throw new InvalidOperationException("You do not have permission to download this bill");
+        }
+
+        try {
+                List<StoredFile> files = storedFileRepository.findAllByOwnerTypeAndOwnerIdAndCategoryAndDeletedAtIsNull(
+                    FileOwnerType.BILL.name(), billId, FileCategory.BILL.name());
+                StoredFile stored = files.isEmpty() ? null : files.get(0);
+
+            if (stored != null) {
+                try (InputStream is = fileService.openStream(stored)) {
+                    return is.readAllBytes();
+                }
+            }
+
+            StoredFile created = billPdfGenerator.generateAndStoreBillPdf(bill, fileService);
+            try (InputStream is = fileService.openStream(created)) {
+                return is.readAllBytes();
+            }
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to fetch bill PDF", e);
+        }
     }
 }
