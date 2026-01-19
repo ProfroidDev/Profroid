@@ -22,6 +22,13 @@
     "active": "Actif",
     "yes": "Oui",
     "no": "Non",
+    "updatePassword": "Mettre à Jour le Mot de Passe",
+    "profileImage": "Image de Profil",
+    "imageUrl": "URL de l'image",
+    "updateProfileImage": "Mettre à jour l'image de profil",
+    "profileImageUpdated": "Image de profil mise à jour",
+    "selectImage": "Choisir une image",
+    "uploadProfileImage": "Téléverser l'image de profil",
     "creating": "Création en cours...",
     "updating": "Mise à jour en cours...",
     "enterPlaceholder": "Entrez {{field}}",
@@ -281,7 +288,63 @@
       "userId": "ID utilisateur",
       "streetAddress": "Adresse postale",
       "firstName": "Prénom",
-      "lastName": "Nom de famille"
+      "lastName": "Nom de famille",
+      "modal": {
+        "createTitle": "Créer un Client",
+        "editTitle": "Modifier le Client",
+        "personalDetails": "Informations Personnelles",
+        "address": "Adresse",
+        "fields": {
+          "firstName": "Prénom",
+          "lastName": "Nom de Famille",
+          "phoneType": "Type de Téléphone",
+          "phoneNumber": "Numéro de Téléphone",
+          "streetAddress": "Adresse Postale",
+          "city": "Ville",
+          "province": "Province",
+          "country": "Pays",
+          "postalCode": "Code Postal",
+          "userId": "ID Utilisateur"
+        },
+        "placeholders": {
+          "required": "Requis"
+        },
+        "buttons": {
+          "creating": "Création...",
+          "createCustomer": "Créer le Client",
+          "saving": "Enregistrement...",
+          "saveChanges": "Enregistrer les Modifications"
+        }
+      },
+      "bills": {
+        "title": "Factures de Service",
+        "subtitle": "Consultez et gérez vos factures de service",
+        "totalAmount": "Montant Total",
+        "searchPlaceholder": "Rechercher par ID de facture, nom du travail ou date...",
+        "filters": {
+          "all": "TOUS",
+          "unpaid": "IMPAYÉ",
+          "paid": "PAYÉ"
+        },
+        "table": {
+          "billId": "ID Facture",
+          "jobName": "Nom du Travail",
+          "appointmentDate": "Date du Rendez-vous",
+          "status": "Statut",
+          "createdDate": "Date de Création",
+          "actions": "Actions"
+        },
+        "actions": {
+          "downloadPdf": "Télécharger PDF",
+          "viewDetails": "Voir Détails"
+        },
+        "noResults": "Aucune facture trouvée correspondant à vos filtres",
+        "pagination": {
+          "previous": "← Précédent",
+          "next": "Suivant →",
+          "pageInfo": "Page {{current}} de {{total}} • Affichage de {{showing}} sur {{filtered}} factures"
+        }
+      }
     },
     "employees": {
       "title": "Employés",
@@ -355,8 +418,6 @@
       "updateSchedule": "Mettre à jour l'horaire",
       "technicianCannotChange": "Le technicien ne peut pas changer en ADMIN/SUPPORT/VENTES.",
       "nonTechnicianCanSwitch": "ADMIN/SUPPORT/VENTES peuvent basculer entre eux; ne peuvent pas devenir TECHNICIEN.",
-      "phoneNumber": "Numéro de téléphone",
-      "phoneType": "Type",
       "deactivateEmployee": "Désactiver l'employé",
       "deactivateConfirmMessage": "Êtes-vous sûr de vouloir désactiver {{firstName}} {{lastName}}? Ils seront marqués comme inactifs mais peuvent être réactivés à tout moment.",
       "reactivateEmployee": "Réactiver l'employé",
@@ -432,7 +493,97 @@
       "quantity": "Quantité",
       "price": "Prix unitaire",
       "description": "Description",
-      "noParts": "Aucune pièce trouvée"
+      "noParts": "Aucune pièce trouvée",
+      "inventory": {
+        "title": "Inventaire des Pièces",
+        "subtitle": "Gérez vos pièces de réparation et fournitures",
+        "searchPlaceholder": "Rechercher par nom ou fournisseur...",
+        "filterAll": "Tous les Filtres",
+        "categoriesLabel": "--- Catégories ---",
+        "statusLabel": "--- Statut ---",
+        "categories": {
+          "compressors": "Compresseurs",
+          "sensors": "Capteurs",
+          "coils": "Bobines",
+          "motors": "Moteurs",
+          "refrigerants": "Réfrigérants",
+          "electronics": "Électronique",
+          "accessories": "Accessoires"
+        },
+        "status": {
+          "inStock": "En Stock",
+          "lowStock": "Stock Faible",
+          "outOfStock": "Rupture de Stock"
+        },
+        "buttons": {
+          "add": "Ajouter",
+          "export": "Exporter",
+          "pdf": "PDF",
+          "edit": "Modifier"
+        },
+        "export": {
+          "exportAll": "Tout Exporter ({{count}})",
+          "exportSelected": "Exporter la Sélection ({{count}})"
+        },
+        "table": {
+          "name": "Nom",
+          "partId": "ID Pièce",
+          "category": "Catégorie",
+          "qty": "Qté",
+          "price": "Prix",
+          "supplier": "Fournisseur",
+          "status": "Statut",
+          "actions": "Actions"
+        },
+        "loading": "Chargement des pièces...",
+        "noPartsFound": "Aucune pièce trouvée. Essayez d'ajuster vos filtres ou ajoutez une nouvelle pièce.",
+        "stats": {
+          "totalParts": "Total des Pièces",
+          "totalValue": "Valeur Totale",
+          "lowStock": "Stock Faible",
+          "outOfStock": "Rupture de Stock"
+        },
+        "pagination": {
+          "previous": "← Précédent",
+          "next": "Suivant →",
+          "pageInfo": "Page {{current}} de {{total}} • Affichage de {{showing}} sur {{filtered}} pièces"
+        },
+        "modal": {
+          "addTitle": "Ajouter une Nouvelle Pièce",
+          "editTitle": "Modifier la Pièce",
+          "fields": {
+            "name": "Nom",
+            "category": "Catégorie",
+            "quantity": "Quantité",
+            "price": "Prix",
+            "supplier": "Fournisseur",
+            "lowStockThreshold": "Seuil de Stock Faible",
+            "outOfStockThreshold": "Seuil de Rupture de Stock",
+            "highStockThreshold": "Seuil de Stock Élevé"
+          },
+          "placeholders": {
+            "name": "Entrez le nom de la pièce",
+            "quantity": "Entrez la quantité",
+            "price": "Entrez le prix",
+            "supplier": "Entrez le nom du fournisseur"
+          },
+          "buttons": {
+            "cancel": "Annuler",
+            "addPart": "Ajouter la Pièce",
+            "updatePart": "Mettre à Jour la Pièce"
+          },
+          "validation": {
+            "nameRequired": "Le nom de la pièce est obligatoire"
+          }
+        }
+      },
+      "partsPage": {
+        "noPartsMatch": "Aucune pièce ne correspond à votre recherche",
+        "partId": "ID Pièce:",
+        "viewDetails": "Voir Détails",
+        "edit": "Modifier",
+        "delete": "Supprimer"
+      }
     },
     "appointments": {
       "myAppointments": "Mes Rendez-vous",
@@ -577,6 +728,35 @@
       "capacity": "Capacité",
       "features": "Caractéristiques"
     },
+    "serviceReports": {
+      "title": "Rapports de Service",
+      "subtitle": "Consultez et gérez tous les rapports de service",
+      "searchPlaceholder": "Rechercher par nom de client, technicien ou service...",
+      "table": {
+        "reportId": "ID Rapport",
+        "customer": "Client",
+        "service": "Service",
+        "date": "Date",
+        "status": "Statut",
+        "billStatus": "Statut Facture",
+        "total": "Total",
+        "actions": "Actions"
+      },
+      "actions": {
+        "viewDetails": "Voir Détails",
+        "downloadPdf": "Télécharger PDF",
+        "editReport": "Modifier le Rapport"
+      },
+      "summary": {
+        "totalReports": "Rapports Totaux"
+      },
+      "pagination": {
+        "previous": "← Précédent",
+        "next": "Suivant →",
+        "pageInfo": "Page {{current}} de {{total}}",
+        "showing": "Affichage de {{showing}} sur {{total}} rapports"
+      }
+    },
     "profile": {
       "title": "Mon Profil",
       "personalInfo": "Informations personnelles",
@@ -696,7 +876,48 @@
     "confirmDelete": "Êtes-vous sûr de vouloir supprimer cet élément?",
     "confirmLogout": "Êtes-vous sûr de vouloir vous déconnecter?",
     "noDetailsAvailable": "Aucun détail disponible.",
-    "imageUploadFailed": "Échec du téléversement de l'image"
+    "imageUploadFailed": "Échec du téléversement de l'image",
+    "failedToLoadReports": "Échec du chargement des rapports",
+    "failedToLoadBills": "Échec du chargement des factures",
+    "failedToDownloadPDF": "Échec du téléchargement du PDF",
+    "reportPDFDownloaded": "PDF du rapport téléchargé",
+    "billDownloadedSuccessfully": "Facture téléchargée avec succès",
+    "failedToDownloadBill": "Échec du téléchargement de la facture",
+    "failedToLoadParts": "Échec du chargement des pièces",
+    "partAddedSuccessfully": "Pièce ajoutée avec succès!",
+    "partUpdatedSuccessfully": "Pièce mise à jour avec succès!",
+    "partDeletedSuccessfully": "Pièce supprimée avec succès!",
+    "failedToDeletePart": "Échec de la suppression de la pièce. Veuillez réessayer.",
+    "failedToCreatePart": "Échec de la création de la pièce. Veuillez réessayer.",
+    "failedToUpdatePart": "Échec de la mise à jour de la pièce. Veuillez réessayer.",
+    "failedToDeleteImage": "Échec de la suppression de l'image. Veuillez réessayer.",
+    "failedToCreateCustomer": "Échec de la création du client. Réessayez.",
+    "failedToUpdateCustomer": "Échec de la mise à jour du client. Réessayez.",
+    "failedToDeleteCustomer": "Échec de la suppression du client. Veuillez réessayer.",
+    "exportedPartsToCSV": "{{count}} pièces exportées vers CSV",
+    "pdfExportedSuccessfully": "PDF exporté avec succès",
+    "failedToExportPDF": "Échec de l'exportation du PDF",
+    "nameIsRequired": "Le nom est obligatoire",
+    "partAddedSuccessfullyMessage": "Pièce ajoutée avec succès",
+    "failedToAddPart": "Échec de l'ajout de la pièce",
+    "partUpdatedSuccessfullyMessage": "Pièce mise à jour avec succès",
+    "failedToUpdatePartMessage": "Échec de la mise à jour de la pièce",
+    "failedToLoadSchedule": "Échec du chargement de l'horaire",
+    "failedToSaveEmployeeData": "Échec de l'enregistrement des données de l'employé",
+    "failedToSaveCustomerData": "Échec de l'enregistrement des données du client",
+    "failedToCreateCellar": "Échec de la création de la cave",
+    "failedToCreateCellarIntake": "Échec de la création de l'inventaire de cave",
+    "failedToUpdateCellarMessage": "Échec de la mise à jour de la cave",
+    "failedToFetchAppointments": "Échec de la récupération des rendez-vous",
+    "failedToFetchJobs": "Échec de la récupération des emplois",
+    "failedToLoadPartsInventory": "Échec du chargement de l'inventaire des pièces",
+    "failedToSaveReport": "Échec de l'enregistrement du rapport",
+    "failedToAddSchedule": "Échec de l'ajout de l'horaire",
+    "failedToUpdateSchedule": "Échec de la mise à jour de l'horaire",
+    "failedToUpdateScheduleForDay": "Échec de la mise à jour de l'horaire pour ce jour",
+    "failedToSearchUsers": "Échec de la recherche d'utilisateurs. Veuillez réessayer.",
+    "failedToCreateAppointment": "Échec de la création du rendez-vous.",
+    "failedToUpdateAppointment": "Échec de la mise à jour du rendez-vous."
   },
   "error": {
     "schedule": {

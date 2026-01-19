@@ -211,7 +211,7 @@ export default function CustomerListPage(): React.ReactElement {
 
       setCreateModalOpen(false);
     } catch {
-      setCreateError("Failed to create customer. Try again.");
+      setCreateError(t("messages.failedToCreateCustomer"));
     } finally {
       setCreateLoading(false);
     }
@@ -292,7 +292,7 @@ export default function CustomerListPage(): React.ReactElement {
       setEditModalOpen(false);
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
     } catch (err) {
-      setEditError("Failed to update customer. Try again.");
+      setEditError(t("messages.failedToUpdateCustomer"));
     } finally {
       setEditLoading(false);
     }
@@ -318,7 +318,7 @@ export default function CustomerListPage(): React.ReactElement {
 
       closeDelete();
     } catch {
-      setDeleteError("Failed to delete customer. Please try again.");
+      setDeleteError(t("messages.failedToDeleteCustomer"));
     } finally {
       setDeleteLoading(false);
     }

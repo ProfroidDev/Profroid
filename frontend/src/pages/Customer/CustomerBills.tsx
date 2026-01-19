@@ -1,6 +1,7 @@
 import { useState, useEffect, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Search, FileText, DollarSign, Download } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import { getCustomerBills } from "../../features/report/api/getCustomerBills";
 import { downloadBillPdf } from "../../features/report/api/downloadBillPdf";
 import useAuthStore from "../../features/authentication/store/authStore";
@@ -10,6 +11,7 @@ import "./CustomerBills.css";
 const ITEMS_PER_PAGE = 10;
 
 const CustomerBills = () => {
+  const { t } = useTranslation();
   const { customerData } = useAuthStore();
   const [bills, setBills] = useState<BillResponseModel[]>([]);
   const [loading, setLoading] = useState(false);
@@ -26,7 +28,7 @@ const CustomerBills = () => {
       const data = await getCustomerBills(customerData.customerId);
       setBills(data);
     } catch (error) {
-      showToast("Failed to load bills", "error");
+      showToast(t("messages.failedToLoadBills"), "error");
       console.error(error);
     } finally {
       setLoading(false);
@@ -54,9 +56,9 @@ const CustomerBills = () => {
       link.click();
       document.body.removeChild(link);
       window.URL.revokeObjectURL(url);
-      showToast("Bill downloaded successfully", "success");
+      showToast(t("messages.billDownloadedSuccessfully"), "success");
     } catch (error) {
-      showToast("Failed to download bill", "error");
+      showToast(t("messages.failedToDownloadBill"), "error");
       console.error("Download error:", error);
     }
   };
@@ -121,8 +123,8 @@ const CustomerBills = () => {
     <div className="customer-bills-container">
       <div className="bills-header">
         <div className="header-content">
-          <h1>My Bills</h1>
-          <p className="subtitle">View and manage your service bills</p>
+          <h1>{t("pages.customers.bills.title")}</h1>
+          <p className="subtitle">{t("pages.customers.bills.subtitle")}</p>
         </div>
 
         <div className="summary-cards">
@@ -131,7 +133,7 @@ const CustomerBills = () => {
               <DollarSign size={24} />
             </div>
             <div className="card-content">
-              <div className="card-label">Total Amount</div>
+              <div className="card-label">{t("pages.customers.bills.totalAmount")}</div>
               <div className="card-value">{formatCurrency(calculateTotalAmount())}</div>
             </div>
           </motion.div>
@@ -154,7 +156,7 @@ const CustomerBills = () => {
           <Search size={18} className="search-icon" />
           <input
             type="text"
-            placeholder="Search by bill ID, job name, or date..."
+            placeholder={t("pages.customers.bills.searchPlaceholder")}
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             className="search-input"
@@ -166,19 +168,19 @@ const CustomerBills = () => {
             className={`filter-btn ${filterStatus === "ALL" ? "active" : ""}`}
             onClick={() => setFilterStatus("ALL")}
           >
-            All Bills
+            {t("pages.customers.bills.filters.all")}
           </button>
           <button
             className={`filter-btn ${filterStatus === "UNPAID" ? "active" : ""}`}
             onClick={() => setFilterStatus("UNPAID")}
           >
-            Unpaid
+            {t("pages.customers.bills.filters.unpaid")}
           </button>
           <button
             className={`filter-btn ${filterStatus === "PAID" ? "active" : ""}`}
             onClick={() => setFilterStatus("PAID")}
           >
-            Paid
+            {t("pages.customers.bills.filters.paid")}
           </button>
         </div>
       </div>
@@ -191,7 +193,7 @@ const CustomerBills = () => {
             transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
             className="spinner"
           />
-          <p>Loading bills...</p>
+          <p>{t("common.loading")}</p>
         </div>
       )}
 
@@ -206,13 +208,13 @@ const CustomerBills = () => {
           <table className="bills-table">
             <thead>
               <tr>
-                <th>Bill ID</th>
-                <th>Job Name</th>
-                <th>Appointment Date</th>
+                <th>{t("pages.customers.bills.table.billId")}</th>
+                <th>{t("pages.customers.bills.table.jobName")}</th>
+                <th>{t("pages.customers.bills.table.appointmentDate")}</th>
                 <th>Amount</th>
-                <th>Status</th>
-                <th>Created Date</th>
-                <th>Actions</th>
+                <th>{t("pages.customers.bills.table.status")}</th>
+                <th>{t("pages.customers.bills.table.createdDate")}</th>
+                <th>{t("pages.customers.bills.table.actions")}</th>
               </tr>
             </thead>
             <tbody>
@@ -242,10 +244,10 @@ const CustomerBills = () => {
                       <button
                         onClick={() => handleDownloadPdf(bill.billId)}
                         className="bill-download-btn"
-                        title="Download PDF"
+                        title={t("pages.customers.bills.actions.downloadPdf")}
                       >
                         <Download size={16} />
-                        Download
+                        {t("common.download")}
                       </button>
                     </td>
                   </motion.tr>
@@ -264,7 +266,7 @@ const CustomerBills = () => {
           className="empty-state"
         >
           <FileText size={48} className="empty-icon" />
-          <h3>No bills found</h3>
+          <h3>{t("pages.customers.bills.noResults")}</h3>
           <p>
             {bills.length === 0
               ? "You don't have any bills yet. Bills will appear here once your service reports are created."
@@ -281,17 +283,17 @@ const CustomerBills = () => {
             onClick={() => setCurrentPage(currentPage - 1)}
             className="pagination-btn"
           >
-            Previous
+            {t("pages.customers.bills.pagination.previous")}
           </button>
           <div className="pagination-info">
-            Page {currentPage} of {totalPages}
+            {t("pages.customers.bills.pagination.pageInfo", { current: currentPage, total: totalPages, showing: paginatedBills.length, filtered: filteredBills.length })}
           </div>
           <button
             disabled={currentPage === totalPages}
             onClick={() => setCurrentPage(currentPage + 1)}
             className="pagination-btn"
           >
-            Next
+            {t("pages.customers.bills.pagination.next")}
           </button>
         </div>
       )}

@@ -288,7 +288,63 @@
       "userId": "User ID",
       "streetAddress": "Street Address",
       "firstName": "First Name",
-      "lastName": "Last Name"
+      "lastName": "Last Name",
+      "modal": {
+        "createTitle": "Create Customer",
+        "editTitle": "Edit Customer",
+        "personalDetails": "Personal Details",
+        "address": "Address",
+        "fields": {
+          "firstName": "First Name",
+          "lastName": "Last Name",
+          "phoneType": "Phone Type",
+          "phoneNumber": "Phone Number",
+          "streetAddress": "Street Address",
+          "city": "City",
+          "province": "Province",
+          "country": "Country",
+          "postalCode": "Postal Code",
+          "userId": "User ID"
+        },
+        "placeholders": {
+          "required": "Required"
+        },
+        "buttons": {
+          "creating": "Creating...",
+          "createCustomer": "Create Customer",
+          "saving": "Saving...",
+          "saveChanges": "Save Changes"
+        }
+      },
+      "bills": {
+        "title": "Service Bills",
+        "subtitle": "View and manage your service bills",
+        "totalAmount": "Total Amount",
+        "searchPlaceholder": "Search by bill ID, job name, or date...",
+        "filters": {
+          "all": "ALL",
+          "unpaid": "UNPAID",
+          "paid": "PAID"
+        },
+        "table": {
+          "billId": "Bill ID",
+          "jobName": "Job Name",
+          "appointmentDate": "Appointment Date",
+          "status": "Status",
+          "createdDate": "Created Date",
+          "actions": "Actions"
+        },
+        "actions": {
+          "downloadPdf": "Download PDF",
+          "viewDetails": "View Details"
+        },
+        "noResults": "No bills found matching your filters",
+        "pagination": {
+          "previous": "← Previous",
+          "next": "Next →",
+          "pageInfo": "Page {{current}} of {{total}} • Showing {{showing}} of {{filtered}} bills"
+        }
+      }
     },
     "employees": {
       "title": "Employees",
@@ -437,7 +493,97 @@
       "quantity": "Quantity",
       "price": "Unit Price",
       "description": "Description",
-      "noParts": "No parts found"
+      "noParts": "No parts found",
+      "inventory": {
+        "title": "Parts Inventory",
+        "subtitle": "Manage your repair parts and supplies",
+        "searchPlaceholder": "Search parts by name or supplier...",
+        "filterAll": "All Filters",
+        "categoriesLabel": "--- Categories ---",
+        "statusLabel": "--- Status ---",
+        "categories": {
+          "compressors": "Compressors",
+          "sensors": "Sensors",
+          "coils": "Coils",
+          "motors": "Motors",
+          "refrigerants": "Refrigerants",
+          "electronics": "Electronics",
+          "accessories": "Accessories"
+        },
+        "status": {
+          "inStock": "In Stock",
+          "lowStock": "Low Stock",
+          "outOfStock": "Out of Stock"
+        },
+        "buttons": {
+          "add": "Add",
+          "export": "Export",
+          "pdf": "PDF",
+          "edit": "Edit"
+        },
+        "export": {
+          "exportAll": "Export All ({{count}})",
+          "exportSelected": "Export Selected ({{count}})"
+        },
+        "table": {
+          "name": "Name",
+          "partId": "Part ID",
+          "category": "Category",
+          "qty": "Qty",
+          "price": "Price",
+          "supplier": "Supplier",
+          "status": "Status",
+          "actions": "Actions"
+        },
+        "loading": "Loading parts...",
+        "noPartsFound": "No parts found. Try adjusting your filters or add a new part.",
+        "stats": {
+          "totalParts": "Total Parts",
+          "totalValue": "Total Value",
+          "lowStock": "Low Stock",
+          "outOfStock": "Out of Stock"
+        },
+        "pagination": {
+          "previous": "← Previous",
+          "next": "Next →",
+          "pageInfo": "Page {{current}} of {{total}} • Showing {{showing}} of {{filtered}} parts"
+        },
+        "modal": {
+          "addTitle": "Add New Part",
+          "editTitle": "Edit Part",
+          "fields": {
+            "name": "Name",
+            "category": "Category",
+            "quantity": "Quantity",
+            "price": "Price",
+            "supplier": "Supplier",
+            "lowStockThreshold": "Low Stock Threshold",
+            "outOfStockThreshold": "Out of Stock Threshold",
+            "highStockThreshold": "High Stock Threshold"
+          },
+          "placeholders": {
+            "name": "Enter part name",
+            "quantity": "Enter quantity",
+            "price": "Enter price",
+            "supplier": "Enter supplier name"
+          },
+          "buttons": {
+            "cancel": "Cancel",
+            "addPart": "Add Part",
+            "updatePart": "Update Part"
+          },
+          "validation": {
+            "nameRequired": "Part name is required"
+          }
+        }
+      },
+      "partsPage": {
+        "noPartsMatch": "No parts match your search",
+        "partId": "Part ID:",
+        "viewDetails": "View Details",
+        "edit": "Edit",
+        "delete": "Delete"
+      }
     },
     "appointments": {
       "myAppointments": "My Appointments",
@@ -582,6 +728,35 @@
       "capacity": "Capacity",
       "features": "Features"
     },
+    "serviceReports": {
+      "title": "Service Reports",
+      "subtitle": "View and manage all service reports",
+      "searchPlaceholder": "Search by customer name, technician, or service...",
+      "table": {
+        "reportId": "Report ID",
+        "customer": "Customer",
+        "service": "Service",
+        "date": "Date",
+        "status": "Status",
+        "billStatus": "Bill Status",
+        "total": "Total",
+        "actions": "Actions"
+      },
+      "actions": {
+        "viewDetails": "View Details",
+        "downloadPdf": "Download PDF",
+        "editReport": "Edit Report"
+      },
+      "summary": {
+        "totalReports": "Total Reports"
+      },
+      "pagination": {
+        "previous": "← Previous",
+        "next": "Next →",
+        "pageInfo": "Page {{current}} of {{total}}",
+        "showing": "Showing {{showing}} of {{total}} reports"
+      }
+    },
     "profile": {
       "title": "My Profile",
       "personalInfo": "Personal Information",
@@ -696,7 +871,48 @@
     "confirmDelete": "Are you sure you want to delete this item?",
     "confirmLogout": "Are you sure you want to logout?",
     "noDetailsAvailable": "No details available.",
-    "imageUploadFailed": "Image upload failed"
+    "imageUploadFailed": "Image upload failed",
+    "failedToLoadReports": "Failed to load reports",
+    "failedToLoadBills": "Failed to load bills",
+    "failedToDownloadPDF": "Failed to download PDF",
+    "reportPDFDownloaded": "Report PDF downloaded",
+    "billDownloadedSuccessfully": "Bill downloaded successfully",
+    "failedToDownloadBill": "Failed to download bill",
+    "failedToLoadParts": "Failed to load parts",
+    "partAddedSuccessfully": "Part added successfully!",
+    "partUpdatedSuccessfully": "Part updated successfully!",
+    "partDeletedSuccessfully": "Part deleted successfully!",
+    "failedToDeletePart": "Failed to delete part. Please try again.",
+    "failedToCreatePart": "Failed to create part. Please try again.",
+    "failedToUpdatePart": "Failed to update part. Please try again.",
+    "failedToDeleteImage": "Failed to delete image. Please try again.",
+    "failedToCreateCustomer": "Failed to create customer. Try again.",
+    "failedToUpdateCustomer": "Failed to update customer. Try again.",
+    "failedToDeleteCustomer": "Failed to delete customer. Please try again.",
+    "exportedPartsToCSV": "Exported {{count}} parts to CSV",
+    "pdfExportedSuccessfully": "PDF exported successfully",
+    "failedToExportPDF": "Failed to export PDF",
+    "nameIsRequired": "Name is required",
+    "partAddedSuccessfullyMessage": "Part added successfully",
+    "failedToAddPart": "Failed to add part",
+    "partUpdatedSuccessfullyMessage": "Part updated successfully",
+    "failedToUpdatePartMessage": "Failed to update part",
+    "failedToLoadSchedule": "Failed to load schedule",
+    "failedToSaveEmployeeData": "Failed to save employee data",
+    "failedToSaveCustomerData": "Failed to save customer data",
+    "failedToCreateCellar": "Failed to create cellar",
+    "failedToCreateCellarIntake": "Failed to create cellar intake",
+    "failedToUpdateCellarMessage": "Failed to update cellar",
+    "failedToFetchAppointments": "Failed to fetch appointments",
+    "failedToFetchJobs": "Failed to fetch jobs",
+    "failedToLoadPartsInventory": "Failed to load parts inventory",
+    "failedToSaveReport": "Failed to save report",
+    "failedToAddSchedule": "Failed to add schedule",
+    "failedToUpdateSchedule": "Failed to update schedule",
+    "failedToUpdateScheduleForDay": "Failed to update schedule for this day",
+    "failedToSearchUsers": "Failed to search users. Please try again.",
+    "failedToCreateAppointment": "Failed to create appointment.",
+    "failedToUpdateAppointment": "Failed to update appointment."
   },
   "error": {
     "schedule": {
