@@ -479,12 +479,65 @@ public class EmployeeServiceUnitTest {
     // [Employee-Service][Unit Test][Negative] Reactivate already active employee -> throws InvalidOperationException
     @Test
     void reactivateEmployee_alreadyActive_throwsInvalidOperation() {
-    when(employeeRepository.findEmployeeByEmployeeIdentifier_EmployeeId(VALID_EMPLOYEE_ID))
-        .thenReturn(existingEmployee);
-    assertThrows(InvalidOperationException.class,
-        () -> employeeService.reactivateEmployee(VALID_EMPLOYEE_ID));
-    verify(employeeRepository).findEmployeeByEmployeeIdentifier_EmployeeId(VALID_EMPLOYEE_ID);
-    verify(employeeRepository, never()).save(any());
+        when(employeeRepository.findEmployeeByEmployeeIdentifier_EmployeeId(VALID_EMPLOYEE_ID))
+                .thenReturn(existingEmployee);
+        assertThrows(InvalidOperationException.class,
+                () -> employeeService.reactivateEmployee(VALID_EMPLOYEE_ID));
+        verify(employeeRepository).findEmployeeByEmployeeIdentifier_EmployeeId(VALID_EMPLOYEE_ID);
+        verify(employeeRepository, never()).save(any());
+    }
+
+    // ==================== getEmployeeByUserId TESTS ====================
+
+    @Test
+    void getEmployeeByUserId_valid_returnsEmployee() {
+        Employee employee = new Employee();
+        employee.setUserId("user-123");
+        employee.setEmployeeIdentifier(new EmployeeIdentifier(VALID_EMPLOYEE_ID));
+
+        EmployeeResponseModel response = EmployeeResponseModel.builder()
+                .employeeIdentifier(new EmployeeIdentifier(VALID_EMPLOYEE_ID))
+                .userId("user-123")
+                .build();
+
+        when(employeeRepository.findEmployeeByUserId("user-123")).thenReturn(employee);
+        when(employeeResponseMapper.toResponseModel(employee)).thenReturn(response);
+
+        EmployeeResponseModel result = employeeService.getEmployeeByUserId("user-123");
+
+        assertNotNull(result);
+        assertEquals("user-123", result.getUserId());
+        verify(employeeRepository).findEmployeeByUserId("user-123");
+    }
+
+    @Test
+    void getEmployeeByUserId_nullUserId_throwsInvalidIdentifier() {
+        assertThrows(InvalidIdentifierException.class,
+                () -> employeeService.getEmployeeByUserId(null));
+        verify(employeeRepository, never()).findEmployeeByUserId(anyString());
+    }
+
+    @Test
+    void getEmployeeByUserId_emptyUserId_throwsInvalidIdentifier() {
+        assertThrows(InvalidIdentifierException.class,
+                () -> employeeService.getEmployeeByUserId(""));
+        verify(employeeRepository, never()).findEmployeeByUserId(anyString());
+    }
+
+    @Test
+    void getEmployeeByUserId_blankUserId_throwsInvalidIdentifier() {
+        assertThrows(InvalidIdentifierException.class,
+                () -> employeeService.getEmployeeByUserId("   "));
+        verify(employeeRepository, never()).findEmployeeByUserId(anyString());
+    }
+
+    @Test
+    void getEmployeeByUserId_notFound_throwsResourceNotFound() {
+        when(employeeRepository.findEmployeeByUserId("user-not-exists")).thenReturn(null);
+
+        assertThrows(ResourceNotFoundException.class,
+                () -> employeeService.getEmployeeByUserId("user-not-exists"));
+        verify(employeeRepository).findEmployeeByUserId("user-not-exists");
     }
 
 }
