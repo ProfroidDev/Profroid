@@ -35,8 +35,8 @@ app.get("/health", (req: Request, res: Response) => {
   res.json({ status: "ok", timestamp: new Date().toISOString() });
 });
 
-// Custom auth routes
-app.use("/auth", authRoutes);
+// Custom auth routes - mount at / since DigitalOcean routes /auth/* to this service
+app.use("/", authRoutes);
 
 // 404 handler
 app.use((req: Request, res: Response) => {
