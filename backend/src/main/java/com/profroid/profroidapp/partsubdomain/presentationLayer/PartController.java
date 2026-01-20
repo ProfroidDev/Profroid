@@ -39,8 +39,7 @@ public class PartController {
         PartResponseModel responseModel = partService.createPart(requestModel);
         return ResponseEntity.status(HttpStatus.CREATED).body(responseModel);
     }
-reAuthorize("hasRole('ADMIN')")
-    @P
+    @PreAuthorize("hasRole('ADMIN')")
     @PostMapping(value = "/with-image", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<PartResponseModel> createPartWithImage(
             @RequestPart("part") @Valid PartRequestModel requestModel,
@@ -48,8 +47,7 @@ reAuthorize("hasRole('ADMIN')")
         PartResponseModel responseModel = partService.createPartWithImage(requestModel, file);
         return ResponseEntity.status(HttpStatus.CREATED).body(responseModel);
     }
-reAuthorize("hasRole('ADMIN')")
-    @P
+    @PreAuthorize("hasRole('ADMIN')")
     @PutMapping("/{partId}")
     public ResponseEntity<PartResponseModel> updatePart(
             @PathVariable String partId,
@@ -57,8 +55,7 @@ reAuthorize("hasRole('ADMIN')")
         PartResponseModel responseModel = partService.updatePart(partId, requestModel);
         return ResponseEntity.ok(responseModel);
     }
-reAuthorize("hasRole('ADMIN')")
-    @P
+    @PreAuthorize("hasRole('ADMIN')")
     @PutMapping(value = "/{partId}/image", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<PartResponseModel> uploadPartImage(
             @PathVariable String partId,
@@ -66,8 +63,7 @@ reAuthorize("hasRole('ADMIN')")
         PartResponseModel responseModel = partService.uploadPartImage(partId, file);
         return ResponseEntity.ok(responseModel);
     }
-PreAuthorize("hasRole('ADMIN')")
-    @
+    @PreAuthorize("hasRole('ADMIN')")
     @DeleteMapping("/{partId}")
     public ResponseEntity<Void> deletePart(@PathVariable String partId) {
         partService.deletePart(partId);

@@ -42,22 +42,19 @@ public class JobController {
     public ResponseEntity<JobResponseModel> updateJob(@PathVariable String jobId, @Valid @RequestBody JobRequestModel requestModel){
         return ResponseEntity.ok(jobService.updateJob(jobId, requestModel));
     }
-PreAuthorize("hasRole('ADMIN')")
-    @
+    @PreAuthorize("hasRole('ADMIN')")
     @DeleteMapping("/{jobId}/deactivate")
     public ResponseEntity<JobResponseModel> deactivateJob(@PathVariable String jobId){
         JobResponseModel deactivated = jobService.deactivateJob(jobId);
         return ResponseEntity.status(HttpStatus.OK).body(deactivated);
     }
-reAuthorize("hasRole('ADMIN')")
-    @P
+    @PreAuthorize("hasRole('ADMIN')")
     @PatchMapping("/{jobId}/reactivate")
     public ResponseEntity<JobResponseModel> reactivateJob(@PathVariable String jobId){
         JobResponseModel reactivated = jobService.reactivateJob(jobId);
         return ResponseEntity.status(HttpStatus.OK).body(reactivated);
     }
-reAuthorize("hasRole('ADMIN')")
-    @P
+    @PreAuthorize("hasRole('ADMIN')")
     @PutMapping(value = "/{jobId}/image", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<JobResponseModel> uploadJobImage(
             @PathVariable String jobId,

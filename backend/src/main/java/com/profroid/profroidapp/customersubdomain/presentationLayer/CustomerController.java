@@ -76,16 +76,14 @@ public class CustomerController {
 
         return ResponseEntity.ok(responseModel);
     }
-reAuthorize("hasRole('ADMIN')")
-    @P
+    @PreAuthorize("hasRole('ADMIN')")
     @PutMapping("/{customerId}")
     public ResponseEntity<CustomerResponseModel> updateCustomer(@PathVariable String customerId,
                                                                 @Valid @RequestBody CustomerRequestModel requestModel) {
         CustomerResponseModel updatedCustomer = customerService.updateCustomer(customerId, requestModel);
         return ResponseEntity.ok(updatedCustomer);
     }
-PreAuthorize("hasRole('ADMIN')")
-    @
+    @PreAuthorize("hasRole('ADMIN')")
     @DeleteMapping("/{customerId}")
     public ResponseEntity<Void> deleteCustomer(@PathVariable String customerId) {
         customerService.deleteCustomer(customerId);
