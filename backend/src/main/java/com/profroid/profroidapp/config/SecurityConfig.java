@@ -39,13 +39,13 @@ public class SecurityConfig {
                 )
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/h2-console/**").permitAll()
-                        .requestMatchers("/api/auth/**").permitAll()  // Auth endpoints public
-                        .requestMatchers(HttpMethod.POST, "/api/v1/customers").permitAll()  // Customer creation from auth service
-                        .requestMatchers(HttpMethod.GET, "/api/v1/jobs").permitAll() // Jobs list is public
-                        .requestMatchers(HttpMethod.GET, "/api/v1/parts").permitAll() // Temporarily allow parts for testing
-                        .requestMatchers(HttpMethod.GET, "/api/v1/files/**").permitAll() // allow file downloads for images
-                        .requestMatchers(HttpMethod.GET, "/api/v1/parts/export/pdf").permitAll() // allow PDF export
-                        .requestMatchers(HttpMethod.GET, "/api/v1/reports/*/pdf").permitAll() // allow report PDF download
+                        .requestMatchers("/auth/**").permitAll()  // Auth endpoints public
+                        .requestMatchers(HttpMethod.POST, "/v1/customers").permitAll()  // Customer creation from auth service
+                        .requestMatchers(HttpMethod.GET, "/v1/jobs").permitAll() // Jobs list is public
+                        .requestMatchers(HttpMethod.GET, "/v1/parts").permitAll() // Temporarily allow parts for testing
+                        .requestMatchers(HttpMethod.GET, "/v1/files/**").permitAll() // allow file downloads for images
+                        .requestMatchers(HttpMethod.GET, "/v1/parts/export/pdf").permitAll() // allow PDF export
+                        .requestMatchers(HttpMethod.GET, "/v1/reports/*/pdf").permitAll() // allow report PDF download
                         // All APIs require authentication for authenticated endpoints
                         .anyRequest().authenticated()  // All other APIs require authentication
                 )
