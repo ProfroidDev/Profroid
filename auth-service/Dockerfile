@@ -27,5 +27,9 @@ RUN npm run build
 # Expose port
 EXPOSE 3001
 
-# Run migrations, seed database, and start application
-CMD ["sh", "-c", "npx prisma migrate deploy && npm run seed && npm start"]
+# Copy entrypoint script
+COPY docker-entrypoint.sh ./
+RUN chmod +x docker-entrypoint.sh
+
+# Run migrations/seed unless skipped, then start application
+CMD ["./docker-entrypoint.sh"]
