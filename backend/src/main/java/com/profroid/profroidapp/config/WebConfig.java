@@ -13,7 +13,7 @@ public class WebConfig {
         return new WebMvcConfigurer() {
             @Override
             public void addCorsMappings(CorsRegistry registry) {
-                registry.addMapping("/api/**")                  // restrict to API endpoints
+                registry.addMapping("/**")                  // Map all endpoints (context path strips /api)
                         .allowedOrigins("http://localhost:5173", "http://localhost:3000", "profroid-app-bjodh.ondigitalocean.app")
                         .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS","PATCH")
                         .allowedHeaders("*")
