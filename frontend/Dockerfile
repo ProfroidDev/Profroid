@@ -13,8 +13,8 @@ FROM nginx:alpine
 # Remove default nginx config
 RUN rm /etc/nginx/conf.d/default.conf
 
-# Install envsubst for template substitution
-RUN apk add --no-cache bash
+# Install gettext (provides envsubst)
+RUN apk add --no-cache gettext
 
 # Add our custom nginx config template
 COPY nginx.conf /etc/nginx/conf.d/default.conf.template
@@ -24,8 +24,8 @@ COPY --from=build /app/dist /usr/share/nginx/html
 
 EXPOSE 3000
 
-# Create entrypoint script using printf to avoid issues with echo
-RUN printf '#!/bin/bash\nenvsubst < /etc/nginx/conf.d/default.conf.template > /etc/nginx/conf.d/default.conf\nnginx -g "daemon off;"\n' > /docker-entrypoint.sh && \
+# Create entrypoint script
+RUN printf '#!/bin/sh\nset -e\nenvsubst "$$AUTH_SERVICE_URL:$$API_SERVICE_URL" < /etc/nginx/conf.d/default.conf.template > /etc/nginx/conf.d/default.conf\nexec nginx -g "daemon off;"\n' > /docker-entrypoint.sh && \
     chmod +x /docker-entrypoint.sh
 
 CMD ["/docker-entrypoint.sh"]
