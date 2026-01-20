@@ -29,7 +29,7 @@ import java.util.List;
 @Component
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
-    @Value("${jwt.secret:Qt0K6UmrLyz5f4EfphuWm2xBBOY7yaaV}")
+    @Value("${jwt.secret}")
     private String jwtSecret;
 
     @Override
