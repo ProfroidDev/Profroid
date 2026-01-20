@@ -24,10 +24,8 @@ COPY --from=build /app/dist /usr/share/nginx/html
 
 EXPOSE 3000
 
-# Create entrypoint script to substitute environment variables
-RUN echo '#!/bin/bash\n\
-envsubst < /etc/nginx/conf.d/default.conf.template > /etc/nginx/conf.d/default.conf && \
-nginx -g "daemon off;"' > /docker-entrypoint.sh && \
-chmod +x /docker-entrypoint.sh
+# Create entrypoint script using printf to avoid issues with echo
+RUN printf '#!/bin/bash\nenvsubst < /etc/nginx/conf.d/default.conf.template > /etc/nginx/conf.d/default.conf\nnginx -g "daemon off;"\n' > /docker-entrypoint.sh && \
+    chmod +x /docker-entrypoint.sh
 
-ENTRYPOINT ["/docker-entrypoint.sh"]
+CMD ["/docker-entrypoint.sh"]
