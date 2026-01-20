@@ -80,7 +80,7 @@ class AuthAPI {
    */
   async register(email: string, password: string, name?: string): Promise<AuthResponse> {
     try {
-      const response = await this.client.post<AuthResponse>('/register', {
+      const response = await this.client.post<AuthResponse>('/auth/register', {
         email,
         password,
         name: name || '',
@@ -112,7 +112,7 @@ class AuthAPI {
    */
   async completeRegistration(userId: string, customerData?: unknown): Promise<AuthResponse> {
     try {
-      const response = await this.client.post<AuthResponse>('/complete-registration', {
+      const response = await this.client.post<AuthResponse>('/auth/complete-registration', {
         userId,
         customerData,
       });
@@ -136,7 +136,7 @@ class AuthAPI {
    */
   async signIn(email: string, password: string): Promise<AuthResponse> {
     try {
-      const response = await this.client.post<AuthResponse>('/sign-in', {
+      const response = await this.client.post<AuthResponse>('/auth/sign-in', {
         email,
         password,
       });
@@ -172,7 +172,7 @@ class AuthAPI {
    */
   async getUser(): Promise<UserResponse> {
     try {
-      const response = await this.client.get<UserResponse>('/user');
+      const response = await this.client.get<UserResponse>('/auth/user');
       return response.data;
     } catch (error: unknown) {
       return {
@@ -187,7 +187,7 @@ class AuthAPI {
    */
   async updateUser(updates: Record<string, string>): Promise<UserResponse> {
     try {
-      const response = await this.client.put<UserResponse>('/user', updates);
+      const response = await this.client.put<UserResponse>('/auth/user', updates);
       return response.data;
     } catch (error: unknown) {
       return {
@@ -202,7 +202,7 @@ class AuthAPI {
    */
   async changePassword(oldPassword: string, newPassword: string): Promise<Record<string, unknown>> {
     try {
-      const response = await this.client.post<Record<string, unknown>>('/change-password', {
+      const response = await this.client.post<Record<string, unknown>>('/auth/change-password', {
         oldPassword,
         newPassword,
       });
@@ -220,7 +220,7 @@ class AuthAPI {
    */
   async signOut(): Promise<boolean> {
     try {
-      await this.client.post('/sign-out');
+      await this.client.post('/auth/sign-out');
       localStorage.removeItem('authToken');
       return true;
     } catch (error) {
@@ -234,7 +234,7 @@ class AuthAPI {
    */
   async healthCheck(): Promise<boolean> {
     try {
-      const response = await this.client.get('/health');
+      const response = await this.client.get('/auth/health');
       return response.status === 200;
     } catch {
       return false;
@@ -267,7 +267,7 @@ class AuthAPI {
    */
   async forgotPassword(email: string): Promise<{ success: boolean; message?: string; error?: string }> {
     try {
-      const response = await this.client.post<{ success: boolean; message: string }>('/forgot-password', {
+      const response = await this.client.post<{ success: boolean; message: string }>('/auth/forgot-password', {
         email,
       });
       return response.data;
@@ -284,7 +284,7 @@ class AuthAPI {
    */
   async resetPassword(token: string, newPassword: string): Promise<{ success: boolean; message?: string; error?: string }> {
     try {
-      const response = await this.client.post<{ success: boolean; message: string }>('/reset-password', {
+      const response = await this.client.post<{ success: boolean; message: string }>('/auth/reset-password', {
         token,
         newPassword,
       });
@@ -302,7 +302,7 @@ class AuthAPI {
    */
   async verifyEmail(token: string): Promise<{ success: boolean; userId?: string; message?: string; error?: string }> {
     try {
-      const response = await this.client.post<{ success: boolean; userId: string; message: string }>('/verify-email/' + token);
+      const response = await this.client.post<{ success: boolean; userId: string; message: string }>('/auth/verify-email/' + token);
       return response.data;
     } catch (error: unknown) {
       // If it's an axios error with response data, return that data
@@ -327,7 +327,7 @@ class AuthAPI {
    */
   async resendVerificationEmail(email: string): Promise<{ success: boolean; message?: string; error?: string }> {
     try {
-      const response = await this.client.post<{ success: boolean; message: string }>('/resend-verification', {
+      const response = await this.client.post<{ success: boolean; message: string }>('/auth/resend-verification', {
         email,
       });
       return response.data;
@@ -351,7 +351,7 @@ class AuthAPI {
     error?: string;
   }> {
     try {
-      const response = await this.client.get('/verify-status');
+      const response = await this.client.get('/auth/verify-status');
       return response.data;
     } catch (error: unknown) {
       return {
