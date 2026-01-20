@@ -11,7 +11,7 @@ import org.springframework.http.MediaType;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/v1/parts")
+@RequestMapping("/v1/parts")
 public class PartController {
 
     private final PartService partService;

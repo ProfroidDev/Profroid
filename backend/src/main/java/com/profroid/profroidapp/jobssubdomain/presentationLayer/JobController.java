@@ -11,7 +11,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/v1/jobs")
+@RequestMapping("/v1/jobs")
 public class JobController {
 
     private final JobService jobService;

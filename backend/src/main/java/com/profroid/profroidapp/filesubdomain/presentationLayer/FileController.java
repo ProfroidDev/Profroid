@@ -21,7 +21,7 @@ import java.util.Locale;
 import java.util.UUID;
 
 @RestController
-@RequestMapping("/api/v1/files")
+@RequestMapping("/v1/files")
 public class FileController {
 
     private final FileService fileService;
