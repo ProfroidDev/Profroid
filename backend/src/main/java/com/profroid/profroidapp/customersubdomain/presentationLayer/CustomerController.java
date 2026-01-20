@@ -46,7 +46,7 @@ public class CustomerController {
         return ResponseEntity.ok(updatedCustomer);
     }
 
-    @PreAuthorize("hasRole('ADMIN')")
+    
     @PostMapping
     public ResponseEntity<CustomerResponseModel> createCustomer( @Valid @RequestBody CustomerRequestModel requestModel) {
         CustomerResponseModel createdCustomer = customerService.createCustomer(requestModel);
