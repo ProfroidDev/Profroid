@@ -7,6 +7,7 @@ import com.profroid.profroidapp.employeesubdomain.dataAccessLayer.employeeDataAc
 import com.profroid.profroidapp.employeesubdomain.dataAccessLayer.employeeDataAccessLayer.EmployeeRepository;
 import com.profroid.profroidapp.utils.exceptions.ResourceNotFoundException;
 import jakarta.validation.Valid;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -68,6 +69,7 @@ public class AppointmentController {
         return employee.getEmployeeIdentifier().getEmployeeId();
     }
 
+    @PreAuthorize("hasRole('CUSTOMER')")
     @GetMapping("/my-appointments")
     public ResponseEntity<List<AppointmentResponseModel>> getMyAppointments(Authentication authentication) {
         String userId = authentication.getName();
@@ -76,6 +78,7 @@ public class AppointmentController {
         return ResponseEntity.ok(appointments);
     }
 
+    @PreAuthorize("hasRole('TECHNICIAN')")
     @GetMapping("/my-jobs")
     public ResponseEntity<List<AppointmentResponseModel>> getMyJobs(Authentication authentication) {
         String userId = authentication.getName();
@@ -89,6 +92,7 @@ public class AppointmentController {
      * Used by customers to check technician availability when booking appointments.
      * Returns only time slots, not full appointment details for privacy.
      */
+    @PreAuthorize("hasAnyRole('CUSTOMER','ADMIN','TECHNICIAN')")
     @GetMapping("/technician/{technicianId}/booked-slots")
     public ResponseEntity<TechnicianBookedSlotsResponseModel> getTechnicianBookedSlots(
             @PathVariable String technicianId,
@@ -104,6 +108,7 @@ public class AppointmentController {
      * Used by customers to see overall availability without selecting a technician first.
      * Filters out time slots where the customer already has appointments.
      */
+    @PreAuthorize("hasAnyRole('CUSTOMER','ADMIN')")
     @GetMapping("/availability/aggregated")
     public ResponseEntity<TechnicianBookedSlotsResponseModel> getAggregatedAvailability(
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date,
@@ -116,6 +121,7 @@ public class AppointmentController {
         return ResponseEntity.ok(availability);
     }
 
+    @PreAuthorize("hasAnyRole('ADMIN','CUSTOMER','TECHNICIAN')")
     @GetMapping("/{appointmentId}")
     public ResponseEntity<AppointmentResponseModel> getAppointmentById(
             @PathVariable String appointmentId,
@@ -139,6 +145,7 @@ public class AppointmentController {
         return ResponseEntity.ok(appointment);
     }
 
+    @PreAuthorize("hasAnyRole('ADMIN','CUSTOMER','TECHNICIAN')")
     @PostMapping
     public ResponseEntity<AppointmentResponseModel> createAppointment(
             @Valid @RequestBody AppointmentRequestModel appointmentRequest,
@@ -161,6 +168,7 @@ public class AppointmentController {
         return ResponseEntity.status(HttpStatus.CREATED).body(createdAppointment);
     }
 
+    @PreAuthorize("hasAnyRole('ADMIN','CUSTOMER','TECHNICIAN')")
     @PutMapping("/{appointmentId}")
     public ResponseEntity<AppointmentResponseModel> updateAppointment(
             @PathVariable String appointmentId,
@@ -183,6 +191,7 @@ public class AppointmentController {
         return ResponseEntity.ok(updatedAppointment);
     }
 
+    @PreAuthorize("hasAnyRole('ADMIN','CUSTOMER','TECHNICIAN')")
     @PatchMapping("/{appointmentId}/status")
     public ResponseEntity<AppointmentResponseModel> patchAppointmentStatus(
             @PathVariable String appointmentId,

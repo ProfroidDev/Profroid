@@ -6,6 +6,7 @@ import com.profroid.profroidapp.customersubdomain.businessLayer.CustomerService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -37,6 +38,7 @@ public class CustomerController {
         return ResponseEntity.ok(customerService.getCustomerByUserId(userId));
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     @PutMapping("/by-user/{userId}")
     public ResponseEntity<CustomerResponseModel> updateCustomerByUserId(@PathVariable String userId,
                                                                         @Valid @RequestBody CustomerRequestModel requestModel) {
@@ -44,6 +46,7 @@ public class CustomerController {
         return ResponseEntity.ok(updatedCustomer);
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     @PostMapping
     public ResponseEntity<CustomerResponseModel> createCustomer( @Valid @RequestBody CustomerRequestModel requestModel) {
         CustomerResponseModel createdCustomer = customerService.createCustomer(requestModel);
@@ -73,14 +76,16 @@ public class CustomerController {
 
         return ResponseEntity.ok(responseModel);
     }
-
+reAuthorize("hasRole('ADMIN')")
+    @P
     @PutMapping("/{customerId}")
     public ResponseEntity<CustomerResponseModel> updateCustomer(@PathVariable String customerId,
                                                                 @Valid @RequestBody CustomerRequestModel requestModel) {
         CustomerResponseModel updatedCustomer = customerService.updateCustomer(customerId, requestModel);
         return ResponseEntity.ok(updatedCustomer);
     }
-
+PreAuthorize("hasRole('ADMIN')")
+    @
     @DeleteMapping("/{customerId}")
     public ResponseEntity<Void> deleteCustomer(@PathVariable String customerId) {
         customerService.deleteCustomer(customerId);

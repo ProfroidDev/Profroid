@@ -12,6 +12,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -32,6 +33,7 @@ public class FileController {
         this.mapper = mapper;
     }
 
+    @PreAuthorize("hasAnyRole('ADMIN','TECHNICIAN')")
     @PostMapping(value = "/{ownerType}/{ownerId}/{category}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<FileResponseModel> upload(
             @PathVariable String ownerType,
@@ -46,6 +48,7 @@ public class FileController {
         return ResponseEntity.status(HttpStatus.CREATED).body(mapper.toResponseModel(stored));
     }
 
+    @PreAuthorize("isAuthenticated()")
     @GetMapping
     public ResponseEntity<List<FileResponseModel>> list(
             @RequestParam String ownerType,
@@ -59,12 +62,14 @@ public class FileController {
         return ResponseEntity.ok(mapper.toResponseModelList(files));
     }
 
+    @PreAuthorize("isAuthenticated()")
     @GetMapping("/{fileId}")
     public ResponseEntity<FileResponseModel> metadata(@PathVariable UUID fileId) {
         StoredFile file = fileService.getOrThrow(fileId);
         return ResponseEntity.ok(mapper.toResponseModel(file));
     }
 
+    @PreAuthorize("isAuthenticated()")
     @GetMapping("/{fileId}/download")
     public ResponseEntity<InputStreamResource> download(@PathVariable UUID fileId) {
         StoredFile file = fileService.getOrThrow(fileId);
@@ -89,6 +94,7 @@ public class FileController {
                 .body(resource);
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     @DeleteMapping("/{fileId}")
     public ResponseEntity<Void> delete(@PathVariable UUID fileId) {
         fileService.delete(fileId);

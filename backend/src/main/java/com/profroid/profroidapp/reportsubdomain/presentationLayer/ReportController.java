@@ -7,6 +7,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.http.MediaType;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.web.bind.annotation.*;
@@ -27,6 +28,7 @@ public class ReportController {
     /**
      * Download the report PDF (Admin and Technician only)
      */
+    @PreAuthorize("hasAnyRole('ADMIN','TECHNICIAN')")
     @GetMapping(value = "/{reportId}/pdf", produces = MediaType.APPLICATION_PDF_VALUE)
     public ResponseEntity<byte[]> downloadReportPdf(
             @PathVariable String reportId,
@@ -54,6 +56,7 @@ public class ReportController {
      * Create a new report for a completed appointment
      * Only TECHNICIAN (assigned to appointment) and ADMIN can create reports
      */
+    @PreAuthorize("hasAnyRole('ADMIN','TECHNICIAN')")
     @PostMapping
     public ResponseEntity<ReportResponseModel> createReport(
             @Valid @RequestBody ReportRequestModel requestModel,
@@ -70,6 +73,7 @@ public class ReportController {
      * Get report by ID
      * Accessible by: technician who created it, customer for their appointment, or admin
      */
+    @PreAuthorize("hasAnyRole('ADMIN','TECHNICIAN','CUSTOMER')")
     @GetMapping("/{reportId}")
     public ResponseEntity<ReportResponseModel> getReportById(
             @PathVariable String reportId,
@@ -149,6 +153,7 @@ public class ReportController {
      * Update an existing report
      * Only the technician who created it or admin can update
      */
+    @PreAuthorize("hasAnyRole('ADMIN','TECHNICIAN')")
     @PutMapping("/{reportId}")
     public ResponseEntity<ReportResponseModel> updateReport(
             @PathVariable String reportId,
@@ -166,6 +171,7 @@ public class ReportController {
      * Delete a report
      * Only admin can delete reports
      */
+    @PreAuthorize("hasRole('ADMIN')")
     @DeleteMapping("/{reportId}")
     public ResponseEntity<Void> deleteReport(
             @PathVariable String reportId,

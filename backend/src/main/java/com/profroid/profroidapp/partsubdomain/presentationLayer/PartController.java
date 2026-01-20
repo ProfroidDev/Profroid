@@ -4,6 +4,7 @@ import com.profroid.profroidapp.partsubdomain.businessLayer.PartService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.http.MediaType;
@@ -32,12 +33,14 @@ public class PartController {
         return ResponseEntity.ok(responseModel);
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     @PostMapping
     public ResponseEntity<PartResponseModel> createPart(@Valid @RequestBody PartRequestModel requestModel) {
         PartResponseModel responseModel = partService.createPart(requestModel);
         return ResponseEntity.status(HttpStatus.CREATED).body(responseModel);
     }
-
+reAuthorize("hasRole('ADMIN')")
+    @P
     @PostMapping(value = "/with-image", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<PartResponseModel> createPartWithImage(
             @RequestPart("part") @Valid PartRequestModel requestModel,
@@ -45,7 +48,8 @@ public class PartController {
         PartResponseModel responseModel = partService.createPartWithImage(requestModel, file);
         return ResponseEntity.status(HttpStatus.CREATED).body(responseModel);
     }
-
+reAuthorize("hasRole('ADMIN')")
+    @P
     @PutMapping("/{partId}")
     public ResponseEntity<PartResponseModel> updatePart(
             @PathVariable String partId,
@@ -53,7 +57,8 @@ public class PartController {
         PartResponseModel responseModel = partService.updatePart(partId, requestModel);
         return ResponseEntity.ok(responseModel);
     }
-
+reAuthorize("hasRole('ADMIN')")
+    @P
     @PutMapping(value = "/{partId}/image", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<PartResponseModel> uploadPartImage(
             @PathVariable String partId,
@@ -61,7 +66,8 @@ public class PartController {
         PartResponseModel responseModel = partService.uploadPartImage(partId, file);
         return ResponseEntity.ok(responseModel);
     }
-
+PreAuthorize("hasRole('ADMIN')")
+    @
     @DeleteMapping("/{partId}")
     public ResponseEntity<Void> deletePart(@PathVariable String partId) {
         partService.deletePart(partId);

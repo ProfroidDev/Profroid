@@ -4,6 +4,7 @@ import com.profroid.profroidapp.jobssubdomain.businessLayer.JobService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.http.MediaType;
 import org.springframework.web.multipart.MultipartFile;
@@ -30,28 +31,33 @@ public class JobController {
         return ResponseEntity.ok(jobService.getJobById(jobId));
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     @PostMapping
     public ResponseEntity<JobResponseModel> createJob(@Valid @RequestBody JobRequestModel requestModel){
         return ResponseEntity.status(HttpStatus.CREATED).body(jobService.createJob(requestModel));
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     @PutMapping("/{jobId}")
     public ResponseEntity<JobResponseModel> updateJob(@PathVariable String jobId, @Valid @RequestBody JobRequestModel requestModel){
         return ResponseEntity.ok(jobService.updateJob(jobId, requestModel));
     }
-
+PreAuthorize("hasRole('ADMIN')")
+    @
     @DeleteMapping("/{jobId}/deactivate")
     public ResponseEntity<JobResponseModel> deactivateJob(@PathVariable String jobId){
         JobResponseModel deactivated = jobService.deactivateJob(jobId);
         return ResponseEntity.status(HttpStatus.OK).body(deactivated);
     }
-
+reAuthorize("hasRole('ADMIN')")
+    @P
     @PatchMapping("/{jobId}/reactivate")
     public ResponseEntity<JobResponseModel> reactivateJob(@PathVariable String jobId){
         JobResponseModel reactivated = jobService.reactivateJob(jobId);
         return ResponseEntity.status(HttpStatus.OK).body(reactivated);
     }
-
+reAuthorize("hasRole('ADMIN')")
+    @P
     @PutMapping(value = "/{jobId}/image", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<JobResponseModel> uploadJobImage(
             @PathVariable String jobId,

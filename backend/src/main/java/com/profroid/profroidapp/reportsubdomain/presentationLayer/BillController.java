@@ -6,6 +6,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.web.bind.annotation.*;
@@ -142,6 +143,8 @@ public class BillController {
      * Update bill status (mark as paid or unpaid)
      * Admin only
      */
+    @PreAuthorize("hasAnyRole('ADMIN', 'CUSTOMER', 'TECHNICIAN')")
+    @PreAuthorize("hasRole('ADMIN')")
     @PutMapping("/{billId}/status")
     public ResponseEntity<BillResponseModel> updateBillStatus(
             @PathVariable String billId,
