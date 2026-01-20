@@ -52,7 +52,6 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                     List<SimpleGrantedAuthority> authorities = new ArrayList<>();
                     if (role != null && !role.isEmpty()) {
                         // For employees, use employeeType as the role (TECHNICIAN, ADMIN, etc.)
-                        // This allows @PreAuthorize("hasRole('TECHNICIAN')") to work
                         String effectiveRole = role;
                         if ("employee".equalsIgnoreCase(role) && employeeType != null && !employeeType.isEmpty()) {
                             effectiveRole = employeeType;

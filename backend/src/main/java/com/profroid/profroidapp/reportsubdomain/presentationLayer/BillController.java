@@ -6,7 +6,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.web.bind.annotation.*;
@@ -29,7 +28,6 @@ public class BillController {
      * Customers can only view their own bills, admins can view all
      */
     @GetMapping("/{billId}")
-    @PreAuthorize("hasAnyRole('CUSTOMER', 'ADMIN')")
     public ResponseEntity<BillResponseModel> getBillById(
             @PathVariable String billId,
             Authentication authentication) {
@@ -48,7 +46,6 @@ public class BillController {
      * Customers can only view their own bills, admins can view all
      */
     @GetMapping("/report/{reportId}")
-    @PreAuthorize("hasAnyRole('CUSTOMER', 'ADMIN')")
     public ResponseEntity<BillResponseModel> getBillByReportId(
             @PathVariable Integer reportId,
             Authentication authentication) {
@@ -67,7 +64,6 @@ public class BillController {
      * Customers can only view their own bills, admins can view all
      */
     @GetMapping("/appointment/{appointmentId}")
-    @PreAuthorize("hasAnyRole('CUSTOMER', 'ADMIN')")
     public ResponseEntity<BillResponseModel> getBillByAppointmentId(
             @PathVariable String appointmentId,
             Authentication authentication) {
@@ -86,7 +82,6 @@ public class BillController {
      * Customers can only view their own bills, admins can view all
      */
     @GetMapping("/customer/{customerId}")
-    @PreAuthorize("hasAnyRole('CUSTOMER', 'ADMIN')")
     public ResponseEntity<List<BillResponseModel>> getCustomerBills(
             @PathVariable String customerId,
             Authentication authentication) {
@@ -104,7 +99,6 @@ public class BillController {
      * Get all bills (admin only)
      */
     @GetMapping
-    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<List<BillResponseModel>> getAllBills(
             Authentication authentication) {
         
@@ -122,7 +116,6 @@ public class BillController {
      * Customers can download their own bills, admins can download any bill
      */
     @GetMapping(value = "/{billId}/pdf", produces = MediaType.APPLICATION_PDF_VALUE)
-    @PreAuthorize("hasAnyRole('CUSTOMER', 'ADMIN')")
     public ResponseEntity<byte[]> downloadBillPdf(
             @PathVariable String billId,
             Authentication authentication) {
@@ -150,7 +143,6 @@ public class BillController {
      * Admin only
      */
     @PutMapping("/{billId}/status")
-    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<BillResponseModel> updateBillStatus(
             @PathVariable String billId,
             @RequestParam String status,

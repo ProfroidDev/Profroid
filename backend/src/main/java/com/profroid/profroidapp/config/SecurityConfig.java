@@ -45,7 +45,7 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.GET, "/api/v1/files/**").permitAll() // allow file downloads for images
                         .requestMatchers(HttpMethod.GET, "/api/v1/parts/export/pdf").permitAll() // allow PDF export
                         .requestMatchers(HttpMethod.GET, "/api/v1/reports/*/pdf").permitAll() // allow report PDF download
-                        // All cellar endpoints require authentication; fine-grained roles enforced via @PreAuthorize
+                        // All APIs require authentication for authenticated endpoints
                         .anyRequest().authenticated()  // All other APIs require authentication
                 )
                 .formLogin(form -> form.disable())

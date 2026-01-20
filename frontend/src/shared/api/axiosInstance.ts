@@ -1,5 +1,4 @@
 import axios from "axios";
-import { handle403Redirect } from "../../utils/403Handler";
 
 // Create axios instance
 const axiosInstance = axios.create({
@@ -24,17 +23,11 @@ axiosInstance.interceptors.request.use(
   }
 );
 
-// Global error interceptor for handling 403 errors
+// Global error interceptor
 axiosInstance.interceptors.response.use(
   response => response,
   error => {
     console.error("API Error:", error);
-
-    // Handle 403 Forbidden errors
-    if (error.response?.status === 403) {
-      handle403Redirect();
-    }
-
     return Promise.reject(error);
   }
 );

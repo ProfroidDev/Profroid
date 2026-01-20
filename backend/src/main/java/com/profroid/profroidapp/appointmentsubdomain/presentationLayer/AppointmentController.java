@@ -10,7 +10,6 @@ import jakarta.validation.Valid;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.web.bind.annotation.*;
@@ -70,7 +69,6 @@ public class AppointmentController {
     }
 
     @GetMapping("/my-appointments")
-    @PreAuthorize("hasRole('CUSTOMER')")
     public ResponseEntity<List<AppointmentResponseModel>> getMyAppointments(Authentication authentication) {
         String userId = authentication.getName();
         String customerId = getCustomerIdFromUserId(userId);
@@ -79,7 +77,6 @@ public class AppointmentController {
     }
 
     @GetMapping("/my-jobs")
-    @PreAuthorize("hasRole('TECHNICIAN')")
     public ResponseEntity<List<AppointmentResponseModel>> getMyJobs(Authentication authentication) {
         String userId = authentication.getName();
         String employeeId = getEmployeeIdFromUserId(userId);
@@ -93,7 +90,6 @@ public class AppointmentController {
      * Returns only time slots, not full appointment details for privacy.
      */
     @GetMapping("/technician/{technicianId}/booked-slots")
-    @PreAuthorize("hasAnyRole('CUSTOMER', 'TECHNICIAN', 'ADMIN')")
     public ResponseEntity<TechnicianBookedSlotsResponseModel> getTechnicianBookedSlots(
             @PathVariable String technicianId,
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date,
@@ -109,7 +105,6 @@ public class AppointmentController {
      * Filters out time slots where the customer already has appointments.
      */
     @GetMapping("/availability/aggregated")
-    @PreAuthorize("hasAnyRole('CUSTOMER', 'TECHNICIAN', 'ADMIN')")
     public ResponseEntity<TechnicianBookedSlotsResponseModel> getAggregatedAvailability(
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date,
             @RequestParam String jobName,
@@ -122,7 +117,6 @@ public class AppointmentController {
     }
 
     @GetMapping("/{appointmentId}")
-    @PreAuthorize("hasAnyRole('CUSTOMER', 'TECHNICIAN', 'ADMIN')")
     public ResponseEntity<AppointmentResponseModel> getAppointmentById(
             @PathVariable String appointmentId,
             Authentication authentication) {
@@ -146,7 +140,6 @@ public class AppointmentController {
     }
 
     @PostMapping
-    @PreAuthorize("hasAnyRole('CUSTOMER', 'TECHNICIAN', 'ADMIN')")
     public ResponseEntity<AppointmentResponseModel> createAppointment(
             @Valid @RequestBody AppointmentRequestModel appointmentRequest,
             Authentication authentication) {
@@ -169,7 +162,6 @@ public class AppointmentController {
     }
 
     @PutMapping("/{appointmentId}")
-    @PreAuthorize("hasAnyRole('CUSTOMER', 'TECHNICIAN', 'ADMIN')")
     public ResponseEntity<AppointmentResponseModel> updateAppointment(
             @PathVariable String appointmentId,
             @Valid @RequestBody AppointmentRequestModel appointmentRequest,
@@ -192,7 +184,6 @@ public class AppointmentController {
     }
 
     @PatchMapping("/{appointmentId}/status")
-    @PreAuthorize("hasAnyRole('CUSTOMER', 'TECHNICIAN', 'ADMIN')")
     public ResponseEntity<AppointmentResponseModel> patchAppointmentStatus(
             @PathVariable String appointmentId,
             @Valid @RequestBody AppointmentStatusChangeRequestModel statusRequest,

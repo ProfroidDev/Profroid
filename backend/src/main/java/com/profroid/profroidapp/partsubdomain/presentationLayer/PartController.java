@@ -4,7 +4,6 @@ import com.profroid.profroidapp.partsubdomain.businessLayer.PartService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.http.MediaType;
@@ -21,7 +20,6 @@ public class PartController {
         this.partService = partService;
     }
 
-    @PreAuthorize("hasAnyRole('ADMIN', 'CUSTOMER', 'TECHNICIAN')")
     @GetMapping
     public ResponseEntity<List<PartResponseModel>> getAllParts() {
         List<PartResponseModel> responseModels = partService.getAllParts();

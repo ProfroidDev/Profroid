@@ -4,7 +4,6 @@ import com.profroid.profroidapp.cellarsubdomain.businessLayer.CellarService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.web.bind.annotation.*;
@@ -32,7 +31,6 @@ public class CellarController {
     }
 
     @GetMapping
-    @PreAuthorize("hasAnyRole('CUSTOMER','TECHNICIAN')")
     public ResponseEntity<List<CellarResponseModel>> getAllCellars(
             @RequestParam(value = "ownerCustomerId", required = false) String ownerCustomerId,
             Authentication authentication) {
@@ -59,7 +57,6 @@ public class CellarController {
     }
 
     @GetMapping("/{cellarId}")
-    @PreAuthorize("hasAnyRole('CUSTOMER','TECHNICIAN')")
     public ResponseEntity<CellarResponseModel> getCellarById(@PathVariable String cellarId,
                                                              @RequestParam(value = "ownerCustomerId", required = false) String ownerCustomerId) {
         if (ownerCustomerId != null && !ownerCustomerId.isBlank()) {
@@ -71,7 +68,6 @@ public class CellarController {
     }
 
     @PostMapping
-    @PreAuthorize("hasRole('CUSTOMER')")
     public ResponseEntity<CellarResponseModel> createCellar(@Valid @RequestBody CellarRequestModel cellarRequestModel) {
         String ownerCustomerId = cellarRequestModel.getOwnerCustomerId().getCustomerId();
         CellarResponseModel responseModel = cellarService.createCellar(ownerCustomerId, cellarRequestModel);
@@ -79,7 +75,6 @@ public class CellarController {
     }
 
     @PutMapping("/{cellarId}")
-    @PreAuthorize("hasRole('CUSTOMER')")
     public ResponseEntity<CellarResponseModel> updateCellar(@PathVariable String cellarId, @Valid @RequestBody CellarRequestModel cellarRequestModel) {
         String ownerCustomerId = cellarRequestModel.getOwnerCustomerId().getCustomerId();
         CellarResponseModel responseModel = cellarService.updateCellar(ownerCustomerId, cellarId, cellarRequestModel);
@@ -87,7 +82,6 @@ public class CellarController {
     }
 
     @DeleteMapping("/{cellarId}/deactivate")
-    @PreAuthorize("hasRole('CUSTOMER')")
     public ResponseEntity<CellarResponseModel> deactivateCellar(@PathVariable String cellarId) {
         CellarResponseModel deactivated = cellarService.deactivateCellar(cellarId);
         return ResponseEntity.status(HttpStatus.OK).body(deactivated);

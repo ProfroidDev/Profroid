@@ -29,11 +29,9 @@ import {
   PublicRoute,
 } from "./features/authentication/components/ProtectedRoute";
 import useAuthStore from "./features/authentication/store/authStore";
-import { useInitialize403Handler } from "./utils/403Handler";
 
 function AppRoutes(): React.ReactElement {
   const { initializeAuth } = useAuthStore();
-  useInitialize403Handler(); // Initialize 403 handler - now inside router context
 
   useEffect(() => {
     // Initialize auth and fetch user + customer data on app load
@@ -112,7 +110,7 @@ function AppRoutes(): React.ReactElement {
         <Route
           path="/parts"
           element={
-            <ProtectedRoute requiredRole="admin">
+            <ProtectedRoute>
               <PartsPage />
             </ProtectedRoute>
           }
@@ -120,7 +118,7 @@ function AppRoutes(): React.ReactElement {
         <Route
           path="/customers"
           element={
-            <ProtectedRoute requiredRole="admin">
+            <ProtectedRoute>
               <CustomerListPage />
             </ProtectedRoute>
           }
@@ -132,7 +130,7 @@ function AppRoutes(): React.ReactElement {
         <Route
           path="/inventory"
           element={
-            <ProtectedRoute requiredRole="admin">
+            <ProtectedRoute>
               <Inventory />
             </ProtectedRoute>
           }
@@ -140,7 +138,7 @@ function AppRoutes(): React.ReactElement {
         <Route
           path="/service-reports"
           element={
-            <ProtectedRoute requiredRole="admin">
+            <ProtectedRoute>
               <ServiceReports />
             </ProtectedRoute>
           }
@@ -148,7 +146,7 @@ function AppRoutes(): React.ReactElement {
         <Route
           path="/employees"
           element={
-            <ProtectedRoute requiredRole="admin">
+            <ProtectedRoute>
               <EmployeeListPage />
             </ProtectedRoute>
           }
@@ -165,7 +163,7 @@ function AppRoutes(): React.ReactElement {
         <Route
           path="/my-jobs"
           element={
-            <ProtectedRoute requiredEmployeeType="TECHNICIAN">
+            <ProtectedRoute>
               <MyJobsPage />
             </ProtectedRoute>
           }

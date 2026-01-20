@@ -6,7 +6,6 @@ import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
@@ -40,7 +39,6 @@ public class EmployeeController {
     }
 
     @PostMapping()
-    @PreAuthorize("hasAnyRole('ADMIN')")
     public ResponseEntity<EmployeeResponseModel> addEmployee(
             @Valid @RequestBody EmployeeRequestModel employeeRequestModel) {
         EmployeeResponseModel created = this.employeeService.addEmployee(employeeRequestModel);
@@ -48,7 +46,6 @@ public class EmployeeController {
     }
 
     @PutMapping("/{employeeId}")
-    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<EmployeeResponseModel> updateEmployee(
             @PathVariable String employeeId,
             @Valid @RequestBody EmployeeRequestModel employeeRequestModel,
@@ -88,14 +85,12 @@ public class EmployeeController {
     }
 
     @DeleteMapping("/{employeeId}/deactivate")
-    @PreAuthorize("hasAnyRole('ADMIN')")
     public ResponseEntity<EmployeeResponseModel> deactivateEmployee(@PathVariable String employeeId) {
         EmployeeResponseModel deactivated = this.employeeService.deactivateEmployee(employeeId);
         return ResponseEntity.status(HttpStatus.OK).body(deactivated);
     }
 
     @PatchMapping("/{employeeId}/reactivate")
-    @PreAuthorize("hasAnyRole('ADMIN')")
     public ResponseEntity<EmployeeResponseModel> reactivateEmployee(@PathVariable String employeeId) {
         EmployeeResponseModel reactivated = this.employeeService.reactivateEmployee(employeeId);
         return ResponseEntity.status(HttpStatus.OK).body(reactivated);

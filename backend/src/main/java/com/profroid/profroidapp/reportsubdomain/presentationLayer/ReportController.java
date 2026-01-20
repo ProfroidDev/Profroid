@@ -7,7 +7,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.http.MediaType;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.web.bind.annotation.*;
@@ -29,7 +28,6 @@ public class ReportController {
      * Download the report PDF (Admin and Technician only)
      */
     @GetMapping(value = "/{reportId}/pdf", produces = MediaType.APPLICATION_PDF_VALUE)
-    @PreAuthorize("hasAnyRole('TECHNICIAN', 'ADMIN')")
     public ResponseEntity<byte[]> downloadReportPdf(
             @PathVariable String reportId,
             Authentication authentication) {
@@ -57,7 +55,6 @@ public class ReportController {
      * Only TECHNICIAN (assigned to appointment) and ADMIN can create reports
      */
     @PostMapping
-    @PreAuthorize("hasAnyRole('TECHNICIAN', 'ADMIN')")
     public ResponseEntity<ReportResponseModel> createReport(
             @Valid @RequestBody ReportRequestModel requestModel,
             Authentication authentication) {
@@ -74,7 +71,6 @@ public class ReportController {
      * Accessible by: technician who created it, customer for their appointment, or admin
      */
     @GetMapping("/{reportId}")
-    @PreAuthorize("hasAnyRole('CUSTOMER', 'TECHNICIAN', 'ADMIN')")
     public ResponseEntity<ReportResponseModel> getReportById(
             @PathVariable String reportId,
             Authentication authentication) {
@@ -91,7 +87,6 @@ public class ReportController {
      * Useful for checking if a report exists for an appointment
      */
     @GetMapping("/appointment/{appointmentId}")
-    @PreAuthorize("hasAnyRole('CUSTOMER', 'TECHNICIAN', 'ADMIN')")
     public ResponseEntity<ReportResponseModel> getReportByAppointmentId(
             @PathVariable String appointmentId,
             Authentication authentication) {
@@ -108,7 +103,6 @@ public class ReportController {
      * Only the technician themselves or admin can access
      */
     @GetMapping("/technician/{technicianId}")
-    @PreAuthorize("hasAnyRole('TECHNICIAN', 'ADMIN')")
     public ResponseEntity<List<ReportResponseModel>> getTechnicianReports(
             @PathVariable String technicianId,
             Authentication authentication) {
@@ -125,7 +119,6 @@ public class ReportController {
      * Only admin can access this endpoint
      */
     @GetMapping("/customer/{customerId}")
-    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<List<ReportResponseModel>> getCustomerReports(
             @PathVariable String customerId,
             Authentication authentication) {
@@ -142,7 +135,6 @@ public class ReportController {
      * Returns all reports in the system
      */
     @GetMapping
-    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<List<ReportResponseModel>> getAllReports(
             Authentication authentication) {
         
@@ -158,7 +150,6 @@ public class ReportController {
      * Only the technician who created it or admin can update
      */
     @PutMapping("/{reportId}")
-    @PreAuthorize("hasAnyRole('TECHNICIAN', 'ADMIN')")
     public ResponseEntity<ReportResponseModel> updateReport(
             @PathVariable String reportId,
             @Valid @RequestBody ReportRequestModel requestModel,
@@ -176,7 +167,6 @@ public class ReportController {
      * Only admin can delete reports
      */
     @DeleteMapping("/{reportId}")
-    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Void> deleteReport(
             @PathVariable String reportId,
             Authentication authentication) {
