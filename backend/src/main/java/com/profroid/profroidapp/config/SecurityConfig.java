@@ -38,6 +38,8 @@ public class SecurityConfig {
                         .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 )
                 .authorizeHttpRequests(auth -> auth
+                        // Allow public customer creation (registration flow)
+                        .requestMatchers(HttpMethod.POST, "/v1/customers").permitAll()
                         .anyRequest().authenticated()
                 )
                 .formLogin(form -> form.disable())
