@@ -27,5 +27,5 @@ RUN npm run build
 # Expose port
 EXPOSE 3001
 
-# Start application
-CMD ["npm", "start"]
+# Run migrations, seed database, and start application
+CMD ["sh", "-c", "npx prisma migrate deploy && npm run seed && npm start"]
