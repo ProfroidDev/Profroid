@@ -144,7 +144,6 @@ public class BillController {
      * Admin only
      */
     @PreAuthorize("hasAnyRole('ADMIN', 'CUSTOMER', 'TECHNICIAN')")
-    @PreAuthorize("hasRole('ADMIN')")
     @PutMapping("/{billId}/status")
     public ResponseEntity<BillResponseModel> updateBillStatus(
             @PathVariable String billId,
