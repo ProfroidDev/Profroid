@@ -39,6 +39,24 @@ export function handleAPIError(error: unknown): APIError {
   console.log('Status Text:', statusText);
   console.log('Response Data:', responseData);
   
+  // Handle 401 Unauthorized
+  if (statusCode === 401) {
+    return new APIError(
+      'Your session has expired. Please log in again.',
+      401,
+      'Authentication required'
+    );
+  }
+  
+  // Handle 403 Forbidden
+  if (statusCode === 403) {
+    return new APIError(
+      'You do not have permission to perform this action.',
+      403,
+      'Permission denied'
+    );
+  }
+  
   // Try to extract message from various backend response formats
   let backendMessage: string | undefined;
   

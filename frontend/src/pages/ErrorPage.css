@@ -1,0 +1,170 @@
+.error-page {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  background-color: #fdfbf7;
+  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+  color: #2c1810;
+}
+
+.error-container {
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  padding: 60px 40px;
+  text-align: center;
+  max-width: 500px;
+  width: 90%;
+  border: 1px solid #e8e8e8;
+}
+
+.error-icon {
+  font-size: 80px;
+  margin-bottom: 20px;
+  display: inline-block;
+  animation: bounce 2s infinite;
+}
+
+.error-icon.error-401 {
+  animation: pulse 2s infinite;
+}
+
+.error-icon.error-403 {
+  animation: shake 0.5s;
+}
+
+.error-icon.error-404 {
+  animation: bounce 2s infinite;
+}
+
+@keyframes bounce {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.7;
+  }
+}
+
+@keyframes shake {
+  0%, 100% {
+    transform: translateX(0);
+  }
+  10%, 30%, 50%, 70%, 90% {
+    transform: translateX(-5px);
+  }
+  20%, 40%, 60%, 80% {
+    transform: translateX(5px);
+  }
+}
+
+.error-container h1 {
+  color: #722f37;
+  margin: 20px 0 10px;
+  font-size: 28px;
+  font-weight: 700;
+}
+
+.error-message {
+  color: #666;
+  font-size: 16px;
+  line-height: 1.6;
+  margin: 15px 0;
+}
+
+.error-path {
+  color: #999;
+  font-size: 12px;
+  font-family: 'Courier New', monospace;
+  background: #f9f9f9;
+  padding: 10px;
+  border-radius: 4px;
+  word-break: break-all;
+  margin: 15px 0;
+  border: 1px solid #e8e8e8;
+}
+
+.error-redirect {
+  color: #722f37;
+  font-size: 14px;
+  margin: 10px 0;
+  font-weight: 500;
+}
+
+.error-buttons {
+  display: flex;
+  gap: 10px;
+  margin-top: 30px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.error-button {
+  padding: 12px 30px;
+  font-size: 16px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: all 0.3s ease;
+  background-color: #722f37;
+  color: white;
+}
+
+.error-button:hover {
+  background-color: #5a252b;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(114, 47, 55, 0.2);
+}
+
+.error-button:active {
+  transform: translateY(0);
+}
+
+.error-button-secondary {
+  background: transparent;
+  color: #722f37;
+  border: 2px solid #722f37;
+}
+
+.error-button-secondary:hover {
+  background-color: #722f37;
+  color: white;
+}
+
+@media (max-width: 600px) {
+  .error-container {
+    padding: 40px 20px;
+  }
+
+  .error-icon {
+    font-size: 60px;
+  }
+
+  .error-container h1 {
+    font-size: 24px;
+  }
+
+  .error-message {
+    font-size: 14px;
+  }
+
+  .error-button {
+    padding: 10px 20px;
+    font-size: 14px;
+  }
+
+  .error-buttons {
+    flex-direction: column;
+  }
+}

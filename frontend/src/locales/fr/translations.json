@@ -13,6 +13,8 @@
     "back": "Retour",
     "goBack": "Revenir",
     "logout": "Déconnexion",
+    "login": "Connexion",
+    "home": "Accueil",
     "profile": "Profil",
     "email": "E-mail",
     "password": "Mot de passe",
@@ -920,6 +922,13 @@
     "failedToUpdateAppointment": "Échec de la mise à jour du rendez-vous."
   },
   "error": {
+    "sessionExpired": "Session Expirée",
+    "sessionExpiredMessage": "Votre session a expiré en raison de l'inactivité. Veuillez vous connecter à nouveau pour continuer.",
+    "permissionDenied": "Accès Refusé",
+    "permissionDeniedMessage": "Vous n'avez pas la permission d'accéder à cette ressource. Veuillez contacter votre administrateur si vous pensez que c'est une erreur.",
+    "notFound": "Page Non Trouvée",
+    "notFoundMessage": "La page que vous recherchez n'existe pas ou a été déplacée.",
+    "redirecting": "Redirection vers la connexion dans 5 secondes...",
     "schedule": {
       "cannotEditScheduleAppointmentConflict": "Impossible de modifier l'horaire; il y a un rendez-vous à cette date dans un créneau horaire que vous supprimez.",
       "cannotUpdateWeeklyScheduleDueToAppointment": "Impossible de mettre à jour l'horaire hebdomadaire : il existe un rendez-vous le {{day}} à {{time}} qui serait supprimé par cette mise à jour. Veuillez d'abord annuler ou reprogrammer le rendez-vous.",

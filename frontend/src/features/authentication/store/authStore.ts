@@ -77,12 +77,7 @@ const useAuthStore = create<AuthStore>((set, get) => ({
           const userResponse = await authClient.getUser();
           if (userResponse.success && userResponse.user) {
             set({
-              user: {
-                ...response.user,
-                role: userResponse.user.role,
-                isActive: userResponse.user.isActive,
-                // employeeType will be fetched separately if needed
-              } as AuthUser,
+              user: userResponse.user as AuthUser,
             });
 
             // Fetch customer/employee profile data immediately after login so Profile page has data without manual refresh
@@ -157,7 +152,9 @@ const useAuthStore = create<AuthStore>((set, get) => ({
     try {
       const response = await authClient.getUser();
       if (response.success && response.user) {
-        const user = response.user as AuthUser;
+        const user = {
+          ...response.user,
+        } as AuthUser;
         set({
           user,
           isAuthenticated: true,

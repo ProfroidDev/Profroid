@@ -29,6 +29,9 @@ import {
   PublicRoute,
 } from "./features/authentication/components/ProtectedRoute";
 import useAuthStore from "./features/authentication/store/authStore";
+import SessionExpiredPage from "./pages/SessionExpiredPage";
+import PermissionDeniedPage from "./pages/PermissionDeniedPage";
+import NotFoundPage from "./pages/NotFoundPage";
 
 function AppRoutes(): React.ReactElement {
   const { initializeAuth } = useAuthStore();
@@ -45,6 +48,8 @@ function AppRoutes(): React.ReactElement {
       <Routes>
         {/* Error Routes */}
         <Route path="/error/forbidden" element={<ForbiddenPage />} />
+        <Route path="/error/session-expired" element={<SessionExpiredPage />} />
+        <Route path="/error/permission-denied" element={<PermissionDeniedPage />} />
 
         {/* Public Auth Routes */}
         <Route
@@ -107,18 +112,20 @@ function AppRoutes(): React.ReactElement {
             </ProtectedRoute>
           }
         />
+        {/* Parts - ADMIN only */}
         <Route
           path="/parts"
           element={
-            <ProtectedRoute>
+            <ProtectedRoute requiredRoles={['ADMIN']}>
               <PartsPage />
             </ProtectedRoute>
           }
         />
+        {/* Customers - ADMIN only */}
         <Route
           path="/customers"
           element={
-            <ProtectedRoute>
+            <ProtectedRoute requiredRoles={['ADMIN']}>
               <CustomerListPage />
             </ProtectedRoute>
           }
@@ -127,47 +134,62 @@ function AppRoutes(): React.ReactElement {
           path="/services"
           element={<ServicesPage />}
         />
+        {/* Inventory - ADMIN only */}
         <Route
           path="/inventory"
           element={
-            <ProtectedRoute>
+            <ProtectedRoute requiredRoles={['ADMIN']}>
               <Inventory />
             </ProtectedRoute>
           }
         />
+        {/* Service Reports - ADMIN and TECHNICIAN */}
         <Route
           path="/service-reports"
           element={
-            <ProtectedRoute>
+            <ProtectedRoute requiredRoles={['ADMIN', 'TECHNICIAN']}>
               <ServiceReports />
             </ProtectedRoute>
           }
         />
+        {/* Employees - ADMIN only */}
         <Route
           path="/employees"
           element={
-            <ProtectedRoute>
+            <ProtectedRoute requiredRoles={['ADMIN']}>
               <EmployeeListPage />
             </ProtectedRoute>
           }
         />
-        <Route path="/my-appointments" element={<MyAppointmentsPage />} />
+        {/* My Appointments - CUSTOMER only */}
+        <Route
+          path="/my-appointments"
+          element={
+            <ProtectedRoute requiredRoles={['CUSTOMER']}>
+              <MyAppointmentsPage />
+            </ProtectedRoute>
+          }
+        />
+        {/* Bills - CUSTOMER only */}
         <Route
           path="/my-bills"
           element={
-            <ProtectedRoute>
+            <ProtectedRoute requiredRoles={['CUSTOMER']}>
               <CustomerBills />
             </ProtectedRoute>
           }
         />
+        {/* My Jobs - TECHNICIAN only */}
         <Route
           path="/my-jobs"
           element={
-            <ProtectedRoute>
+            <ProtectedRoute requiredRoles={['TECHNICIAN']}>
               <MyJobsPage />
             </ProtectedRoute>
           }
         />
+        {/* 404 Not Found - Catch all unmatched routes */}
+        <Route path="*" element={<NotFoundPage />} />
       </Routes>
 
       <Footer />

@@ -4,6 +4,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.MediaType;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -11,7 +13,9 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
-import org.springframework.http.HttpMethod;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import java.util.Map;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 @Profile("!test")
 @EnableWebSecurity
@@ -37,9 +41,24 @@ public class SecurityConfig {
                 .sessionManagement(session -> session
                         .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 )
+                .exceptionHandling(exc -> exc
+                        // Custom 401 Unauthorized handler
+                        .authenticationEntryPoint((request, response, authException) -> {
+                            response.setStatus(401);
+                            response.setContentType(MediaType.APPLICATION_JSON_VALUE);
+                            ObjectMapper mapper = new ObjectMapper();
+                            String errorBody = mapper.writeValueAsString(Map.of(
+                                    "error", "Unauthorized",
+                                    "message", "Authentication required",
+                                    "code", "UNAUTHORIZED"
+                            ));
+                            response.getWriter().write(errorBody);
+                        })
+                )
                 .authorizeHttpRequests(auth -> auth
-                        // Allow public customer creation (registration flow)
+                        // Public endpoints - no auth required
                         .requestMatchers(HttpMethod.POST, "/v1/customers").permitAll()
+                        // All other requests require authentication
                         .anyRequest().authenticated()
                 )
                 .formLogin(form -> form.disable())
@@ -49,5 +68,6 @@ public class SecurityConfig {
         return http.build();
     }
 }
+
 
 

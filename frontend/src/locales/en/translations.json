@@ -13,6 +13,8 @@
     "back": "Back",
     "goBack": "Go Back",
     "logout": "Logout",
+    "login": "Sign In",
+    "home": "Home",
     "profile": "Profile",
     "email": "Email",
     "password": "Password",
@@ -915,6 +917,13 @@
     "failedToUpdateAppointment": "Failed to update appointment."
   },
   "error": {
+    "sessionExpired": "Session Expired",
+    "sessionExpiredMessage": "Your session has expired due to inactivity. Please log in again to continue.",
+    "permissionDenied": "Permission Denied",
+    "permissionDeniedMessage": "You do not have permission to access this resource. Please contact your administrator if you believe this is an error.",
+    "notFound": "Page Not Found",
+    "notFoundMessage": "The page you are looking for does not exist or has been moved.",
+    "redirecting": "Redirecting to login in 5 seconds...",
     "schedule": {
       "cannotEditScheduleAppointmentConflict": "Cannot edit schedule; there is an appointment on this date at a time slot you are removing.",
       "cannotUpdateWeeklyScheduleDueToAppointment": "Cannot update schedule: there is an appointment on {{day}} at {{time}} that would be removed by this update. Please cancel or reschedule the appointment first.",
