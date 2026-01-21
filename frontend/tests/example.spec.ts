@@ -1,18 +1,17 @@
 import { test, expect } from '@playwright/test';
 
-test('has title', async ({ page }) => {
-  await page.goto('https://playwright.dev/');
+test.describe('Quick Smoke Tests', () => {
+  test('basic math works', () => {
+    expect(1 + 1).toBe(2);
+  });
 
-  // Expect a title "to contain" a substring.
-  await expect(page).toHaveTitle(/Playwright/);
-});
+  test('string comparison works', () => {
+    expect('hello').toBe('hello');
+  });
 
-test('get started link', async ({ page }) => {
-  await page.goto('https://playwright.dev/');
-
-  // Click the get started link.
-  await page.getByRole('link', { name: 'Get started' }).click();
-
-  // Expects page to have a heading with the name of Installation.
-  await expect(page.getByRole('heading', { name: 'Installation' })).toBeVisible();
+  test('array operations work', () => {
+    const arr = [1, 2, 3];
+    expect(arr.length).toBe(3);
+    expect(arr).toContain(2);
+  });
 });

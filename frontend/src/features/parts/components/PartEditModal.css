@@ -127,7 +127,9 @@
   border-radius: 8px;
   background: #fff;
   color: #333;
-  transition: border-color 0.2s, box-shadow 0.2s;
+  transition:
+    border-color 0.2s,
+    box-shadow 0.2s;
   font-family: inherit;
   box-sizing: border-box;
 }
@@ -185,7 +187,9 @@
   font-size: 0.95rem;
   font-weight: 600;
   cursor: pointer;
-  transition: background 0.2s, transform 0.2s;
+  transition:
+    background 0.2s,
+    transform 0.2s;
 }
 
 .btn-cancel:hover:not(:disabled) {
@@ -208,7 +212,10 @@
   font-weight: 600;
   cursor: pointer;
   box-shadow: 0 2px 8px rgba(122, 9, 1, 0.08);
-  transition: background 0.2s, box-shadow 0.2s, transform 0.2s;
+  transition:
+    background 0.2s,
+    box-shadow 0.2s,
+    transform 0.2s;
 }
 
 .btn-submit:hover:not(:disabled) {
@@ -238,7 +245,10 @@
   gap: 6px;
   margin-top: 8px;
   box-shadow: 0 1px 3px rgba(220, 38, 38, 0.12);
-  transition: background 0.2s, box-shadow 0.2s, transform 0.2s;
+  transition:
+    background 0.2s,
+    box-shadow 0.2s,
+    transform 0.2s;
 }
 
 .btn-delete-image:hover:not(:disabled) {

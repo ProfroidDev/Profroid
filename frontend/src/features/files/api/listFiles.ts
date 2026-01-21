@@ -1,7 +1,7 @@
-import axiosInstance from "../../../shared/api/axiosInstance";
-import type { FileCategory } from "../models/FileCategory";
-import type { FileOwnerType } from "../models/FileOwnerType";
-import type { FileResponseModel } from "../models/FileResponseModel";
+import axiosInstance from '../../../shared/api/axiosInstance';
+import type { FileCategory } from '../models/FileCategory';
+import type { FileOwnerType } from '../models/FileOwnerType';
+import type { FileResponseModel } from '../models/FileResponseModel';
 
 export async function listFiles(
   ownerType: FileOwnerType,
@@ -13,6 +13,6 @@ export async function listFiles(
     params.category = category;
   }
 
-  const response = await axiosInstance.get<FileResponseModel[]>("/files", { params });
+  const response = await axiosInstance.get<FileResponseModel[]>('/files', { params });
   return response.data;
 }

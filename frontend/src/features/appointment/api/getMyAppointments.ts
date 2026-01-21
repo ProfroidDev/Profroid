@@ -1,5 +1,5 @@
-import axiosInstance from "../../../shared/api/axiosInstance";
-import type { AppointmentResponseModel } from "../models/AppointmentResponseModel";
+import axiosInstance from '../../../shared/api/axiosInstance';
+import type { AppointmentResponseModel } from '../models/AppointmentResponseModel';
 
 /**
  * Get all appointments for the current customer
@@ -7,7 +7,7 @@ import type { AppointmentResponseModel } from "../models/AppointmentResponseMode
  */
 export async function getMyAppointments(): Promise<AppointmentResponseModel[]> {
   const response = await axiosInstance.get<AppointmentResponseModel[]>(
-    "/appointments/my-appointments"
+    '/appointments/my-appointments'
   );
   return response.data;
 }

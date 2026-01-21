@@ -1,5 +1,5 @@
-import { useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 
 // This will be set globally when the app mounts
 let navigationCallback: ((path: string) => void) | null = null;
@@ -25,6 +25,6 @@ export const useInitialize403Handler = () => {
  */
 export const handle403Redirect = () => {
   if (navigationCallback) {
-    navigationCallback("/error/forbidden");
+    navigationCallback('/error/forbidden');
   }
 };

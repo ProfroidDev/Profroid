@@ -32,7 +32,7 @@ export default function ForgotPasswordPage() {
 
     try {
       const response = await authClient.forgotPassword(email);
-      
+
       if (response.success) {
         setSuccess(true);
         setEmail(''); // Clear the form
@@ -58,14 +58,10 @@ export default function ForgotPasswordPage() {
           <div className="success-message">
             <div className="alert alert-success">
               <strong>✓ {t('auth.checkEmail')}</strong>
-              <p>
-                {t('auth.checkEmail')}
-              </p>
-              <p style={{ marginTop: '1rem', fontSize: '0.9rem' }}>
-                {t('messages.success')}
-              </p>
+              <p>{t('auth.checkEmail')}</p>
+              <p style={{ marginTop: '1rem', fontSize: '0.9rem' }}>{t('messages.success')}</p>
             </div>
-            
+
             <div className="auth-footer" style={{ marginTop: '1.5rem' }}>
               <Link to="/auth/login" className="btn-secondary">
                 {t('auth.login')}
@@ -88,17 +84,9 @@ export default function ForgotPasswordPage() {
                 />
               </div>
 
-              {error && (
-                <div className="alert alert-error">
-                  {error}
-                </div>
-              )}
+              {error && <div className="alert alert-error">{error}</div>}
 
-              <button
-                type="submit"
-                disabled={isLoading}
-                className="btn-primary"
-              >
+              <button type="submit" disabled={isLoading} className="btn-primary">
                 {isLoading ? t('common.loading') : t('auth.resetPassword')}
               </button>
             </form>

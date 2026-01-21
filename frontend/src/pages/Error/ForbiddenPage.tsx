@@ -1,13 +1,13 @@
-import React from "react";
-import { useNavigate } from "react-router-dom";
-import { Home, Lock } from "lucide-react";
-import "./ForbiddenPage.css";
+import React from 'react';
+import { useNavigate } from 'react-router-dom';
+import { Home, Lock } from 'lucide-react';
+import './ForbiddenPage.css';
 
 const ForbiddenPage: React.FC = () => {
   const navigate = useNavigate();
 
   const handleBackHome = () => {
-    navigate("/");
+    navigate('/');
   };
 
   return (
@@ -20,7 +20,8 @@ const ForbiddenPage: React.FC = () => {
         <h1 className="forbidden-title">403 - Access Forbidden</h1>
 
         <p className="forbidden-message">
-          You cannot access this resource. You may not have the necessary permissions to view this page.
+          You cannot access this resource. You may not have the necessary permissions to view this
+          page.
         </p>
 
         <p className="forbidden-subtitle">

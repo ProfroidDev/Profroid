@@ -44,7 +44,10 @@
   font-weight: 600;
   cursor: pointer;
   box-shadow: 0 2px 8px rgba(122, 9, 1, 0.08);
-  transition: background 0.2s, box-shadow 0.2s, transform 0.2s;
+  transition:
+    background 0.2s,
+    box-shadow 0.2s,
+    transform 0.2s;
   white-space: nowrap;
 }
 
@@ -71,7 +74,9 @@
   border-radius: 10px;
   background: #fff;
   color: #333;
-  transition: border-color 0.2s, box-shadow 0.2s;
+  transition:
+    border-color 0.2s,
+    box-shadow 0.2s;
   box-sizing: border-box;
 }
 
@@ -102,7 +107,9 @@
   border-radius: 16px;
   overflow: hidden;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  transition:
+    transform 0.3s ease,
+    box-shadow 0.3s ease;
   display: flex;
   flex-direction: column;
   height: 100%;
@@ -196,7 +203,10 @@
   font-weight: 600;
   cursor: pointer;
   box-shadow: 0 2px 8px rgba(122, 9, 1, 0.08);
-  transition: background 0.2s, box-shadow 0.2s, transform 0.2s;
+  transition:
+    background 0.2s,
+    box-shadow 0.2s,
+    transform 0.2s;
   width: 100%;
 }
 
@@ -217,7 +227,10 @@
   font-weight: 600;
   cursor: pointer;
   box-shadow: 0 2px 8px rgba(122, 9, 1, 0.08);
-  transition: background 0.2s, box-shadow 0.2s, transform 0.2s;
+  transition:
+    background 0.2s,
+    box-shadow 0.2s,
+    transform 0.2s;
 }
 
 .btn-edit-part:hover {
@@ -237,7 +250,10 @@
   font-weight: 600;
   cursor: pointer;
   box-shadow: 0 2px 8px rgba(122, 9, 1, 0.08);
-  transition: background 0.2s, box-shadow 0.2s, transform 0.2s;
+  transition:
+    background 0.2s,
+    box-shadow 0.2s,
+    transform 0.2s;
 }
 
 .btn-delete-part:hover {
@@ -275,7 +291,11 @@
   font-weight: 600;
   cursor: pointer;
   box-shadow: 0 2px 8px rgba(122, 9, 1, 0.08);
-  transition: background 0.2s, box-shadow 0.2s, transform 0.2s, opacity 0.2s;
+  transition:
+    background 0.2s,
+    box-shadow 0.2s,
+    transform 0.2s,
+    opacity 0.2s;
 }
 
 .pagination-btn:hover:not(:disabled) {
@@ -307,7 +327,10 @@
   font-size: 0.9rem;
   font-weight: 600;
   cursor: pointer;
-  transition: background 0.2s, color 0.2s, transform 0.2s;
+  transition:
+    background 0.2s,
+    color 0.2s,
+    transform 0.2s;
   display: flex;
   align-items: center;
   justify-content: center;

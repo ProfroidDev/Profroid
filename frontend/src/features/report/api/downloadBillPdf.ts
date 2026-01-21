@@ -1,4 +1,4 @@
-import axiosInstance from "../../../shared/api/axiosInstance";
+import axiosInstance from '../../../shared/api/axiosInstance';
 
 /**
  * Download bill as PDF
@@ -6,7 +6,7 @@ import axiosInstance from "../../../shared/api/axiosInstance";
  */
 export const downloadBillPdf = async (billId: string): Promise<Blob> => {
   const response = await axiosInstance.get(`/bills/${billId}/pdf`, {
-    responseType: "blob",
+    responseType: 'blob',
   });
   return response.data;
 };

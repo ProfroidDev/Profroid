@@ -1,12 +1,12 @@
-import { adminTest as test, expect } from "../../fixtures/authFixtures";
+import { adminTest as test, expect } from '../../fixtures/authFixtures';
 
-test.describe("Services Page - Edit Service", () => {
+test.describe('Services Page - Edit Service', () => {
   test.beforeEach(async ({ loggedInAdminHomePage, jobPage }) => {
     await loggedInAdminHomePage.goToServices();
     await jobPage.goto();
   });
 
-  test("User can modify a service", async ({ jobPage }) => {
+  test('User can modify a service', async ({ jobPage }) => {
     // First, create a service to modify
     const timestamp = Date.now();
     const serviceName = `Test Service ${timestamp}`;
@@ -17,9 +17,9 @@ test.describe("Services Page - Edit Service", () => {
     await jobPage.openCreateModal();
     await jobPage.createService({
       jobName: serviceName,
-      jobDescription: "Original Description",
-      hourlyRate: "100",
-      estimatedDurationMinutes: "60",
+      jobDescription: 'Original Description',
+      hourlyRate: '100',
+      estimatedDurationMinutes: '60',
     });
 
     await jobPage.expectSuccessToast(/created successfully/i);
@@ -34,8 +34,8 @@ test.describe("Services Page - Edit Service", () => {
     await jobPage.updateService({
       jobName: newServiceName,
       jobDescription: newDescription,
-      hourlyRate: "200",
-      estimatedDurationMinutes: "90",
+      hourlyRate: '200',
+      estimatedDurationMinutes: '90',
     });
 
     // Verify success message
@@ -45,13 +45,9 @@ test.describe("Services Page - Edit Service", () => {
     await jobPage.expectServiceVisible(newServiceName);
   });
 
-  test("User can cancel modifying a service", async ({ jobPage }) => {
-    const firstServiceCard = jobPage.page
-      .locator(".service-card-wrapper")
-      .first();
-    const serviceName = await firstServiceCard
-      .locator(".service-title")
-      .textContent();
+  test('User can cancel modifying a service', async ({ jobPage }) => {
+    const firstServiceCard = jobPage.page.locator('.service-card-wrapper').first();
+    const serviceName = await firstServiceCard.locator('.service-title').textContent();
 
     if (!serviceName) {
       test.skip();
@@ -63,7 +59,7 @@ test.describe("Services Page - Edit Service", () => {
 
     // Make a change
     await jobPage.jobNameUpdateInput().clear();
-    await jobPage.jobNameUpdateInput().fill("Some new name");
+    await jobPage.jobNameUpdateInput().fill('Some new name');
 
     // Cancel instead of saving
     await jobPage.cancelUpdateButton().click();

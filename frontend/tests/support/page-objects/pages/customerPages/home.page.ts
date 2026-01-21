@@ -1,56 +1,53 @@
 import { Page } from '@playwright/test';
 
 export class HomePage {
+  constructor(private page: Page) {}
 
-    constructor(private page: Page) {}
+  // -------------------------
+  // Navigation
+  // -------------------------
 
-    // -------------------------
-    // Navigation
-    // -------------------------
+  public async goto() {
+    await this.page.goto('http://localhost:5173');
+  }
 
-    public async goto() {
-        await this.page.goto('http://localhost:5173');
-    }
+  public async waitForHomeURL() {
+    await this.page.waitForURL('http://localhost:5173');
+  }
 
-    public async waitForHomeURL() {
-        await this.page.waitForURL('http://localhost:5173');
-    }
+  // -------------------------
+  // Locators
+  // -------------------------
 
-    // -------------------------
-    // Locators
-    // -------------------------
+  partLink = () => this.page.locator('nav').getByRole('link', { name: 'Parts' });
+  serviceLink = () => this.page.locator('nav').getByRole('link', { name: 'Services' });
+  customerLink = () => this.page.locator('nav').getByRole('link', { name: 'Customers' });
+  employeeLink = () => this.page.getByRole('link', { name: 'Employees' });
+  customerAppointmentLink = () => this.page.getByRole('link', { name: 'My Appointments' });
+  technicianAppointmentLink = () => this.page.getByRole('link', { name: 'My Jobs' });
+  hamburgerMenuButton = () => this.page.getByRole('button', { name: 'Toggle navigation' });
 
-    partLink = () => this.page.locator('nav').getByRole('link', { name: 'Parts' });
-    serviceLink = () => this.page.locator('nav').getByRole('link', { name: 'Services' });
-    customerLink = () =>
-  this.page.locator('nav').getByRole('link', { name: 'Customers' });
-    employeeLink = () => this.page.getByRole('link', { name: 'Employees' });
-    customerAppointmentLink = () => this.page.getByRole('link', { name: 'My Appointments' });
-    technicianAppointmentLink = () => this.page.getByRole('link', { name: 'My Jobs' });
-    hamburgerMenuButton = () => this.page.getByRole('button', { name: 'Toggle navigation' });
+  // -------------------------
+  // Actions - (clean helpers)
+  // -------------------------
 
-    // -------------------------
-    // Actions - (clean helpers)
-    // -------------------------
+  public async goToCustomers() {
+    await this.customerLink().click();
+  }
 
-    public async goToCustomers() {
-        await this.customerLink().click();
-    }
+  public async goToParts() {
+    await this.partLink().click();
+  }
 
-    public async goToParts() {
-        await this.partLink().click();
-    }
+  public async goToEmployees() {
+    await this.employeeLink().click();
+  }
 
-    public async goToEmployees() {
-        await this.employeeLink().click();
-    }
+  public async goToServices() {
+    await this.serviceLink().click();
+  }
 
-    public async goToServices() {
-        await this.serviceLink().click();
-    }
-
-    public async goToCustomerAppointments() {
-        await this.customerAppointmentLink().click();
-    }
-
+  public async goToCustomerAppointments() {
+    await this.customerAppointmentLink().click();
+  }
 }

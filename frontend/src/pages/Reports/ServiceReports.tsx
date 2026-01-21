@@ -1,16 +1,16 @@
-import { useState, useEffect, useMemo } from "react";
-import { motion, AnimatePresence } from "framer-motion";
-import { Search, Eye, Edit2, FileText, Download } from "lucide-react";
-import { useTranslation } from "react-i18next";
-import { getAllReports } from "../../features/report/api/getAllReports";
-import ViewReportModal from "../../features/report/components/ViewReportModal";
-import { exportReportPdf } from "../../features/report/api/exportReportPdf";
-import ReportFormModal from "../../features/report/components/ReportFormModal";
-import type { ReportResponseModel } from "../../features/report/models/ReportResponseModel";
-import type { BillResponseModel } from "../../features/report/models/BillResponseModel";
-import type { AppointmentResponseModel } from "../../features/appointment/models/AppointmentResponseModel";
-import { getAllBills } from "../../features/report/api/getAllBills";
-import "./ServiceReports.css";
+import { useState, useEffect, useMemo } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Search, Eye, Edit2, FileText, Download } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
+import { getAllReports } from '../../features/report/api/getAllReports';
+import ViewReportModal from '../../features/report/components/ViewReportModal';
+import { exportReportPdf } from '../../features/report/api/exportReportPdf';
+import ReportFormModal from '../../features/report/components/ReportFormModal';
+import type { ReportResponseModel } from '../../features/report/models/ReportResponseModel';
+import type { BillResponseModel } from '../../features/report/models/BillResponseModel';
+import type { AppointmentResponseModel } from '../../features/appointment/models/AppointmentResponseModel';
+import { getAllBills } from '../../features/report/api/getAllBills';
+import './ServiceReports.css';
 
 const ITEMS_PER_PAGE = 15;
 
@@ -19,10 +19,13 @@ const ServiceReports = () => {
   const [reports, setReports] = useState<ReportResponseModel[]>([]);
   const [bills, setBills] = useState<Map<string, BillResponseModel>>(new Map());
   const [loading, setLoading] = useState(false);
-  const [searchQuery, setSearchQuery] = useState("");
+  const [searchQuery, setSearchQuery] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
-  const [toastMessage, setToastMessage] = useState<{ text: string; type: "success" | "error" } | null>(null);
-  
+  const [toastMessage, setToastMessage] = useState<{
+    text: string;
+    type: 'success' | 'error';
+  } | null>(null);
+
   // Modal states
   const [viewingReport, setViewingReport] = useState<ReportResponseModel | null>(null);
   const [editingReport, setEditingReport] = useState<ReportResponseModel | null>(null);
@@ -33,7 +36,7 @@ const ServiceReports = () => {
       const data = await getAllReports();
       setReports(data);
     } catch (error) {
-      showToast(t("messages.failedToLoadReports"), "error");
+      showToast(t('messages.failedToLoadReports'), 'error');
       console.error(error);
     } finally {
       setLoading(false);
@@ -50,7 +53,7 @@ const ServiceReports = () => {
       });
       setBills(billMap);
     } catch (error) {
-      console.error("Failed to load bills:", error);
+      console.error('Failed to load bills:', error);
     }
   };
 
@@ -61,7 +64,7 @@ const ServiceReports = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const showToast = (text: string, type: "success" | "error") => {
+  const showToast = (text: string, type: 'success' | 'error') => {
     setToastMessage({ text, type });
     setTimeout(() => setToastMessage(null), 3000);
   };
@@ -70,9 +73,10 @@ const ServiceReports = () => {
   const filteredReports = useMemo(() => {
     return reports.filter((report) => {
       const customerName = `${report.customerFirstName} ${report.customerLastName}`.toLowerCase();
-      const technicianName = `${report.technicianFirstName} ${report.technicianLastName}`.toLowerCase();
+      const technicianName =
+        `${report.technicianFirstName} ${report.technicianLastName}`.toLowerCase();
       const searchLower = searchQuery.toLowerCase();
-      
+
       return (
         customerName.includes(searchLower) ||
         technicianName.includes(searchLower) ||
@@ -112,27 +116,27 @@ const ServiceReports = () => {
     return {
       appointmentId: report.appointmentId,
       appointmentDate: report.appointmentDate,
-      status: "COMPLETED", // Assuming completed since report exists
+      status: 'COMPLETED', // Assuming completed since report exists
       customerId: report.customerId,
       customerFirstName: report.customerFirstName,
       customerLastName: report.customerLastName,
-      customerPhoneNumbers: report.customerPhone 
-        ? [{ type: "MOBILE", number: report.customerPhone }] 
+      customerPhoneNumbers: report.customerPhone
+        ? [{ type: 'MOBILE', number: report.customerPhone }]
         : [],
       technicianId: report.technicianId,
       technicianFirstName: report.technicianFirstName,
       technicianLastName: report.technicianLastName,
       jobName: report.jobName,
-      jobType: "", // Not available in report
+      jobType: '', // Not available in report
       hourlyRate: report.hourlyRate,
-      cellarName: "", // Not available in report
-      description: "", // Not available in report
+      cellarName: '', // Not available in report
+      description: '', // Not available in report
       appointmentAddress: {
-        streetAddress: "",
-        city: "",
-        province: "",
-        postalCode: "",
-        country: "",
+        streetAddress: '',
+        city: '',
+        province: '',
+        postalCode: '',
+        country: '',
       },
     };
   };
@@ -142,25 +146,25 @@ const ServiceReports = () => {
   };
 
   const handleEditSuccess = (message: string) => {
-    showToast(message, "success");
+    showToast(message, 'success');
     setEditingReport(null);
     loadReports();
   };
 
   const handleEditError = (message: string) => {
-    showToast(message, "error");
+    showToast(message, 'error');
   };
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case "COMPLETED":
-        return "status-completed";
-      case "SCHEDULED":
-        return "status-scheduled";
-      case "CANCELLED":
-        return "status-cancelled";
+      case 'COMPLETED':
+        return 'status-completed';
+      case 'SCHEDULED':
+        return 'status-scheduled';
+      case 'CANCELLED':
+        return 'status-cancelled';
       default:
-        return "";
+        return '';
     }
   };
 
@@ -169,11 +173,7 @@ const ServiceReports = () => {
     if (!bill) {
       return <span className="bill-status-badge pending">Pending</span>;
     }
-    return (
-      <span className={`bill-status-badge ${bill.status.toLowerCase()}`}>
-        {bill.status}
-      </span>
-    );
+    return <span className={`bill-status-badge ${bill.status.toLowerCase()}`}>{bill.status}</span>;
   };
 
   return (
@@ -185,9 +185,9 @@ const ServiceReports = () => {
           <div className="page-title-section">
             <h1 className="page-title">
               <FileText className="title-icon" />
-              {t("pages.serviceReports.title")}
+              {t('pages.serviceReports.title')}
             </h1>
-            <p className="page-subtitle">{t("pages.serviceReports.subtitle")}</p>
+            <p className="page-subtitle">{t('pages.serviceReports.subtitle')}</p>
           </div>
         </div>
 
@@ -197,7 +197,7 @@ const ServiceReports = () => {
             <Search size={18} className="search-icon" />
             <input
               type="text"
-              placeholder={t("pages.serviceReports.searchPlaceholder")}
+              placeholder={t('pages.serviceReports.searchPlaceholder')}
               value={searchQuery}
               onChange={(e: React.ChangeEvent<HTMLInputElement>) => setSearchQuery(e.target.value)}
               className="search-input"
@@ -210,15 +210,19 @@ const ServiceReports = () => {
           <table className="reports-table">
             <thead>
               <tr>
-                <th className="report-id-col-header">{t("pages.serviceReports.table.reportId")}</th>
-                <th>{t("pages.serviceReports.table.customer")}</th>
-                <th>{t("pages.serviceReports.table.service")}</th>
-                <th>{t("pages.appointments.technician")}</th>
-                <th>{t("pages.serviceReports.table.date")}</th>
-                <th className="status-col-narrow-header">{t("pages.serviceReports.table.status")}</th>
-                <th className="status-col-narrow-header">{t("pages.serviceReports.table.billStatus")}</th>
-                <th className="text-right">{t("pages.serviceReports.table.total")}</th>
-                <th className="actions-col">{t("pages.serviceReports.table.actions")}</th>
+                <th className="report-id-col-header">{t('pages.serviceReports.table.reportId')}</th>
+                <th>{t('pages.serviceReports.table.customer')}</th>
+                <th>{t('pages.serviceReports.table.service')}</th>
+                <th>{t('pages.appointments.technician')}</th>
+                <th>{t('pages.serviceReports.table.date')}</th>
+                <th className="status-col-narrow-header">
+                  {t('pages.serviceReports.table.status')}
+                </th>
+                <th className="status-col-narrow-header">
+                  {t('pages.serviceReports.table.billStatus')}
+                </th>
+                <th className="text-right">{t('pages.serviceReports.table.total')}</th>
+                <th className="actions-col">{t('pages.serviceReports.table.actions')}</th>
               </tr>
             </thead>
             <tbody>
@@ -256,15 +260,13 @@ const ServiceReports = () => {
                         {report.appointmentStatus}
                       </span>
                     </td>
-                    <td className="status-col-narrow">
-                      {getBillStatusBadge(report.reportId)}
-                    </td>
+                    <td className="status-col-narrow">{getBillStatusBadge(report.reportId)}</td>
                     <td className="text-right price-col">{formatCurrency(report.total)}</td>
                     <td className="actions-col">
                       <motion.button
                         className="icon-btn"
                         onClick={() => setViewingReport(report)}
-                        title={t("pages.serviceReports.actions.viewDetails")}
+                        title={t('pages.serviceReports.actions.viewDetails')}
                         whileHover={{ scale: 1.1 }}
                         whileTap={{ scale: 0.95 }}
                       >
@@ -276,19 +278,19 @@ const ServiceReports = () => {
                           try {
                             const blob = await exportReportPdf(report.reportId);
                             const url = window.URL.createObjectURL(blob);
-                            const link = document.createElement("a");
+                            const link = document.createElement('a');
                             link.href = url;
                             link.download = `report_${report.reportId}.pdf`;
                             document.body.appendChild(link);
                             link.click();
                             link.remove();
                             window.URL.revokeObjectURL(url);
-                            showToast(t("messages.reportPDFDownloaded"), "success");
+                            showToast(t('messages.reportPDFDownloaded'), 'success');
                           } catch {
-                            showToast(t("messages.failedToDownloadPDF"), "error");
+                            showToast(t('messages.failedToDownloadPDF'), 'error');
                           }
                         }}
-                        title={t("pages.serviceReports.actions.downloadPdf")}
+                        title={t('pages.serviceReports.actions.downloadPdf')}
                         whileHover={{ scale: 1.1 }}
                         whileTap={{ scale: 0.95 }}
                       >
@@ -297,7 +299,7 @@ const ServiceReports = () => {
                       <motion.button
                         className="icon-btn"
                         onClick={() => handleEditReport(report)}
-                        title={t("pages.serviceReports.actions.editReport")}
+                        title={t('pages.serviceReports.actions.editReport')}
                         whileHover={{ scale: 1.1 }}
                         whileTap={{ scale: 0.95 }}
                       >
@@ -313,7 +315,9 @@ const ServiceReports = () => {
 
         {/* Stats Footer */}
         <div className="stats-footer">
-          <span>{t("pages.serviceReports.summary.totalReports")}: {filteredReports.length}</span>
+          <span>
+            {t('pages.serviceReports.summary.totalReports')}: {filteredReports.length}
+          </span>
         </div>
 
         {/* Pagination Controls */}
@@ -327,7 +331,7 @@ const ServiceReports = () => {
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
               >
-                {t("pages.serviceReports.pagination.previous")}
+                {t('pages.serviceReports.pagination.previous')}
               </motion.button>
 
               <div className="pagination-pages">
@@ -336,11 +340,14 @@ const ServiceReports = () => {
                   const startPage = Math.max(1, currentPage - Math.floor(PAGES_TO_SHOW / 2));
                   const endPage = Math.min(totalPages, startPage + PAGES_TO_SHOW - 1);
                   const displayStartPage = Math.max(1, endPage - PAGES_TO_SHOW + 1);
-                  
-                  return Array.from({ length: endPage - displayStartPage + 1 }, (_, i) => displayStartPage + i).map((page) => (
+
+                  return Array.from(
+                    { length: endPage - displayStartPage + 1 },
+                    (_, i) => displayStartPage + i
+                  ).map((page) => (
                     <motion.button
                       key={page}
-                      className={`pagination-page ${currentPage === page ? "active" : ""}`}
+                      className={`pagination-page ${currentPage === page ? 'active' : ''}`}
                       onClick={() => setCurrentPage(page)}
                       whileHover={{ scale: 1.1 }}
                       whileTap={{ scale: 0.95 }}
@@ -358,11 +365,19 @@ const ServiceReports = () => {
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
               >
-                {t("pages.serviceReports.pagination.next")}
+                {t('pages.serviceReports.pagination.next')}
               </motion.button>
             </div>
             <div className="pagination-info">
-              {t("pages.serviceReports.pagination.pageInfo", { current: currentPage, total: totalPages })} • {t("pages.serviceReports.pagination.showing", { showing: paginatedReports.length, total: filteredReports.length })}
+              {t('pages.serviceReports.pagination.pageInfo', {
+                current: currentPage,
+                total: totalPages,
+              })}{' '}
+              •{' '}
+              {t('pages.serviceReports.pagination.showing', {
+                showing: paginatedReports.length,
+                total: filteredReports.length,
+              })}
             </div>
           </>
         )}

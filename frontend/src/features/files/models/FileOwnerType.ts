@@ -1,1 +1,1 @@
-export type FileOwnerType = "PART" | "APPOINTMENT" | "CUSTOMER";
+export type FileOwnerType = 'PART' | 'APPOINTMENT' | 'CUSTOMER';

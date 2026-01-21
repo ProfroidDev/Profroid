@@ -1,1 +1,1 @@
-export type CellarType = "PRIVATE" | "COMMERCIAL" | "PROFESSIONAL" | "MODULAR";
+export type CellarType = 'PRIVATE' | 'COMMERCIAL' | 'PROFESSIONAL' | 'MODULAR';

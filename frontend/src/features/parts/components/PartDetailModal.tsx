@@ -1,6 +1,6 @@
-import React from "react";
-import type { PartResponseModel } from "../models/PartResponseModel";
-import "./PartDetailModal.css";
+import React from 'react';
+import type { PartResponseModel } from '../models/PartResponseModel';
+import './PartDetailModal.css';
 
 interface PartDetailModalProps {
   part: PartResponseModel | null;
@@ -33,11 +33,7 @@ export default function PartDetailModal({
 
         <div className="modal-body">
           <div className="modal-image-container">
-            <img
-              src={imageUrl}
-              alt={part.name}
-              className="modal-image"
-            />
+            <img src={imageUrl} alt={part.name} className="modal-image" />
           </div>
 
           <div className="modal-details">
@@ -53,7 +49,9 @@ export default function PartDetailModal({
 
             <div className="detail-row">
               <span className="detail-label">Availability:</span>
-              <span className={`availability-badge ${part.available ? 'available' : 'unavailable'}`}>
+              <span
+                className={`availability-badge ${part.available ? 'available' : 'unavailable'}`}
+              >
                 {part.available ? 'Available' : 'Unavailable'}
               </span>
             </div>

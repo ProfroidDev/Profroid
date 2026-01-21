@@ -39,9 +39,8 @@ export function ProtectedRoute({ children, requiredRoles }: ProtectedRouteProps)
       userRole = user.employeeType?.toUpperCase() || '';
     }
 
-    const hasRequiredRole = userRole && requiredRoles.some(
-      role => userRole === role.toUpperCase()
-    );
+    const hasRequiredRole =
+      userRole && requiredRoles.some((role) => userRole === role.toUpperCase());
 
     if (!hasRequiredRole) {
       // User is authenticated but doesn't have required role

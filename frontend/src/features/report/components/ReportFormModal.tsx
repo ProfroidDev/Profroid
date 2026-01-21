@@ -1,14 +1,14 @@
-import React, { useState, useEffect } from "react";
-import { useTranslation } from "react-i18next";
-import { X, Plus, Trash2, Search } from "lucide-react";
-import { createReport } from "../api/createReport";
-import { updateReport } from "../api/updateReport";
-import { getAllParts } from "../../parts/api/getAllParts";
-import type { AppointmentResponseModel } from "../../appointment/models/AppointmentResponseModel";
-import type { ReportRequestModel, ReportPartRequestModel } from "../models/ReportRequestModel";
-import type { ReportResponseModel } from "../models/ReportResponseModel";
-import type { PartResponseModel } from "../../parts/models/PartResponseModel";
-import "./ReportFormModal.css";
+import React, { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
+import { X, Plus, Trash2, Search } from 'lucide-react';
+import { createReport } from '../api/createReport';
+import { updateReport } from '../api/updateReport';
+import { getAllParts } from '../../parts/api/getAllParts';
+import type { AppointmentResponseModel } from '../../appointment/models/AppointmentResponseModel';
+import type { ReportRequestModel, ReportPartRequestModel } from '../models/ReportRequestModel';
+import type { ReportResponseModel } from '../models/ReportResponseModel';
+import type { PartResponseModel } from '../../parts/models/PartResponseModel';
+import './ReportFormModal.css';
 
 interface ReportFormModalProps {
   isOpen: boolean;
@@ -33,14 +33,14 @@ export default function ReportFormModal({
 }: ReportFormModalProps): React.ReactElement | null {
   const { t } = useTranslation();
   const [loading, setLoading] = useState(false);
-  const [hoursWorked, setHoursWorked] = useState("");
-  const [frais, setFrais] = useState("");
-  const [fraisDeplacement, setFraisDeplacement] = useState("");
+  const [hoursWorked, setHoursWorked] = useState('');
+  const [frais, setFrais] = useState('');
+  const [fraisDeplacement, setFraisDeplacement] = useState('');
   const [selectedParts, setSelectedParts] = useState<SelectedPart[]>([]);
-  
+
   // Part search
   const [showPartSearch, setShowPartSearch] = useState(false);
-  const [partSearchTerm, setPartSearchTerm] = useState("");
+  const [partSearchTerm, setPartSearchTerm] = useState('');
   const [availableParts, setAvailableParts] = useState<PartResponseModel[]>([]);
   const [loadingParts, setLoadingParts] = useState(false);
 
@@ -54,8 +54,8 @@ export default function ReportFormModal({
       const parts = await getAllParts();
       setAvailableParts(parts.filter((p) => p.available));
     } catch (error) {
-      console.error("Error loading parts:", error);
-      onError("Failed to load parts inventory");
+      console.error('Error loading parts:', error);
+      onError('Failed to load parts inventory');
     } finally {
       setLoadingParts(false);
     }
@@ -73,14 +73,14 @@ export default function ReportFormModal({
           partName: p.partName,
           quantity: p.quantity,
           price: p.price,
-          notes: p.notes || "",
+          notes: p.notes || '',
         }))
       );
     } else {
       // Reset form for new report
-      setHoursWorked("");
-      setFrais("");
-      setFraisDeplacement("");
+      setHoursWorked('');
+      setFrais('');
+      setFraisDeplacement('');
       setSelectedParts([]);
     }
   }, [existingReport, isOpen]);
@@ -97,18 +97,15 @@ export default function ReportFormModal({
     const hours = parseFloat(hoursWorked) || 0;
     const fraisAmount = parseFloat(frais) || 0;
     const fraisDeplacementAmount = parseFloat(fraisDeplacement) || 0;
-    
+
     const laborCost = hours * appointment.hourlyRate;
-    const partsCost = selectedParts.reduce(
-      (sum, part) => sum + part.quantity * part.price,
-      0
-    );
-    
+    const partsCost = selectedParts.reduce((sum, part) => sum + part.quantity * part.price, 0);
+
     const subtotal = laborCost + fraisAmount + fraisDeplacementAmount + partsCost;
     const tpsAmount = subtotal * TPS_RATE;
     const tvqAmount = subtotal * TVQ_RATE;
     const total = subtotal + tpsAmount + tvqAmount;
-    
+
     return {
       laborCost,
       partsCost,
@@ -119,15 +116,16 @@ export default function ReportFormModal({
     };
   };
 
-  const filteredParts = availableParts.filter((part) =>
-    part.name.toLowerCase().includes(partSearchTerm.toLowerCase()) ||
-    part.partId.toLowerCase().includes(partSearchTerm.toLowerCase())
+  const filteredParts = availableParts.filter(
+    (part) =>
+      part.name.toLowerCase().includes(partSearchTerm.toLowerCase()) ||
+      part.partId.toLowerCase().includes(partSearchTerm.toLowerCase())
   );
 
   const handleAddPart = (part: PartResponseModel) => {
     // Check if part already added
     if (selectedParts.some((p) => p.partId === part.partId)) {
-      onError("This part is already added");
+      onError('This part is already added');
       return;
     }
 
@@ -138,11 +136,11 @@ export default function ReportFormModal({
         partName: part.name,
         quantity: 1,
         price: 0, // Technician will set price manually
-        notes: "",
+        notes: '',
       },
     ]);
     setShowPartSearch(false);
-    setPartSearchTerm("");
+    setPartSearchTerm('');
   };
 
   const handleRemovePart = (partId: string) => {
@@ -151,13 +149,11 @@ export default function ReportFormModal({
 
   const handlePartChange = (
     partId: string,
-    field: "quantity" | "price" | "notes",
+    field: 'quantity' | 'price' | 'notes',
     value: string | number
   ) => {
     setSelectedParts(
-      selectedParts.map((p) =>
-        p.partId === partId ? { ...p, [field]: value } : p
-      )
+      selectedParts.map((p) => (p.partId === partId ? { ...p, [field]: value } : p))
     );
   };
 
@@ -167,19 +163,19 @@ export default function ReportFormModal({
     // Validation
     const hoursValue = parseFloat(hoursWorked) || 0;
     if (hoursValue < 0) {
-      onError("Please enter valid hours worked");
+      onError('Please enter valid hours worked');
       return;
     }
 
     const fraisValue = parseFloat(frais) || 0;
     if (fraisValue < 0) {
-      onError("Please enter valid other costs amount");
+      onError('Please enter valid other costs amount');
       return;
     }
 
     const fraisDeplacementValue = parseFloat(fraisDeplacement) || 0;
     if (fraisDeplacementValue < 0) {
-      onError("Please enter valid travel expenses amount");
+      onError('Please enter valid travel expenses amount');
       return;
     }
 
@@ -212,21 +208,21 @@ export default function ReportFormModal({
       setLoading(true);
       if (existingReport) {
         await updateReport(existingReport.reportId, requestData);
-        onSuccess("Report updated successfully");
+        onSuccess('Report updated successfully');
       } else {
         await createReport(requestData);
-        onSuccess("Report created successfully");
+        onSuccess('Report created successfully');
       }
       onClose();
     } catch (error: unknown) {
-      console.error("Error saving report:", error);
-      let errorMessage = "Failed to save report";
-      if (typeof error === "object" && error && "response" in error) {
+      console.error('Error saving report:', error);
+      let errorMessage = 'Failed to save report';
+      if (typeof error === 'object' && error && 'response' in error) {
         const resp = (error as { response?: { data?: unknown } }).response;
         if (resp?.data) {
-          if (typeof resp.data === "string") {
+          if (typeof resp.data === 'string') {
             errorMessage = resp.data;
-          } else if (typeof resp.data === "object") {
+          } else if (typeof resp.data === 'object') {
             const data = resp.data as Record<string, unknown>;
             errorMessage = (data.message as string) || (data.error as string) || errorMessage;
           }
@@ -246,7 +242,7 @@ export default function ReportFormModal({
     <div className="modal-overlay" onClick={onClose}>
       <div className="modal-content report-modal" onClick={(e) => e.stopPropagation()}>
         <div className="modal-header">
-          <h2>{existingReport ? t("common.edit") + " Report" : "Create Work Report"}</h2>
+          <h2>{existingReport ? t('common.edit') + ' Report' : 'Create Work Report'}</h2>
           <button className="modal-close" onClick={onClose}>
             <X size={24} />
           </button>
@@ -259,7 +255,9 @@ export default function ReportFormModal({
             <div className="info-grid">
               <div className="info-item">
                 <label>Customer Name:</label>
-                <span>{appointment.customerFirstName} {appointment.customerLastName}</span>
+                <span>
+                  {appointment.customerFirstName} {appointment.customerLastName}
+                </span>
               </div>
               <div className="info-item">
                 <label>Job:</label>
@@ -397,7 +395,7 @@ export default function ReportFormModal({
                           min="1"
                           value={part.quantity}
                           onChange={(e) =>
-                            handlePartChange(part.partId, "quantity", parseInt(e.target.value) || 1)
+                            handlePartChange(part.partId, 'quantity', parseInt(e.target.value) || 1)
                           }
                         />
                       </div>
@@ -409,9 +407,9 @@ export default function ReportFormModal({
                           min="0"
                           className="no-arrows"
                           placeholder="0.00"
-                          value={part.price || ""}
+                          value={part.price || ''}
                           onChange={(e) =>
-                            handlePartChange(part.partId, "price", parseFloat(e.target.value) || 0)
+                            handlePartChange(part.partId, 'price', parseFloat(e.target.value) || 0)
                           }
                         />
                       </div>
@@ -425,9 +423,7 @@ export default function ReportFormModal({
                         type="text"
                         placeholder="Notes (optional)"
                         value={part.notes}
-                        onChange={(e) =>
-                          handlePartChange(part.partId, "notes", e.target.value)
-                        }
+                        onChange={(e) => handlePartChange(part.partId, 'notes', e.target.value)}
                       />
                     </div>
                   </div>
@@ -441,16 +437,18 @@ export default function ReportFormModal({
             <h3>Summary</h3>
             <div className="totals-grid">
               <div className="total-row">
-                <span>Labor Cost ({hoursWorked}h × ${appointment.hourlyRate}/h):</span>
+                <span>
+                  Labor Cost ({hoursWorked}h × ${appointment.hourlyRate}/h):
+                </span>
                 <span>${totals.laborCost.toFixed(2)}</span>
               </div>
               <div className="total-row">
                 <span>Other Costs:</span>
-                <span>${parseFloat(frais || "0").toFixed(2)}</span>
+                <span>${parseFloat(frais || '0').toFixed(2)}</span>
               </div>
               <div className="total-row">
                 <span>Travel Expenses:</span>
-                <span>${parseFloat(fraisDeplacement || "0").toFixed(2)}</span>
+                <span>${parseFloat(fraisDeplacement || '0').toFixed(2)}</span>
               </div>
               <div className="total-row">
                 <span>Parts Cost:</span>
@@ -481,7 +479,7 @@ export default function ReportFormModal({
               Cancel
             </button>
             <button type="submit" className="btn-primary-report" disabled={loading}>
-              {loading ? "Saving..." : existingReport ? "Update Report" : "Create Report"}
+              {loading ? 'Saving...' : existingReport ? 'Update Report' : 'Create Report'}
             </button>
           </div>
         </form>

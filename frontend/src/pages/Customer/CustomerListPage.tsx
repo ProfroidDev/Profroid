@@ -1,30 +1,28 @@
-import React, { useEffect, useState } from "react";
-import { useTranslation } from "react-i18next";
-import useAuthStore from "../../features/authentication/store/authStore";
-import { getCustomers } from "../../features/customer/api/getAllCustomers";
-import { getCustomer } from "../../features/customer/api/getCustomerById";
-import { deleteCustomer } from "../../features/customer/api/deleteCustomer";
-import ConfirmationModal from "../../components/ConfirmationModal";
+import React, { useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
+import useAuthStore from '../../features/authentication/store/authStore';
+import { getCustomers } from '../../features/customer/api/getAllCustomers';
+import { getCustomer } from '../../features/customer/api/getCustomerById';
+import { deleteCustomer } from '../../features/customer/api/deleteCustomer';
+import ConfirmationModal from '../../components/ConfirmationModal';
 
-import type { CustomerResponseModel } from "../../features/customer/models/CustomerResponseModel";
+import type { CustomerResponseModel } from '../../features/customer/models/CustomerResponseModel';
 
-import "./CustomerListPage.css";
+import './CustomerListPage.css';
 
 export default function CustomerListPage(): React.ReactElement {
   const { t } = useTranslation();
   const { user } = useAuthStore();
-  const isAdmin = user?.employeeType === "ADMIN";
+  const isAdmin = user?.employeeType === 'ADMIN';
   const [customers, setCustomers] = useState<CustomerResponseModel[]>([]);
   const [loading, setLoading] = useState(false);
 
-  const [selectedCustomer, setSelectedCustomer] =
-    useState<CustomerResponseModel | null>(null);
+  const [selectedCustomer, setSelectedCustomer] = useState<CustomerResponseModel | null>(null);
   const [modalOpen, setModalOpen] = useState(false);
   const [detailLoading, setDetailLoading] = useState(false);
   // Delete confirmation
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
-  const [deleteTarget, setDeleteTarget] =
-    useState<CustomerResponseModel | null>(null);
+  const [deleteTarget, setDeleteTarget] = useState<CustomerResponseModel | null>(null);
   const [deleteLoading, setDeleteLoading] = useState(false);
   const [deleteError, setDeleteError] = useState<string | null>(null);
 
@@ -77,9 +75,7 @@ export default function CustomerListPage(): React.ReactElement {
 
     try {
       await deleteCustomer(deleteTarget.customerId);
-      setCustomers((prev) =>
-        prev.filter((c) => c.customerId !== deleteTarget.customerId)
-      );
+      setCustomers((prev) => prev.filter((c) => c.customerId !== deleteTarget.customerId));
 
       if (selectedCustomer?.customerId === deleteTarget.customerId) {
         setSelectedCustomer(null);
@@ -88,7 +84,7 @@ export default function CustomerListPage(): React.ReactElement {
 
       closeDelete();
     } catch {
-      setDeleteError(t("messages.failedToDeleteCustomer"));
+      setDeleteError(t('messages.failedToDeleteCustomer'));
     } finally {
       setDeleteLoading(false);
     }
@@ -116,10 +112,7 @@ export default function CustomerListPage(): React.ReactElement {
                     {c.firstName} {c.lastName}
                   </td>
                   <td>
-                    <button
-                      className="btn-view-light"
-                      onClick={() => openDetails(c.customerId)}
-                    >
+                    <button className="btn-view-light" onClick={() => openDetails(c.customerId)}>
                       {t('pages.customers.viewDetails')}
                     </button>
                     {!isAdmin && (
@@ -142,10 +135,7 @@ export default function CustomerListPage(): React.ReactElement {
       <ConfirmationModal
         isOpen={deleteModalOpen}
         title={t('pages.customers.deleteCustomer')}
-        message={
-          deleteError ??
-          `${t('messages.confirmDelete')}`
-        }
+        message={deleteError ?? `${t('messages.confirmDelete')}`}
         confirmText={t('common.delete')}
         cancelText={t('common.cancel')}
         isDanger

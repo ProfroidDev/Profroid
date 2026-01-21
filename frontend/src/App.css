@@ -8,7 +8,8 @@
   overflow-x: hidden;
 }
 
-body, html {
+body,
+html {
   overflow-x: hidden;
   width: 100%;
   margin: 0;
@@ -26,6 +27,10 @@ body, html {
 
 /* OPTIONAL: CLEAN UP ANIMATION RULES */
 @keyframes logo-spin {
-  from { transform: rotate(0deg); }
-  to { transform: rotate(360deg); }
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
 }

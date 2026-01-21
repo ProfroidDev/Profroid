@@ -22,14 +22,19 @@ export class SignupPage {
   postalCodeInput = () => this.page.getByLabel(/postal code/i);
   phoneNumberInput = () => this.page.getByPlaceholder('123-456-7890');
   phoneTypeSelect = () => this.page.getByRole('combobox').nth(1);
-  completeRegistrationButton = () => this.page.getByRole('button', { name: /complete registration/i });
+  completeRegistrationButton = () =>
+    this.page.getByRole('button', { name: /complete registration/i });
 
   public async signup(email: string, password: string) {
     await this.goto();
     await this.emailInput().fill(email);
     await this.passwordInput().fill(password);
     // Fill confirm if present
-    if (await this.confirmPasswordInput().isVisible().catch(() => false)) {
+    if (
+      await this.confirmPasswordInput()
+        .isVisible()
+        .catch(() => false)
+    ) {
       await this.confirmPasswordInput().fill(password);
     }
     await this.continueButton().click();

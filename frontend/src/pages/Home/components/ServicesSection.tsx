@@ -1,10 +1,10 @@
-import React from "react";
-import { Thermometer, Wrench, Zap, Shield, ArrowRight } from "lucide-react";
-import { Link } from "react-router-dom";
-import { motion } from "framer-motion";
-import { useTranslation } from "react-i18next";
-import "../HomePage.css";
-import "./ServicesSection.css";
+import React from 'react';
+import { Thermometer, Wrench, Zap, Shield, ArrowRight } from 'lucide-react';
+import { Link } from 'react-router-dom';
+import { motion } from 'framer-motion';
+import { useTranslation } from 'react-i18next';
+import '../HomePage.css';
+import './ServicesSection.css';
 
 const ServicesSection: React.FC = () => {
   const { t } = useTranslation();
@@ -12,23 +12,23 @@ const ServicesSection: React.FC = () => {
   const services = [
     {
       icon: <Thermometer size={32} />,
-      title: t("pages.home.services.items.quotation.title"),
-      description: t("pages.home.services.items.quotation.description"),
+      title: t('pages.home.services.items.quotation.title'),
+      description: t('pages.home.services.items.quotation.description'),
     },
     {
       icon: <Wrench size={32} />,
-      title: t("pages.home.services.items.installation.title"),
-      description: t("pages.home.services.items.installation.description"),
+      title: t('pages.home.services.items.installation.title'),
+      description: t('pages.home.services.items.installation.description'),
     },
     {
       icon: <Zap size={32} />,
-      title: t("pages.home.services.items.repair.title"),
-      description: t("pages.home.services.items.repair.description"),
+      title: t('pages.home.services.items.repair.title'),
+      description: t('pages.home.services.items.repair.description'),
     },
     {
       icon: <Shield size={32} />,
-      title: t("pages.home.services.items.maintenance.title"),
-      description: t("pages.home.services.items.maintenance.description"),
+      title: t('pages.home.services.items.maintenance.title'),
+      description: t('pages.home.services.items.maintenance.description'),
     },
   ];
   const containerVariants = {
@@ -58,8 +58,8 @@ const ServicesSection: React.FC = () => {
         viewport={{ once: true }}
         transition={{ duration: 0.6 }}
       >
-        <h2 className="section-title">{t("pages.home.services.title")}</h2>
-        <p className="section-subtitle">{t("pages.home.services.subtitle")}</p>
+        <h2 className="section-title">{t('pages.home.services.title')}</h2>
+        <p className="section-subtitle">{t('pages.home.services.subtitle')}</p>
       </motion.div>
 
       <motion.div
@@ -91,8 +91,7 @@ const ServicesSection: React.FC = () => {
         transition={{ delay: 0.6, duration: 0.5 }}
       >
         <Link to="/services" className="btn-primary browse-services-btn">
-          {t("pages.home.services.browseAll")}{" "}
-          <ArrowRight size={18} style={{ marginLeft: 8 }} />
+          {t('pages.home.services.browseAll')} <ArrowRight size={18} style={{ marginLeft: 8 }} />
         </Link>
       </motion.div>
     </section>

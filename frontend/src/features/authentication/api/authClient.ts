@@ -265,11 +265,16 @@ class AuthAPI {
   /**
    * Request password reset
    */
-  async forgotPassword(email: string): Promise<{ success: boolean; message?: string; error?: string }> {
+  async forgotPassword(
+    email: string
+  ): Promise<{ success: boolean; message?: string; error?: string }> {
     try {
-      const response = await this.client.post<{ success: boolean; message: string }>('/forgot-password', {
-        email,
-      });
+      const response = await this.client.post<{ success: boolean; message: string }>(
+        '/forgot-password',
+        {
+          email,
+        }
+      );
       return response.data;
     } catch (error: unknown) {
       return {
@@ -282,12 +287,18 @@ class AuthAPI {
   /**
    * Reset password with token
    */
-  async resetPassword(token: string, newPassword: string): Promise<{ success: boolean; message?: string; error?: string }> {
+  async resetPassword(
+    token: string,
+    newPassword: string
+  ): Promise<{ success: boolean; message?: string; error?: string }> {
     try {
-      const response = await this.client.post<{ success: boolean; message: string }>('/reset-password', {
-        token,
-        newPassword,
-      });
+      const response = await this.client.post<{ success: boolean; message: string }>(
+        '/reset-password',
+        {
+          token,
+          newPassword,
+        }
+      );
       return response.data;
     } catch (error: unknown) {
       return {
@@ -300,14 +311,25 @@ class AuthAPI {
   /**
    * Verify email with token
    */
-  async verifyEmail(token: string): Promise<{ success: boolean; userId?: string; message?: string; error?: string }> {
+  async verifyEmail(
+    token: string
+  ): Promise<{ success: boolean; userId?: string; message?: string; error?: string }> {
     try {
-      const response = await this.client.post<{ success: boolean; userId: string; message: string }>('/verify-email/' + token);
+      const response = await this.client.post<{
+        success: boolean;
+        userId: string;
+        message: string;
+      }>('/verify-email/' + token);
       return response.data;
     } catch (error: unknown) {
       // If it's an axios error with response data, return that data
       if (axios.isAxiosError(error) && error.response?.data) {
-        const data = error.response.data as { success: boolean; userId?: string; message?: string; error?: string };
+        const data = error.response.data as {
+          success: boolean;
+          userId?: string;
+          message?: string;
+          error?: string;
+        };
         return {
           success: false,
           error: data.error || data.message || getErrorMessage(error),
@@ -325,11 +347,16 @@ class AuthAPI {
   /**
    * Resend verification email
    */
-  async resendVerificationEmail(email: string): Promise<{ success: boolean; message?: string; error?: string }> {
+  async resendVerificationEmail(
+    email: string
+  ): Promise<{ success: boolean; message?: string; error?: string }> {
     try {
-      const response = await this.client.post<{ success: boolean; message: string }>('/resend-verification', {
-        email,
-      });
+      const response = await this.client.post<{ success: boolean; message: string }>(
+        '/resend-verification',
+        {
+          email,
+        }
+      );
       return response.data;
     } catch (error: unknown) {
       return {
@@ -342,8 +369,8 @@ class AuthAPI {
   /**
    * Get verification status for authenticated user
    */
-  async getVerificationStatus(): Promise<{ 
-    success: boolean; 
+  async getVerificationStatus(): Promise<{
+    success: boolean;
     verified?: boolean;
     emailVerifiedAt?: string;
     attempts?: number;

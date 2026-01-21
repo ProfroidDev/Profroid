@@ -5,11 +5,7 @@ export class APIError extends Error {
   statusCode?: number;
   backendMessage?: string;
 
-  constructor(
-    message: string,
-    statusCode?: number,
-    backendMessage?: string
-  ) {
+  constructor(message: string, statusCode?: number, backendMessage?: string) {
     super(message);
     this.name = 'APIError';
     this.statusCode = statusCode;
@@ -18,9 +14,8 @@ export class APIError extends Error {
 }
 
 export function handleAPIError(error: unknown): APIError {
- 
   console.log('Full error object:', error);
-  
+
   interface AxiosErrorResponse {
     response?: {
       status?: number;
@@ -34,11 +29,11 @@ export function handleAPIError(error: unknown): APIError {
   const statusCode = axiosError?.response?.status;
   const statusText = axiosError?.response?.statusText;
   const responseData = axiosError?.response?.data;
-  
+
   console.log('Status Code:', statusCode);
   console.log('Status Text:', statusText);
   console.log('Response Data:', responseData);
-  
+
   // Handle 401 Unauthorized
   if (statusCode === 401) {
     return new APIError(
@@ -47,7 +42,7 @@ export function handleAPIError(error: unknown): APIError {
       'Authentication required'
     );
   }
-  
+
   // Handle 403 Forbidden
   if (statusCode === 403) {
     return new APIError(
@@ -56,20 +51,18 @@ export function handleAPIError(error: unknown): APIError {
       'Permission denied'
     );
   }
-  
+
   // Try to extract message from various backend response formats
   let backendMessage: string | undefined;
-  
+
   if (typeof responseData === 'object' && responseData !== null) {
     const data = responseData as Record<string, unknown>;
-    backendMessage = 
-      (data.message as string) || 
-      (data.error as string) ||
-      (data.errorMessage as string);
+    backendMessage =
+      (data.message as string) || (data.error as string) || (data.errorMessage as string);
   } else if (typeof responseData === 'string') {
     backendMessage = responseData;
   }
-  
+
   // Build display message
   let displayMessage: string;
   if (backendMessage) {
@@ -81,9 +74,9 @@ export function handleAPIError(error: unknown): APIError {
   } else {
     displayMessage = axiosError?.message || 'An error occurred. Please try again.';
   }
-  
+
   console.log('Display Message:', displayMessage);
-  
+
   return new APIError(displayMessage, statusCode, backendMessage);
 }
 
@@ -92,7 +85,7 @@ export function getErrorMessage(error: unknown): string {
   if (error instanceof APIError) {
     return translateErrorMessage(error.message);
   }
-  
+
   // Handles both Axios errors and generic errors
   if (typeof error === 'string') {
     // Direct string error (rare, but possible)
@@ -125,7 +118,7 @@ export function getErrorMessage(error: unknown): string {
 
 function translateErrorMessage(message: string): string {
   const t = i18next.t.bind(i18next);
-  
+
   // Check for known error patterns and translate them
   if (message.includes('Cannot convert customer to employee') && message.includes('appointment')) {
     // Extract the appointment count from the message
@@ -133,7 +126,7 @@ function translateErrorMessage(message: string): string {
     const count = match ? parseInt(match[1], 10) : 1;
     return t('error.employee.cannotConvertCustomerWithAppointments', { count });
   }
-  
+
   // Return original message if no translation pattern matched
   return message;
 }

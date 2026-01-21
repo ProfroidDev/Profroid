@@ -9,7 +9,7 @@ export default function EmailVerificationPage() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const location = useLocation();
-  
+
   const [email, setEmail] = useState('');
   const [verificationCode, setVerificationCode] = useState('');
   const [loading, setLoading] = useState(false);
@@ -24,10 +24,11 @@ export default function EmailVerificationPage() {
     const token = searchParams.get('token');
     const emailFromUrl = searchParams.get('email');
     const state = location.state as { email?: string; userId?: string } | null;
-    
+
     // Try to get email from multiple sources: URL > state > sessionStorage
-    const emailToUse = emailFromUrl || state?.email || sessionStorage.getItem('verificationEmail') || '';
-    
+    const emailToUse =
+      emailFromUrl || state?.email || sessionStorage.getItem('verificationEmail') || '';
+
     if (emailToUse) {
       setEmail(emailToUse);
       // Clear sessionStorage once we have the email
@@ -48,22 +49,25 @@ export default function EmailVerificationPage() {
             // Wait a moment to show loading overlay, then redirect
             setTimeout(() => {
               // Store data in sessionStorage for RegisterPage to access
-              sessionStorage.setItem('verificationData', JSON.stringify({
-                completionMode: true,
-                userId: response.userId,
-                email: emailFromUrl || state?.email || ''
-              }));
+              sessionStorage.setItem(
+                'verificationData',
+                JSON.stringify({
+                  completionMode: true,
+                  userId: response.userId,
+                  email: emailFromUrl || state?.email || '',
+                })
+              );
               // Close current tab/window if it was opened by email link
               if (window.opener) {
                 window.close();
               } else {
                 // Otherwise navigate normally
-                navigate('/auth/register', { 
-                  state: { 
-                    completionMode: true, 
+                navigate('/auth/register', {
+                  state: {
+                    completionMode: true,
                     userId: response.userId,
-                    email: emailFromUrl || state?.email
-                  } 
+                    email: emailFromUrl || state?.email,
+                  },
                 });
               }
             }, 500);
@@ -110,22 +114,25 @@ export default function EmailVerificationPage() {
         // Wait a moment to show loading overlay, then redirect
         setTimeout(() => {
           // Store data in sessionStorage for RegisterPage to access
-          sessionStorage.setItem('verificationData', JSON.stringify({
-            completionMode: true,
-            userId: response.userId,
-            email: email
-          }));
+          sessionStorage.setItem(
+            'verificationData',
+            JSON.stringify({
+              completionMode: true,
+              userId: response.userId,
+              email: email,
+            })
+          );
           // Close current tab/window if it was opened by email link
           if (window.opener) {
             window.close();
           } else {
             // Otherwise navigate normally
-            navigate('/auth/register', { 
-              state: { 
-                completionMode: true, 
+            navigate('/auth/register', {
+              state: {
+                completionMode: true,
                 userId: response.userId,
-                email: email 
-              } 
+                email: email,
+              },
             });
           }
         }, 500);
@@ -162,7 +169,9 @@ export default function EmailVerificationPage() {
       if (response.success) {
         // Check if email was already verified
         if (response.message && response.message.includes('already verified')) {
-          setError(t('auth.emailAlreadyVerified') || 'Email is already verified. Please proceed to login.');
+          setError(
+            t('auth.emailAlreadyVerified') || 'Email is already verified. Please proceed to login.'
+          );
           setResendDisabled(true);
         } else {
           setMessage(t('auth.verificationEmailResent'));

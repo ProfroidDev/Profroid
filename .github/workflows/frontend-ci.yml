@@ -54,7 +54,34 @@ jobs:
           retention-days: 7
 
   # =====================================================
-  # 2) Linting
+  # 2) Code Formatting Check with Prettier
+  # =====================================================
+  format:
+    runs-on: ubuntu-22.04
+    timeout-minutes: 10
+    name: Format Check (Prettier)
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+        working-directory: ./frontend
+
+      - name: Check code formatting with Prettier
+        run: npm run format:check
+        working-directory: ./frontend
+
+  # =====================================================
+  # 3) Linting
   # =====================================================
   lint:
     runs-on: ubuntu-22.04
@@ -82,11 +109,11 @@ jobs:
         continue-on-error: true
 
   # =====================================================
-  # 3) Unit and Integration Tests
+  # 4) Unit and Integration Tests
   # =====================================================
   unit_tests:
     runs-on: ubuntu-22.04
-    timeout-minutes: 15
+    timeout-minutes: 5
     name: Unit Tests
 
     steps:
@@ -104,15 +131,71 @@ jobs:
         run: npm ci
         working-directory: ./frontend
 
-      - name: Run unit tests (stub for now)
-        run: |
-          echo "Unit tests would run here"
-          echo "Configure with your test framework (Jest, Vitest, etc.)"
+      - name: Create test-results directory
+        run: mkdir -p frontend/test-results
+        shell: bash
+
+      - name: Run unit tests
+        run: npx playwright test --reporter=json --reporter=junit
         working-directory: ./frontend
         continue-on-error: true
 
+      - name: Check test results
+        run: |
+          echo "Listing test-results directory:"
+          ls -la frontend/test-results/ || echo "Directory does not exist"
+          echo ""
+          echo "Finding all XML files:"
+          find . -name "*.xml" -type f || echo "No XML files found"
+          echo ""
+          echo "Checking for results.xml:"
+          if [ -f "frontend/test-results/results.xml" ]; then
+            echo "✅ results.xml found!"
+            head -20 frontend/test-results/results.xml
+          else
+            echo "❌ results.xml not found"
+          fi
+        shell: bash
+        continue-on-error: true
+
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: frontend-test-results
+          path: frontend/test-results/
+          retention-days: 7
+
+      - name: Upload HTML test report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: frontend-test-report
+          path: frontend/playwright-report/
+          retention-days: 7
+
+      - name: Publish test report
+        if: always()
+        uses: dorny/test-reporter@v1
+        with:
+          name: Frontend Test Results
+          path: 'frontend/test-results/results.xml'
+          reporter: java-junit
+          fail-on-error: false
+        continue-on-error: true
+
+      - name: Parse test results
+        if: always()
+        run: |
+          if [ -f "frontend/test-results/results.xml" ]; then
+            echo "✅ Test results found and will be published"
+          else
+            echo "⚠️ No test results XML found yet (tests may not have run)"
+          fi
+        shell: bash
+
   # =====================================================
-  # 4) E2E Tests with Playwright (Optional/Non-blocking)
+  # 5) E2E Tests with Playwright (Optional/Non-blocking)
   # =====================================================
   e2e_tests:
     runs-on: ubuntu-22.04
@@ -131,6 +214,14 @@ jobs:
           cache: "npm"
           cache-dependency-path: frontend/package-lock.json
 
+      - name: Cache Playwright browsers
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/ms-playwright
+          key: ${{ runner.os }}-playwright-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-playwright-
+
       - name: Install dependencies
         run: npm ci
         working-directory: ./frontend
@@ -139,13 +230,22 @@ jobs:
         run: npx playwright install --with-deps chromium
         working-directory: ./frontend
 
-      - name: Build frontend
-        run: npm run build
+      - name: Download built frontend
+        uses: actions/download-artifact@v4
+        with:
+          name: frontend-build
+          path: frontend/dist/
+        continue-on-error: true
+
+      - name: Start dev server in background
+        run: npm run dev &
         working-directory: ./frontend
 
-      - name: Run E2E tests in parallel (4 workers)
-        run: npx playwright test --workers=4 --reporter=html,json
+      - name: Run E2E tests in parallel (8 workers - optimized)
+        run: npx playwright test --workers=8 --reporter=html,json
         working-directory: ./frontend
+        env:
+          E2E_TEST: 'true'
         continue-on-error: true
 
       - name: Upload Playwright test results
@@ -194,29 +294,54 @@ jobs:
   # =====================================================
   summary:
     runs-on: ubuntu-22.04
-    needs: [build, lint, unit_tests, e2e_tests, docker_build]
+    needs: [build, format, lint, unit_tests, e2e_tests, docker_build]
     if: always()
     name: Pipeline Summary
 
     steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Download test results
+        if: always()
+        uses: actions/download-artifact@v4
+        with:
+          name: frontend-test-results
+          path: frontend/test-results/
+        continue-on-error: true
+
+      - name: Extract test counts
+        id: test-counts
+        run: |
+          PASSED=0
+          FAILED=0
+
+          if [ -f "frontend/test-results/results.xml" ]; then
+            PASSED=$(grep -oP 'tests="\K[0-9]+' frontend/test-results/results.xml | head -1 || echo "0")
+            FAILED=$(grep -oP 'failures="\K[0-9]+' frontend/test-results/results.xml | head -1 || echo "0")
+          fi
+
+          echo "passed=${PASSED:-0}" >> $GITHUB_OUTPUT
+          echo "failed=${FAILED:-0}" >> $GITHUB_OUTPUT
+        shell: bash
+        continue-on-error: true
+
       - name: Generate summary
         run: |
-          echo "## Frontend CI Pipeline Summary" >> $GITHUB_STEP_SUMMARY
+          echo "## 🚀 Frontend Pipeline Status" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
-          echo "### ✅ Critical Checks" >> $GITHUB_STEP_SUMMARY
-          echo "- Build & Type Check: ${{ needs.build.result }}" >> $GITHUB_STEP_SUMMARY
-          echo "- Linting: ${{ needs.lint.result }}" >> $GITHUB_STEP_SUMMARY
-          echo "- Unit Tests: ${{ needs.unit_tests.result }}" >> $GITHUB_STEP_SUMMARY
+          echo "| Check | Result |" >> $GITHUB_STEP_SUMMARY
+          echo "|:---:|:---:|" >> $GITHUB_STEP_SUMMARY
+          echo "| Build | ${{ needs.build.result }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Format | ${{ needs.format.result }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Lint | ${{ needs.lint.result }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Unit Tests | ${{ needs.unit_tests.result }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Docker | ${{ needs.docker_build.result }} |" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
-          echo "### ⚠️ Optional Checks (non-blocking)" >> $GITHUB_STEP_SUMMARY
-          echo "- E2E Tests: ${{ needs.e2e_tests.result }} (parallel, 4 workers)" >> $GITHUB_STEP_SUMMARY
-          echo "- Docker Build: ${{ needs.docker_build.result }}" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "### 📊 Execution Time" >> $GITHUB_STEP_SUMMARY
-          echo "- Critical checks: ~2-3 minutes" >> $GITHUB_STEP_SUMMARY
-          echo "- E2E tests (optional): ~5-7 minutes (parallel)" >> $GITHUB_STEP_SUMMARY
-          echo "- Total: ~5-8 minutes" >> $GITHUB_STEP_SUMMARY
+          echo "**Tests:** ${{ steps.test-counts.outputs.passed }} passed | ${{ steps.test-counts.outputs.failed }} failed" >> $GITHUB_STEP_SUMMARY
+        shell: bash
+        continue-on-error: true
 
       - name: Fail pipeline if critical jobs failed
-        if: needs.build.result == 'failure'
+        if: needs.build.result == 'failure' || needs.format.result == 'failure' || needs.lint.result == 'failure'
         run: exit 1

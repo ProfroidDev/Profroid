@@ -25,19 +25,19 @@ export default function ResetPasswordPage() {
 
   const validatePassword = (pwd: string): string[] => {
     const errors: string[] = [];
-    
+
     if (pwd.length < 8) {
       errors.push(t('validation.passwordTooShort'));
     }
-    
+
     if (!/[A-Z]/.test(pwd)) {
       errors.push('Password must contain at least one uppercase letter');
     }
-    
+
     if (!/[0-9]/.test(pwd)) {
       errors.push('Password must contain at least one number');
     }
-    
+
     return errors;
   };
 
@@ -81,7 +81,7 @@ export default function ResetPasswordPage() {
 
     try {
       const response = await authClient.resetPassword(token, password);
-      
+
       if (response.success) {
         setSuccess(true);
         // Redirect to login after 3 seconds
@@ -105,9 +105,7 @@ export default function ResetPasswordPage() {
           <div className="auth-header">
             <h1>{t('common.error')}</h1>
           </div>
-          <div className="alert alert-error">
-            {t('validation.passwordTooShort')}
-          </div>
+          <div className="alert alert-error">{t('validation.passwordTooShort')}</div>
           <div className="auth-footer" style={{ marginTop: '1.5rem' }}>
             <Link to="/forgot-password" className="btn-primary">
               {t('auth.resetPassword')}
@@ -130,14 +128,10 @@ export default function ResetPasswordPage() {
           <div className="success-message">
             <div className="alert alert-success">
               <strong>✓ {t('auth.resetPasswordSuccess')}</strong>
-              <p>
-                {t('auth.resetPasswordSuccess')}
-              </p>
-              <p style={{ marginTop: '1rem', fontSize: '0.9rem' }}>
-                {t('common.loading')}
-              </p>
+              <p>{t('auth.resetPasswordSuccess')}</p>
+              <p style={{ marginTop: '1rem', fontSize: '0.9rem' }}>{t('common.loading')}</p>
             </div>
-            
+
             <div className="auth-footer" style={{ marginTop: '1.5rem' }}>
               <Link to="/login" className="btn-primary">
                 {t('auth.login')}
@@ -163,7 +157,9 @@ export default function ResetPasswordPage() {
                     <small>{t('validation.required')}:</small>
                     <ul>
                       {validationErrors.map((err, idx) => (
-                        <li key={idx} className="requirement-error">{err}</li>
+                        <li key={idx} className="requirement-error">
+                          {err}
+                        </li>
                       ))}
                     </ul>
                   </div>
@@ -183,11 +179,7 @@ export default function ResetPasswordPage() {
                 />
               </div>
 
-              {error && (
-                <div className="alert alert-error">
-                  {error}
-                </div>
-              )}
+              {error && <div className="alert alert-error">{error}</div>}
 
               <button
                 type="submit"

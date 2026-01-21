@@ -1,1 +1,1 @@
-export type EmployeePhoneType = "MOBILE" | "HOME" | "WORK";
+export type EmployeePhoneType = 'MOBILE' | 'HOME' | 'WORK';

@@ -4,7 +4,9 @@ export class UserProfilePage {
   constructor(public page: Page) {}
 
   public async goto() {
-    const profileNavLink = this.page.locator('nav').getByRole('link', { name: /profile|account|my profile/i });
+    const profileNavLink = this.page
+      .locator('nav')
+      .getByRole('link', { name: /profile|account|my profile/i });
     if (await profileNavLink.isVisible().catch(() => false)) {
       await profileNavLink.click();
     } else {
@@ -22,8 +24,18 @@ export class UserProfilePage {
   postalCodeInput = () => this.page.getByLabel(/postal code/i);
 
   // Displays (read-only view)
-  firstNameDisplay = () => this.page.getByText(/first name/i).locator('..').locator('span, div, p').last();
-  addressDisplay = () => this.page.getByText(/address/i).locator('..').locator('span, div, p').last();
+  firstNameDisplay = () =>
+    this.page
+      .getByText(/first name/i)
+      .locator('..')
+      .locator('span, div, p')
+      .last();
+  addressDisplay = () =>
+    this.page
+      .getByText(/address/i)
+      .locator('..')
+      .locator('span, div, p')
+      .last();
   phoneDisplay = () => this.page.getByText(/phone/i).locator('..').locator('span, div, p').last();
 
   // Buttons
@@ -32,7 +44,11 @@ export class UserProfilePage {
   addCellarIntakeButton = () => this.page.getByRole('button', { name: /add cellar intake/i });
 
   // Cellar modal
-  private addCellarModal = () => this.page.locator('.modal').filter({ hasText: /add cellar intake/i }).first();
+  private addCellarModal = () =>
+    this.page
+      .locator('.modal')
+      .filter({ hasText: /add cellar intake/i })
+      .first();
   cellarNameInput = () => this.addCellarModal().getByLabel(/cellar name/i);
   cellarHeightInput = () => this.addCellarModal().getByLabel(/height \(cm\)/i);
   cellarWidthInput = () => this.addCellarModal().getByLabel(/width \(cm\)/i);

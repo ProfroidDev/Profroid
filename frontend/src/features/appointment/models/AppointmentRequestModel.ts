@@ -1,4 +1,4 @@
-import type { AppointmentAddress } from "./AppointmentAddress";
+import type { AppointmentAddress } from './AppointmentAddress';
 
 export interface AppointmentRequestModel {
   /** Optional when a technician books on behalf of a customer */

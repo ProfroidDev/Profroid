@@ -25,19 +25,24 @@ export default function LoginPage() {
 
     // Call authClient directly to handle all response cases
     const response = await authClient.signIn(email, password);
-    
+
     if (response.success) {
       // Initialize auth to load user and customer data immediately
       await initializeAuth();
       navigate('/');
-    } else if (response.requiresVerification || (response.error && response.error.toLowerCase().includes('verify'))) {
+    } else if (
+      response.requiresVerification ||
+      (response.error && response.error.toLowerCase().includes('verify'))
+    ) {
       // Email not verified - redirect to verification page
       // Store email in sessionStorage so it persists if user refreshes
       sessionStorage.setItem('verificationEmail', email);
       navigate('/auth/verify-email', { state: { email } });
     } else if ('requiresCompletion' in response && response.requiresCompletion) {
       // Profile not completed - redirect to complete profile
-      navigate('/auth/register', { state: { completionMode: true, userId: response.userId, email } });
+      navigate('/auth/register', {
+        state: { completionMode: true, userId: response.userId, email },
+      });
     } else {
       // Show error
       setFormError(response.error || t('auth.loginFailed'));
@@ -85,17 +90,9 @@ export default function LoginPage() {
             </Link>
           </div>
 
-          {(formError || error) && (
-            <div className="alert alert-error">
-              {formError || error}
-            </div>
-          )}
+          {(formError || error) && <div className="alert alert-error">{formError || error}</div>}
 
-          <button
-            type="submit"
-            disabled={isLoading}
-            className="btn btn-primary"
-          >
+          <button type="submit" disabled={isLoading} className="btn btn-primary">
             {isLoading ? t('common.loading') : t('auth.login')}
           </button>
         </form>

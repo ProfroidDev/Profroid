@@ -1,5 +1,1 @@
-export type JobType =
-  | "QUOTATION"
-  | "INSTALLATION"
-  | "REPARATION"
-  | "MAINTENANCE";
+export type JobType = 'QUOTATION' | 'INSTALLATION' | 'REPARATION' | 'MAINTENANCE';

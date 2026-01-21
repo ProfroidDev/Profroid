@@ -11,7 +11,9 @@ export interface AddEmployeeScheduleResponse {
   schedule: EmployeeSchedule;
 }
 
-export async function addEmployeeSchedule(req: AddEmployeeScheduleRequest): Promise<AddEmployeeScheduleResponse> {
+export async function addEmployeeSchedule(
+  req: AddEmployeeScheduleRequest
+): Promise<AddEmployeeScheduleResponse> {
   const { employeeId, scheduleRequests } = req;
   const endpoint = `/employees/${employeeId}/schedules`;
   const payload = scheduleRequests; // backend expects list in body

@@ -1,7 +1,6 @@
-import type { EmployeeAddress } from "./EmployeeAddress";
-import type { EmployeePhoneNumber } from "./EmployeePhoneNumber";
-import type { EmployeeRole } from "./EmployeeRole";
-
+import type { EmployeeAddress } from './EmployeeAddress';
+import type { EmployeePhoneNumber } from './EmployeePhoneNumber';
+import type { EmployeeRole } from './EmployeeRole';
 
 export interface EmployeeRequestModel {
   userId: string;

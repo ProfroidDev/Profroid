@@ -1,17 +1,17 @@
-import { useState, useEffect, useCallback, useRef } from "react";
-import { useNavigate } from "react-router-dom";
-import { useTranslation } from "react-i18next";
-import i18n from "../../i18n/config";
-import useAuthStore from "../../features/authentication/store/authStore";
-import "../Auth.css";
-import "../jobs/ServicesPage.css"; // Import ServicesPage styles for modal
-import Calendar from "react-calendar";
-import "react-calendar/dist/Calendar.css";
-import "../Employee/EmployeeListPage.css";
-import Toast from "../../shared/components/Toast";
-import ConfirmationModal from "../../components/ConfirmationModal";
-import { getEmployeeScheduleForDate } from "../../features/employee/api/getEmployeeScheduleForDate";
-import type { EmployeeSchedule } from "../../features/employee/models/EmployeeSchedule";
+import { useState, useEffect, useCallback, useRef } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
+import i18n from '../../i18n/config';
+import useAuthStore from '../../features/authentication/store/authStore';
+import '../Auth.css';
+import '../jobs/ServicesPage.css'; // Import ServicesPage styles for modal
+import Calendar from 'react-calendar';
+import 'react-calendar/dist/Calendar.css';
+import '../Employee/EmployeeListPage.css';
+import Toast from '../../shared/components/Toast';
+import ConfirmationModal from '../../components/ConfirmationModal';
+import { getEmployeeScheduleForDate } from '../../features/employee/api/getEmployeeScheduleForDate';
+import type { EmployeeSchedule } from '../../features/employee/models/EmployeeSchedule';
 
 type PhoneNumber = {
   number?: string;
@@ -55,57 +55,54 @@ export default function ProfilePage() {
 
   const [editMode, setEditMode] = useState(false);
   const [passwordMode, setPasswordMode] = useState(false);
-  const [formError, setFormError] = useState("");
+  const [formError, setFormError] = useState('');
 
   // Profile form state
-  const [firstName, setFirstName] = useState("");
-  const [lastName, setLastName] = useState("");
-  const [phone, setPhone] = useState("");
-  const [address, setAddress] = useState("");
-  const [postalCode, setPostalCode] = useState("");
-  const [city, setCity] = useState("");
-  const [province, setProvince] = useState("");
-  const [country, setCountry] = useState("");
+  const [firstName, setFirstName] = useState('');
+  const [lastName, setLastName] = useState('');
+  const [phone, setPhone] = useState('');
+  const [address, setAddress] = useState('');
+  const [postalCode, setPostalCode] = useState('');
+  const [city, setCity] = useState('');
+  const [province, setProvince] = useState('');
+  const [country, setCountry] = useState('');
 
   // Password form state
-  const [oldPassword, setOldPassword] = useState("");
-  const [newPassword, setNewPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
+  const [oldPassword, setOldPassword] = useState('');
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
 
   // Schedule state (for employees)
   const [schedule, setSchedule] = useState<Record<string, unknown>[]>([]);
   const [scheduleLoading, setScheduleLoading] = useState(false);
-  const [scheduleError, setScheduleError] = useState("");
+  const [scheduleError, setScheduleError] = useState('');
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
-  const [selectedDateSchedule, setSelectedDateSchedule] =
-    useState<EmployeeSchedule | null>(null);
+  const [selectedDateSchedule, setSelectedDateSchedule] = useState<EmployeeSchedule | null>(null);
 
   // Employee identifiers for schedule and updates
   const [employeeId, setEmployeeId] = useState<string | null>(null);
 
   // Customer data state (address, phone, etc.)
-  const [customerData, setCustomerData] = useState<CustomerData | null>(
-    storedCustomerData || null
-  );
+  const [customerData, setCustomerData] = useState<CustomerData | null>(storedCustomerData || null);
 
   // Cellar intake form state
   const [addCellarModalOpen, setAddCellarModalOpen] = useState(false);
   const [editCellarModalOpen, setEditCellarModalOpen] = useState(false);
   const [editingCellarId, setEditingCellarId] = useState<string | null>(null);
-  const [cellarName, setCellarName] = useState("");
-  const [cellarHeight, setCellarHeight] = useState("");
-  const [cellarWidth, setCellarWidth] = useState("");
-  const [cellarDepth, setCellarDepth] = useState("");
-  const [cellarBottleCapacity, setCellarBottleCapacity] = useState("");
-  const [cellarType, setCellarType] = useState("PRIVATE");
+  const [cellarName, setCellarName] = useState('');
+  const [cellarHeight, setCellarHeight] = useState('');
+  const [cellarWidth, setCellarWidth] = useState('');
+  const [cellarDepth, setCellarDepth] = useState('');
+  const [cellarBottleCapacity, setCellarBottleCapacity] = useState('');
+  const [cellarType, setCellarType] = useState('PRIVATE');
   const [cellarCoolingSystem, setCellarCoolingSystem] = useState(false);
   const [cellarHumidityControl, setCellarHumidityControl] = useState(false);
   const [cellarAutoRegulation, setCellarAutoRegulation] = useState(false);
-  const [cellarError, setCellarError] = useState("");
+  const [cellarError, setCellarError] = useState('');
   const [cellarLoading, setCellarLoading] = useState(false);
   const [toast, setToast] = useState<{
     message: string;
-    type: "success" | "error" | "info" | "warning";
+    type: 'success' | 'error' | 'info' | 'warning';
   } | null>(null);
 
   // Confirmation modal state for cellar deactivation
@@ -143,14 +140,14 @@ export default function ProfilePage() {
     if (!user?.id) return;
 
     try {
-      const token = localStorage.getItem("authToken");
+      const token = localStorage.getItem('authToken');
       const response = await fetch(
         `${import.meta.env.VITE_BACKEND_URL}/employees/by-user/${user.id}`,
         {
-          method: "GET",
+          method: 'GET',
           headers: {
             Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json",
+            'Content-Type': 'application/json',
           },
         }
       );
@@ -158,24 +155,20 @@ export default function ProfilePage() {
       if (response.ok) {
         const data: CustomerData = await response.json();
         setCustomerData(data); // Reuse customerData state for employee data
-        setFirstName(data.firstName || "");
-        setLastName(data.lastName || "");
+        setFirstName(data.firstName || '');
+        setLastName(data.lastName || '');
         if (data.employeeIdentifier?.employeeId) {
           setEmployeeId(data.employeeIdentifier.employeeId);
         }
         // Update form fields with employee data
-        if (data.employeeAddress?.streetAddress)
-          setAddress(data.employeeAddress.streetAddress);
+        if (data.employeeAddress?.streetAddress) setAddress(data.employeeAddress.streetAddress);
         if (data.employeeAddress?.city) setCity(data.employeeAddress.city);
-        if (data.employeeAddress?.province)
-          setProvince(data.employeeAddress.province);
-        if (data.employeeAddress?.country)
-          setCountry(data.employeeAddress.country);
-        if (data.employeeAddress?.postalCode)
-          setPostalCode(data.employeeAddress.postalCode);
+        if (data.employeeAddress?.province) setProvince(data.employeeAddress.province);
+        if (data.employeeAddress?.country) setCountry(data.employeeAddress.country);
+        if (data.employeeAddress?.postalCode) setPostalCode(data.employeeAddress.postalCode);
         // Extract phone number from phoneNumbers array
         if (data.phoneNumbers && data.phoneNumbers.length > 0) {
-          setPhone(data.phoneNumbers[0].number || "");
+          setPhone(data.phoneNumbers[0].number || '');
         }
       } else if (response.status === 404) {
         // No employee record yet; clear employee-specific state
@@ -183,7 +176,7 @@ export default function ProfilePage() {
         setSchedule([]);
       }
     } catch (error) {
-      console.error("Error fetching employee data:", error);
+      console.error('Error fetching employee data:', error);
     }
   }, [user?.id]);
 
@@ -191,14 +184,14 @@ export default function ProfilePage() {
     if (!user?.id || user?.employeeType) return;
 
     try {
-      const token = localStorage.getItem("authToken");
+      const token = localStorage.getItem('authToken');
       const response = await fetch(
         `${import.meta.env.VITE_BACKEND_URL}/customers/by-user/${user.id}`,
         {
-          method: "GET",
+          method: 'GET',
           headers: {
             Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json",
+            'Content-Type': 'application/json',
           },
         }
       );
@@ -207,8 +200,8 @@ export default function ProfilePage() {
         const data: CustomerData = await response.json();
         setCustomerData(data);
         setStoredCustomerData(data); // Also update store
-        setFirstName(data.firstName || "");
-        setLastName(data.lastName || "");
+        setFirstName(data.firstName || '');
+        setLastName(data.lastName || '');
         // Update form fields with customer data
         if (data.streetAddress) setAddress(data.streetAddress);
         if (data.city) setCity(data.city);
@@ -217,11 +210,11 @@ export default function ProfilePage() {
         if (data.postalCode) setPostalCode(data.postalCode);
         // Extract phone number from phoneNumbers array
         if (data.phoneNumbers && data.phoneNumbers.length > 0) {
-          setPhone(data.phoneNumbers[0].number || "");
+          setPhone(data.phoneNumbers[0].number || '');
         }
       }
     } catch (error) {
-      console.error("Error fetching customer data:", error);
+      console.error('Error fetching customer data:', error);
     }
   }, [user?.id, user?.employeeType, setStoredCustomerData]);
 
@@ -234,13 +227,13 @@ export default function ProfilePage() {
   const fetchCellarsForCustomer = useCallback(async () => {
     if (!user?.id) return;
     try {
-      const token = localStorage.getItem("authToken");
+      const token = localStorage.getItem('authToken');
       // Prefer filtering by customerId if backend supports it; otherwise fetch all and filter client-side
       const resp = await fetch(`${import.meta.env.VITE_BACKEND_URL}/cellars`, {
-        method: "GET",
+        method: 'GET',
         headers: {
           Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
+          'Content-Type': 'application/json',
         },
       });
       if (resp.ok) {
@@ -250,7 +243,7 @@ export default function ProfilePage() {
         setCellars(Array.isArray(list) ? list : []);
       }
     } catch (e) {
-      console.error("Error fetching cellars:", e);
+      console.error('Error fetching cellars:', e);
     }
   }, [user?.id]);
 
@@ -294,35 +287,32 @@ export default function ProfilePage() {
 
     try {
       setScheduleLoading(true);
-      setScheduleError("");
-      const token = localStorage.getItem("authToken");
+      setScheduleError('');
+      const token = localStorage.getItem('authToken');
 
       // Fetch schedule for this employee using the employeeId we already have
       const scheduleResponse = await fetch(
         `${import.meta.env.VITE_BACKEND_URL}/employees/${employeeId}/schedules`,
         {
-          method: "GET",
+          method: 'GET',
           headers: {
             Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json",
+            'Content-Type': 'application/json',
           },
         }
       );
 
       if (scheduleResponse.ok) {
         const scheduleData = await scheduleResponse.json();
-        console.log("Schedule data:", scheduleData); // Debug log
+        console.log('Schedule data:', scheduleData); // Debug log
         setSchedule(scheduleData || []);
       } else {
-        console.error(
-          "Schedule fetch failed with status:",
-          scheduleResponse.status
-        );
+        console.error('Schedule fetch failed with status:', scheduleResponse.status);
         setSchedule([]);
       }
     } catch (error) {
-      console.error("Error fetching schedule:", error);
-      setScheduleError("Failed to load schedule");
+      console.error('Error fetching schedule:', error);
+      setScheduleError('Failed to load schedule');
     } finally {
       setScheduleLoading(false);
     }
@@ -339,13 +329,10 @@ export default function ProfilePage() {
       try {
         if (employeeId) {
           const yyyy = selectedDate.getFullYear();
-          const mm = String(selectedDate.getMonth() + 1).padStart(2, "0");
-          const dd = String(selectedDate.getDate()).padStart(2, "0");
+          const mm = String(selectedDate.getMonth() + 1).padStart(2, '0');
+          const dd = String(selectedDate.getDate()).padStart(2, '0');
           const formatted = `${yyyy}-${mm}-${dd}`;
-          const dateSched = await getEmployeeScheduleForDate(
-            employeeId,
-            formatted
-          );
+          const dateSched = await getEmployeeScheduleForDate(employeeId, formatted);
           if (dateSched && dateSched.length > 0) {
             setSelectedDateSchedule(dateSched[0]);
             return;
@@ -355,12 +342,9 @@ export default function ProfilePage() {
         // fall through to weekly template
       }
       // Fallback to weekly template from loaded schedule
-      const dayOfWeek = selectedDate
-        .toLocaleDateString("en-US", { weekday: "long" })
-        .toUpperCase();
+      const dayOfWeek = selectedDate.toLocaleDateString('en-US', { weekday: 'long' }).toUpperCase();
       const weekly = (schedule || []).find(
-        (s: Record<string, unknown>) =>
-          ((s.dayOfWeek as string) || "")?.toUpperCase() === dayOfWeek
+        (s: Record<string, unknown>) => ((s.dayOfWeek as string) || '')?.toUpperCase() === dayOfWeek
       );
       setSelectedDateSchedule((weekly as unknown as EmployeeSchedule) || null);
     }
@@ -371,20 +355,15 @@ export default function ProfilePage() {
     if (user?.id && storedCustomerData) {
       // Initialize form with stored customer data
       setCustomerData(storedCustomerData);
-      setFirstName(storedCustomerData.firstName || "");
-      setLastName(storedCustomerData.lastName || "");
-      if (storedCustomerData.streetAddress)
-        setAddress(storedCustomerData.streetAddress);
+      setFirstName(storedCustomerData.firstName || '');
+      setLastName(storedCustomerData.lastName || '');
+      if (storedCustomerData.streetAddress) setAddress(storedCustomerData.streetAddress);
       if (storedCustomerData.city) setCity(storedCustomerData.city);
       if (storedCustomerData.province) setProvince(storedCustomerData.province);
       if (storedCustomerData.country) setCountry(storedCustomerData.country);
-      if (storedCustomerData.postalCode)
-        setPostalCode(storedCustomerData.postalCode);
-      if (
-        storedCustomerData.phoneNumbers &&
-        storedCustomerData.phoneNumbers.length > 0
-      ) {
-        setPhone(storedCustomerData.phoneNumbers[0].number || "");
+      if (storedCustomerData.postalCode) setPostalCode(storedCustomerData.postalCode);
+      if (storedCustomerData.phoneNumbers && storedCustomerData.phoneNumbers.length > 0) {
+        setPhone(storedCustomerData.phoneNumbers[0].number || '');
       }
 
       // Auto-enable edit mode if customer data is empty (no firstName/lastName)
@@ -408,7 +387,7 @@ export default function ProfilePage() {
       <div className="auth-container">
         <div className="auth-card">
           <p>Please log in to view your profile</p>
-          <button onClick={() => navigate("/login")} className="btn-primary">
+          <button onClick={() => navigate('/login')} className="btn-primary">
             Go to Login
           </button>
         </div>
@@ -418,11 +397,11 @@ export default function ProfilePage() {
 
   const handleProfileSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setFormError("");
+    setFormError('');
     clearError();
 
     try {
-      const token = localStorage.getItem("authToken");
+      const token = localStorage.getItem('authToken');
 
       if (user?.employeeType) {
         // Save employee data
@@ -436,8 +415,8 @@ export default function ProfilePage() {
 
         const employeeUpdateData = {
           userId: user.id, // Include userId so backend can verify ownership
-          firstName: firstName || "",
-          lastName: lastName || "",
+          firstName: firstName || '',
+          lastName: lastName || '',
           employeeAddress: {
             streetAddress: address,
             city: city,
@@ -446,31 +425,31 @@ export default function ProfilePage() {
             postalCode: postalCode,
           },
           phoneNumbers: phone
-            ? [{ number: phone, type: "WORK" }]
+            ? [{ number: phone, type: 'WORK' }]
             : customerData?.phoneNumbers || [],
           // Do not include employeeRole - backend will preserve it for non-admin users
         };
 
         if (!resolvedEmployeeId) {
           throw new Error(
-            "No employee record found for this user. Assign the user as an employee first."
+            'No employee record found for this user. Assign the user as an employee first.'
           );
         }
 
         const response = await fetch(
           `${import.meta.env.VITE_BACKEND_URL}/employees/${resolvedEmployeeId}`,
           {
-            method: "PUT",
+            method: 'PUT',
             headers: {
               Authorization: `Bearer ${token}`,
-              "Content-Type": "application/json",
+              'Content-Type': 'application/json',
             },
             body: JSON.stringify(employeeUpdateData),
           }
         );
 
         if (!response.ok) {
-          throw new Error("Failed to save employee data");
+          throw new Error('Failed to save employee data');
         }
 
         const updatedData = await response.json();
@@ -480,8 +459,8 @@ export default function ProfilePage() {
         // Save customer data
         const customerUpdateData = {
           userId: user.id,
-          firstName: firstName || "",
-          lastName: lastName || "",
+          firstName: firstName || '',
+          lastName: lastName || '',
           streetAddress: address,
           city: city,
           province: province,
@@ -489,24 +468,24 @@ export default function ProfilePage() {
           postalCode: postalCode,
           // Backend PhoneType enum allows WORK, MOBILE, HOME; use MOBILE for customers.
           phoneNumbers: phone
-            ? [{ number: phone, type: "MOBILE" }]
+            ? [{ number: phone, type: 'MOBILE' }]
             : customerData?.phoneNumbers || [],
         };
 
         const response = await fetch(
           `${import.meta.env.VITE_BACKEND_URL}/customers/by-user/${user.id}`,
           {
-            method: "PUT",
+            method: 'PUT',
             headers: {
               Authorization: `Bearer ${token}`,
-              "Content-Type": "application/json",
+              'Content-Type': 'application/json',
             },
             body: JSON.stringify(customerUpdateData),
           }
         );
 
         if (!response.ok) {
-          throw new Error("Failed to save customer data");
+          throw new Error('Failed to save customer data');
         }
 
         const updatedData = await response.json();
@@ -517,77 +496,77 @@ export default function ProfilePage() {
       setEditMode(false);
       // Show success message
       setToast({
-        message: t("pages.profile.notifications.profileUpdated"),
-        type: "success",
+        message: t('pages.profile.notifications.profileUpdated'),
+        type: 'success',
       });
     } catch (error) {
-      console.error("Error saving profile:", error);
-      setFormError(t("pages.profile.notifications.profileUpdateFailed"));
+      console.error('Error saving profile:', error);
+      setFormError(t('pages.profile.notifications.profileUpdateFailed'));
     }
   };
 
   const handlePasswordSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setFormError("");
+    setFormError('');
     clearError();
 
     if (!oldPassword || !newPassword || !confirmPassword) {
-      setFormError("Please fill in all fields");
+      setFormError('Please fill in all fields');
       return;
     }
 
     if (newPassword !== confirmPassword) {
-      setFormError("New passwords do not match");
+      setFormError('New passwords do not match');
       return;
     }
 
     if (newPassword.length < 6) {
-      setFormError("Password must be at least 6 characters");
+      setFormError('Password must be at least 6 characters');
       return;
     }
 
     const success = await changePassword(oldPassword, newPassword);
     if (success) {
       setToast({
-        message: t("pages.profile.notifications.passwordChanged"),
-        type: "success",
+        message: t('pages.profile.notifications.passwordChanged'),
+        type: 'success',
       });
       setPasswordMode(false);
-      setOldPassword("");
-      setNewPassword("");
-      setConfirmPassword("");
-      setFormError("");
+      setOldPassword('');
+      setNewPassword('');
+      setConfirmPassword('');
+      setFormError('');
     }
   };
 
   const handleCellarSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setCellarError("");
+    setCellarError('');
 
     // Validate required fields
     if (!cellarName.trim()) {
-      setCellarError("Cellar name is required");
+      setCellarError('Cellar name is required');
       return;
     }
 
     if (!cellarHeight || !cellarWidth || !cellarDepth) {
-      setCellarError("Cellar dimensions are required");
+      setCellarError('Cellar dimensions are required');
       return;
     }
 
     if (!cellarBottleCapacity) {
-      setCellarError("Bottle capacity is required");
+      setCellarError('Bottle capacity is required');
       return;
     }
 
     try {
       setCellarLoading(true);
-      const token = localStorage.getItem("authToken");
+      const token = localStorage.getItem('authToken');
 
       // Get customer ID from stored customer data
       const customerId = (customerData as { customerId?: string })?.customerId;
       if (!customerId) {
-        throw new Error("Customer ID not found");
+        throw new Error('Customer ID not found');
       }
 
       const cellarData = {
@@ -605,30 +584,27 @@ export default function ProfilePage() {
         cellarType: cellarType,
       };
 
-      const response = await fetch(
-        `${import.meta.env.VITE_BACKEND_URL}/cellars`,
-        {
-          method: "POST",
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(cellarData),
-        }
-      );
+      const response = await fetch(`${import.meta.env.VITE_BACKEND_URL}/cellars`, {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(cellarData),
+      });
 
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.message || "Failed to create cellar");
+        throw new Error(errorData.message || 'Failed to create cellar');
       }
 
       // Reset form
-      setCellarName("");
-      setCellarHeight("");
-      setCellarWidth("");
-      setCellarDepth("");
-      setCellarBottleCapacity("");
-      setCellarType("PRIVATE");
+      setCellarName('');
+      setCellarHeight('');
+      setCellarWidth('');
+      setCellarDepth('');
+      setCellarBottleCapacity('');
+      setCellarType('PRIVATE');
       setCellarCoolingSystem(false);
       setCellarHumidityControl(false);
       setCellarAutoRegulation(false);
@@ -639,12 +615,12 @@ export default function ProfilePage() {
 
       // Show success message
       setToast({
-        message: t("pages.profile.notifications.cellarCreated"),
-        type: "success",
+        message: t('pages.profile.notifications.cellarCreated'),
+        type: 'success',
       });
     } catch (error) {
-      console.error("Error creating cellar:", error);
-      setCellarError("Failed to create cellar intake");
+      console.error('Error creating cellar:', error);
+      setCellarError('Failed to create cellar intake');
     } finally {
       setCellarLoading(false);
     }
@@ -652,51 +628,51 @@ export default function ProfilePage() {
 
   const handleCellarEdit = (cellar: Cellar) => {
     setEditingCellarId(cellar.cellarId || null);
-    setCellarName(cellar.name || "");
-    setCellarHeight(cellar.height?.toString() || "");
-    setCellarWidth(cellar.width?.toString() || "");
-    setCellarDepth(cellar.depth?.toString() || "");
-    setCellarBottleCapacity(cellar.bottleCapacity?.toString() || "");
-    setCellarType(cellar.cellarType || "PRIVATE");
+    setCellarName(cellar.name || '');
+    setCellarHeight(cellar.height?.toString() || '');
+    setCellarWidth(cellar.width?.toString() || '');
+    setCellarDepth(cellar.depth?.toString() || '');
+    setCellarBottleCapacity(cellar.bottleCapacity?.toString() || '');
+    setCellarType(cellar.cellarType || 'PRIVATE');
     setCellarCoolingSystem(cellar.hasCoolingSystem || false);
     setCellarHumidityControl(cellar.hasHumidityControl || false);
     setCellarAutoRegulation(cellar.hasAutoRegulation || false);
-    setCellarError("");
+    setCellarError('');
     setEditCellarModalOpen(true);
   };
 
   const handleCellarUpdate = async (e: React.FormEvent) => {
     e.preventDefault();
-    setCellarError("");
+    setCellarError('');
 
     if (!cellarName.trim()) {
-      setCellarError("Cellar name is required");
+      setCellarError('Cellar name is required');
       return;
     }
 
     if (!cellarHeight || !cellarWidth || !cellarDepth) {
-      setCellarError("Cellar dimensions are required");
+      setCellarError('Cellar dimensions are required');
       return;
     }
 
     if (!cellarBottleCapacity) {
-      setCellarError("Bottle capacity is required");
+      setCellarError('Bottle capacity is required');
       return;
     }
 
     if (!editingCellarId) {
-      setCellarError("No cellar selected for update");
+      setCellarError('No cellar selected for update');
       return;
     }
 
     try {
       setCellarLoading(true);
-      const token = localStorage.getItem("authToken");
+      const token = localStorage.getItem('authToken');
 
       // Get customer ID from stored customer data
       const customerId = (customerData as { customerId?: string })?.customerId;
       if (!customerId) {
-        throw new Error("Customer ID not found");
+        throw new Error('Customer ID not found');
       }
 
       const cellarUpdateData = {
@@ -717,10 +693,10 @@ export default function ProfilePage() {
       const response = await fetch(
         `${import.meta.env.VITE_BACKEND_URL}/cellars/${editingCellarId}`,
         {
-          method: "PUT",
+          method: 'PUT',
           headers: {
             Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json",
+            'Content-Type': 'application/json',
           },
           body: JSON.stringify(cellarUpdateData),
         }
@@ -728,16 +704,16 @@ export default function ProfilePage() {
 
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.message || "Failed to update cellar");
+        throw new Error(errorData.message || 'Failed to update cellar');
       }
 
       // Reset form and close modal
-      setCellarName("");
-      setCellarHeight("");
-      setCellarWidth("");
-      setCellarDepth("");
-      setCellarBottleCapacity("");
-      setCellarType("PRIVATE");
+      setCellarName('');
+      setCellarHeight('');
+      setCellarWidth('');
+      setCellarDepth('');
+      setCellarBottleCapacity('');
+      setCellarType('PRIVATE');
       setCellarCoolingSystem(false);
       setCellarHumidityControl(false);
       setCellarAutoRegulation(false);
@@ -749,12 +725,12 @@ export default function ProfilePage() {
 
       // Show success message
       setToast({
-        message: t("pages.profile.notifications.cellarUpdated"),
-        type: "success",
+        message: t('pages.profile.notifications.cellarUpdated'),
+        type: 'success',
       });
     } catch (error) {
-      console.error("Error updating cellar:", error);
-      setCellarError("Failed to update cellar");
+      console.error('Error updating cellar:', error);
+      setCellarError('Failed to update cellar');
     } finally {
       setCellarLoading(false);
     }
@@ -770,7 +746,7 @@ export default function ProfilePage() {
     setConfirmationModal({
       isOpen: true,
       cellarId: cellarId,
-      cellarName: cellarName || "Unknown Cellar",
+      cellarName: cellarName || 'Unknown Cellar',
     });
   };
 
@@ -779,17 +755,15 @@ export default function ProfilePage() {
 
     try {
       setCellarLoading(true);
-      const token = localStorage.getItem("authToken");
+      const token = localStorage.getItem('authToken');
 
       const response = await fetch(
-        `${import.meta.env.VITE_BACKEND_URL}/cellars/${
-          confirmationModal.cellarId
-        }/deactivate`,
+        `${import.meta.env.VITE_BACKEND_URL}/cellars/${confirmationModal.cellarId}/deactivate`,
         {
-          method: "DELETE",
+          method: 'DELETE',
           headers: {
             Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json",
+            'Content-Type': 'application/json',
           },
         }
       );
@@ -797,8 +771,7 @@ export default function ProfilePage() {
       if (!response.ok) {
         const errorData = await response.json();
         throw new Error(
-          errorData.message ||
-            t("pages.profile.notifications.cellarDeactivateFailed")
+          errorData.message || t('pages.profile.notifications.cellarDeactivateFailed')
         );
       }
 
@@ -807,8 +780,8 @@ export default function ProfilePage() {
 
       // Show success message
       setToast({
-        message: t("pages.profile.notifications.cellarDeactivated"),
-        type: "success",
+        message: t('pages.profile.notifications.cellarDeactivated'),
+        type: 'success',
       });
 
       // Close modal
@@ -818,10 +791,10 @@ export default function ProfilePage() {
         cellarName: null,
       });
     } catch (error) {
-      console.error("Error deleting cellar:", error);
+      console.error('Error deleting cellar:', error);
       setToast({
-        message: t("pages.profile.notifications.cellarDeactivateFailed"),
-        type: "error",
+        message: t('pages.profile.notifications.cellarDeactivateFailed'),
+        type: 'error',
       });
     } finally {
       setCellarLoading(false);
@@ -830,22 +803,16 @@ export default function ProfilePage() {
 
   const handleLogout = async () => {
     await logout();
-    navigate("/login");
+    navigate('/login');
   };
 
   return (
     <div className="profile-container">
-      {toast && (
-        <Toast
-          message={toast.message}
-          type={toast.type}
-          onClose={() => setToast(null)}
-        />
-      )}
+      {toast && <Toast message={toast.message} type={toast.type} onClose={() => setToast(null)} />}
       <div className="profile-card">
         <div className="profile-header">
-          <h1>{t("pages.profile.title")}</h1>
-          <div style={{ display: "flex", gap: "0.5rem" }}>
+          <h1>{t('pages.profile.title')}</h1>
+          <div style={{ display: 'flex', gap: '0.5rem' }}>
             <button
               onClick={() => {
                 if (user?.employeeType) {
@@ -858,14 +825,10 @@ export default function ProfilePage() {
               className="btn-secondary"
               disabled={isLoading}
             >
-              {t("pages.profile.refresh")}
+              {t('pages.profile.refresh')}
             </button>
-            <button
-              onClick={handleLogout}
-              className="btn-secondary"
-              disabled={isLoading}
-            >
-              {t("common.logout")}
+            <button onClick={handleLogout} className="btn-secondary" disabled={isLoading}>
+              {t('common.logout')}
             </button>
           </div>
         </div>
@@ -874,13 +837,10 @@ export default function ProfilePage() {
         {!passwordMode && (
           <div className="profile-section">
             <div className="section-header">
-              <h2>{t("pages.profile.profileInformation")}</h2>
+              <h2>{t('pages.profile.profileInformation')}</h2>
               {!editMode && (
-                <button
-                  onClick={() => setEditMode(true)}
-                  className="btn-secondary"
-                >
-                  {t("pages.profile.edit")}
+                <button onClick={() => setEditMode(true)} className="btn-secondary">
+                  {t('pages.profile.edit')}
                 </button>
               )}
             </div>
@@ -889,9 +849,7 @@ export default function ProfilePage() {
               <form onSubmit={handleProfileSubmit} className="auth-form">
                 <div className="form-row">
                   <div className="form-group">
-                    <label htmlFor="firstName">
-                      {t("pages.profile.firstName")}
-                    </label>
+                    <label htmlFor="firstName">{t('pages.profile.firstName')}</label>
                     <input
                       id="firstName"
                       type="text"
@@ -901,9 +859,7 @@ export default function ProfilePage() {
                     />
                   </div>
                   <div className="form-group">
-                    <label htmlFor="lastName">
-                      {t("pages.profile.lastName")}
-                    </label>
+                    <label htmlFor="lastName">{t('pages.profile.lastName')}</label>
                     <input
                       id="lastName"
                       type="text"
@@ -915,14 +871,12 @@ export default function ProfilePage() {
                 </div>
 
                 <div className="form-group">
-                  <label htmlFor="email">
-                    {t("pages.profile.emailReadOnly")}
-                  </label>
+                  <label htmlFor="email">{t('pages.profile.emailReadOnly')}</label>
                   <input id="email" type="email" value={user.email} disabled />
                 </div>
 
                 <div className="form-group">
-                  <label htmlFor="phone">{t("pages.profile.phone")}</label>
+                  <label htmlFor="phone">{t('pages.profile.phone')}</label>
                   <input
                     id="phone"
                     type="tel"
@@ -934,7 +888,7 @@ export default function ProfilePage() {
                 </div>
 
                 <div className="form-group">
-                  <label htmlFor="address">{t("pages.profile.address")}</label>
+                  <label htmlFor="address">{t('pages.profile.address')}</label>
                   <input
                     id="address"
                     type="text"
@@ -947,9 +901,7 @@ export default function ProfilePage() {
 
                 <div className="form-row">
                   <div className="form-group">
-                    <label htmlFor="postalCode">
-                      {t("pages.profile.postalCode")}
-                    </label>
+                    <label htmlFor="postalCode">{t('pages.profile.postalCode')}</label>
                     <input
                       id="postalCode"
                       type="text"
@@ -961,7 +913,7 @@ export default function ProfilePage() {
                   </div>
 
                   <div className="form-group">
-                    <label htmlFor="city">{t("pages.profile.city")}</label>
+                    <label htmlFor="city">{t('pages.profile.city')}</label>
                     <input
                       id="city"
                       type="text"
@@ -975,9 +927,7 @@ export default function ProfilePage() {
 
                 <div className="form-row">
                   <div className="form-group">
-                    <label htmlFor="province">
-                      {t("pages.profile.province")}
-                    </label>
+                    <label htmlFor="province">{t('pages.profile.province')}</label>
                     <input
                       id="province"
                       type="text"
@@ -989,9 +939,7 @@ export default function ProfilePage() {
                   </div>
 
                   <div className="form-group">
-                    <label htmlFor="country">
-                      {t("pages.profile.country")}
-                    </label>
+                    <label htmlFor="country">{t('pages.profile.country')}</label>
                     <input
                       id="country"
                       type="text"
@@ -1008,132 +956,94 @@ export default function ProfilePage() {
                 )}
 
                 <div className="form-actions">
-                  <button
-                    type="submit"
-                    disabled={isLoading}
-                    className="btn-primary"
-                  >
-                    {isLoading
-                      ? t("pages.profile.saving")
-                      : t("pages.profile.saveChanges")}
+                  <button type="submit" disabled={isLoading} className="btn-primary">
+                    {isLoading ? t('pages.profile.saving') : t('pages.profile.saveChanges')}
                   </button>
                   <button
                     type="button"
                     onClick={() => {
                       setEditMode(false);
-                      setFirstName(customerData?.firstName || "");
-                      setLastName(customerData?.lastName || "");
-                      const phoneFromData =
-                        customerData?.phoneNumbers?.[0]?.number || "";
+                      setFirstName(customerData?.firstName || '');
+                      setLastName(customerData?.lastName || '');
+                      const phoneFromData = customerData?.phoneNumbers?.[0]?.number || '';
                       setPhone(phoneFromData);
                       setAddress(
                         customerData?.streetAddress ||
                           customerData?.employeeAddress?.streetAddress ||
-                          ""
+                          ''
                       );
                       setPostalCode(
-                        customerData?.postalCode ||
-                          customerData?.employeeAddress?.postalCode ||
-                          ""
+                        customerData?.postalCode || customerData?.employeeAddress?.postalCode || ''
                       );
-                      setCity(
-                        customerData?.city ||
-                          customerData?.employeeAddress?.city ||
-                          ""
-                      );
+                      setCity(customerData?.city || customerData?.employeeAddress?.city || '');
                       setProvince(
-                        customerData?.province ||
-                          customerData?.employeeAddress?.province ||
-                          ""
+                        customerData?.province || customerData?.employeeAddress?.province || ''
                       );
                       setCountry(
-                        customerData?.country ||
-                          customerData?.employeeAddress?.country ||
-                          ""
+                        customerData?.country || customerData?.employeeAddress?.country || ''
                       );
                     }}
                     className="btn-secondary"
                   >
-                    {t("pages.profile.cancel")}
+                    {t('pages.profile.cancel')}
                   </button>
                 </div>
               </form>
             ) : (
               <>
                 <div className="info-row">
-                  <span className="label">{t("pages.profile.firstName")}:</span>
-                  <span className="value">
-                    {customerData?.firstName || "—"}
-                  </span>
+                  <span className="label">{t('pages.profile.firstName')}:</span>
+                  <span className="value">{customerData?.firstName || '—'}</span>
                 </div>
 
-                {customerData?.phoneNumbers &&
-                  customerData.phoneNumbers.length > 0 && (
+                {customerData?.phoneNumbers && customerData.phoneNumbers.length > 0 && (
+                  <div className="info-row">
+                    <span className="label">{t('pages.profile.phone')}:</span>
+                    <span className="value">
+                      {customerData.phoneNumbers
+                        .map((p) => `${String(p.number)} (${String(p.type)})`)
+                        .join(', ')}
+                    </span>
+                  </div>
+                )}
+
+                {customerData &&
+                  (customerData.streetAddress || customerData.employeeAddress?.streetAddress) && (
                     <div className="info-row">
-                      <span className="label">{t("pages.profile.phone")}:</span>
+                      <span className="label">{t('pages.profile.address')}:</span>
                       <span className="value">
-                        {customerData.phoneNumbers
-                          .map((p) => `${String(p.number)} (${String(p.type)})`)
-                          .join(", ")}
+                        {customerData.streetAddress || customerData.employeeAddress?.streetAddress}
+                      </span>
+                    </div>
+                  )}
+
+                {customerData && (customerData.city || customerData.employeeAddress?.city) && (
+                  <div className="info-row">
+                    <span className="label">{t('pages.profile.city')}:</span>
+                    <span className="value">
+                      {customerData.city || customerData.employeeAddress?.city}
+                      {(customerData.province || customerData.employeeAddress?.province) &&
+                        `, ${customerData.province || customerData.employeeAddress?.province}`}
+                    </span>
+                  </div>
+                )}
+
+                {customerData &&
+                  (customerData.postalCode || customerData.employeeAddress?.postalCode) && (
+                    <div className="info-row">
+                      <span className="label">{t('pages.profile.postalCode')}:</span>
+                      <span className="value">
+                        {customerData.postalCode || customerData.employeeAddress?.postalCode}
                       </span>
                     </div>
                   )}
 
                 {customerData &&
-                  (customerData.streetAddress ||
-                    customerData.employeeAddress?.streetAddress) && (
+                  (customerData.country || customerData.employeeAddress?.country) && (
                     <div className="info-row">
-                      <span className="label">
-                        {t("pages.profile.address")}:
-                      </span>
+                      <span className="label">{t('pages.profile.country')}:</span>
                       <span className="value">
-                        {customerData.streetAddress ||
-                          customerData.employeeAddress?.streetAddress}
-                      </span>
-                    </div>
-                  )}
-
-                {customerData &&
-                  (customerData.city || customerData.employeeAddress?.city) && (
-                    <div className="info-row">
-                      <span className="label">{t("pages.profile.city")}:</span>
-                      <span className="value">
-                        {customerData.city ||
-                          customerData.employeeAddress?.city}
-                        {(customerData.province ||
-                          customerData.employeeAddress?.province) &&
-                          `, ${
-                            customerData.province ||
-                            customerData.employeeAddress?.province
-                          }`}
-                      </span>
-                    </div>
-                  )}
-
-                {customerData &&
-                  (customerData.postalCode ||
-                    customerData.employeeAddress?.postalCode) && (
-                    <div className="info-row">
-                      <span className="label">
-                        {t("pages.profile.postalCode")}:
-                      </span>
-                      <span className="value">
-                        {customerData.postalCode ||
-                          customerData.employeeAddress?.postalCode}
-                      </span>
-                    </div>
-                  )}
-
-                {customerData &&
-                  (customerData.country ||
-                    customerData.employeeAddress?.country) && (
-                    <div className="info-row">
-                      <span className="label">
-                        {t("pages.profile.country")}:
-                      </span>
-                      <span className="value">
-                        {customerData.country ||
-                          customerData.employeeAddress?.country}
+                        {customerData.country || customerData.employeeAddress?.country}
                       </span>
                     </div>
                   )}
@@ -1143,9 +1053,9 @@ export default function ProfilePage() {
             <button
               onClick={() => setPasswordMode(true)}
               className="btn-secondary"
-              style={{ marginTop: "1rem" }}
+              style={{ marginTop: '1rem' }}
             >
-              {t("pages.profile.changePassword")}
+              {t('pages.profile.changePassword')}
             </button>
 
             {/* Cellar Intake Button - Only show for customers */}
@@ -1153,95 +1063,77 @@ export default function ProfilePage() {
               <button
                 onClick={() => setAddCellarModalOpen(true)}
                 className="btn-secondary"
-                style={{ marginTop: "1rem", marginLeft: "0.5rem" }}
+                style={{ marginTop: '1rem', marginLeft: '0.5rem' }}
               >
-                {t("pages.profile.addCellarIntake")}
+                {t('pages.profile.addCellarIntake')}
               </button>
             )}
 
             {/* Persisted cellars list - Only show for customers */}
             {!user?.employeeType && (
-              <div style={{ marginTop: "2rem" }}>
+              <div style={{ marginTop: '2rem' }}>
                 <div className="section-header">
-                  <h2>{t("pages.profile.yourCellars")}</h2>
+                  <h2>{t('pages.profile.yourCellars')}</h2>
                 </div>
                 {cellars.length === 0 ? (
-                  <p>{t("pages.profile.noCellarsYet")}</p>
+                  <p>{t('pages.profile.noCellarsYet')}</p>
                 ) : (
-                  <div style={{ display: "grid", gap: "0.75rem" }}>
+                  <div style={{ display: 'grid', gap: '0.75rem' }}>
                     {cellars.map((c) => {
                       const status =
-                        c.isActive ?? c.active
-                          ? t("pages.profile.active")
-                          : t("pages.profile.inactive");
+                        (c.isActive ?? c.active)
+                          ? t('pages.profile.active')
+                          : t('pages.profile.inactive');
                       return (
                         <div key={c.cellarId}>
                           <div className="info-row">
-                            <span className="label">
-                              {t("pages.profile.name")}:
-                            </span>
+                            <span className="label">{t('pages.profile.name')}:</span>
                             <span className="value">
-                              {c.name || t("pages.profile.unnamedCellar")}
+                              {c.name || t('pages.profile.unnamedCellar')}
                             </span>
                           </div>
                           <div className="info-row">
-                            <span className="label">
-                              {t("pages.profile.status")}:
-                            </span>
+                            <span className="label">{t('pages.profile.status')}:</span>
                             <span className="value">{status}</span>
                           </div>
                           <div className="info-row">
-                            <span className="label">
-                              {t("pages.profile.type")}:
-                            </span>
+                            <span className="label">{t('pages.profile.type')}:</span>
                             <span className="value">{c.cellarType}</span>
                           </div>
                           <div className="info-row">
-                            <span className="label">
-                              {t("pages.profile.capacity")}:
-                            </span>
+                            <span className="label">{t('pages.profile.capacity')}:</span>
                             <span className="value">
-                              {c.bottleCapacity} {t("pages.profile.bottles")}
+                              {c.bottleCapacity} {t('pages.profile.bottles')}
                             </span>
                           </div>
                           <div className="info-row">
-                            <span className="label">
-                              {t("pages.profile.dimensions")}:
-                            </span>
+                            <span className="label">{t('pages.profile.dimensions')}:</span>
                             <span className="value">
                               {c.height} × {c.width} × {c.depth} cm
                             </span>
                           </div>
                           <div className="info-row">
-                            <span className="label">
-                              {t("pages.profile.features")}:
-                            </span>
+                            <span className="label">{t('pages.profile.features')}:</span>
                             <span className="value">
-                              {c.hasCoolingSystem
-                                ? t("pages.profile.cooling")
-                                : null}
+                              {c.hasCoolingSystem ? t('pages.profile.cooling') : null}
                               {c.hasHumidityControl
-                                ? (c.hasCoolingSystem ? ", " : "") +
-                                  t("pages.profile.humidity")
-                                : ""}
+                                ? (c.hasCoolingSystem ? ', ' : '') + t('pages.profile.humidity')
+                                : ''}
                               {c.hasAutoRegulation
-                                ? (c.hasCoolingSystem || c.hasHumidityControl
-                                    ? ", "
-                                    : "") + t("pages.profile.autoRegulation")
-                                : ""}
-                              {!c.hasCoolingSystem &&
-                              !c.hasHumidityControl &&
-                              !c.hasAutoRegulation
-                                ? t("pages.profile.none")
-                                : ""}
+                                ? (c.hasCoolingSystem || c.hasHumidityControl ? ', ' : '') +
+                                  t('pages.profile.autoRegulation')
+                                : ''}
+                              {!c.hasCoolingSystem && !c.hasHumidityControl && !c.hasAutoRegulation
+                                ? t('pages.profile.none')
+                                : ''}
                             </span>
                           </div>
                           <div
                             style={{
-                              display: "flex",
-                              gap: "0.5rem",
-                              marginTop: "0.75rem",
-                              marginBottom: "1rem",
+                              display: 'flex',
+                              gap: '0.5rem',
+                              marginTop: '0.75rem',
+                              marginBottom: '1rem',
                             }}
                           >
                             <button
@@ -1249,27 +1141,25 @@ export default function ProfilePage() {
                               className="btn-secondary"
                               style={{ flex: 1 }}
                             >
-                              {t("pages.profile.update")}
+                              {t('pages.profile.update')}
                             </button>
                             <button
-                              onClick={() =>
-                                handleCellarDelete(c.cellarId, c.name)
-                              }
+                              onClick={() => handleCellarDelete(c.cellarId, c.name)}
                               className="btn-secondary"
                               style={{
                                 flex: 1,
-                                backgroundColor: "#dc3545",
-                                color: "white",
+                                backgroundColor: '#dc3545',
+                                color: 'white',
                               }}
                             >
-                              {t("pages.profile.deactivate")}
+                              {t('pages.profile.deactivate')}
                             </button>
                           </div>
                           <hr
                             style={{
-                              margin: "1rem 0",
-                              border: "0",
-                              borderTop: "1px solid #eee",
+                              margin: '1rem 0',
+                              border: '0',
+                              borderTop: '1px solid #eee',
                             }}
                           />
                         </div>
@@ -1287,37 +1177,33 @@ export default function ProfilePage() {
           <div className="modal-overlay" role="dialog" aria-modal>
             <div className="modal">
               <div className="modal-header">
-                <h3>{t("pages.profile.addCellarIntake")}</h3>
+                <h3>{t('pages.profile.addCellarIntake')}</h3>
                 <button
                   className="modal-close-light"
                   aria-label="Close"
                   onClick={() => {
                     setAddCellarModalOpen(false);
-                    setCellarName("");
-                    setCellarHeight("");
-                    setCellarWidth("");
-                    setCellarDepth("");
-                    setCellarBottleCapacity("");
-                    setCellarType("PRIVATE");
+                    setCellarName('');
+                    setCellarHeight('');
+                    setCellarWidth('');
+                    setCellarDepth('');
+                    setCellarBottleCapacity('');
+                    setCellarType('PRIVATE');
                     setCellarCoolingSystem(false);
                     setCellarHumidityControl(false);
                     setCellarAutoRegulation(false);
-                    setCellarError("");
+                    setCellarError('');
                   }}
                 >
                   &#10005;
                 </button>
               </div>
 
-              {cellarError && (
-                <div className="alert alert-error">{cellarError}</div>
-              )}
+              {cellarError && <div className="alert alert-error">{cellarError}</div>}
 
               <form onSubmit={handleCellarSubmit} className="create-job-form">
                 <div className="form-group">
-                  <label htmlFor="cellarName">
-                    {t("pages.profile.cellarName")} *
-                  </label>
+                  <label htmlFor="cellarName">{t('pages.profile.cellarName')} *</label>
                   <input
                     id="cellarName"
                     type="text"
@@ -1331,9 +1217,7 @@ export default function ProfilePage() {
 
                 <div className="form-row">
                   <div className="form-group">
-                    <label htmlFor="cellarHeight">
-                      {t("pages.profile.height")} *
-                    </label>
+                    <label htmlFor="cellarHeight">{t('pages.profile.height')} *</label>
                     <input
                       id="cellarHeight"
                       type="number"
@@ -1347,9 +1231,7 @@ export default function ProfilePage() {
                   </div>
 
                   <div className="form-group">
-                    <label htmlFor="cellarWidth">
-                      {t("pages.profile.width")} *
-                    </label>
+                    <label htmlFor="cellarWidth">{t('pages.profile.width')} *</label>
                     <input
                       id="cellarWidth"
                       type="number"
@@ -1365,9 +1247,7 @@ export default function ProfilePage() {
 
                 <div className="form-row">
                   <div className="form-group">
-                    <label htmlFor="cellarDepth">
-                      {t("pages.profile.depth")} *
-                    </label>
+                    <label htmlFor="cellarDepth">{t('pages.profile.depth')} *</label>
                     <input
                       id="cellarDepth"
                       type="number"
@@ -1382,7 +1262,7 @@ export default function ProfilePage() {
 
                   <div className="form-group">
                     <label htmlFor="cellarBottleCapacity">
-                      {t("pages.profile.bottleCapacity")} *
+                      {t('pages.profile.bottleCapacity')} *
                     </label>
                     <input
                       id="cellarBottleCapacity"
@@ -1397,39 +1277,29 @@ export default function ProfilePage() {
                 </div>
 
                 <div className="form-group">
-                  <label htmlFor="cellarType">
-                    {t("pages.profile.cellarType")}
-                  </label>
+                  <label htmlFor="cellarType">{t('pages.profile.cellarType')}</label>
                   <select
                     id="cellarType"
                     value={cellarType}
                     onChange={(e) => setCellarType(e.target.value)}
                     disabled={cellarLoading}
                   >
-                    <option value="PRIVATE">
-                      {t("pages.profile.private")}
-                    </option>
-                    <option value="COMMERCIAL">
-                      {t("pages.profile.commercial")}
-                    </option>
-                    <option value="PROFESSIONAL">
-                      {t("pages.profile.professional")}
-                    </option>
-                    <option value="MODULAR">
-                      {t("pages.profile.modular")}
-                    </option>
+                    <option value="PRIVATE">{t('pages.profile.private')}</option>
+                    <option value="COMMERCIAL">{t('pages.profile.commercial')}</option>
+                    <option value="PROFESSIONAL">{t('pages.profile.professional')}</option>
+                    <option value="MODULAR">{t('pages.profile.modular')}</option>
                   </select>
                 </div>
 
                 <div
                   className="form-group"
-                  style={{ display: "flex", gap: "1rem", flexWrap: "wrap" }}
+                  style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap' }}
                 >
                   <label
                     style={{
-                      display: "flex",
-                      alignItems: "center",
-                      gap: "0.5rem",
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '0.5rem',
                     }}
                   >
                     <input
@@ -1438,43 +1308,39 @@ export default function ProfilePage() {
                       onChange={(e) => setCellarCoolingSystem(e.target.checked)}
                       disabled={cellarLoading}
                     />
-                    {t("pages.profile.hasCoolingSystem")}
+                    {t('pages.profile.hasCoolingSystem')}
                   </label>
 
                   <label
                     style={{
-                      display: "flex",
-                      alignItems: "center",
-                      gap: "0.5rem",
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '0.5rem',
                     }}
                   >
                     <input
                       type="checkbox"
                       checked={cellarHumidityControl}
-                      onChange={(e) =>
-                        setCellarHumidityControl(e.target.checked)
-                      }
+                      onChange={(e) => setCellarHumidityControl(e.target.checked)}
                       disabled={cellarLoading}
                     />
-                    {t("pages.profile.hasHumidityControl")}
+                    {t('pages.profile.hasHumidityControl')}
                   </label>
 
                   <label
                     style={{
-                      display: "flex",
-                      alignItems: "center",
-                      gap: "0.5rem",
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '0.5rem',
                     }}
                   >
                     <input
                       type="checkbox"
                       checked={cellarAutoRegulation}
-                      onChange={(e) =>
-                        setCellarAutoRegulation(e.target.checked)
-                      }
+                      onChange={(e) => setCellarAutoRegulation(e.target.checked)}
                       disabled={cellarLoading}
                     />
-                    {t("pages.profile.hasAutoRegulation")}
+                    {t('pages.profile.hasAutoRegulation')}
                   </label>
                 </div>
 
@@ -1483,29 +1349,23 @@ export default function ProfilePage() {
                     type="button"
                     onClick={() => {
                       setAddCellarModalOpen(false);
-                      setCellarName("");
-                      setCellarHeight("");
-                      setCellarWidth("");
-                      setCellarDepth("");
-                      setCellarBottleCapacity("");
-                      setCellarType("PRIVATE");
+                      setCellarName('');
+                      setCellarHeight('');
+                      setCellarWidth('');
+                      setCellarDepth('');
+                      setCellarBottleCapacity('');
+                      setCellarType('PRIVATE');
                       setCellarCoolingSystem(false);
                       setCellarHumidityControl(false);
                       setCellarAutoRegulation(false);
-                      setCellarError("");
+                      setCellarError('');
                     }}
                     className="btn-cancel"
                   >
-                    {t("common.cancel")}
+                    {t('common.cancel')}
                   </button>
-                  <button
-                    type="submit"
-                    disabled={cellarLoading}
-                    className="btn-create"
-                  >
-                    {cellarLoading
-                      ? t("common.creating")
-                      : t("pages.profile.createCellar")}
+                  <button type="submit" disabled={cellarLoading} className="btn-create">
+                    {cellarLoading ? t('common.creating') : t('pages.profile.createCellar')}
                   </button>
                 </div>
               </form>
@@ -1518,38 +1378,34 @@ export default function ProfilePage() {
           <div className="modal-overlay" role="dialog" aria-modal>
             <div className="modal">
               <div className="modal-header">
-                <h3>{t("pages.profile.updateCellar")}</h3>
+                <h3>{t('pages.profile.updateCellar')}</h3>
                 <button
                   className="modal-close-light"
                   aria-label="Close"
                   onClick={() => {
                     setEditCellarModalOpen(false);
-                    setCellarName("");
-                    setCellarHeight("");
-                    setCellarWidth("");
-                    setCellarDepth("");
-                    setCellarBottleCapacity("");
-                    setCellarType("PRIVATE");
+                    setCellarName('');
+                    setCellarHeight('');
+                    setCellarWidth('');
+                    setCellarDepth('');
+                    setCellarBottleCapacity('');
+                    setCellarType('PRIVATE');
                     setCellarCoolingSystem(false);
                     setCellarHumidityControl(false);
                     setCellarAutoRegulation(false);
                     setEditingCellarId(null);
-                    setCellarError("");
+                    setCellarError('');
                   }}
                 >
                   &#10005;
                 </button>
               </div>
 
-              {cellarError && (
-                <div className="alert alert-error">{cellarError}</div>
-              )}
+              {cellarError && <div className="alert alert-error">{cellarError}</div>}
 
               <form onSubmit={handleCellarUpdate} className="create-job-form">
                 <div className="form-group">
-                  <label htmlFor="editCellarName">
-                    {t("pages.profile.cellarName")} *
-                  </label>
+                  <label htmlFor="editCellarName">{t('pages.profile.cellarName')} *</label>
                   <input
                     id="editCellarName"
                     type="text"
@@ -1563,9 +1419,7 @@ export default function ProfilePage() {
 
                 <div className="form-row">
                   <div className="form-group">
-                    <label htmlFor="editCellarHeight">
-                      {t("pages.profile.height")} *
-                    </label>
+                    <label htmlFor="editCellarHeight">{t('pages.profile.height')} *</label>
                     <input
                       id="editCellarHeight"
                       type="number"
@@ -1579,9 +1433,7 @@ export default function ProfilePage() {
                   </div>
 
                   <div className="form-group">
-                    <label htmlFor="editCellarWidth">
-                      {t("pages.profile.width")} *
-                    </label>
+                    <label htmlFor="editCellarWidth">{t('pages.profile.width')} *</label>
                     <input
                       id="editCellarWidth"
                       type="number"
@@ -1597,9 +1449,7 @@ export default function ProfilePage() {
 
                 <div className="form-row">
                   <div className="form-group">
-                    <label htmlFor="editCellarDepth">
-                      {t("pages.profile.depth")} *
-                    </label>
+                    <label htmlFor="editCellarDepth">{t('pages.profile.depth')} *</label>
                     <input
                       id="editCellarDepth"
                       type="number"
@@ -1614,7 +1464,7 @@ export default function ProfilePage() {
 
                   <div className="form-group">
                     <label htmlFor="editCellarBottleCapacity">
-                      {t("pages.profile.bottleCapacity")} *
+                      {t('pages.profile.bottleCapacity')} *
                     </label>
                     <input
                       id="editCellarBottleCapacity"
@@ -1629,39 +1479,29 @@ export default function ProfilePage() {
                 </div>
 
                 <div className="form-group">
-                  <label htmlFor="editCellarType">
-                    {t("pages.profile.cellarType")}
-                  </label>
+                  <label htmlFor="editCellarType">{t('pages.profile.cellarType')}</label>
                   <select
                     id="editCellarType"
                     value={cellarType}
                     onChange={(e) => setCellarType(e.target.value)}
                     disabled={cellarLoading}
                   >
-                    <option value="PRIVATE">
-                      {t("pages.profile.private")}
-                    </option>
-                    <option value="COMMERCIAL">
-                      {t("pages.profile.commercial")}
-                    </option>
-                    <option value="PROFESSIONAL">
-                      {t("pages.profile.professional")}
-                    </option>
-                    <option value="MODULAR">
-                      {t("pages.profile.modular")}
-                    </option>
+                    <option value="PRIVATE">{t('pages.profile.private')}</option>
+                    <option value="COMMERCIAL">{t('pages.profile.commercial')}</option>
+                    <option value="PROFESSIONAL">{t('pages.profile.professional')}</option>
+                    <option value="MODULAR">{t('pages.profile.modular')}</option>
                   </select>
                 </div>
 
                 <div
                   className="form-group"
-                  style={{ display: "flex", gap: "1rem", flexWrap: "wrap" }}
+                  style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap' }}
                 >
                   <label
                     style={{
-                      display: "flex",
-                      alignItems: "center",
-                      gap: "0.5rem",
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '0.5rem',
                     }}
                   >
                     <input
@@ -1670,43 +1510,39 @@ export default function ProfilePage() {
                       onChange={(e) => setCellarCoolingSystem(e.target.checked)}
                       disabled={cellarLoading}
                     />
-                    {t("pages.profile.hasCoolingSystem")}
+                    {t('pages.profile.hasCoolingSystem')}
                   </label>
 
                   <label
                     style={{
-                      display: "flex",
-                      alignItems: "center",
-                      gap: "0.5rem",
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '0.5rem',
                     }}
                   >
                     <input
                       type="checkbox"
                       checked={cellarHumidityControl}
-                      onChange={(e) =>
-                        setCellarHumidityControl(e.target.checked)
-                      }
+                      onChange={(e) => setCellarHumidityControl(e.target.checked)}
                       disabled={cellarLoading}
                     />
-                    {t("pages.profile.hasHumidityControl")}
+                    {t('pages.profile.hasHumidityControl')}
                   </label>
 
                   <label
                     style={{
-                      display: "flex",
-                      alignItems: "center",
-                      gap: "0.5rem",
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '0.5rem',
                     }}
                   >
                     <input
                       type="checkbox"
                       checked={cellarAutoRegulation}
-                      onChange={(e) =>
-                        setCellarAutoRegulation(e.target.checked)
-                      }
+                      onChange={(e) => setCellarAutoRegulation(e.target.checked)}
                       disabled={cellarLoading}
                     />
-                    {t("pages.profile.hasAutoRegulation")}
+                    {t('pages.profile.hasAutoRegulation')}
                   </label>
                 </div>
 
@@ -1715,30 +1551,24 @@ export default function ProfilePage() {
                     type="button"
                     onClick={() => {
                       setEditCellarModalOpen(false);
-                      setCellarName("");
-                      setCellarHeight("");
-                      setCellarWidth("");
-                      setCellarDepth("");
-                      setCellarBottleCapacity("");
-                      setCellarType("PRIVATE");
+                      setCellarName('');
+                      setCellarHeight('');
+                      setCellarWidth('');
+                      setCellarDepth('');
+                      setCellarBottleCapacity('');
+                      setCellarType('PRIVATE');
                       setCellarCoolingSystem(false);
                       setCellarHumidityControl(false);
                       setCellarAutoRegulation(false);
                       setEditingCellarId(null);
-                      setCellarError("");
+                      setCellarError('');
                     }}
                     className="btn-cancel"
                   >
-                    {t("common.cancel")}
+                    {t('common.cancel')}
                   </button>
-                  <button
-                    type="submit"
-                    disabled={cellarLoading}
-                    className="btn-create"
-                  >
-                    {cellarLoading
-                      ? t("common.updating")
-                      : t("pages.profile.updateCellar")}
+                  <button type="submit" disabled={cellarLoading} className="btn-create">
+                    {cellarLoading ? t('common.updating') : t('pages.profile.updateCellar')}
                   </button>
                 </div>
               </form>
@@ -1750,14 +1580,12 @@ export default function ProfilePage() {
         {passwordMode && (
           <div className="profile-section">
             <div className="section-header">
-              <h2>{t("pages.profile.changePassword")}</h2>
+              <h2>{t('pages.profile.changePassword')}</h2>
             </div>
 
             <form onSubmit={handlePasswordSubmit} className="auth-form">
               <div className="form-group">
-                <label htmlFor="oldPassword">
-                  {t("pages.profile.currentPassword")}
-                </label>
+                <label htmlFor="oldPassword">{t('pages.profile.currentPassword')}</label>
                 <input
                   id="oldPassword"
                   type="password"
@@ -1770,9 +1598,7 @@ export default function ProfilePage() {
               </div>
 
               <div className="form-group">
-                <label htmlFor="newPassword">
-                  {t("pages.profile.newPassword")}
-                </label>
+                <label htmlFor="newPassword">{t('pages.profile.newPassword')}</label>
                 <input
                   id="newPassword"
                   type="password"
@@ -1785,9 +1611,7 @@ export default function ProfilePage() {
               </div>
 
               <div className="form-group">
-                <label htmlFor="confirmPassword">
-                  {t("pages.profile.confirmNewPassword")}
-                </label>
+                <label htmlFor="confirmPassword">{t('pages.profile.confirmNewPassword')}</label>
                 <input
                   id="confirmPassword"
                   type="password"
@@ -1804,27 +1628,21 @@ export default function ProfilePage() {
               )}
 
               <div className="form-actions">
-                <button
-                  type="submit"
-                  disabled={isLoading}
-                  className="btn-primary"
-                >
-                  {isLoading
-                    ? t("common.updating")
-                    : t("pages.profile.updatePassword")}
+                <button type="submit" disabled={isLoading} className="btn-primary">
+                  {isLoading ? t('common.updating') : t('pages.profile.updatePassword')}
                 </button>
                 <button
                   type="button"
                   onClick={() => {
                     setPasswordMode(false);
-                    setOldPassword("");
-                    setNewPassword("");
-                    setConfirmPassword("");
-                    setFormError("");
+                    setOldPassword('');
+                    setNewPassword('');
+                    setConfirmPassword('');
+                    setFormError('');
                   }}
                   className="btn-secondary"
                 >
-                  {t("common.cancel")}
+                  {t('common.cancel')}
                 </button>
               </div>
             </form>
@@ -1835,82 +1653,64 @@ export default function ProfilePage() {
         {user?.employeeType && !passwordMode && (
           <div className="profile-section">
             <div className="section-header">
-              <h2>{t("pages.profile.mySchedule")}</h2>
+              <h2>{t('pages.profile.mySchedule')}</h2>
             </div>
 
-            {scheduleError && (
-              <div className="alert alert-error">{scheduleError}</div>
-            )}
+            {scheduleError && <div className="alert alert-error">{scheduleError}</div>}
 
             {scheduleLoading ? (
-              <p>{t("pages.profile.loadingSchedule")}</p>
+              <p>{t('pages.profile.loadingSchedule')}</p>
             ) : (
               <div className="modal-content-light">
                 <div className="modal-section schedule-calendar-section">
-                  <h4 className="modal-label">
-                    {t("pages.profile.selectDate")}
-                  </h4>
+                  <h4 className="modal-label">{t('pages.profile.selectDate')}</h4>
                   <div className="calendar-center">
                     <Calendar
                       onChange={(date) => setSelectedDate(date as Date | null)}
                       value={selectedDate}
-                      locale={i18n.language === "fr" ? "fr-FR" : "en-US"}
+                      locale={i18n.language === 'fr' ? 'fr-FR' : 'en-US'}
                     />
                   </div>
                 </div>
                 <div className="modal-section">
-                  <h4 className="modal-label">
-                    {t("pages.profile.timeSlots")}
-                  </h4>
+                  <h4 className="modal-label">{t('pages.profile.timeSlots')}</h4>
                   <ul className="modal-list">
                     {(() => {
                       if (!selectedDate)
                         return (
-                          <li className="modal-list-item">
-                            {t("pages.profile.selectADate")}
-                          </li>
+                          <li className="modal-list-item">{t('pages.profile.selectADate')}</li>
                         );
-                      const sched =
-                        selectedDateSchedule as EmployeeSchedule | null;
-                      if (
-                        !sched ||
-                        !sched.timeSlots ||
-                        sched.timeSlots.length === 0
-                      ) {
+                      const sched = selectedDateSchedule as EmployeeSchedule | null;
+                      if (!sched || !sched.timeSlots || sched.timeSlots.length === 0) {
                         const dayOfWeek = selectedDate
-                          .toLocaleDateString("en-US", { weekday: "long" })
+                          .toLocaleDateString('en-US', { weekday: 'long' })
                           .toUpperCase();
                         const weekly = (schedule || []).find(
                           (s: Record<string, unknown>) =>
-                            ((s.dayOfWeek as string) || "")?.toUpperCase() ===
-                            dayOfWeek
+                            ((s.dayOfWeek as string) || '')?.toUpperCase() === dayOfWeek
                         ) as EmployeeSchedule | undefined;
                         if (
                           weekly &&
                           Array.isArray(weekly.timeSlots) &&
                           weekly.timeSlots.length > 0
                         ) {
-                          return weekly.timeSlots.map(
-                            (slot: string, i: number) => (
-                              <li key={i} className="modal-list-item">
-                                {slot}
-                              </li>
-                            )
-                          );
+                          return weekly.timeSlots.map((slot: string, i: number) => (
+                            <li key={i} className="modal-list-item">
+                              {slot}
+                            </li>
+                          ));
                         }
                         return (
                           <li className="modal-list-item">
-                            {t("pages.profile.noScheduleForDate")}
+                            {t('pages.profile.noScheduleForDate')}
                           </li>
                         );
                       }
-                      return (sched.timeSlots || []).map(
-                        (slot: string, i: number) => (
-                          <li key={i} className="modal-list-item">
-                            {slot}
-                          </li>
-                        )
-                      );
+                      return (sched.timeSlots || []).map((slot: string, i: number) => (
+                        <li key={i} className="modal-list-item">
+                          {slot}
+                        </li>
+                      ));
                     })()}
                   </ul>
                 </div>
@@ -1922,12 +1722,12 @@ export default function ProfilePage() {
 
       <ConfirmationModal
         isOpen={confirmationModal.isOpen}
-        title={t("pages.profile.deactivateCellar")}
-        message={t("pages.profile.deactivateConfirmMessage", {
+        title={t('pages.profile.deactivateCellar')}
+        message={t('pages.profile.deactivateConfirmMessage', {
           cellarName: confirmationModal.cellarName,
         })}
-        confirmText={t("pages.profile.deactivate")}
-        cancelText={t("common.cancel")}
+        confirmText={t('pages.profile.deactivate')}
+        cancelText={t('common.cancel')}
         isDanger={true}
         isLoading={cellarLoading}
         onConfirm={confirmCellarDeactivation}

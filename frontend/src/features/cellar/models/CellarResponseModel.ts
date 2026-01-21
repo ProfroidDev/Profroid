@@ -1,4 +1,4 @@
-import type { CellarType } from "./CellarType";
+import type { CellarType } from './CellarType';
 
 export interface CellarResponseModel {
   cellarId: string;

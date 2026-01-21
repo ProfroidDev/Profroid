@@ -1,32 +1,29 @@
-import React, { useEffect, useMemo, useState } from "react";
-import { useTranslation } from "react-i18next";
-import { Loader2, CalendarClock, ClipboardList, Users } from "lucide-react";
-import "./AddAppointmentModal.css";
-import "../../../components/ConfirmationModal.css";
-import { createAppointment } from "../api/createAppointment";
-import { updateAppointment } from "../api/updateAppointment";
-import type { AppointmentRequestModel } from "../models/AppointmentRequestModel";
-import type { AppointmentResponseModel } from "../models/AppointmentResponseModel";
-import { getJobs } from "../../jobs/api/getAllJobs";
-import type { JobResponseModel } from "../../jobs/models/JobResponseModel";
-import { getEmployees } from "../../employee/api/getAllEmployees";
-import { translateAppointmentError } from "../../../utils/appointmentErrorTranslator";
-import type { EmployeeResponseModel } from "../../employee/models/EmployeeResponseModel";
-import { getCustomers } from "../../customer/api/getAllCustomers";
-import type { CustomerResponseModel } from "../../customer/models/CustomerResponseModel";
-import { getCellars } from "../../cellar/api/getAllCellars";
-import type { CellarResponseModel } from "../../cellar/models/CellarResponseModel";
-import { getEmployeeScheduleForDate } from "../../employee/api/getEmployeeScheduleForDate";
-import { getEmployeeSchedule } from "../../employee/api/getEmployeeSchedule";
-import type { TimeSlotType } from "../../employee/models/EmployeeScheduleRequestModel";
-import { getProvincePostalCodeError } from "../../../utils/postalCodeValidator";
-import { getMyJobs } from "../api/getMyJobs";
-import {
-  getTechnicianBookedSlots,
-  type BookedSlot,
-} from "../api/getTechnicianBookedSlots";
-import { getAggregatedAvailability } from "../api/getAggregatedAvailability";
-import useAuthStore from "../../authentication/store/authStore";
+import React, { useEffect, useMemo, useState } from 'react';
+import { useTranslation } from 'react-i18next';
+import { Loader2, CalendarClock, ClipboardList, Users } from 'lucide-react';
+import './AddAppointmentModal.css';
+import '../../../components/ConfirmationModal.css';
+import { createAppointment } from '../api/createAppointment';
+import { updateAppointment } from '../api/updateAppointment';
+import type { AppointmentRequestModel } from '../models/AppointmentRequestModel';
+import type { AppointmentResponseModel } from '../models/AppointmentResponseModel';
+import { getJobs } from '../../jobs/api/getAllJobs';
+import type { JobResponseModel } from '../../jobs/models/JobResponseModel';
+import { getEmployees } from '../../employee/api/getAllEmployees';
+import { translateAppointmentError } from '../../../utils/appointmentErrorTranslator';
+import type { EmployeeResponseModel } from '../../employee/models/EmployeeResponseModel';
+import { getCustomers } from '../../customer/api/getAllCustomers';
+import type { CustomerResponseModel } from '../../customer/models/CustomerResponseModel';
+import { getCellars } from '../../cellar/api/getAllCellars';
+import type { CellarResponseModel } from '../../cellar/models/CellarResponseModel';
+import { getEmployeeScheduleForDate } from '../../employee/api/getEmployeeScheduleForDate';
+import { getEmployeeSchedule } from '../../employee/api/getEmployeeSchedule';
+import type { TimeSlotType } from '../../employee/models/EmployeeScheduleRequestModel';
+import { getProvincePostalCodeError } from '../../../utils/postalCodeValidator';
+import { getMyJobs } from '../api/getMyJobs';
+import { getTechnicianBookedSlots, type BookedSlot } from '../api/getTechnicianBookedSlots';
+import { getAggregatedAvailability } from '../api/getAggregatedAvailability';
+import useAuthStore from '../../authentication/store/authStore';
 
 // Cache for shared data to reduce API calls when modal is opened/closed multiple times
 const dataCache: {
@@ -35,12 +32,7 @@ const dataCache: {
   customers: CustomerResponseModel[] | null;
   cellars: CellarResponseModel[] | null;
   loadingPromise: Promise<
-    [
-      JobResponseModel[],
-      EmployeeResponseModel[],
-      CustomerResponseModel[],
-      CellarResponseModel[]
-    ]
+    [JobResponseModel[], EmployeeResponseModel[], CustomerResponseModel[], CellarResponseModel[]]
   > | null;
 } = {
   jobs: null,
@@ -60,12 +52,7 @@ function clearAppointmentDataCache() {
 }
 
 function getCachedData(): Promise<
-  [
-    JobResponseModel[],
-    EmployeeResponseModel[],
-    CustomerResponseModel[],
-    CellarResponseModel[]
-  ]
+  [JobResponseModel[], EmployeeResponseModel[], CustomerResponseModel[], CellarResponseModel[]]
 > {
   // If all data is already cached AND has actual data, return it immediately
   // Don't use cache if any array is empty (might be from a failed fetch)
@@ -113,18 +100,13 @@ function getCachedData(): Promise<
       clearAppointmentDataCache();
       throw error;
     }) as Promise<
-    [
-      JobResponseModel[],
-      EmployeeResponseModel[],
-      CustomerResponseModel[],
-      CellarResponseModel[]
-    ]
+    [JobResponseModel[], EmployeeResponseModel[], CustomerResponseModel[], CellarResponseModel[]]
   >;
 
   return dataCache.loadingPromise;
 }
 
-type Mode = "customer" | "technician";
+type Mode = 'customer' | 'technician';
 
 interface AddAppointmentModalProps {
   mode: Mode;
@@ -133,28 +115,22 @@ interface AddAppointmentModalProps {
   editAppointment?: AppointmentResponseModel; // If provided, modal is in edit mode
 }
 
-const SLOT_ORDER: TimeSlotType[] = [
-  "NINE_AM",
-  "ELEVEN_AM",
-  "ONE_PM",
-  "THREE_PM",
-  "FIVE_PM",
-];
+const SLOT_ORDER: TimeSlotType[] = ['NINE_AM', 'ELEVEN_AM', 'ONE_PM', 'THREE_PM', 'FIVE_PM'];
 
 const SLOT_TO_TIME: Record<TimeSlotType, string> = {
-  NINE_AM: "09:00",
-  ELEVEN_AM: "11:00",
-  ONE_PM: "13:00",
-  THREE_PM: "15:00",
-  FIVE_PM: "17:00",
+  NINE_AM: '09:00',
+  ELEVEN_AM: '11:00',
+  ONE_PM: '13:00',
+  THREE_PM: '15:00',
+  FIVE_PM: '17:00',
 };
 
 const SLOT_TO_LABEL: Record<TimeSlotType, string> = {
-  NINE_AM: "9:00 AM",
-  ELEVEN_AM: "11:00 AM",
-  ONE_PM: "1:00 PM",
-  THREE_PM: "3:00 PM",
-  FIVE_PM: "5:00 PM",
+  NINE_AM: '9:00 AM',
+  ELEVEN_AM: '11:00 AM',
+  ONE_PM: '1:00 PM',
+  THREE_PM: '3:00 PM',
+  FIVE_PM: '5:00 PM',
 };
 
 function getRequiredSlots(job?: JobResponseModel): number {
@@ -170,10 +146,7 @@ function getRequiredSlots(job?: JobResponseModel): number {
   return Math.min(requiredSlots, 5);
 }
 
-function slotAllowedForJob(
-  job: JobResponseModel | undefined,
-  slot: TimeSlotType
-): boolean {
+function slotAllowedForJob(job: JobResponseModel | undefined, slot: TimeSlotType): boolean {
   if (!job) return true;
 
   const required = getRequiredSlots(job);
@@ -186,7 +159,7 @@ function slotAllowedForJob(
 function isWeekend(date: string): boolean {
   if (!date) return false;
   // Parse date parts to avoid timezone issues
-  const [year, month, day] = date.split("-").map(Number);
+  const [year, month, day] = date.split('-').map(Number);
   const localDate = new Date(year, month - 1, day);
   const dayOfWeek = localDate.getDay();
   return dayOfWeek === 0 || dayOfWeek === 6;
@@ -215,19 +188,17 @@ function passesBookingDeadline(date: string, time: string): boolean {
 }
 
 function getActualCustomerId(id: string | object | undefined): string {
-  if (!id) return "";
-  if (typeof id === "string") return id;
-  if (typeof id === "object" && id !== null && "customerId" in id) {
+  if (!id) return '';
+  if (typeof id === 'string') return id;
+  if (typeof id === 'object' && id !== null && 'customerId' in id) {
     const obj = id as Record<string, unknown>;
-    return typeof obj.customerId === "string" ? obj.customerId : "";
+    return typeof obj.customerId === 'string' ? obj.customerId : '';
   }
-  return "";
+  return '';
 }
 
 function labelForTime(time: string): string {
-  const entry = Object.entries(SLOT_TO_TIME).find(
-    ([, value]) => value === time
-  );
+  const entry = Object.entries(SLOT_TO_TIME).find(([, value]) => value === time);
   if (!entry) return time;
   const slot = entry[0] as TimeSlotType;
   return SLOT_TO_LABEL[slot];
@@ -261,29 +232,25 @@ export default function AddAppointmentModal({
   const [cellars, setCellars] = useState<CellarResponseModel[]>([]);
   const [scheduleSlots, setScheduleSlots] = useState<TimeSlotType[]>([]);
 
-  const [selectedJobId, setSelectedJobId] = useState<string>("");
-  const [selectedTechnicianId, setSelectedTechnicianId] = useState<string>(
-    technicianId || ""
-  );
-  const [selectedCustomerId, setSelectedCustomerId] = useState<string>(
-    customerId || ""
-  );
-  const [selectedCellarId, setSelectedCellarId] = useState<string>("");
+  const [selectedJobId, setSelectedJobId] = useState<string>('');
+  const [selectedTechnicianId, setSelectedTechnicianId] = useState<string>(technicianId || '');
+  const [selectedCustomerId, setSelectedCustomerId] = useState<string>(customerId || '');
+  const [selectedCellarId, setSelectedCellarId] = useState<string>('');
 
-  const [appointmentDate, setAppointmentDate] = useState<string>("");
-  const [appointmentTime, setAppointmentTime] = useState<string>("");
-  const appointmentTimeRef = React.useRef<string>("");
+  const [appointmentDate, setAppointmentDate] = useState<string>('');
+  const [appointmentTime, setAppointmentTime] = useState<string>('');
+  const appointmentTimeRef = React.useRef<string>('');
   // Remember if the user selected a valid slot from the dropdown
   const [timeWasAvailable, setTimeWasAvailable] = useState<boolean>(false);
-  const [description, setDescription] = useState<string>("");
+  const [description, setDescription] = useState<string>('');
   const [address, setAddress] = useState({
-    streetAddress: "",
-    city: "",
-    province: "",
-    country: "Canada",
-    postalCode: "",
+    streetAddress: '',
+    city: '',
+    province: '',
+    country: 'Canada',
+    postalCode: '',
   });
-  const [customerSearch, setCustomerSearch] = useState<string>("");
+  const [customerSearch, setCustomerSearch] = useState<string>('');
   const [searchedUsers, setSearchedUsers] = useState<Array<{ id: string; email: string }>>([]);
 
   const [loading, setLoading] = useState<boolean>(true);
@@ -292,12 +259,8 @@ export default function AddAppointmentModal({
   const [error, setError] = useState<string | null>(null);
   const [postalCodeValidationError, setPostalCodeValidationError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState<boolean>(false);
-  const [allAppointments, setAllAppointments] = useState<
-    AppointmentResponseModel[]
-  >([]);
-  const [technicianBookedSlots, setTechnicianBookedSlots] = useState<
-    BookedSlot[]
-  >([]);
+  const [allAppointments, setAllAppointments] = useState<AppointmentResponseModel[]>([]);
+  const [technicianBookedSlots, setTechnicianBookedSlots] = useState<BookedSlot[]>([]);
   // Track whether we've fetched aggregated availability to distinguish between "no slots" and "not fetched yet"
   const [hasAggregatedData, setHasAggregatedData] = useState<boolean>(false);
   const [customerBusySlots, setCustomerBusySlots] = useState<BookedSlot[]>([]);
@@ -315,7 +278,7 @@ export default function AddAppointmentModal({
     if (matchingCellars.length > 0) {
       setSelectedCellarId(matchingCellars[0].cellarId);
     } else {
-      setSelectedCellarId("");
+      setSelectedCellarId('');
     }
 
     setError(null);
@@ -352,7 +315,7 @@ export default function AddAppointmentModal({
             `User search request failed with status ${response.status} (${response.statusText}).`
           );
           setSearchedUsers([]);
-          setError("Failed to search users. Please try again.");
+          setError('Failed to search users. Please try again.');
           return;
         }
 
@@ -365,7 +328,7 @@ export default function AddAppointmentModal({
       } catch (error) {
         console.error('Error searching users:', error);
         setSearchedUsers([]);
-        setError("Failed to search users. Please try again.");
+        setError('Failed to search users. Please try again.');
       }
     }, 300);
 
@@ -379,14 +342,13 @@ export default function AddAppointmentModal({
         setLoading(true);
         // Clear cache to ensure fresh data is fetched when modal opens
         clearAppointmentDataCache();
-        const [jobData, employeeData, customerData, cellarData] =
-          await getCachedData();
+        const [jobData, employeeData, customerData, cellarData] = await getCachedData();
 
         if (!isMounted) return;
 
         const activeJobs = jobData.filter((j) => j.active);
         const technicians = employeeData.filter(
-          (e) => e.isActive && e.employeeRole?.employeeRoleType === "TECHNICIAN"
+          (e) => e.isActive && e.employeeRole?.employeeRoleType === 'TECHNICIAN'
         );
 
         setJobs(activeJobs);
@@ -404,21 +366,19 @@ export default function AddAppointmentModal({
 
           // Set technician ONLY for technician mode edits
           // In customer mode, don't set a specific technician to enable aggregated availability
-          if (mode === "technician" && editAppointment.technicianId) {
+          if (mode === 'technician' && editAppointment.technicianId) {
             const tech = technicians.find(
               (e) => e.employeeIdentifier.employeeId === editAppointment.technicianId
             );
             if (tech) {
-              setSelectedTechnicianId(tech.employeeIdentifier.employeeId || "");
+              setSelectedTechnicianId(tech.employeeIdentifier.employeeId || '');
             } else {
               // Technician not found - handle gracefully
               const technicianName = `${editAppointment.technicianFirstName} ${editAppointment.technicianLastName}`;
-              
+
               // Fallback: select first available technician if any exist
               if (technicians.length > 0) {
-                setSelectedTechnicianId(
-                  technicians[0].employeeIdentifier.employeeId || ""
-                );
+                setSelectedTechnicianId(technicians[0].employeeIdentifier.employeeId || '');
                 setError(
                   `Technician ${technicianName} is no longer available. Selected first available technician instead.`
                 );
@@ -429,9 +389,9 @@ export default function AddAppointmentModal({
                 );
               }
             }
-          } else if (mode === "customer") {
+          } else if (mode === 'customer') {
             // In customer mode edits, explicitly clear technician to enable aggregated availability
-            setSelectedTechnicianId("");
+            setSelectedTechnicianId('');
           }
 
           // Set customer (for technician mode)
@@ -449,7 +409,7 @@ export default function AddAppointmentModal({
                   {
                     method: 'GET',
                     headers: {
-                      'Authorization': `Bearer ${token}`,
+                      Authorization: `Bearer ${token}`,
                       'Content-Type': 'application/json',
                     },
                   }
@@ -501,31 +461,24 @@ export default function AddAppointmentModal({
           });
         } else {
           // Original logic for non-edit mode
-          if (mode === "customer" && customerId) {
+          if (mode === 'customer' && customerId) {
             setSelectedCustomerId(customerId);
           }
 
-          if (
-            mode === "customer" &&
-            !selectedTechnicianId &&
-            technicians.length > 0
-          ) {
-            setSelectedTechnicianId(
-              technicians[0].employeeIdentifier.employeeId || ""
-            );
+          if (mode === 'customer' && !selectedTechnicianId && technicians.length > 0) {
+            setSelectedTechnicianId(technicians[0].employeeIdentifier.employeeId || '');
           }
 
-          if (mode === "technician" && technicianId) {
+          if (mode === 'technician' && technicianId) {
             setSelectedTechnicianId(technicianId);
           }
 
-          if (mode === "technician" && customerData.length > 0) {
+          if (mode === 'technician' && customerData.length > 0) {
             // Find first customer with cellars
             const customerWithCellar = customerData.find((cust) =>
               cellarData.some(
                 (cel) =>
-                  getActualCustomerId(cel.ownerCustomerId) ===
-                  getActualCustomerId(cust.customerId)
+                  getActualCustomerId(cel.ownerCustomerId) === getActualCustomerId(cust.customerId)
               )
             );
 
@@ -537,7 +490,7 @@ export default function AddAppointmentModal({
           }
         }
       } catch {
-        setError("Unable to load appointment data. Please try again.");
+        setError('Unable to load appointment data. Please try again.');
       } finally {
         if (isMounted) setLoading(false);
       }
@@ -551,8 +504,8 @@ export default function AddAppointmentModal({
 
   // Define computed values BEFORE useEffects that depend on them
   const jobOptions = useMemo(() => {
-    if (mode === "customer") {
-      return jobs.filter((j) => j.jobType === "QUOTATION");
+    if (mode === 'customer') {
+      return jobs.filter((j) => j.jobType === 'QUOTATION');
     }
     return jobs;
   }, [jobs, mode]);
@@ -563,34 +516,27 @@ export default function AddAppointmentModal({
   );
 
   const selectedTechnician = useMemo(
-    () =>
-      employees.find(
-        (e) => e.employeeIdentifier.employeeId === selectedTechnicianId
-      ),
+    () => employees.find((e) => e.employeeIdentifier.employeeId === selectedTechnicianId),
     [employees, selectedTechnicianId]
   );
 
   const selectedCustomer = useMemo(() => {
     const actualCustomerId = getActualCustomerId(selectedCustomerId);
-    return customers.find(
-      (c) => getActualCustomerId(c.customerId) === actualCustomerId
-    );
+    return customers.find((c) => getActualCustomerId(c.customerId) === actualCustomerId);
   }, [customers, selectedCustomerId]);
 
   // Fetch aggregated availability for customer mode (when no technician is selected)
   useEffect(() => {
     async function fetchAggregatedSlots() {
       // Only fetch in customer mode when we have a date and job selected
-      if (mode !== "customer" || !appointmentDate || !selectedJobId) {
+      if (mode !== 'customer' || !appointmentDate || !selectedJobId) {
         setTechnicianBookedSlots([]);
         setHasAggregatedData(false);
         return;
       }
 
       try {
-        const selectedJobToUse = jobOptions.find(
-          (j) => j.jobId === selectedJobId
-        );
+        const selectedJobToUse = jobOptions.find((j) => j.jobId === selectedJobId);
         if (!selectedJobToUse) {
           return;
         }
@@ -604,7 +550,7 @@ export default function AddAppointmentModal({
         // Mark that we have fetched aggregated data (even if empty)
         setHasAggregatedData(true);
       } catch (err) {
-        console.error("Failed to fetch aggregated availability:", err);
+        console.error('Failed to fetch aggregated availability:', err);
         setTechnicianBookedSlots([]);
         // Still mark as fetched even on error to show "no available slots" message
         setHasAggregatedData(true);
@@ -618,7 +564,7 @@ export default function AddAppointmentModal({
   useEffect(() => {
     async function fetchBookedSlots() {
       // Only fetch in technician mode when we have a technician and date selected
-      if (mode !== "technician" || !selectedTechnicianId || !appointmentDate) {
+      if (mode !== 'technician' || !selectedTechnicianId || !appointmentDate) {
         setTechnicianBookedSlots([]);
         return;
       }
@@ -631,7 +577,7 @@ export default function AddAppointmentModal({
         );
         setTechnicianBookedSlots(response.bookedSlots || []);
       } catch (err) {
-        console.error("Failed to fetch technician booked slots:", err);
+        console.error('Failed to fetch technician booked slots:', err);
         setTechnicianBookedSlots([]);
       }
     }
@@ -643,7 +589,7 @@ export default function AddAppointmentModal({
   useEffect(() => {
     async function fetchAppointments() {
       try {
-        if (mode === "technician") {
+        if (mode === 'technician') {
           const appointments = await getMyJobs();
           setAllAppointments(appointments);
           return;
@@ -663,7 +609,7 @@ export default function AddAppointmentModal({
   // Fetch customer's busy slots when in technician mode and customer is selected
   useEffect(() => {
     async function fetchCustomerBusySlots() {
-      if (mode !== "technician" || !selectedCustomerId || !appointmentDate || !allAppointments) {
+      if (mode !== 'technician' || !selectedCustomerId || !appointmentDate || !allAppointments) {
         setCustomerBusySlots([]);
         return;
       }
@@ -673,44 +619,44 @@ export default function AddAppointmentModal({
         const actualCustomerId = getActualCustomerId(selectedCustomerId);
         const customerAppts = allAppointments.filter((apt) => {
           if (!apt.customerId) return false;
-          
+
           // Check if this appointment belongs to the selected customer
           const apptCustomerId = getActualCustomerId(apt.customerId);
           if (apptCustomerId !== actualCustomerId) return false;
-          
+
           // Get the appointment date (handle both date string and full timestamp)
           let apptDate: string;
           if (apt.appointmentDate) {
             // If it's a timestamp like "2025-01-07T09:00:00", extract just the date
-            apptDate = typeof apt.appointmentDate === "string" 
-              ? apt.appointmentDate.split("T")[0]
-              : new Date(apt.appointmentDate).toISOString().split("T")[0];
+            apptDate =
+              typeof apt.appointmentDate === 'string'
+                ? apt.appointmentDate.split('T')[0]
+                : new Date(apt.appointmentDate).toISOString().split('T')[0];
           } else {
             return false;
           }
-          
+
           const selectedDate = appointmentDate; // already in YYYY-MM-DD format
-          
+
           return (
-            apptDate === selectedDate &&
-            (apt.status === "SCHEDULED" || apt.status === "COMPLETED")
+            apptDate === selectedDate && (apt.status === 'SCHEDULED' || apt.status === 'COMPLETED')
           );
         });
 
         // Convert appointments to booked slots format
         const busySlots: BookedSlot[] = customerAppts.map((apt) => {
-          const startTime = apt.appointmentStartTime || "09:00:00";
-          const endTime = apt.appointmentEndTime || "10:00:00";
-          
+          const startTime = apt.appointmentStartTime || '09:00:00';
+          const endTime = apt.appointmentEndTime || '10:00:00';
+
           return {
             startTime: startTime,
-            endTime: endTime
+            endTime: endTime,
           };
         });
 
         setCustomerBusySlots(busySlots);
       } catch (err) {
-        console.error("Failed to fetch customer busy slots:", err);
+        console.error('Failed to fetch customer busy slots:', err);
         setCustomerBusySlots([]);
       }
     }
@@ -722,19 +668,13 @@ export default function AddAppointmentModal({
     if (!customerSearch.trim()) return [];
     if (searchedUsers.length === 0) return [];
     // Match customers whose userId matches any of the searched user IDs
-    const userIds = searchedUsers.map(u => u.id);
-    return customers.filter(
-      (c) => c.isActive !== false && userIds.includes(c.userId)
-    );
+    const userIds = searchedUsers.map((u) => u.id);
+    return customers.filter((c) => c.isActive !== false && userIds.includes(c.userId));
   }, [customers, customerSearch, searchedUsers]);
 
   // Keep customer selection in sync with the filtered list only if current selection is filtered out
   useEffect(() => {
-    if (
-      mode === "technician" &&
-      filteredCustomers.length > 0 &&
-      selectedCustomerId
-    ) {
+    if (mode === 'technician' && filteredCustomers.length > 0 && selectedCustomerId) {
       const actualCustomerId = getActualCustomerId(selectedCustomerId);
 
       // Only update if the current selection is not in the filtered list
@@ -772,11 +712,11 @@ export default function AddAppointmentModal({
   useEffect(() => {
     if (selectedCustomer) {
       setAddress({
-        streetAddress: selectedCustomer.streetAddress || "",
-        city: selectedCustomer.city || "",
-        province: selectedCustomer.province || "",
-        country: selectedCustomer.country || "Canada",
-        postalCode: selectedCustomer.postalCode || "",
+        streetAddress: selectedCustomer.streetAddress || '',
+        city: selectedCustomer.city || '',
+        province: selectedCustomer.province || '',
+        country: selectedCustomer.country || 'Canada',
+        postalCode: selectedCustomer.postalCode || '',
       });
     }
   }, [selectedCustomer]);
@@ -787,7 +727,7 @@ export default function AddAppointmentModal({
       // Clear error when cellar is auto-selected
       setError(null);
     } else {
-      setSelectedCellarId("");
+      setSelectedCellarId('');
     }
   }, [customerCellars]);
 
@@ -798,10 +738,7 @@ export default function AddAppointmentModal({
 
   // Validate postal code when address changes
   useEffect(() => {
-    const validationError = getProvincePostalCodeError(
-      address.postalCode,
-      address.province
-    );
+    const validationError = getProvincePostalCodeError(address.postalCode, address.province);
     setPostalCodeValidationError(validationError);
   }, [address.postalCode, address.province]);
 
@@ -827,55 +764,45 @@ export default function AddAppointmentModal({
         if (slots.length === 0) {
           const weekly = await getEmployeeSchedule(selectedTechnicianId);
           const weekday = new Date(appointmentDate)
-            .toLocaleDateString("en-US", { weekday: "long" })
+            .toLocaleDateString('en-US', { weekday: 'long' })
             .toUpperCase();
           const daySlots = weekly
-            .filter(
-              (s: { dayOfWeek?: string }) =>
-                s.dayOfWeek?.toUpperCase() === weekday
-            )
+            .filter((s: { dayOfWeek?: string }) => s.dayOfWeek?.toUpperCase() === weekday)
             .flatMap((s: { timeSlots?: string[] }) => s.timeSlots || []);
           slots = daySlots;
         }
 
         // Convert time strings to TimeSlotType enums
         const timeToEnum: Record<string, TimeSlotType> = {
-          "9:00 AM": "NINE_AM",
-          "11:00 AM": "ELEVEN_AM",
-          "1:00 PM": "ONE_PM",
-          "3:00 PM": "THREE_PM",
-          "5:00 PM": "FIVE_PM",
+          '9:00 AM': 'NINE_AM',
+          '11:00 AM': 'ELEVEN_AM',
+          '1:00 PM': 'ONE_PM',
+          '3:00 PM': 'THREE_PM',
+          '5:00 PM': 'FIVE_PM',
         };
 
         const normalized = slots
           .map((slot) => timeToEnum[slot] || slot.toUpperCase())
-          .filter((slot): slot is TimeSlotType =>
-            SLOT_ORDER.includes(slot as TimeSlotType)
-          );
+          .filter((slot): slot is TimeSlotType => SLOT_ORDER.includes(slot as TimeSlotType));
         const uniqueSlots = Array.from(new Set(normalized));
         setScheduleSlots(uniqueSlots);
 
         if (uniqueSlots.length === 0) {
-          setScheduleError(
-            "No schedule returned for this technician on the selected date."
-          );
+          setScheduleError('No schedule returned for this technician on the selected date.');
         }
       } catch (e) {
         setScheduleSlots([]);
 
         // Try to surface a clearer message from backend
-        let message =
-          "Unable to load technician schedule. Try another date or technician.";
-        if (typeof e === "object" && e && "response" in e) {
-          const resp = (e as { response?: { status?: number; data?: unknown } })
-            .response;
+        let message = 'Unable to load technician schedule. Try another date or technician.';
+        if (typeof e === 'object' && e && 'response' in e) {
+          const resp = (e as { response?: { status?: number; data?: unknown } }).response;
           if (resp?.data) {
-            if (typeof resp.data === "string") {
+            if (typeof resp.data === 'string') {
               message = resp.data;
-            } else if (typeof resp.data === "object") {
+            } else if (typeof resp.data === 'object') {
               const data = resp.data as Record<string, unknown>;
-              message =
-                (data.message as string) || (data.error as string) || message;
+              message = (data.message as string) || (data.error as string) || message;
             }
           }
         }
@@ -889,14 +816,13 @@ export default function AddAppointmentModal({
   }, [selectedTechnicianId, appointmentDate]);
 
   const availableSlots = useMemo(() => {
-    if (!selectedJob || !appointmentDate || isWeekend(appointmentDate))
-      return [];
+    if (!selectedJob || !appointmentDate || isWeekend(appointmentDate)) return [];
 
     const editingAppointmentId =
       isEditMode && editAppointment && editAppointment.appointmentId != null
         ? editAppointment.appointmentId
         : null;
-    
+
     // Extract the ORIGINAL appointment time (not the currently selected one)
     // This ensures we always keep the original slot available, regardless of dropdown changes
     let editStartTime: string | null = null;
@@ -914,7 +840,7 @@ export default function AddAppointmentModal({
     }
 
     // For customer mode: prefer aggregated availability (bookedSlots returned as available starts); fallback to standard slots
-    if (mode === "customer") {
+    if (mode === 'customer') {
       const slots: string[] = [];
       const jobDuration = selectedJob.estimatedDurationMinutes || 120;
 
@@ -922,7 +848,13 @@ export default function AddAppointmentModal({
       const useAggregated = hasAggregatedData;
       const baseSlots = useAggregated
         ? technicianBookedSlots
-        : SLOT_ORDER.map((s) => ({ startTime: `${SLOT_TO_TIME[s]}:00`, endTime: `${SLOT_TO_TIME[s]}:00` } as BookedSlot));
+        : SLOT_ORDER.map(
+            (s) =>
+              ({
+                startTime: `${SLOT_TO_TIME[s]}:00`,
+                endTime: `${SLOT_TO_TIME[s]}:00`,
+              }) as BookedSlot
+          );
 
       baseSlots.forEach((slot: BookedSlot) => {
         const startTimeRaw = slot.startTime;
@@ -979,16 +911,11 @@ export default function AddAppointmentModal({
         if (!bookedSlot.startTime || !bookedSlot.endTime) return false;
 
         // Allow the existing appointment's slot when editing
-        if (
-          editingAppointmentId &&
-          bookedSlot.startTime.substring(0, 5) === editStartTime
-        ) {
+        if (editingAppointmentId && bookedSlot.startTime.substring(0, 5) === editStartTime) {
           return false;
         }
 
-        const bookedStart = new Date(
-          `${appointmentDate}T${bookedSlot.startTime}`
-        );
+        const bookedStart = new Date(`${appointmentDate}T${bookedSlot.startTime}`);
         const bookedEnd = new Date(`${appointmentDate}T${bookedSlot.endTime}`);
 
         // Overlap check: slotStart < bookedEnd AND slotEnd > bookedStart
@@ -1006,9 +933,7 @@ export default function AddAppointmentModal({
           return false;
         }
 
-        const busyStart = new Date(
-          `${appointmentDate}T${busySlot.startTime}`
-        );
+        const busyStart = new Date(`${appointmentDate}T${busySlot.startTime}`);
         const busyEnd = new Date(`${appointmentDate}T${busySlot.endTime}`);
 
         // Overlap check: slotStart < busyEnd AND slotEnd > busyStart
@@ -1022,14 +947,13 @@ export default function AddAppointmentModal({
         if (editingAppointmentId && apt.appointmentId === editingAppointmentId) {
           return false;
         }
-        const aptDate = new Date(apt.appointmentDate)
-          .toISOString()
-          .split("T")[0];
+        const aptDate = new Date(apt.appointmentDate).toISOString().split('T')[0];
         if (aptDate !== appointmentDate) return false;
-        if (apt.status === "CANCELLED") return false;
+        if (apt.status === 'CANCELLED') return false;
 
         // Check if it's the same technician by ID (not by name to avoid conflicts with same-named technicians)
-        const isSameTechnician = apt.technicianId === selectedTechnician.employeeIdentifier.employeeId;
+        const isSameTechnician =
+          apt.technicianId === selectedTechnician.employeeIdentifier.employeeId;
         if (!isSameTechnician) return false;
 
         // Use start/end time from backend if available
@@ -1039,12 +963,8 @@ export default function AddAppointmentModal({
         const aptEnd = new Date(aptStart);
         if (apt.appointmentStartTime && apt.appointmentEndTime) {
           // Parse times as minutes since midnight
-          const [startHour, startMin] = apt.appointmentStartTime
-            .split(":")
-            .map(Number);
-          const [endHour, endMin] = apt.appointmentEndTime
-            .split(":")
-            .map(Number);
+          const [startHour, startMin] = apt.appointmentStartTime.split(':').map(Number);
+          const [endHour, endMin] = apt.appointmentEndTime.split(':').map(Number);
           const startMinutes = startHour * 60 + startMin;
           const endMinutes = endHour * 60 + endMin;
           const durationMs = (endMinutes - startMinutes) * 60 * 1000;
@@ -1088,14 +1008,14 @@ export default function AddAppointmentModal({
   useEffect(() => {
     setTimeWasAvailable(false);
   }, [appointmentDate, selectedJobId, selectedTechnicianId, mode]);
-  
+
   // Reset aggregated data flag when entering customer mode or when dependencies change
   useEffect(() => {
-    if (mode !== "customer") {
+    if (mode !== 'customer') {
       setHasAggregatedData(false);
     }
   }, [mode]);
-  
+
   // Fallback durations by job type when end time is missing
   // Check for 30-minute buffer gap with technician's own appointments
   const checkTechnicianBufferGap = (
@@ -1127,19 +1047,19 @@ export default function AddAppointmentModal({
     };
 
     for (const appointment of appointments) {
-      if (appointment.status === "CANCELLED") continue;
+      if (appointment.status === 'CANCELLED') continue;
       if (appointment.technicianId !== technicianId) continue;
 
       const appointmentDateIso =
-        typeof appointment.appointmentDate === "string"
+        typeof appointment.appointmentDate === 'string'
           ? appointment.appointmentDate
           : new Date(appointment.appointmentDate).toISOString();
-      const appointmentDateOnly = appointmentDateIso.split("T")[0];
+      const appointmentDateOnly = appointmentDateIso.split('T')[0];
 
       if (appointmentDateOnly !== newDateKey) continue;
 
-      const timeFromDate = appointmentDateIso.includes("T")
-        ? appointmentDateIso.split("T")[1].substring(0, 5)
+      const timeFromDate = appointmentDateIso.includes('T')
+        ? appointmentDateIso.split('T')[1].substring(0, 5)
         : null;
       const rawStart = appointment.appointmentStartTime || timeFromDate;
       if (!rawStart) continue;
@@ -1161,10 +1081,7 @@ export default function AddAppointmentModal({
         continue;
       }
 
-      if (
-        isEditMode &&
-        editAppointment?.appointmentId === appointment.appointmentId
-      ) {
+      if (isEditMode && editAppointment?.appointmentId === appointment.appointmentId) {
         continue;
       }
 
@@ -1179,42 +1096,39 @@ export default function AddAppointmentModal({
     setError(null);
 
     if (!selectedJobId) {
-      setError("Select a service to continue.");
+      setError('Select a service to continue.');
       return;
     }
 
     // In customer mode, technician is auto-assigned from available staff, so don't require selection
     // In technician mode creating new, technician is the current user
-    if (mode === "customer" && !selectedTechnician && !isEditMode) {
-      setError("Select a technician.");
+    if (mode === 'customer' && !selectedTechnician && !isEditMode) {
+      setError('Select a technician.');
       return;
     }
 
-    if (mode === "technician" && !selectedCustomerId) {
-      setError("Pick a customer for this job.");
+    if (mode === 'technician' && !selectedCustomerId) {
+      setError('Pick a customer for this job.');
       return;
     }
 
     if (!appointmentDate || !appointmentTime) {
-      setError("Choose a date and time.");
+      setError('Choose a date and time.');
       return;
     }
 
     if (isWeekend(appointmentDate)) {
-      setError("Weekend bookings are not allowed.");
+      setError('Weekend bookings are not allowed.');
       return;
     }
 
     if (!passesBookingDeadline(appointmentDate, appointmentTime)) {
-      setError("This slot is past the booking deadline.");
+      setError('This slot is past the booking deadline.');
       return;
     }
 
     // Check province and postal code match using the new validation
-    const provincePostalErrorKey = getProvincePostalCodeError(
-      address.postalCode,
-      address.province
-    );
+    const provincePostalErrorKey = getProvincePostalCodeError(address.postalCode, address.province);
     if (provincePostalErrorKey) {
       const translatedError = t(provincePostalErrorKey, {
         province: address.province,
@@ -1233,7 +1147,7 @@ export default function AddAppointmentModal({
         setError(null);
         return;
       }
-      setError("Select a cellar for this appointment.");
+      setError('Select a cellar for this appointment.');
       return;
     }
 
@@ -1241,8 +1155,14 @@ export default function AddAppointmentModal({
     const timeToUse = appointmentTime;
     // Debug: log selected time at submit
     try {
-      console.debug("[AddAppointmentModal] Submit time", { timeToUse, appointmentTime, ref: appointmentTimeRef.current });
-    } catch { void 0; }
+      console.debug('[AddAppointmentModal] Submit time', {
+        timeToUse,
+        appointmentTime,
+        ref: appointmentTimeRef.current,
+      });
+    } catch {
+      void 0;
+    }
     const appointmentDateTime = `${appointmentDate}T${timeToUse}:00`;
 
     // Safety: ensure selected time is valid
@@ -1250,47 +1170,51 @@ export default function AddAppointmentModal({
     if (!availableSlots.includes(appointmentTime) && !timeWasAvailable) {
       // Non-blocking warning; proceed to let backend validate
       try {
-        console.warn("[AddAppointmentModal] Proceeding despite transient slot list drop", {
+        console.warn('[AddAppointmentModal] Proceeding despite transient slot list drop', {
           appointmentTime,
           availableSlots,
           timeWasAvailable,
         });
-      } catch { void 0; }
+      } catch {
+        void 0;
+      }
     }
 
     // Debug: guard against mismatches between selected time and derived string
     try {
-      const derived = appointmentDateTime.split("T")[1].substring(0,5);
+      const derived = appointmentDateTime.split('T')[1].substring(0, 5);
       if (derived !== timeToUse) {
-        console.warn("[AddAppointmentModal] Time mismatch", {
+        console.warn('[AddAppointmentModal] Time mismatch', {
           appointmentTime: timeToUse,
           derived,
           appointmentDateTime,
           availableSlots,
         });
       }
-    } catch { void 0; }
+    } catch {
+      void 0;
+    }
 
     // Extract actual customer ID in case it's nested - only needed for technician mode
     // However, when editing a customer-created quotation, don't send customerId as customer cannot be changed
     const actualCustomerId =
-      mode === "technician" && !isEditingQuotationCreatedByCustomer
+      mode === 'technician' && !isEditingQuotationCreatedByCustomer
         ? getActualCustomerId(selectedCustomerId)
         : undefined;
 
     // For customer mode edits, validate that the original technician still exists and is active
     let validatedTechnicianData: TechnicianData | undefined;
-    if (mode === "customer" && isEditMode && editAppointment) {
+    if (mode === 'customer' && isEditMode && editAppointment) {
       // Find the original technician by ID (not by name to avoid conflicts with same-named technicians)
       const originalTechnician = employees.find(
         (e) => e.employeeIdentifier.employeeId === editAppointment.technicianId
       );
-      
+
       if (!originalTechnician) {
-        setError(t("pages.appointments.technicianNoLongerAvailable"));
+        setError(t('pages.appointments.technicianNoLongerAvailable'));
         return;
       }
-      
+
       validatedTechnicianData = {
         technicianFirstName: originalTechnician.firstName,
         technicianLastName: originalTechnician.lastName,
@@ -1310,7 +1234,7 @@ export default function AddAppointmentModal({
 
     const request: AppointmentRequestModel = {
       customerId: actualCustomerId,
-      ...(mode === "technician" && selectedTechnician
+      ...(mode === 'technician' && selectedTechnician
         ? {
             technicianId: selectedTechnician.employeeIdentifier.employeeId,
             technicianFirstName: selectedTechnician.firstName,
@@ -1319,7 +1243,7 @@ export default function AddAppointmentModal({
         : {}),
       // For customer mode edits, include the validated technician data
       ...(validatedTechnicianData ? validatedTechnicianData : {}),
-      jobName: selectedJob ? selectedJob.jobName : "",
+      jobName: selectedJob ? selectedJob.jobName : '',
       cellarName: cellar.name,
       appointmentDate: appointmentDateTime,
       appointmentStartTime: startTimeStr,
@@ -1332,7 +1256,7 @@ export default function AddAppointmentModal({
     let appointmentsForCheck = allAppointments;
     if (appointmentsForCheck.length === 0) {
       try {
-        if (mode === "technician") {
+        if (mode === 'technician') {
           appointmentsForCheck = await getMyJobs();
           setAllAppointments(appointmentsForCheck);
         }
@@ -1344,22 +1268,20 @@ export default function AddAppointmentModal({
     }
 
     if (!selectedJob) {
-      setError("Select a service to continue.");
+      setError('Select a service to continue.');
       return;
     }
 
     // Check for 30-minute buffer gap with technician's own appointments
     const appointmentStart = new Date(appointmentDateTime);
-    const appointmentDurationMinutes =
-      selectedJob.estimatedDurationMinutes ?? 60;
+    const appointmentDurationMinutes = selectedJob.estimatedDurationMinutes ?? 60;
     const appointmentEnd = new Date(
       appointmentStart.getTime() + appointmentDurationMinutes * 60 * 1000
     );
 
     // Get the technicianId to check - for technician mode, use auth technicianId or selectedTechnicianId
-    const techIdForCheck = mode === "technician" 
-      ? (technicianId || selectedTechnicianId)
-      : selectedTechnicianId;
+    const techIdForCheck =
+      mode === 'technician' ? technicianId || selectedTechnicianId : selectedTechnicianId;
 
     const hasBufferConflict = checkTechnicianBufferGap(
       appointmentStart,
@@ -1384,7 +1306,7 @@ export default function AddAppointmentModal({
     try {
       setSubmitting(true);
       let result: AppointmentResponseModel;
-      
+
       if (isEditMode && editAppointment) {
         // Update existing appointment
         result = await updateAppointment(editAppointment.appointmentId, request);
@@ -1392,22 +1314,19 @@ export default function AddAppointmentModal({
         // Create new appointment
         result = await createAppointment(request);
       }
-      
+
       onCreated(result);
       onClose();
     } catch (e: unknown) {
-      let message = isEditMode 
-        ? "Failed to update appointment." 
-        : "Failed to create appointment.";
-      if (typeof e === "object" && e && "response" in e) {
+      let message = isEditMode ? 'Failed to update appointment.' : 'Failed to create appointment.';
+      if (typeof e === 'object' && e && 'response' in e) {
         const resp = (e as { response?: { data?: unknown } }).response;
         if (resp?.data) {
-          if (typeof resp.data === "string") {
+          if (typeof resp.data === 'string') {
             message = resp.data;
-          } else if (typeof resp.data === "object") {
+          } else if (typeof resp.data === 'object') {
             const data = resp.data as Record<string, unknown>;
-            message =
-              (data.message as string) || (data.error as string) || message;
+            message = (data.message as string) || (data.error as string) || message;
           }
         }
       }
@@ -1419,20 +1338,20 @@ export default function AddAppointmentModal({
     }
   };
 
-  const disableCustomerSearch = mode === "technician" && !selectedJobId;
-  const disableDatePicker = mode === "customer" ? !selectedJobId : false;
+  const disableCustomerSearch = mode === 'technician' && !selectedJobId;
+  const disableDatePicker = mode === 'customer' ? !selectedJobId : false;
   const disableTimePicker = disableDatePicker || !appointmentDate;
-  
+
   // Prevent job changes only for customer-created quotations (not technician-created ones)
-  const isEditingCustomerCreatedQuotation = 
-    isEditMode && 
-    editAppointment && 
-    editAppointment.createdByRole === "CUSTOMER" && 
-    editAppointment.jobType === "QUOTATION";
-  
+  const isEditingCustomerCreatedQuotation =
+    isEditMode &&
+    editAppointment &&
+    editAppointment.createdByRole === 'CUSTOMER' &&
+    editAppointment.jobType === 'QUOTATION';
+
   // Disable job selection if TECHNICIAN is editing customer-created quotation
-  const disableJobChange = isEditingCustomerCreatedQuotation && mode === "technician";
-  
+  const disableJobChange = isEditingCustomerCreatedQuotation && mode === 'technician';
+
   // Restrict form fields when TECHNICIAN is editing customer-created quotation
   const isEditingQuotationCreatedByCustomer = disableJobChange;
 
@@ -1442,14 +1361,14 @@ export default function AddAppointmentModal({
         <header className="appointment-modal__header">
           <div>
             <p className="eyebrow">
-              {mode === "customer"
-                ? t("pages.appointments.customerBooking")
-                : t("pages.appointments.technicianScheduling")}
+              {mode === 'customer'
+                ? t('pages.appointments.customerBooking')
+                : t('pages.appointments.technicianScheduling')}
             </p>
             <h2>
-              {isEditMode 
-                ? t("pages.appointments.editAppointment") 
-                : t("pages.appointments.addAppointment")}
+              {isEditMode
+                ? t('pages.appointments.editAppointment')
+                : t('pages.appointments.addAppointment')}
             </h2>
           </div>
           <button className="ghost" onClick={onClose} aria-label="Close">
@@ -1460,13 +1379,13 @@ export default function AddAppointmentModal({
         {loading ? (
           <div className="state state--inline">
             <Loader2 className="spin" size={22} />
-            <span>{t("pages.appointments.loadingOptions")}</span>
+            <span>{t('pages.appointments.loadingOptions')}</span>
           </div>
         ) : (
           <form className="appointment-form" onSubmit={handleSubmit}>
             <div className="grid two">
               <label className="field">
-                <span>{t("pages.appointments.service")}</span>
+                <span>{t('pages.appointments.service')}</span>
                 <div className="input-with-icon">
                   <ClipboardList size={16} />
                   <select
@@ -1476,7 +1395,7 @@ export default function AddAppointmentModal({
                     required
                   >
                     <option value="" disabled>
-                      {t("pages.appointments.selectService")}
+                      {t('pages.appointments.selectService')}
                     </option>
                     {jobOptions.map((job) => (
                       <option key={job.jobId} value={job.jobId}>
@@ -1486,26 +1405,24 @@ export default function AddAppointmentModal({
                   </select>
                 </div>
                 {disableJobChange && (
-                  <small className="hint" style={{ color: "#d97706" }}>
-                    {t("pages.appointments.cannotChangeCustomerQuotation")}
+                  <small className="hint" style={{ color: '#d97706' }}>
+                    {t('pages.appointments.cannotChangeCustomerQuotation')}
                   </small>
                 )}
               </label>
 
               <label className="field">
                 <span>
-                  {mode === "customer"
-                    ? t("pages.appointments.availableTechnicians")
-                    : t("pages.appointments.customer")}
+                  {mode === 'customer'
+                    ? t('pages.appointments.availableTechnicians')
+                    : t('pages.appointments.customer')}
                 </span>
                 <div className="input-with-icon">
                   <Users size={16} />
-                  {mode === "customer" ? (
+                  {mode === 'customer' ? (
                     <input
                       type="text"
-                      placeholder={t(
-                        "pages.appointments.autoAssignedTechnician"
-                      )}
+                      placeholder={t('pages.appointments.autoAssignedTechnician')}
                       disabled
                       value="Auto-assigned"
                     />
@@ -1514,8 +1431,8 @@ export default function AddAppointmentModal({
                       type="text"
                       placeholder={
                         disableCustomerSearch
-                          ? t("pages.appointments.selectServiceFirst")
-                          : t("pages.appointments.searchCustomerByName")
+                          ? t('pages.appointments.selectServiceFirst')
+                          : t('pages.appointments.searchCustomerByName')
                       }
                       value={customerSearch}
                       onChange={(e) => setCustomerSearch(e.target.value)}
@@ -1523,42 +1440,32 @@ export default function AddAppointmentModal({
                     />
                   )}
                 </div>
-                {mode === "technician" && (
+                {mode === 'technician' && (
                   <div className="customer-results">
                     {disableCustomerSearch ? (
-                      <small className="hint">
-                        {t("pages.appointments.pickServiceFirst")}
-                      </small>
+                      <small className="hint">{t('pages.appointments.pickServiceFirst')}</small>
                     ) : isEditingQuotationCreatedByCustomer ? (
-                      <small className="hint" style={{ color: "#d97706" }}>
-                        {t("pages.appointments.cannotChangeCustomerForQuotation")}
+                      <small className="hint" style={{ color: '#d97706' }}>
+                        {t('pages.appointments.cannotChangeCustomerForQuotation')}
                       </small>
                     ) : filteredCustomers.length === 0 && customerSearch.trim().length >= 2 ? (
-                      <small className="hint">
-                        {t("pages.appointments.noCustomersFound")}
-                      </small>
+                      <small className="hint">{t('pages.appointments.noCustomersFound')}</small>
                     ) : filteredCustomers.length === 0 ? (
-                      <small className="hint">
-                        {t("pages.appointments.typeEmailToSearch")}
-                      </small>
+                      <small className="hint">{t('pages.appointments.typeEmailToSearch')}</small>
                     ) : (
                       filteredCustomers.slice(0, 8).map((cust, idx) => {
                         const custId = getActualCustomerId(cust.customerId);
-                        const selectedId =
-                          getActualCustomerId(selectedCustomerId);
-                        
+                        const selectedId = getActualCustomerId(selectedCustomerId);
+
                         // Find the email for this customer from searched users
-                        const userEmail = searchedUsers.find(u => u.id === cust.userId)?.email || cust.userId;
+                        const userEmail =
+                          searchedUsers.find((u) => u.id === cust.userId)?.email || cust.userId;
 
                         return (
                           <button
-                            key={`${
-                              custId || `${cust.firstName}-${cust.lastName}`
-                            }-${idx}`}
+                            key={`${custId || `${cust.firstName}-${cust.lastName}`}-${idx}`}
                             type="button"
-                            className={`pill ${
-                              selectedId === custId ? "pill--active" : ""
-                            }`}
+                            className={`pill ${selectedId === custId ? 'pill--active' : ''}`}
                             onClick={(e) => {
                               e.preventDefault();
                               e.stopPropagation();
@@ -1572,39 +1479,37 @@ export default function AddAppointmentModal({
                     )}
                   </div>
                 )}
-                {mode === "customer" && (
-                  <small className="hint">
-                    {t("pages.appointments.autoAssignedFromStaff")}
-                  </small>
+                {mode === 'customer' && (
+                  <small className="hint">{t('pages.appointments.autoAssignedFromStaff')}</small>
                 )}
               </label>
             </div>
 
             <div className="grid two">
               <label className="field">
-                <span>{t("pages.appointments.date")}</span>
+                <span>{t('pages.appointments.date')}</span>
                 <div className="input-with-icon">
                   <CalendarClock size={16} />
                   <input
                     type="date"
-                    lang={i18n.language === "fr" ? "fr-FR" : "en-US"}
+                    lang={i18n.language === 'fr' ? 'fr-FR' : 'en-US'}
                     value={appointmentDate}
                     onChange={(e) => setAppointmentDate(e.target.value)}
-                    min={new Date().toISOString().split("T")[0]}
+                    min={new Date().toISOString().split('T')[0]}
                     disabled={disableDatePicker}
                     required
                   />
                 </div>
                 <small className="hint">
-                  {t("pages.appointments.weekdaysOnly")}{" "}
-                  {mode === "customer"
-                    ? t("pages.appointments.slotsFromAnyTechnician")
-                    : t("pages.appointments.slotsDependOnSchedule")}
+                  {t('pages.appointments.weekdaysOnly')}{' '}
+                  {mode === 'customer'
+                    ? t('pages.appointments.slotsFromAnyTechnician')
+                    : t('pages.appointments.slotsDependOnSchedule')}
                 </small>
               </label>
 
               <label className="field">
-                <span>{t("pages.appointments.timeSlot")}</span>
+                <span>{t('pages.appointments.timeSlot')}</span>
                 <div className="input-with-icon">
                   <CalendarClock size={16} />
                   <select
@@ -1615,17 +1520,13 @@ export default function AddAppointmentModal({
                       // The dropdown options come from availableSlots, so this was valid at selection time
                       setTimeWasAvailable(true);
                     }}
-                    disabled={
-                      disableTimePicker ||
-                      scheduleLoading ||
-                      availableSlots.length === 0
-                    }
+                    disabled={disableTimePicker || scheduleLoading || availableSlots.length === 0}
                     required
                   >
                     <option value="" disabled>
                       {scheduleLoading
-                        ? t("pages.appointments.checkingSchedule")
-                        : t("pages.appointments.selectTime")}
+                        ? t('pages.appointments.checkingSchedule')
+                        : t('pages.appointments.selectTime')}
                     </option>
                     {availableSlots.map((slot) => (
                       <option key={slot} value={slot}>
@@ -1635,25 +1536,21 @@ export default function AddAppointmentModal({
                   </select>
                 </div>
                 {appointmentDate && isWeekend(appointmentDate) && (
+                  <small className="error">{t('pages.appointments.weekendBookingsBlocked')}</small>
+                )}
+                {availableSlots.length === 0 && appointmentDate && !isWeekend(appointmentDate) && (
                   <small className="error">
-                    {t("pages.appointments.weekendBookingsBlocked")}
+                    {scheduleError ||
+                      (mode === 'customer'
+                        ? t('pages.appointments.noAvailableSlotsCustomer')
+                        : t('pages.appointments.noAvailableSlotsEmployee'))}
                   </small>
                 )}
-                {availableSlots.length === 0 &&
-                  appointmentDate &&
-                  !isWeekend(appointmentDate) && (
-                    <small className="error">
-                      {scheduleError ||
-                        (mode === "customer"
-                          ? t("pages.appointments.noAvailableSlotsCustomer")
-                          : t("pages.appointments.noAvailableSlotsEmployee"))}
-                    </small>
-                  )}
               </label>
             </div>
 
             <label className="field">
-              <span>{t("pages.appointments.cellar")}</span>
+              <span>{t('pages.appointments.cellar')}</span>
               <select
                 value={selectedCellarId}
                 onChange={(e) => setSelectedCellarId(e.target.value)}
@@ -1661,9 +1558,7 @@ export default function AddAppointmentModal({
                 required
               >
                 {customerCellars.length === 0 && (
-                  <option value="">
-                    {t("pages.appointments.noCellarsForCustomer")}
-                  </option>
+                  <option value="">{t('pages.appointments.noCellarsForCustomer')}</option>
                 )}
                 {customerCellars.map((cellar) => (
                   <option key={cellar.cellarId} value={cellar.cellarId}>
@@ -1675,24 +1570,20 @@ export default function AddAppointmentModal({
 
             <div className="grid two">
               <label className="field">
-                <span>{t("pages.appointments.streetAddress")}</span>
+                <span>{t('pages.appointments.streetAddress')}</span>
                 <input
                   type="text"
                   value={address.streetAddress}
-                  onChange={(e) =>
-                    setAddress({ ...address, streetAddress: e.target.value })
-                  }
+                  onChange={(e) => setAddress({ ...address, streetAddress: e.target.value })}
                   required
                 />
               </label>
               <label className="field">
-                <span>{t("pages.appointments.city")}</span>
+                <span>{t('pages.appointments.city')}</span>
                 <input
                   type="text"
                   value={address.city}
-                  onChange={(e) =>
-                    setAddress({ ...address, city: e.target.value })
-                  }
+                  onChange={(e) => setAddress({ ...address, city: e.target.value })}
                   required
                 />
               </label>
@@ -1700,13 +1591,13 @@ export default function AddAppointmentModal({
 
             <div className="grid three">
               <label className="field">
-                <span>{t("pages.appointments.province")}</span>
+                <span>{t('pages.appointments.province')}</span>
                 <select
                   value={address.province}
                   onChange={(e) => {
                     const newProvince = e.target.value;
                     setAddress({ ...address, province: newProvince });
-                    
+
                     // Re-validate postal code when province changes
                     const validationError = getProvincePostalCodeError(
                       address.postalCode,
@@ -1716,34 +1607,32 @@ export default function AddAppointmentModal({
                   }}
                   required
                 >
-                  <option value="">{t("pages.appointments.selectProvince")}</option>
-                  <option value="QC">{t("pages.appointments.quebec")}</option>
-                  <option value="ON">{t("pages.appointments.ontario")}</option>
+                  <option value="">{t('pages.appointments.selectProvince')}</option>
+                  <option value="QC">{t('pages.appointments.quebec')}</option>
+                  <option value="ON">{t('pages.appointments.ontario')}</option>
                 </select>
-                <small style={{ color: "#6b7280", marginTop: "4px", display: "block" }}>
-                  {t("pages.appointments.operationalAreaMessage")}
+                <small style={{ color: '#6b7280', marginTop: '4px', display: 'block' }}>
+                  {t('pages.appointments.operationalAreaMessage')}
                 </small>
               </label>
               <label className="field">
-                <span>{t("pages.appointments.country")}</span>
+                <span>{t('pages.appointments.country')}</span>
                 <input
                   type="text"
                   value={address.country}
-                  onChange={(e) =>
-                    setAddress({ ...address, country: e.target.value })
-                  }
+                  onChange={(e) => setAddress({ ...address, country: e.target.value })}
                   required
                 />
               </label>
               <label className="field">
-                <span>{t("pages.appointments.postalCode")}</span>
+                <span>{t('pages.appointments.postalCode')}</span>
                 <input
                   type="text"
                   value={address.postalCode}
                   onChange={(e) => {
                     const newPostalCode = e.target.value;
                     setAddress({ ...address, postalCode: newPostalCode });
-                    
+
                     // Real-time validation
                     const validationError = getProvincePostalCodeError(
                       newPostalCode,
@@ -1753,11 +1642,11 @@ export default function AddAppointmentModal({
                   }}
                   required
                   style={{
-                    borderColor: postalCodeValidationError ? "#ef4444" : undefined,
+                    borderColor: postalCodeValidationError ? '#ef4444' : undefined,
                   }}
                 />
                 {postalCodeValidationError && (
-                  <small style={{ color: "#ef4444", marginTop: "4px" }}>
+                  <small style={{ color: '#ef4444', marginTop: '4px' }}>
                     {t(postalCodeValidationError, {
                       province: address.province,
                     })}
@@ -1767,12 +1656,12 @@ export default function AddAppointmentModal({
             </div>
 
             <label className="field">
-              <span>{t("pages.appointments.description")}</span>
+              <span>{t('pages.appointments.description')}</span>
               <textarea
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
                 rows={3}
-                placeholder={t("pages.appointments.description")}
+                placeholder={t('pages.appointments.description')}
                 required
               />
             </label>
@@ -1780,40 +1669,31 @@ export default function AddAppointmentModal({
             {error && <div className="banner banner--error">{error}</div>}
 
             <footer className="modal-actions">
-              <button
-                type="button"
-                className="ghost"
-                onClick={onClose}
-                disabled={submitting}
-              >
-                {t("common.cancel")}
+              <button type="button" className="ghost" onClick={onClose} disabled={submitting}>
+                {t('common.cancel')}
               </button>
-              <button
-                type="submit"
-                className="primary"
-                disabled={submitting || loading}
-              >
+              <button type="submit" className="primary" disabled={submitting || loading}>
                 {submitting ? (
                   <Loader2 className="spin" size={16} />
                 ) : isEditMode ? (
-                  t("pages.appointments.updateAppointment")
+                  t('pages.appointments.updateAppointment')
                 ) : (
-                  t("pages.appointments.createAppointment")
+                  t('pages.appointments.createAppointment')
                 )}
               </button>
             </footer>
           </form>
         )}
       </div>
-      
-  {/* Buffer Warning Confirmation Dialog - renders at root level with high z-index */}
+
+      {/* Buffer Warning Confirmation Dialog - renders at root level with high z-index */}
       {/* Buffer Warning Confirmation Dialog */}
       {showBufferWarning && pendingRequest && (
         <div className="confirmation-modal-overlay" role="dialog" aria-modal="true">
           <div className="confirmation-modal-container">
             <div className="confirmation-modal-header">
               <h3 className="confirmation-modal-title">
-                {t("pages.appointments.bufferWarningTitle")}
+                {t('pages.appointments.bufferWarningTitle')}
               </h3>
               <button
                 type="button"
@@ -1829,7 +1709,7 @@ export default function AddAppointmentModal({
             </div>
             <div className="confirmation-modal-content">
               <p className="confirmation-modal-message">
-                {t("pages.appointments.bufferWarningMessage")}
+                {t('pages.appointments.bufferWarningMessage')}
               </p>
             </div>
             <div className="confirmation-modal-footer">
@@ -1841,7 +1721,7 @@ export default function AddAppointmentModal({
                   setPendingRequest(null);
                 }}
               >
-                {t("pages.appointments.cancelScheduling")}
+                {t('pages.appointments.cancelScheduling')}
               </button>
               <button
                 type="button"
@@ -1854,7 +1734,7 @@ export default function AddAppointmentModal({
                   }
                 }}
               >
-                {t("pages.appointments.continueScheduling")}
+                {t('pages.appointments.continueScheduling')}
               </button>
             </div>
           </div>
