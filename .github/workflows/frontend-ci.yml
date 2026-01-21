@@ -145,12 +145,15 @@ jobs:
           echo "Listing test-results directory:"
           ls -la frontend/test-results/ || echo "Directory does not exist"
           echo ""
-          echo "Checking for junit.xml:"
-          if [ -f "frontend/test-results/junit.xml" ]; then
-            echo "✅ junit.xml found!"
-            head -20 frontend/test-results/junit.xml
+          echo "Finding all XML files:"
+          find . -name "*.xml" -type f || echo "No XML files found"
+          echo ""
+          echo "Checking for results.xml:"
+          if [ -f "frontend/test-results/results.xml" ]; then
+            echo "✅ results.xml found!"
+            head -20 frontend/test-results/results.xml
           else
-            echo "❌ junit.xml not found"
+            echo "❌ results.xml not found"
           fi
         shell: bash
         continue-on-error: true
@@ -176,29 +179,20 @@ jobs:
         uses: dorny/test-reporter@v1
         with:
           name: Frontend Test Results
-          path: 'frontend/test-results/*.xml'
+          path: 'frontend/test-results/results.xml'
           reporter: java-junit
           fail-on-error: false
+        continue-on-error: true
 
       - name: Parse test results
         if: always()
         run: |
-          if [ -f "frontend/test-results/junit.xml" ]; then
+          if [ -f "frontend/test-results/results.xml" ]; then
             echo "✅ Test results found and will be published"
           else
             echo "⚠️ No test results XML found yet (tests may not have run)"
           fi
         shell: bash
-
-      - name: Publish test report
-        if: always()
-        uses: dorny/test-reporter@v1
-        with:
-          name: Frontend Test Results
-          path: 'frontend/test-results/junit.xml'
-          reporter: 'java-junit'
-          fail-on-error: false
-        continue-on-error: true
 
   # =====================================================
   # 5) E2E Tests with Playwright (Optional/Non-blocking)
