@@ -328,38 +328,19 @@ jobs:
 
       - name: Generate summary
         run: |
-          echo "# 🚀 Frontend CI Results" >> $GITHUB_STEP_SUMMARY
+          echo "## 🚀 Frontend Pipeline Status" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
-
-          # Build status indicator
-          BUILD_EMOJI="✅"
-          if [ "${{ needs.build.result }}" == "failure" ]; then BUILD_EMOJI="❌"; fi
-          if [ "${{ needs.format.result }}" == "failure" ]; then FORMAT_EMOJI="❌"; else FORMAT_EMOJI="✅"; fi
-          if [ "${{ needs.lint.result }}" == "failure" ]; then LINT_EMOJI="❌"; else LINT_EMOJI="✅"; fi
-
-          # Quick status table
-          echo "| Check | Status |" >> $GITHUB_STEP_SUMMARY
-          echo "|-------|--------|" >> $GITHUB_STEP_SUMMARY
-          echo "| Build & Type Check | $BUILD_EMOJI ${{ needs.build.result }} |" >> $GITHUB_STEP_SUMMARY
-          echo "| Format Check (Prettier) | $FORMAT_EMOJI ${{ needs.format.result }} |" >> $GITHUB_STEP_SUMMARY
-          echo "| Linting (ESLint) | $LINT_EMOJI ${{ needs.lint.result }} |" >> $GITHUB_STEP_SUMMARY
-          echo "| Unit Tests | ✅ ${{ needs.unit_tests.result }} |" >> $GITHUB_STEP_SUMMARY
-          echo "| Docker Build | ✅ ${{ needs.docker_build.result }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Check | Result |" >> $GITHUB_STEP_SUMMARY
+          echo "|:---:|:---:|" >> $GITHUB_STEP_SUMMARY
+          echo "| Build | ${{ needs.build.result }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Format | ${{ needs.format.result }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Lint | ${{ needs.lint.result }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Unit Tests | ${{ needs.unit_tests.result }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Docker | ${{ needs.docker_build.result }} |" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
-
-          # Test metrics
-          echo "## 📊 Test Metrics" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "| Metric | Count |" >> $GITHUB_STEP_SUMMARY
-          echo "|--------|-------|" >> $GITHUB_STEP_SUMMARY
-          echo "| Tests Passed | **${{ steps.test-counts.outputs.passed }}** |" >> $GITHUB_STEP_SUMMARY
-          echo "| Tests Failed | **${{ steps.test-counts.outputs.failed }}** |" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-
-          # Optional checks
-          echo "## ⚡ Optional Checks (Non-blocking)" >> $GITHUB_STEP_SUMMARY
-          echo "- E2E Tests: ${{ needs.e2e_tests.result }}" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Tests:** ${{ steps.test-counts.outputs.passed }} passed | ${{ steps.test-counts.outputs.failed }} failed" >> $GITHUB_STEP_SUMMARY
+        shell: bash
+        continue-on-error: true
 
       - name: Fail pipeline if critical jobs failed
         if: needs.build.result == 'failure' || needs.format.result == 'failure' || needs.lint.result == 'failure'
