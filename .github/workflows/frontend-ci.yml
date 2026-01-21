@@ -237,6 +237,10 @@ jobs:
           path: frontend/dist/
         continue-on-error: true
 
+      - name: Start dev server in background
+        run: npm run dev &
+        working-directory: ./frontend
+
       - name: Run E2E tests in parallel (8 workers - optimized)
         run: npx playwright test --workers=8 --reporter=html,json
         working-directory: ./frontend
