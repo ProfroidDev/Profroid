@@ -62,11 +62,22 @@ export default defineConfig({
   ],
 
   // ---------------------
-  // START DEV SERVER
+  // START DEV SERVER (only in CI, skip locally)
   // ---------------------
-  webServer: {
-    command: 'npm run dev',
-    url: 'http://localhost:5173',
-    reuseExistingServer: !process.env.CI,
-  },
+  ...(process.env.CI
+    ? {
+        webServer: {
+          command: 'npm run dev',
+          url: 'http://localhost:5173',
+          reuseExistingServer: false,
+          timeout: 120 * 1000,
+        },
+      }
+    : {
+        webServer: {
+          command: 'npm run dev',
+          url: 'http://localhost:5173',
+          reuseExistingServer: !process.env.CI,
+        },
+      }),
 });
