@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="200" height="200">
+  <defs>
+    <style>
+      .logo-bg { fill: #722f37; }
+      .logo-text { fill: #fff; font-family: 'Helvetica Neue', Arial, sans-serif; font-size: 100px; font-weight: bold; text-anchor: middle; }
+    </style>
+  </defs>
+  <rect class="logo-bg" width="200" height="200" rx="30"/>
+  <text class="logo-text" x="100" y="145">P</text>
+</svg>

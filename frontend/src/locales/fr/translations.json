@@ -12,8 +12,8 @@
     "edit": "Modifier",
     "back": "Retour",
     "goBack": "Revenir",
-    "logout": "Déconnexion",
-    "login": "Connexion",
+    "logout": "Se déconnecter",
+    "login": "Se connecter",
     "home": "Accueil",
     "profile": "Profil",
     "email": "E-mail",
@@ -51,7 +51,8 @@
     "max": "Max",
     "all": "Tous",
     "clear": "Effacer",
-    "download": "Télécharger"
+    "download": "Télécharger",
+    "actions": "Actions"
   },
   "navigation": {
     "parts": "Pièces",
@@ -960,3 +961,4 @@
     }
   }
 }
+

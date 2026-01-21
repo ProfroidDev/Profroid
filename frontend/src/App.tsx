@@ -16,6 +16,9 @@ import MyAppointmentsPage from "./pages/Appointment/MyAppointmentsPage";
 import MyJobsPage from "./pages/Appointment/MyJobsPage";
 import HomePage from "./pages/Home/HomePage";
 import ForbiddenPage from "./pages/Error/ForbiddenPage";
+import AboutPage from "./pages/About/AboutPage";
+import ContactPage from "./pages/Contact/ContactPage";
+import PrivacyPolicyPage from "./pages/Privacy/PrivacyPolicyPage";
 
 // Auth pages and components
 import LoginPage from "./pages/Auth/LoginPage";
@@ -188,6 +191,10 @@ function AppRoutes(): React.ReactElement {
             </ProtectedRoute>
           }
         />
+        {/* Public Pages */}
+        <Route path="/about" element={<AboutPage />} />
+        <Route path="/contact" element={<ContactPage />} />
+        <Route path="/privacy" element={<PrivacyPolicyPage />} />
         {/* 404 Not Found - Catch all unmatched routes */}
         <Route path="*" element={<NotFoundPage />} />
       </Routes>

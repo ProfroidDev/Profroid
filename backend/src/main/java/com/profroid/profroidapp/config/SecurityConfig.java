@@ -59,6 +59,8 @@ public class SecurityConfig {
                         // Public endpoints - no auth required
                         .requestMatchers(HttpMethod.POST, "/v1/customers").permitAll()
                         .requestMatchers(HttpMethod.GET, "/v1/files/**").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/v1/jobs").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/v1/jobs/**").permitAll()
                         // All other requests require authentication
                         .anyRequest().authenticated()
                 )

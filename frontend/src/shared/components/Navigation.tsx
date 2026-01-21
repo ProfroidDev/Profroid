@@ -1,10 +1,8 @@
 import React, { useState } from "react";
 import {
-  Wine,
   Menu,
   X,
   LogIn,
-  ShoppingCart,
   LogOut,
   User,
   Globe,
@@ -51,10 +49,13 @@ export default function Navigation(): React.ReactElement {
       <div className="nav-inner">
         {/* Logo */}
         <a href="/" className="nav-logo">
-          <Wine className="nav-logo-icon" />
+          <img
+            src="/profroid-logo.svg"
+            alt="Profroid logo"
+            style={{ height: 36, width: "auto" }}
+          />
           <span className="nav-logo-text">{t("common.appName")}</span>
         </a>
-
         {/* Desktop Menu */}
         <div className="nav-links">
           {/* Admin Links - only visible to admins */}
@@ -89,21 +90,10 @@ export default function Navigation(): React.ReactElement {
           {/* Public Links */}
           {!isAuthenticated && (
             <>
-              <a href="/#about">{t("navigation.about")}</a>
-              <a href="/#contact">{t("navigation.contact")}</a>
+              <a href="/services">{t("navigation.services")}</a>
+              <a href="/about">{t("navigation.about")}</a>
+              <a href="/contact">{t("navigation.contact")}</a>
             </>
-          )}
-
-          {isAuthenticated && (
-            <button className="nav-cart">
-              <ShoppingCart className="icon" />
-            </button>
-          )}
-
-          {isAuthenticated && (
-            <button className="nav-book">
-              {t("navigation.bookAppointment")}
-            </button>
           )}
 
           {isAuthenticated ? (
@@ -114,7 +104,7 @@ export default function Navigation(): React.ReactElement {
               <button className="nav-logout" onClick={handleLogout}>
                 <LogOut className="icon" /> {t("common.logout")}
               </button>
-              
+
               {/* Language Switcher */}
               <div className="nav-language-container">
                 <button
@@ -154,7 +144,7 @@ export default function Navigation(): React.ReactElement {
               <button className="nav-signin" onClick={handleLogin}>
                 <LogIn className="icon" /> {t("navigation.signIn")}
               </button>
-              
+
               {/* Language Switcher */}
               <div className="nav-language-container">
                 <button
@@ -233,6 +223,7 @@ export default function Navigation(): React.ReactElement {
           {/* Public Links */}
           {!isAuthenticated && (
             <>
+              <a href="/services">{t("navigation.services")}</a>
               <a href="/#about">{t("navigation.about")}</a>
               <a href="/#contact">{t("navigation.contact")}</a>
             </>

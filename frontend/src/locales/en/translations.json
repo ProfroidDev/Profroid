@@ -51,7 +51,8 @@
     "max": "Max",
     "all": "All",
     "clear": "Clear",
-    "download": "Download"
+    "download": "Download",
+    "actions": "Actions"
   },
   "navigation": {
     "parts": "Parts",
@@ -847,6 +848,72 @@
       "loadingSchedule": "Loading schedule...",
       "updatePassword": "Update Password",
       "logout": "Logout"
+    },
+    "about": {
+      "title": "About Us",
+      "subtitle": "Learn more about Profroid and our mission to provide exceptional service",
+      "mission": "Our Mission",
+      "missionText": "At Profroid, we are committed to delivering reliable and professional HVAC and refrigeration services to residential and commercial clients. Our team of experienced technicians is dedicated to ensuring your comfort and satisfaction with every project.",
+      "values": "Our Values",
+      "value1Title": "Excellence",
+      "value1Text": "We strive for excellence in every aspect of our work, from initial consultation to final installation.",
+      "value2Title": "Reliability",
+      "value2Text": "You can depend on us to deliver quality service on time, every time.",
+      "value3Title": "Innovation",
+      "value3Text": "We stay up-to-date with the latest technology and techniques in HVAC and refrigeration.",
+      "value4Title": "Customer Service",
+      "value4Text": "Your satisfaction is our top priority, and we go above and beyond to exceed expectations.",
+      "team": "Our Team",
+      "teamText": "Our team consists of certified and experienced professionals who are passionate about providing the best service. We undergo continuous training to stay current with industry standards and best practices.",
+      "whyChooseUs": "Why Choose Us?",
+      "feature1": "24/7 emergency service availability",
+      "feature2": "Certified and experienced technicians",
+      "feature3": "Competitive pricing and transparent quotes",
+      "feature4": "Fast and efficient service",
+      "feature5": "Comprehensive warranty on all work"
+    },
+    "contact": {
+      "title": "Contact Us",
+      "subtitle": "Get in touch with our team. We're here to help!",
+      "email": "Email",
+      "phone": "Phone",
+      "address": "Address",
+      "formName": "Full Name",
+      "formNamePlaceholder": "Enter your full name",
+      "formEmail": "Email Address",
+      "formEmailPlaceholder": "Enter your email",
+      "formPhone": "Phone Number",
+      "formPhonePlaceholder": "Enter your phone number",
+      "formSubject": "Subject",
+      "formSubjectPlaceholder": "What is this about?",
+      "formMessage": "Message",
+      "formMessagePlaceholder": "Tell us more...",
+      "formSubmit": "Send Message",
+      "messageSent": "Thank you! Your message has been sent successfully. We will get back to you soon."
+    },
+    "privacy": {
+      "title": "Privacy Policy",
+      "intro": "Introduction",
+      "introText": "Profroid ('we', 'us', 'our', or 'Company') operates the profroid.com website (the 'Service'). This page informs you of our policies regarding the collection, use, and disclosure of personal data when you use our Service and the choices you have associated with that data.",
+      "section1Title": "Information Collection and Use",
+      "section1Text": "We collect several different types of information for various purposes to provide and improve our Service to you.",
+      "section2Title": "Types of Data Collected",
+      "section2Text": "Personal Data that we collect may include:",
+      "section2Item1": "Email address",
+      "section2Item2": "First name and last name",
+      "section2Item3": "Phone number",
+      "section2Item4": "Address, State, Province, ZIP/Postal code, City",
+      "section3Title": "Use of Data",
+      "section3Text": "Profroid uses the collected data for various purposes: to provide and maintain our Service, to notify you about changes to our Service, to allow you to participate in interactive features of our Service, to provide customer support, to gather analysis or valuable information for service improvement, and to monitor the usage of our Service.",
+      "section4Title": "Security of Data",
+      "section4Text": "The security of your data is important to us but remember that no method of transmission over the Internet or method of electronic storage is 100% secure. While we strive to use commercially acceptable means to protect your Personal Data, we cannot guarantee its absolute security.",
+      "section5Title": "Changes to This Privacy Policy",
+      "section5Text": "We may update our Privacy Policy from time to time. We will notify you of any changes by posting the new Privacy Policy on this page and updating the 'effective date' at the bottom of this Privacy Policy.",
+      "section6Title": "Contact Us",
+      "section6Text": "If you have any questions about this Privacy Policy, please contact us at: support@profroid.com or by mail at 123 Main St, Toronto, ON M5V 3A8.",
+      "section7Title": "Governing Law",
+      "section7Text": "This Privacy Policy and your use of the Service are governed by and construed in accordance with the laws of Ontario, Canada, without regard to its conflict of law provisions. Our failure to enforce any right or provision of these terms will not be considered a waiver of those rights. If any provision of these terms is held to be invalid or unenforceable by a court, the remaining provisions of these terms will remain in effect.",
+      "lastUpdated": "Last Updated: January 2026"
     }
   },
   "validation": {
@@ -955,3 +1022,4 @@
     }
   }
 }
+

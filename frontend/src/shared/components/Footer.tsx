@@ -16,10 +16,10 @@ export default function Footer() {
 
         <div className="footer-section">
           <h4>Quick Links</h4>
-          <a href="/parts">Parts</a>
-          <a href="#about">About</a>
+          <a href="/about">About</a>
+          <a href="/privacy">Privacy Policy</a>
           <a href="/services">Services</a>
-          <a href="#contact">Contact</a>
+          <a href="/contact">Contact</a>
         </div>
 
         <div className="footer-section">
