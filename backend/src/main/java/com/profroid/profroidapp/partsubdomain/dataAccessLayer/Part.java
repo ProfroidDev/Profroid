@@ -36,7 +36,7 @@ public class Part {
     private Integer lowStockThreshold = 5;
     
     @Column(name = "out_of_stock_threshold")
-    private Integer outOfStockThreshold = 0;
+    private Integer outOfStockThreshold = 1;
     
     @Column(name = "high_stock_threshold")
     private Integer highStockThreshold = 50;
