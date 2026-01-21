@@ -173,6 +173,16 @@ jobs:
           fi
         shell: bash
 
+      - name: Publish test report
+        if: always()
+        uses: dorny/test-reporter@v1
+        with:
+          name: Frontend Test Results
+          path: 'frontend/test-results/junit.xml'
+          reporter: 'java-junit'
+          fail-on-error: false
+        continue-on-error: true
+
   # =====================================================
   # 5) E2E Tests with Playwright (Optional/Non-blocking)
   # =====================================================
@@ -312,6 +322,6 @@ jobs:
           echo "- E2E tests (optional): ~5-7 minutes (parallel)" >> $GITHUB_STEP_SUMMARY
           echo "- Total: ~5-8 minutes" >> $GITHUB_STEP_SUMMARY
 
-      - name: Fail pipeline if critical job || needs.format.result == 'failure' || needs.lint.result == 'failure's failed
-        if: needs.build.result == 'failure'
+      - name: Fail pipeline if critical jobs failed
+        if: needs.build.result == 'failure' || needs.format.result == 'failure' || needs.lint.result == 'failure'
         run: exit 1
