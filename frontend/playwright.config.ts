@@ -64,5 +64,14 @@ export default defineConfig({
   // ---------------------
   // DEV SERVER (only for E2E tests with CI env var)
   // ---------------------
-  ...(process.env.E2E_TEST ? { webServer: { command: 'npm run dev', url: 'http://localhost:5173', reuseExistingServer: false, timeout: 120 * 1000 } } : {}),
+  ...(process.env.E2E_TEST
+    ? {
+        webServer: {
+          command: 'npm run dev',
+          url: 'http://localhost:5173',
+          reuseExistingServer: false,
+          timeout: 120 * 1000,
+        },
+      }
+    : {}),
 });
