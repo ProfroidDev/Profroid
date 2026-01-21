@@ -69,7 +69,7 @@ public class FileController {
         return ResponseEntity.ok(mapper.toResponseModel(file));
     }
 
-    @PreAuthorize("isAuthenticated()")
+    @PreAuthorize("permitAll()")
     @GetMapping("/{fileId}/download")
     public ResponseEntity<InputStreamResource> download(@PathVariable UUID fileId) {
         StoredFile file = fileService.getOrThrow(fileId);
