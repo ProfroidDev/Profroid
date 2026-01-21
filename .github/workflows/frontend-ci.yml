@@ -230,12 +230,15 @@ jobs:
         run: npx playwright install --with-deps chromium
         working-directory: ./frontend
 
-      - name: Build frontend
-        run: npm run build
-        working-directory: ./frontend
+      - name: Download built frontend
+        uses: actions/download-artifact@v4
+        with:
+          name: frontend-build
+          path: frontend/dist/
+        continue-on-error: true
 
-      - name: Run E2E tests in parallel (4 workers)
-        run: npx playwright test --workers=4 --reporter=html,json
+      - name: Run E2E tests in parallel (8 workers - optimized)
+        run: npx playwright test --workers=8 --reporter=html,json
         working-directory: ./frontend
         env:
           E2E_TEST: 'true'
