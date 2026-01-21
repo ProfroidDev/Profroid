@@ -15,7 +15,7 @@ export default defineConfig({
   expect: { timeout: 5000 },
 
   use: {
-    baseURL: 'http://localhost:5173',
+    baseURL: process.env.E2E_TEST ? 'http://localhost:5173' : undefined,
     trace: 'on-first-retry',
     headless: true,
     video: 'retain-on-failure',

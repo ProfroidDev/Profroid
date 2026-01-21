@@ -131,11 +131,28 @@ jobs:
         run: npm ci
         working-directory: ./frontend
 
-      - name: Run unit tests (no browser)
-        run: npx playwright test --reporter=json --reporter=junit --reporter=html
+      - name: Create test-results directory
+        run: mkdir -p frontend/test-results
+        shell: bash
+
+      - name: Run unit tests
+        run: npx playwright test --reporter=json --reporter=junit
         working-directory: ./frontend
-        env:
-          PWDEBUG: 0
+        continue-on-error: true
+
+      - name: Check test results
+        run: |
+          echo "Listing test-results directory:"
+          ls -la frontend/test-results/ || echo "Directory does not exist"
+          echo ""
+          echo "Checking for junit.xml:"
+          if [ -f "frontend/test-results/junit.xml" ]; then
+            echo "✅ junit.xml found!"
+            head -20 frontend/test-results/junit.xml
+          else
+            echo "❌ junit.xml not found"
+          fi
+        shell: bash
         continue-on-error: true
 
       - name: Upload test results
