@@ -161,9 +161,19 @@ jobs:
         uses: dorny/test-reporter@v1
         with:
           name: Frontend Test Results
-          path: frontend/test-results/junit.xml
+          path: 'frontend/test-results/*.xml'
           reporter: java-junit
           fail-on-error: false
+
+      - name: Parse test results
+        if: always()
+        run: |
+          if [ -f "frontend/test-results/junit.xml" ]; then
+            echo "✅ Test results found and will be published"
+          else
+            echo "⚠️ No test results XML found yet (tests may not have run)"
+          fi
+        shell: bash
 
   # =====================================================
   # 5) E2E Tests with Playwright (Optional/Non-blocking)
@@ -253,6 +263,17 @@ jobs:
     name: Pipeline Summary
 
     steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Download test results
+        if: always()
+        uses: actions/download-artifact@v4
+        with:
+          name: frontend-test-results
+          path: frontend/test-results/
+        continue-on-error: true
+
       - name: Generate summary
         run: |
           echo "## Frontend CI Pipeline Summary" >> $GITHUB_STEP_SUMMARY
@@ -266,6 +287,17 @@ jobs:
           echo "### ⚠️ Optional Checks (non-blocking)" >> $GITHUB_STEP_SUMMARY
           echo "- E2E Tests: ${{ needs.e2e_tests.result }} (parallel, 4 workers)" >> $GITHUB_STEP_SUMMARY
           echo "- Docker Build: ${{ needs.docker_build.result }}" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### 📊 Test Results" >> $GITHUB_STEP_SUMMARY
+          if [ -f "frontend/test-results/junit.xml" ]; then
+            PASSED=$(grep -o 'tests="[0-9]*"' frontend/test-results/junit.xml | head -1 | cut -d'"' -f2)
+            FAILED=$(grep -o 'failures="[0-9]*"' frontend/test-results/junit.xml | head -1 | cut -d'"' -f2)
+            echo "- Tests Passed: ${PASSED:-0}" >> $GITHUB_STEP_SUMMARY
+            echo "- Tests Failed: ${FAILED:-0}" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "- Tests Passed: 0" >> $GITHUB_STEP_SUMMARY
+            echo "- Tests Failed: 0" >> $GITHUB_STEP_SUMMARY
+          fi
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "### 📊 Execution Time" >> $GITHUB_STEP_SUMMARY
           echo "- Critical checks: ~2-3 minutes" >> $GITHUB_STEP_SUMMARY
