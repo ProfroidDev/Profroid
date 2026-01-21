@@ -16,6 +16,14 @@ logging:
 jwt:
   secret: ${JWT_SECRET}
 
+minio:
+  endpoint: ${MINIO_ENDPOINT:http://localhost:9000}
+  access-key: ${MINIO_ACCESS_KEY:minioadmin}
+  secret-key: ${MINIO_SECRET_KEY:minioadmin}
+  bucket-private: ${MINIO_BUCKET_PRIVATE:profroid-private}
+  origin-base-url: ${MINIO_ORIGIN_BASE_URL:}
+  cdn-base-url: ${MINIO_CDN_BASE_URL:}
+
 spring:
   profiles:
     active: h2  # IDE + CI will default to H2 (safe)
