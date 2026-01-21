@@ -88,7 +88,7 @@ const useAuthStore = create<AuthStore>((set, get) => ({
             // Fallback to initial user if fetch fails
             set({ isLoading: false });
           }
-        } catch (fetchError) {
+        } catch {
           set({ isLoading: false });
         }
         return true;
@@ -201,7 +201,7 @@ const useAuthStore = create<AuthStore>((set, get) => ({
           } else {
             set({ isLoading: false });
           }
-        } catch (error) {
+        } catch {
           set({ isLoading: false });
         }
       } else {
@@ -310,7 +310,8 @@ const useAuthStore = create<AuthStore>((set, get) => ({
         
         set({ customerData });
       }
-    } catch (error) {
+    } catch {
+      // Error fetching customer data - continue without it
     }
   },
 
