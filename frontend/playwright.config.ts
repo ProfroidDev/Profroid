@@ -62,22 +62,7 @@ export default defineConfig({
   ],
 
   // ---------------------
-  // START DEV SERVER (only in CI, skip locally)
+  // DEV SERVER (only for E2E tests with CI env var)
   // ---------------------
-  ...(process.env.CI
-    ? {
-        webServer: {
-          command: 'npm run dev',
-          url: 'http://localhost:5173',
-          reuseExistingServer: false,
-          timeout: 120 * 1000,
-        },
-      }
-    : {
-        webServer: {
-          command: 'npm run dev',
-          url: 'http://localhost:5173',
-          reuseExistingServer: !process.env.CI,
-        },
-      }),
+  ...(process.env.E2E_TEST ? { webServer: { command: 'npm run dev', url: 'http://localhost:5173', reuseExistingServer: false, timeout: 120 * 1000 } } : {}),
 });
