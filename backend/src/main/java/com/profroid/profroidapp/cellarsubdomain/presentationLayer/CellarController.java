@@ -68,7 +68,7 @@ public class CellarController {
         return ResponseEntity.ok(responseModel);
     }
 
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasRole('CUSTOMER')")
     @PostMapping
     public ResponseEntity<CellarResponseModel> createCellar(@Valid @RequestBody CellarRequestModel cellarRequestModel) {
         String ownerCustomerId = cellarRequestModel.getOwnerCustomerId().getCustomerId();
@@ -76,20 +76,20 @@ public class CellarController {
         return ResponseEntity.status(HttpStatus.CREATED).body(responseModel);
     }
 
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasRole('CUSTOMER')")
     @PutMapping("/{cellarId}")
     public ResponseEntity<CellarResponseModel> updateCellar(@PathVariable String cellarId, @Valid @RequestBody CellarRequestModel cellarRequestModel) {
         String ownerCustomerId = cellarRequestModel.getOwnerCustomerId().getCustomerId();
         CellarResponseModel responseModel = cellarService.updateCellar(ownerCustomerId, cellarId, cellarRequestModel);
         return ResponseEntity.ok(responseModel);
     }
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasRole('CUSTOMER')")
     @DeleteMapping("/{cellarId}/deactivate")
     public ResponseEntity<CellarResponseModel> deactivateCellar(@PathVariable String cellarId) {
         CellarResponseModel deactivated = cellarService.deactivateCellar(cellarId);
         return ResponseEntity.status(HttpStatus.OK).body(deactivated);
     }
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasRole('CUSTOMER')")
     @PatchMapping("/{cellarId}/reactivate")
     public ResponseEntity<CellarResponseModel> reactivateCellar(@PathVariable String cellarId) {
         CellarResponseModel reactivated = cellarService.reactivateCellar(cellarId);
