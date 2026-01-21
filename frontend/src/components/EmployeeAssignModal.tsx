@@ -41,14 +41,26 @@ interface EmployeeAssignModalProps {
 }
 
 const EMPLOYEE_TYPES: EmployeeRoleType[] = ['TECHNICIAN', 'ADMIN', 'SUPPORT', 'SALES'];
-const provinces = ['Ontario', 'Quebec', 'British Columbia', 'Alberta', 'Manitoba', 'Saskatchewan', 'Nova Scotia'];
+const provinces = [
+  'Ontario',
+  'Quebec',
+  'British Columbia',
+  'Alberta',
+  'Manitoba',
+  'Saskatchewan',
+  'Nova Scotia',
+];
 const phoneTypes = ['MOBILE', 'HOME', 'WORK'];
 
-export default function EmployeeAssignModal({ isOpen, onClose, onSuccess }: EmployeeAssignModalProps) {
+export default function EmployeeAssignModal({
+  isOpen,
+  onClose,
+  onSuccess,
+}: EmployeeAssignModalProps) {
   const { t } = useTranslation();
   const [step, setStep] = useState<'selectUser' | 'enterDetails'>('selectUser');
   const [selectedUser, setSelectedUser] = useState<UnassignedUser | null>(null);
-  
+
   const [formData, setFormData] = useState({
     userId: '',
     employeeType: EMPLOYEE_TYPES[0] || 'TECHNICIAN',
@@ -100,56 +112,61 @@ export default function EmployeeAssignModal({ isOpen, onClose, onSuccess }: Empl
   const fetchExistingEmployees = async () => {
     try {
       const employees = await getEmployees();
-      const employeeIds = new Set(employees.map(emp => emp.userId).filter(Boolean));
+      const employeeIds = new Set(employees.map((emp) => emp.userId).filter(Boolean));
       setEmployeeUserIds(employeeIds);
     } catch (error: unknown) {
       // Continue even if this fails - just won't filter out employees
     }
   };
 
-  const fetchUnassignedUsers = useCallback(async (query: string = '') => {
-    try {
-      setFetchError('');
-      const token = localStorage.getItem('authToken');
-      
-      // Only search if query is at least 2 characters
-      if (query.trim().length < 2) {
-        setUnassignedUsers([]);
-        setAllUsers([]);
-        return;
-      }
+  const fetchUnassignedUsers = useCallback(
+    async (query: string = '') => {
+      try {
+        setFetchError('');
+        const token = localStorage.getItem('authToken');
 
-      const response = await fetch(
-        `${import.meta.env.VITE_API_URL}/search-users?q=${encodeURIComponent(query)}&limit=50`,
-        {
-          method: 'GET',
-          headers: {
-            'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json',
-          },
+        // Only search if query is at least 2 characters
+        if (query.trim().length < 2) {
+          setUnassignedUsers([]);
+          setAllUsers([]);
+          return;
         }
-      );
 
-      if (!response.ok) {
-        throw new Error(`Failed to fetch users: ${response.statusText}`);
+        const response = await fetch(
+          `${import.meta.env.VITE_API_URL}/search-users?q=${encodeURIComponent(query)}&limit=50`,
+          {
+            method: 'GET',
+            headers: {
+              Authorization: `Bearer ${token}`,
+              'Content-Type': 'application/json',
+            },
+          }
+        );
+
+        if (!response.ok) {
+          throw new Error(`Failed to fetch users: ${response.statusText}`);
+        }
+
+        const result = await response.json();
+        let users: UnassignedUser[] = (result.data || []).map(
+          (u: { userId: string; email: string }) => ({
+            id: u.userId,
+            email: u.email,
+            name: u.email, // Use email as name since we don't have separate name field
+          })
+        );
+
+        // Filter out users who are already employees
+        users = users.filter((user: UnassignedUser) => !employeeUserIds.has(user.id));
+
+        setUnassignedUsers(users);
+        setAllUsers(users);
+      } catch (error: unknown) {
+        setFetchError(getErrorMessage(error));
       }
-
-      const result = await response.json();
-      let users: UnassignedUser[] = (result.data || []).map((u: { userId: string; email: string }) => ({
-        id: u.userId,
-        email: u.email,
-        name: u.email, // Use email as name since we don't have separate name field
-      }));
-
-      // Filter out users who are already employees
-      users = users.filter((user: UnassignedUser) => !employeeUserIds.has(user.id));
-
-      setUnassignedUsers(users);
-      setAllUsers(users);
-    } catch (error: unknown) {
-      setFetchError(getErrorMessage(error));
-    }
-  }, [employeeUserIds]);
+    },
+    [employeeUserIds]
+  );
 
   // Debounce search
   useEffect(() => {
@@ -168,21 +185,22 @@ export default function EmployeeAssignModal({ isOpen, onClose, onSuccess }: Empl
 
   // Filter users based on search query
   const filteredUsers = searchQuery.trim()
-    ? allUsers.filter(user =>
-        (user.name || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
-        (user.email || '').toLowerCase().includes(searchQuery.toLowerCase())
+    ? allUsers.filter(
+        (user) =>
+          (user.name || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
+          (user.email || '').toLowerCase().includes(searchQuery.toLowerCase())
       )
     : allUsers;
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
       [name]: value,
     }));
 
     if (errors[name]) {
-      setErrors(prev => {
+      setErrors((prev) => {
         const newErrors = { ...prev };
         delete newErrors[name];
         return newErrors;
@@ -190,28 +208,26 @@ export default function EmployeeAssignModal({ isOpen, onClose, onSuccess }: Empl
     }
   };
 
-
-
   const removePhoneField = (index: number) => {
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
       phoneNumbers: prev.phoneNumbers.filter((_, i) => i !== index),
     }));
   };
 
   const handleUserSelect = (userId: string) => {
-    const user = unassignedUsers.find(u => u.id === userId);
+    const user = unassignedUsers.find((u) => u.id === userId);
     if (user) {
       setSelectedUser(user);
       // Pre-fill name from user account
       const nameParts = user.name?.split(' ') || ['', ''];
-      setFormData(prev => ({
+      setFormData((prev) => ({
         ...prev,
         userId: user.id,
         firstName: nameParts[0] || '',
         lastName: nameParts.slice(1).join(' ') || nameParts[0] || '',
       }));
-      
+
       // Fetch customer data to pre-fill address and phone
       fetchCustomerData(user.id);
       setStep('enterDetails');
@@ -222,11 +238,11 @@ export default function EmployeeAssignModal({ isOpen, onClose, onSuccess }: Empl
     try {
       const token = localStorage.getItem('authToken');
       const url = `${import.meta.env.VITE_BACKEND_URL}/customers/by-user/${userId}`;
-      
+
       const response = await fetch(url, {
         method: 'GET',
         headers: {
-          'Authorization': `Bearer ${token}`,
+          Authorization: `Bearer ${token}`,
           'Content-Type': 'application/json',
         },
       });
@@ -236,18 +252,22 @@ export default function EmployeeAssignModal({ isOpen, onClose, onSuccess }: Empl
       }
 
       const customerData: CustomerData = await response.json();
-      
+
       // Safely map phone numbers with fallback
       let mappedPhones = [{ number: '', type: 'MOBILE' }];
-      if (customerData.phoneNumbers && Array.isArray(customerData.phoneNumbers) && customerData.phoneNumbers.length > 0) {
+      if (
+        customerData.phoneNumbers &&
+        Array.isArray(customerData.phoneNumbers) &&
+        customerData.phoneNumbers.length > 0
+      ) {
         mappedPhones = customerData.phoneNumbers.map((p: CustomerPhoneNumber) => ({
           number: String(p.number || p.phoneNumber || ''),
           type: String(p.type || p.phoneType || 'MOBILE'),
         }));
       }
-      
+
       // Pre-fill form with customer data
-      setFormData(prev => ({
+      setFormData((prev) => ({
         ...prev,
         firstName: customerData.firstName || prev.firstName,
         lastName: customerData.lastName || prev.lastName,
@@ -274,7 +294,7 @@ export default function EmployeeAssignModal({ isOpen, onClose, onSuccess }: Empl
       if (!formData.streetAddress.trim()) newErrors.streetAddress = 'Street address is required';
       if (!formData.city.trim()) newErrors.city = 'City is required';
       if (!formData.postalCode.trim()) newErrors.postalCode = 'Postal code is required';
-      if (formData.phoneNumbers.some(p => !p.number.trim())) {
+      if (formData.phoneNumbers.some((p) => !p.number.trim())) {
         newErrors.phoneNumbers = 'All phone numbers must be filled';
       }
     }
@@ -311,12 +331,12 @@ export default function EmployeeAssignModal({ isOpen, onClose, onSuccess }: Empl
       };
 
       let phoneNumbers: EmployeePhoneNumber[] = formData.phoneNumbers
-        .filter(p => p.number.trim() !== '')
-        .map(p => ({
+        .filter((p) => p.number.trim() !== '')
+        .map((p) => ({
           number: p.number,
           type: p.type as EmployeePhoneType,
         }));
-      
+
       // Backend requires at least one phone number, so add a default if none provided
       if (phoneNumbers.length === 0) {
         phoneNumbers = [{ number: 'N/A', type: 'MOBILE' }];
@@ -338,20 +358,17 @@ export default function EmployeeAssignModal({ isOpen, onClose, onSuccess }: Empl
       await addEmployee(employeeData);
 
       // Step 2: Only update auth-service role AFTER backend succeeds
-      const authResponse = await fetch(
-        `${import.meta.env.VITE_API_URL}/assign-employee`,
-        {
-          method: 'POST',
-          headers: {
-            'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            userId: formData.userId,
-            employeeType: formData.employeeType,
-          }),
-        }
-      );
+      const authResponse = await fetch(`${import.meta.env.VITE_API_URL}/assign-employee`, {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          userId: formData.userId,
+          employeeType: formData.employeeType,
+        }),
+      });
 
       if (!authResponse.ok) {
         const errorData = await authResponse.json();
@@ -361,7 +378,7 @@ export default function EmployeeAssignModal({ isOpen, onClose, onSuccess }: Empl
 
       onClose();
       onSuccess?.();
-      
+
       // Reset form
       setStep('selectUser');
       setSelectedUser(null);
@@ -390,7 +407,10 @@ export default function EmployeeAssignModal({ isOpen, onClose, onSuccess }: Empl
     <div className="modal-overlay-light">
       <div className="modal-container-light employee-modal">
         <div className="modal-header-light">
-          <h3>{t('pages.employees.addEmployee')} {step === 'enterDetails' && `- ${t('pages.employees.step2')}`}</h3>
+          <h3>
+            {t('pages.employees.addEmployee')}{' '}
+            {step === 'enterDetails' && `- ${t('pages.employees.step2')}`}
+          </h3>
           <button className="modal-close-light" onClick={onClose}>
             &#10005;
           </button>
@@ -402,17 +422,17 @@ export default function EmployeeAssignModal({ isOpen, onClose, onSuccess }: Empl
 
           {step === 'selectUser' && (
             <>
-              {fetchError && (
-                <div className="form-error-message">{fetchError}</div>
-              )}
+              {fetchError && <div className="form-error-message">{fetchError}</div>}
 
               {searchQuery.trim().length > 0 && searchQuery.trim().length < 2 && (
-                <div className="form-info-message">{t('pages.employees.typeAtLeast2Characters')}</div>
+                <div className="form-info-message">
+                  {t('pages.employees.typeAtLeast2Characters')}
+                </div>
               )}
 
               <div className="form-section">
                 <h4 className="form-section-title">{t('pages.employees.step1')}</h4>
-                
+
                 <div className="form-group">
                   <label htmlFor="userSearch">{t('pages.employees.searchUser')} *</label>
                   <input
@@ -429,10 +449,12 @@ export default function EmployeeAssignModal({ isOpen, onClose, onSuccess }: Empl
                 {searchQuery.trim() && (
                   <div className="user-search-results">
                     {filteredUsers.length === 0 ? (
-                      <div className="search-no-results">{t('pages.employees.noUsersFound', { query: searchQuery })}</div>
+                      <div className="search-no-results">
+                        {t('pages.employees.noUsersFound', { query: searchQuery })}
+                      </div>
                     ) : (
                       <div className="user-list">
-                        {filteredUsers.map(user => (
+                        {filteredUsers.map((user) => (
                           <div
                             key={user.id}
                             className="user-list-item"
@@ -459,13 +481,15 @@ export default function EmployeeAssignModal({ isOpen, onClose, onSuccess }: Empl
                     onChange={handleInputChange}
                     className={errors.employeeType ? 'input-error' : ''}
                   >
-                    {EMPLOYEE_TYPES.map(type => (
+                    {EMPLOYEE_TYPES.map((type) => (
                       <option key={type} value={type}>
                         {type}
                       </option>
                     ))}
                   </select>
-                  {errors.employeeType && <span className="field-error">{errors.employeeType}</span>}
+                  {errors.employeeType && (
+                    <span className="field-error">{errors.employeeType}</span>
+                  )}
                 </div>
               </div>
             </>
@@ -474,7 +498,11 @@ export default function EmployeeAssignModal({ isOpen, onClose, onSuccess }: Empl
           {step === 'enterDetails' && selectedUser && (
             <>
               <div className="form-info-message">
-                {t('pages.employees.assigningMessage', { name: selectedUser.name, email: selectedUser.email, employeeType: formData.employeeType })}
+                {t('pages.employees.assigningMessage', {
+                  name: selectedUser.name,
+                  email: selectedUser.email,
+                  employeeType: formData.employeeType,
+                })}
               </div>
 
               <div className="form-section">
@@ -522,19 +550,16 @@ export default function EmployeeAssignModal({ isOpen, onClose, onSuccess }: Empl
                     placeholder="Enter street address"
                     className="input-disabled"
                   />
-                  {errors.streetAddress && <span className="field-error">{errors.streetAddress}</span>}
+                  {errors.streetAddress && (
+                    <span className="field-error">{errors.streetAddress}</span>
+                  )}
                 </div>
 
                 <div className="form-row">
                   <div className="form-group">
                     <label htmlFor="province">{t('pages.customers.province')} *</label>
-                    <select
-                      id="province"
-                      name="province"
-                      value={formData.province}
-                      disabled
-                    >
-                      {provinces.map(province => (
+                    <select id="province" name="province" value={formData.province} disabled>
+                      {provinces.map((province) => (
                         <option key={province} value={province}>
                           {province}
                         </option>
@@ -590,7 +615,9 @@ export default function EmployeeAssignModal({ isOpen, onClose, onSuccess }: Empl
                   <div key={index} className="phone-group">
                     <div className="form-row">
                       <div className="form-group">
-                        <label htmlFor={`phoneNumber-${index}`}>{t('pages.employees.phoneNumber')} *</label>
+                        <label htmlFor={`phoneNumber-${index}`}>
+                          {t('pages.employees.phoneNumber')} *
+                        </label>
                         <input
                           type="tel"
                           id={`phoneNumber-${index}`}
@@ -602,13 +629,11 @@ export default function EmployeeAssignModal({ isOpen, onClose, onSuccess }: Empl
                       </div>
 
                       <div className="form-group">
-                        <label htmlFor={`phoneType-${index}`}>{t('pages.employees.phoneType')} *</label>
-                        <select
-                          id={`phoneType-${index}`}
-                          value={phone.type}
-                          disabled
-                        >
-                          {phoneTypes.map(type => (
+                        <label htmlFor={`phoneType-${index}`}>
+                          {t('pages.employees.phoneType')} *
+                        </label>
+                        <select id={`phoneType-${index}`} value={phone.type} disabled>
+                          {phoneTypes.map((type) => (
                             <option key={type} value={type}>
                               {type}
                             </option>
@@ -636,11 +661,7 @@ export default function EmployeeAssignModal({ isOpen, onClose, onSuccess }: Empl
           {/* Buttons */}
           <div className="form-actions">
             {step === 'enterDetails' && (
-              <button
-                type="button"
-                onClick={() => setStep('selectUser')}
-                className="btn-cancel"
-              >
+              <button type="button" onClick={() => setStep('selectUser')} className="btn-cancel">
                 {t('common.back')}
               </button>
             )}
@@ -649,13 +670,13 @@ export default function EmployeeAssignModal({ isOpen, onClose, onSuccess }: Empl
               disabled={loading || (step === 'selectUser' && unassignedUsers.length === 0)}
               className="btn-submit"
             >
-              {loading ? t('common.creating') : step === 'selectUser' ? t('pages.employees.next') : t('pages.employees.createEmployee')}
+              {loading
+                ? t('common.creating')
+                : step === 'selectUser'
+                  ? t('pages.employees.next')
+                  : t('pages.employees.createEmployee')}
             </button>
-            <button
-              type="button"
-              onClick={onClose}
-              className="btn-cancel"
-            >
+            <button type="button" onClick={onClose} className="btn-cancel">
               {t('common.cancel')}
             </button>
           </div>

@@ -37,7 +37,7 @@
 .nav-logo-text {
   font-size: 1.6rem;
   font-weight: 700;
-  font-family: "Georgia", serif;
+  font-family: 'Georgia', serif;
   color: #3a2e2a;
   white-space: nowrap;
 }
@@ -252,7 +252,7 @@
 }
 
 .language-text {
-  font-family: "Georgia", serif;
+  font-family: 'Georgia', serif;
   letter-spacing: 0.5px;
 }
 
@@ -319,7 +319,7 @@
 }
 
 .language-name {
-  font-family: "Georgia", serif;
+  font-family: 'Georgia', serif;
 }
 
 /* LANGUAGE SWITCHER - MOBILE */

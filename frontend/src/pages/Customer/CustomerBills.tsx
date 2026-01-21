@@ -1,12 +1,12 @@
-import { useState, useEffect, useMemo } from "react";
-import { motion, AnimatePresence } from "framer-motion";
-import { Search, FileText, DollarSign, Download } from "lucide-react";
-import { useTranslation } from "react-i18next";
-import { getCustomerBills } from "../../features/report/api/getCustomerBills";
-import { downloadBillPdf } from "../../features/report/api/downloadBillPdf";
-import useAuthStore from "../../features/authentication/store/authStore";
-import type { BillResponseModel } from "../../features/report/models/BillResponseModel";
-import "./CustomerBills.css";
+import { useState, useEffect, useMemo } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Search, FileText, DollarSign, Download } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
+import { getCustomerBills } from '../../features/report/api/getCustomerBills';
+import { downloadBillPdf } from '../../features/report/api/downloadBillPdf';
+import useAuthStore from '../../features/authentication/store/authStore';
+import type { BillResponseModel } from '../../features/report/models/BillResponseModel';
+import './CustomerBills.css';
 
 const ITEMS_PER_PAGE = 10;
 
@@ -15,20 +15,23 @@ const CustomerBills = () => {
   const { customerData } = useAuthStore();
   const [bills, setBills] = useState<BillResponseModel[]>([]);
   const [loading, setLoading] = useState(false);
-  const [searchQuery, setSearchQuery] = useState("");
+  const [searchQuery, setSearchQuery] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
-  const [toastMessage, setToastMessage] = useState<{ text: string; type: "success" | "error" } | null>(null);
-  const [filterStatus, setFilterStatus] = useState<"ALL" | "PAID" | "UNPAID">("ALL");
+  const [toastMessage, setToastMessage] = useState<{
+    text: string;
+    type: 'success' | 'error';
+  } | null>(null);
+  const [filterStatus, setFilterStatus] = useState<'ALL' | 'PAID' | 'UNPAID'>('ALL');
 
   const loadBills = async () => {
     if (!customerData?.customerId) return;
-    
+
     setLoading(true);
     try {
       const data = await getCustomerBills(customerData.customerId);
       setBills(data);
     } catch (error) {
-      showToast(t("messages.failedToLoadBills"), "error");
+      showToast(t('messages.failedToLoadBills'), 'error');
       console.error(error);
     } finally {
       setLoading(false);
@@ -40,7 +43,7 @@ const CustomerBills = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [customerData?.customerId]);
 
-  const showToast = (text: string, type: "success" | "error") => {
+  const showToast = (text: string, type: 'success' | 'error') => {
     setToastMessage({ text, type });
     setTimeout(() => setToastMessage(null), 3000);
   };
@@ -49,17 +52,17 @@ const CustomerBills = () => {
     try {
       const blob = await downloadBillPdf(billId);
       const url = window.URL.createObjectURL(blob);
-      const link = document.createElement("a");
+      const link = document.createElement('a');
       link.href = url;
       link.download = `bill_${billId}.pdf`;
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
       window.URL.revokeObjectURL(url);
-      showToast(t("messages.billDownloadedSuccessfully"), "success");
+      showToast(t('messages.billDownloadedSuccessfully'), 'success');
     } catch (error) {
-      showToast(t("messages.failedToDownloadBill"), "error");
-      console.error("Download error:", error);
+      showToast(t('messages.failedToDownloadBill'), 'error');
+      console.error('Download error:', error);
     }
   };
 
@@ -72,7 +75,7 @@ const CustomerBills = () => {
         bill.jobName.toLowerCase().includes(searchLower) ||
         bill.appointmentDate.includes(searchQuery);
 
-      if (filterStatus === "ALL") {
+      if (filterStatus === 'ALL') {
         return matchesSearch;
       }
       return matchesSearch && bill.status === filterStatus;
@@ -91,22 +94,22 @@ const CustomerBills = () => {
   }, [searchQuery, filterStatus]);
 
   const formatCurrency = (value: number) => {
-    return new Intl.NumberFormat("en-CA", {
-      style: "currency",
-      currency: "CAD",
+    return new Intl.NumberFormat('en-CA', {
+      style: 'currency',
+      currency: 'CAD',
     }).format(value);
   };
 
   const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString("en-CA", {
-      year: "numeric",
-      month: "short",
-      day: "numeric",
+    return new Date(dateString).toLocaleDateString('en-CA', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric',
     });
   };
 
   const getStatusBadgeClass = (status: string) => {
-    return status === "PAID" ? "badge-paid" : "badge-unpaid";
+    return status === 'PAID' ? 'badge-paid' : 'badge-unpaid';
   };
 
   const calculateTotalAmount = () => {
@@ -115,7 +118,7 @@ const CustomerBills = () => {
 
   const calculateUnpaidAmount = () => {
     return filteredBills
-      .filter((bill) => bill.status === "UNPAID")
+      .filter((bill) => bill.status === 'UNPAID')
       .reduce((sum, bill) => sum + bill.amount, 0);
   };
 
@@ -123,8 +126,8 @@ const CustomerBills = () => {
     <div className="customer-bills-container">
       <div className="bills-header">
         <div className="header-content">
-          <h1>{t("pages.customers.bills.title")}</h1>
-          <p className="subtitle">{t("pages.customers.bills.subtitle")}</p>
+          <h1>{t('pages.customers.bills.title')}</h1>
+          <p className="subtitle">{t('pages.customers.bills.subtitle')}</p>
         </div>
 
         <div className="summary-cards">
@@ -133,7 +136,7 @@ const CustomerBills = () => {
               <DollarSign size={24} />
             </div>
             <div className="card-content">
-              <div className="card-label">{t("pages.customers.bills.totalAmount")}</div>
+              <div className="card-label">{t('pages.customers.bills.totalAmount')}</div>
               <div className="card-value">{formatCurrency(calculateTotalAmount())}</div>
             </div>
           </motion.div>
@@ -156,7 +159,7 @@ const CustomerBills = () => {
           <Search size={18} className="search-icon" />
           <input
             type="text"
-            placeholder={t("pages.customers.bills.searchPlaceholder")}
+            placeholder={t('pages.customers.bills.searchPlaceholder')}
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             className="search-input"
@@ -165,22 +168,22 @@ const CustomerBills = () => {
 
         <div className="filter-buttons">
           <button
-            className={`filter-btn ${filterStatus === "ALL" ? "active" : ""}`}
-            onClick={() => setFilterStatus("ALL")}
+            className={`filter-btn ${filterStatus === 'ALL' ? 'active' : ''}`}
+            onClick={() => setFilterStatus('ALL')}
           >
-            {t("pages.customers.bills.filters.all")}
+            {t('pages.customers.bills.filters.all')}
           </button>
           <button
-            className={`filter-btn ${filterStatus === "UNPAID" ? "active" : ""}`}
-            onClick={() => setFilterStatus("UNPAID")}
+            className={`filter-btn ${filterStatus === 'UNPAID' ? 'active' : ''}`}
+            onClick={() => setFilterStatus('UNPAID')}
           >
-            {t("pages.customers.bills.filters.unpaid")}
+            {t('pages.customers.bills.filters.unpaid')}
           </button>
           <button
-            className={`filter-btn ${filterStatus === "PAID" ? "active" : ""}`}
-            onClick={() => setFilterStatus("PAID")}
+            className={`filter-btn ${filterStatus === 'PAID' ? 'active' : ''}`}
+            onClick={() => setFilterStatus('PAID')}
           >
-            {t("pages.customers.bills.filters.paid")}
+            {t('pages.customers.bills.filters.paid')}
           </button>
         </div>
       </div>
@@ -190,10 +193,10 @@ const CustomerBills = () => {
         <div className="loading-container">
           <motion.div
             animate={{ rotate: 360 }}
-            transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+            transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
             className="spinner"
           />
-          <p>{t("common.loading")}</p>
+          <p>{t('common.loading')}</p>
         </div>
       )}
 
@@ -208,13 +211,13 @@ const CustomerBills = () => {
           <table className="bills-table">
             <thead>
               <tr>
-                <th>{t("pages.customers.bills.table.billId")}</th>
-                <th>{t("pages.customers.bills.table.jobName")}</th>
-                <th>{t("pages.customers.bills.table.appointmentDate")}</th>
+                <th>{t('pages.customers.bills.table.billId')}</th>
+                <th>{t('pages.customers.bills.table.jobName')}</th>
+                <th>{t('pages.customers.bills.table.appointmentDate')}</th>
                 <th>Amount</th>
-                <th>{t("pages.customers.bills.table.status")}</th>
-                <th>{t("pages.customers.bills.table.createdDate")}</th>
-                <th>{t("pages.customers.bills.table.actions")}</th>
+                <th>{t('pages.customers.bills.table.status')}</th>
+                <th>{t('pages.customers.bills.table.createdDate')}</th>
+                <th>{t('pages.customers.bills.table.actions')}</th>
               </tr>
             </thead>
             <tbody>
@@ -225,7 +228,7 @@ const CustomerBills = () => {
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     exit={{ opacity: 0 }}
-                    whileHover={{ backgroundColor: "rgba(59, 130, 246, 0.05)" }}
+                    whileHover={{ backgroundColor: 'rgba(59, 130, 246, 0.05)' }}
                   >
                     <td className="bill-id">
                       <FileText size={16} className="icon" />
@@ -244,10 +247,10 @@ const CustomerBills = () => {
                       <button
                         onClick={() => handleDownloadPdf(bill.billId)}
                         className="bill-download-btn"
-                        title={t("pages.customers.bills.actions.downloadPdf")}
+                        title={t('pages.customers.bills.actions.downloadPdf')}
                       >
                         <Download size={16} />
-                        {t("common.download")}
+                        {t('common.download')}
                       </button>
                     </td>
                   </motion.tr>
@@ -266,11 +269,11 @@ const CustomerBills = () => {
           className="empty-state"
         >
           <FileText size={48} className="empty-icon" />
-          <h3>{t("pages.customers.bills.noResults")}</h3>
+          <h3>{t('pages.customers.bills.noResults')}</h3>
           <p>
             {bills.length === 0
               ? "You don't have any bills yet. Bills will appear here once your service reports are created."
-              : "No bills match your search filters."}
+              : 'No bills match your search filters.'}
           </p>
         </motion.div>
       )}
@@ -283,17 +286,22 @@ const CustomerBills = () => {
             onClick={() => setCurrentPage(currentPage - 1)}
             className="pagination-btn"
           >
-            {t("pages.customers.bills.pagination.previous")}
+            {t('pages.customers.bills.pagination.previous')}
           </button>
           <div className="pagination-info">
-            {t("pages.customers.bills.pagination.pageInfo", { current: currentPage, total: totalPages, showing: paginatedBills.length, filtered: filteredBills.length })}
+            {t('pages.customers.bills.pagination.pageInfo', {
+              current: currentPage,
+              total: totalPages,
+              showing: paginatedBills.length,
+              filtered: filteredBills.length,
+            })}
           </div>
           <button
             disabled={currentPage === totalPages}
             onClick={() => setCurrentPage(currentPage + 1)}
             className="pagination-btn"
           >
-            {t("pages.customers.bills.pagination.next")}
+            {t('pages.customers.bills.pagination.next')}
           </button>
         </div>
       )}

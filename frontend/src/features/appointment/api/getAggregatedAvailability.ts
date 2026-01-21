@@ -1,4 +1,4 @@
-import axiosInstance from "../../../shared/api/axiosInstance";
+import axiosInstance from '../../../shared/api/axiosInstance';
 
 export interface BookedSlot {
   startTime: string;
@@ -20,11 +20,10 @@ export async function getAggregatedAvailability(
   jobName: string,
   appointmentId?: string
 ): Promise<AggregatedAvailabilityResponse> {
-  const response = await axiosInstance.get(
-    `/appointments/availability/aggregated`,
-    { params: { date, jobName, appointmentId } }
-  );
-  
+  const response = await axiosInstance.get(`/appointments/availability/aggregated`, {
+    params: { date, jobName, appointmentId },
+  });
+
   // The response has bookedSlots array with startTime and endTime
   return response.data;
 }

@@ -1,12 +1,12 @@
-import React, { useState } from "react";
-import { updatePart } from "../api/updatePart";
-import { uploadPartImage } from "../api/uploadPartImage";
-import { deleteFile } from "../../files/api/deleteFile";
-import type { PartRequestModel } from "../models/PartRequestModel";
-import type { PartResponseModel } from "../models/PartResponseModel";
-import "./PartEditModal.css";
-import { X, Trash2 } from "lucide-react";
-import ConfirmationModal from "../../../components/ConfirmationModal";
+import React, { useState } from 'react';
+import { updatePart } from '../api/updatePart';
+import { uploadPartImage } from '../api/uploadPartImage';
+import { deleteFile } from '../../files/api/deleteFile';
+import type { PartRequestModel } from '../models/PartRequestModel';
+import type { PartResponseModel } from '../models/PartResponseModel';
+import './PartEditModal.css';
+import { X, Trash2 } from 'lucide-react';
+import ConfirmationModal from '../../../components/ConfirmationModal';
 
 interface PartEditModalProps {
   part: PartResponseModel | null;
@@ -23,27 +23,33 @@ export default function PartEditModal({
   onPartUpdated,
   onError,
 }: PartEditModalProps): React.ReactElement | null {
-  const [name, setName] = useState<string>(part?.name || "");
-  const [category, setCategory] = useState<string>(part?.category || "General");
+  const [name, setName] = useState<string>(part?.name || '');
+  const [category, setCategory] = useState<string>(part?.category || 'General');
   const [quantity, setQuantity] = useState<number>(part?.quantity || 0);
   const [price, setPrice] = useState<number>(part?.price || 0);
-  const [supplier, setSupplier] = useState<string>(part?.supplier || "");
+  const [supplier, setSupplier] = useState<string>(part?.supplier || '');
   const [lowStockThreshold, setLowStockThreshold] = useState<number>(part?.lowStockThreshold || 5);
-  const [outOfStockThreshold, setOutOfStockThreshold] = useState<number>(part?.outOfStockThreshold || 0);
-  const [highStockThreshold, setHighStockThreshold] = useState<number>(part?.highStockThreshold || 100);
+  const [outOfStockThreshold, setOutOfStockThreshold] = useState<number>(
+    part?.outOfStockThreshold || 0
+  );
+  const [highStockThreshold, setHighStockThreshold] = useState<number>(
+    part?.highStockThreshold || 100
+  );
   const [available, setAvailable] = useState<boolean>(part?.available ?? true);
   const [file, setFile] = useState<File | null>(null);
   const [submitting, setSubmitting] = useState<boolean>(false);
   const [imageDeleteLoading, setImageDeleteLoading] = useState<boolean>(false);
   const [showDeleteConfirmation, setShowDeleteConfirmation] = useState<boolean>(false);
-  const [currentImageFileId, setCurrentImageFileId] = useState<string | null | undefined>(part?.imageFileId);
+  const [currentImageFileId, setCurrentImageFileId] = useState<string | null | undefined>(
+    part?.imageFileId
+  );
 
   const MAX_FILE_SIZE_MB = 10;
   const MAX_FILE_SIZE_BYTES = MAX_FILE_SIZE_MB * 1024 * 1024;
 
   const validateFile = (selectedFile: File): boolean => {
-    if (!selectedFile.type.startsWith("image/")) {
-      onError("Only image files are allowed.");
+    if (!selectedFile.type.startsWith('image/')) {
+      onError('Only image files are allowed.');
       return false;
     }
     if (selectedFile.size > MAX_FILE_SIZE_BYTES) {
@@ -57,7 +63,7 @@ export default function PartEditModal({
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const selectedFile = e.target.files?.[0] ?? null;
     if (selectedFile && !validateFile(selectedFile)) {
-      e.target.value = ""; // Reset input
+      e.target.value = ''; // Reset input
       return;
     }
     setFile(selectedFile);
@@ -66,10 +72,10 @@ export default function PartEditModal({
   React.useEffect(() => {
     if (part) {
       setName(part.name);
-      setCategory(part.category || "General");
+      setCategory(part.category || 'General');
       setQuantity(part.quantity || 0);
       setPrice(part.price || 0);
-      setSupplier(part.supplier || "");
+      setSupplier(part.supplier || '');
       setLowStockThreshold(part.lowStockThreshold || 5);
       setOutOfStockThreshold(part.outOfStockThreshold || 0);
       setHighStockThreshold(part.highStockThreshold || 100);
@@ -87,7 +93,7 @@ export default function PartEditModal({
     e.preventDefault();
 
     if (!name.trim()) {
-      onError("Part name is required");
+      onError('Part name is required');
       return;
     }
 
@@ -114,8 +120,8 @@ export default function PartEditModal({
       onPartUpdated();
       onClose();
     } catch (error) {
-      console.error("Error updating part:", error);
-      onError("Failed to update part. Please try again.");
+      console.error('Error updating part:', error);
+      onError('Failed to update part. Please try again.');
     } finally {
       setSubmitting(false);
     }
@@ -123,7 +129,7 @@ export default function PartEditModal({
 
   const handleDeleteImage = () => {
     if (!part.imageFileId) {
-      onError("No image to delete");
+      onError('No image to delete');
       return;
     }
 
@@ -143,8 +149,8 @@ export default function PartEditModal({
       // Update the part by calling the callback to refresh the list
       onPartUpdated();
     } catch (error) {
-      console.error("Error deleting image:", error);
-      onError("Failed to delete image. Please try again.");
+      console.error('Error deleting image:', error);
+      onError('Failed to delete image. Please try again.');
     } finally {
       setImageDeleteLoading(false);
       setShowDeleteConfirmation(false);
@@ -338,7 +344,9 @@ export default function PartEditModal({
                 disabled={submitting || imageDeleteLoading}
                 onChange={handleFileChange}
               />
-              <p className="helper-text">Maximum file size: {MAX_FILE_SIZE_MB} MB. Only image files allowed.</p>
+              <p className="helper-text">
+                Maximum file size: {MAX_FILE_SIZE_MB} MB. Only image files allowed.
+              </p>
               {currentImageFileId && (
                 <div>
                   <div className="image-preview-container">
@@ -346,12 +354,12 @@ export default function PartEditModal({
                       src={`${import.meta.env.VITE_BACKEND_URL}/files/${currentImageFileId}/download`}
                       alt="Current part image"
                       style={{
-                        maxWidth: "150px",
-                        maxHeight: "120px",
-                        borderRadius: "6px",
+                        maxWidth: '150px',
+                        maxHeight: '120px',
+                        borderRadius: '6px',
                       }}
                       onError={(e) => {
-                        e.currentTarget.style.display = "none";
+                        e.currentTarget.style.display = 'none';
                       }}
                     />
                   </div>
@@ -381,7 +389,7 @@ export default function PartEditModal({
               Cancel
             </button>
             <button type="submit" className="btn-submit" disabled={submitting}>
-              {submitting ? "Updating..." : "Update Part"}
+              {submitting ? 'Updating...' : 'Update Part'}
             </button>
           </div>
         </form>

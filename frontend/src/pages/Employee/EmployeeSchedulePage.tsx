@@ -1,13 +1,16 @@
-import React, { useEffect, useState } from "react";
-import "./EmployeeSchedulePage.css";
-import AddScheduleModal from "../../features/employee/components/AddScheduleModal";
-import { getEmployeeSchedule } from "../../features/employee/api/getEmployeeSchedule";
+import React, { useEffect, useState } from 'react';
+import './EmployeeSchedulePage.css';
+import AddScheduleModal from '../../features/employee/components/AddScheduleModal';
+import { getEmployeeSchedule } from '../../features/employee/api/getEmployeeSchedule';
 
 type ScheduleSummary = { hasSchedule: boolean; isTechnician: boolean };
 
 export default function EmployeeSchedulePage(): React.ReactElement {
   // Replace with real route/context employee id - for now using placeholder
-  const idFromContext = typeof window !== 'undefined' ? (window as Window & { __employeeId?: string }).__employeeId : undefined;
+  const idFromContext =
+    typeof window !== 'undefined'
+      ? (window as Window & { __employeeId?: string }).__employeeId
+      : undefined;
   const [employeeId] = useState<string | null>(idFromContext || null);
   const [summary, setSummary] = useState<ScheduleSummary | null>(null);
   const [modalOpen, setModalOpen] = useState(false);
@@ -51,7 +54,9 @@ export default function EmployeeSchedulePage(): React.ReactElement {
         ) : (
           <div className="schedule-placeholder">
             <p>No schedule found for this employee.</p>
-            <button className="primary" onClick={() => setModalOpen(true)}>Add Schedule</button>
+            <button className="primary" onClick={() => setModalOpen(true)}>
+              Add Schedule
+            </button>
           </div>
         )}
       </div>

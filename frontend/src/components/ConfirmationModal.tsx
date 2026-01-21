@@ -31,11 +31,7 @@ export default function ConfirmationModal({
       <div className="confirmation-modal-container">
         <div className="confirmation-modal-header">
           <h3 className="confirmation-modal-title">{title}</h3>
-          <button
-            className="confirmation-modal-close"
-            onClick={onCancel}
-            disabled={isLoading}
-          >
+          <button className="confirmation-modal-close" onClick={onCancel} disabled={isLoading}>
             ✕
           </button>
         </div>
@@ -45,11 +41,7 @@ export default function ConfirmationModal({
         </div>
 
         <div className="confirmation-modal-footer">
-          <button
-            className="confirmation-btn-cancel"
-            onClick={onCancel}
-            disabled={isLoading}
-          >
+          <button className="confirmation-btn-cancel" onClick={onCancel} disabled={isLoading}>
             {cancelText}
           </button>
           <button

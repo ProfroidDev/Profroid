@@ -16,7 +16,15 @@ interface EmployeeAddModalProps {
   onSuccess?: () => void;
 }
 
-const provinces = ['Ontario', 'Quebec', 'British Columbia', 'Alberta', 'Manitoba', 'Saskatchewan', 'Nova Scotia'];
+const provinces = [
+  'Ontario',
+  'Quebec',
+  'British Columbia',
+  'Alberta',
+  'Manitoba',
+  'Saskatchewan',
+  'Nova Scotia',
+];
 const roles: EmployeeRoleType[] = ['ADMIN', 'TECHNICIAN', 'SUPPORT', 'SALES'];
 const phoneTypes = ['MOBILE', 'HOME', 'WORK'];
 
@@ -42,14 +50,14 @@ export default function EmployeeAddModal({ isOpen, onClose, onSuccess }: Employe
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
 
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
       [name]: value,
     }));
 
     // Clear error for this field
     if (errors[name]) {
-      setErrors(prev => {
+      setErrors((prev) => {
         const newErrors = { ...prev };
         delete newErrors[name];
         return newErrors;
@@ -61,7 +69,7 @@ export default function EmployeeAddModal({ isOpen, onClose, onSuccess }: Employe
       const errorKey = getPostalCodeError(value, formData.city, formData.province);
       if (errorKey) {
         const translatedError = t(errorKey, { city: formData.city, province: formData.province });
-        setErrors(prev => ({ ...prev, postalCode: translatedError }));
+        setErrors((prev) => ({ ...prev, postalCode: translatedError }));
       }
     }
   };
@@ -69,18 +77,18 @@ export default function EmployeeAddModal({ isOpen, onClose, onSuccess }: Employe
   const handlePhoneChange = (index: number, field: string, value: string) => {
     const newPhones = [...formData.phoneNumbers];
     newPhones[index] = { ...newPhones[index], [field]: value };
-    setFormData(prev => ({ ...prev, phoneNumbers: newPhones }));
+    setFormData((prev) => ({ ...prev, phoneNumbers: newPhones }));
   };
 
   const addPhoneField = () => {
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
       phoneNumbers: [...prev.phoneNumbers, { number: '', type: 'MOBILE' }],
     }));
   };
 
   const removePhoneField = (index: number) => {
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
       phoneNumbers: prev.phoneNumbers.filter((_, i) => i !== index),
     }));
@@ -96,13 +104,20 @@ export default function EmployeeAddModal({ isOpen, onClose, onSuccess }: Employe
     if (!formData.city.trim()) newErrors.city = 'City is required';
     if (!formData.postalCode.trim()) newErrors.postalCode = 'Postal code is required';
     else {
-      const postalErrorKey = getPostalCodeError(formData.postalCode, formData.city, formData.province);
+      const postalErrorKey = getPostalCodeError(
+        formData.postalCode,
+        formData.city,
+        formData.province
+      );
       if (postalErrorKey) {
-        newErrors.postalCode = t(postalErrorKey, { city: formData.city, province: formData.province });
+        newErrors.postalCode = t(postalErrorKey, {
+          city: formData.city,
+          province: formData.province,
+        });
       }
     }
 
-    if (formData.phoneNumbers.some(p => !p.number.trim())) {
+    if (formData.phoneNumbers.some((p) => !p.number.trim())) {
       newErrors.phoneNumbers = 'All phone numbers must be filled';
     }
 
@@ -127,7 +142,7 @@ export default function EmployeeAddModal({ isOpen, onClose, onSuccess }: Employe
         postalCode: formData.postalCode,
       };
 
-      const phoneNumbers: EmployeePhoneNumber[] = formData.phoneNumbers.map(p => ({
+      const phoneNumbers: EmployeePhoneNumber[] = formData.phoneNumbers.map((p) => ({
         number: p.number,
         type: p.type as EmployeePhoneType,
       }));
@@ -217,13 +232,8 @@ export default function EmployeeAddModal({ isOpen, onClose, onSuccess }: Employe
 
             <div className="form-group">
               <label htmlFor="role">Role *</label>
-              <select
-                id="role"
-                name="role"
-                value={formData.role}
-                onChange={handleInputChange}
-              >
-                {roles.map(role => (
+              <select id="role" name="role" value={formData.role} onChange={handleInputChange}>
+                {roles.map((role) => (
                   <option key={role} value={role}>
                     {role}
                   </option>
@@ -258,7 +268,7 @@ export default function EmployeeAddModal({ isOpen, onClose, onSuccess }: Employe
                   value={formData.province}
                   onChange={handleInputChange}
                 >
-                  {provinces.map(province => (
+                  {provinces.map((province) => (
                     <option key={province} value={province}>
                       {province}
                     </option>
@@ -333,7 +343,7 @@ export default function EmployeeAddModal({ isOpen, onClose, onSuccess }: Employe
                       value={phone.type}
                       onChange={(e) => handlePhoneChange(index, 'type', e.target.value)}
                     >
-                      {phoneTypes.map(type => (
+                      {phoneTypes.map((type) => (
                         <option key={type} value={type}>
                           {type}
                         </option>
@@ -355,29 +365,17 @@ export default function EmployeeAddModal({ isOpen, onClose, onSuccess }: Employe
             ))}
             {errors.phoneNumbers && <span className="field-error">{errors.phoneNumbers}</span>}
 
-            <button
-              type="button"
-              className="btn-add-phone"
-              onClick={addPhoneField}
-            >
+            <button type="button" className="btn-add-phone" onClick={addPhoneField}>
               + Add Another Phone
             </button>
           </div>
 
           {/* Buttons */}
           <div className="form-actions">
-            <button
-              type="submit"
-              disabled={loading}
-              className="btn-submit"
-            >
+            <button type="submit" disabled={loading} className="btn-submit">
               {loading ? 'Adding...' : 'Add Employee'}
             </button>
-            <button
-              type="button"
-              onClick={onClose}
-              className="btn-cancel"
-            >
+            <button type="button" onClick={onClose} className="btn-cancel">
               Cancel
             </button>
           </div>

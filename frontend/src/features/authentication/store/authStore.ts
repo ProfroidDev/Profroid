@@ -12,8 +12,8 @@ export interface AuthUser {
 }
 
 export interface CustomerData {
-  customerId?: string;       // For customers - their customer ID
-  employeeId?: string;       // For employees - their employee ID
+  customerId?: string; // For customers - their customer ID
+  employeeId?: string; // For employees - their employee ID
   firstName?: string;
   lastName?: string;
   streetAddress?: string;
@@ -71,7 +71,7 @@ const useAuthStore = create<AuthStore>((set, get) => ({
           isAuthenticated: true,
           user: response.user as AuthUser,
         });
-        
+
         // Then fetch full user details to get employeeType and other fields
         try {
           const userResponse = await authClient.getUser();
@@ -166,20 +166,17 @@ const useAuthStore = create<AuthStore>((set, get) => ({
           : `/customers/by-user/${user.id}`;
 
         try {
-          const dataResponse = await fetch(
-            `${import.meta.env.VITE_BACKEND_URL}${endpoint}`,
-            {
-              method: 'GET',
-              headers: {
-                'Authorization': `Bearer ${token}`,
-                'Content-Type': 'application/json',
-              },
-            }
-          );
+          const dataResponse = await fetch(`${import.meta.env.VITE_BACKEND_URL}${endpoint}`, {
+            method: 'GET',
+            headers: {
+              Authorization: `Bearer ${token}`,
+              'Content-Type': 'application/json',
+            },
+          });
 
           if (dataResponse.ok) {
             const rawData = await dataResponse.json();
-            
+
             // Map the response to CustomerData, extracting customerId or employeeId
             const customerData: CustomerData = {
               customerId: rawData.customerId,
@@ -193,7 +190,7 @@ const useAuthStore = create<AuthStore>((set, get) => ({
               postalCode: rawData.postalCode || rawData.employeeAddress?.postalCode,
               phoneNumbers: rawData.phoneNumbers,
             };
-            
+
             set({
               isLoading: false,
               customerData,
@@ -240,7 +237,7 @@ const useAuthStore = create<AuthStore>((set, get) => ({
           user: response.user as AuthUser,
           isAuthenticated: true,
         });
-        
+
         // Fetch customer data after user is fetched
         const state = get();
         if (state.user?.id) {
@@ -269,31 +266,28 @@ const useAuthStore = create<AuthStore>((set, get) => ({
   fetchCustomerData: async (userIdOverride?: string) => {
     const state = get();
     const userId = userIdOverride || state.user?.id;
-    
+
     if (!userId) return;
 
     try {
       const token = localStorage.getItem('authToken');
-      
+
       // If employee, fetch employee data; otherwise fetch customer data
       const endpoint = state.user?.employeeType
         ? `/employees/by-user/${userId}`
         : `/customers/by-user/${userId}`;
 
-      const response = await fetch(
-        `${import.meta.env.VITE_BACKEND_URL}${endpoint}`,
-        {
-          method: 'GET',
-          headers: {
-            'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json',
-          },
-        }
-      );
+      const response = await fetch(`${import.meta.env.VITE_BACKEND_URL}${endpoint}`, {
+        method: 'GET',
+        headers: {
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+      });
 
       if (response.ok) {
         const rawData = await response.json();
-        
+
         // Map the response to CustomerData, extracting customerId or employeeId
         const customerData: CustomerData = {
           customerId: rawData.customerId,
@@ -307,7 +301,7 @@ const useAuthStore = create<AuthStore>((set, get) => ({
           postalCode: rawData.postalCode || rawData.employeeAddress?.postalCode,
           phoneNumbers: rawData.phoneNumbers,
         };
-        
+
         set({ customerData });
       }
     } catch {
@@ -357,7 +351,8 @@ const useAuthStore = create<AuthStore>((set, get) => ({
       } else {
         set({
           isLoading: false,
-          error: (response as Record<string, unknown>).error as string || 'Failed to change password',
+          error:
+            ((response as Record<string, unknown>).error as string) || 'Failed to change password',
         });
         return false;
       }

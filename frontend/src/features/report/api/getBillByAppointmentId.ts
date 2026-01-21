@@ -1,4 +1,4 @@
-import axiosInstance from "../../../shared/api/axiosInstance";
+import axiosInstance from '../../../shared/api/axiosInstance';
 import type { BillResponseModel } from '../models/BillResponseModel';
 
 /**
@@ -6,6 +6,8 @@ import type { BillResponseModel } from '../models/BillResponseModel';
  * Customers can only view their own bills, admins can view all
  */
 export async function getBillByAppointmentId(appointmentId: string): Promise<BillResponseModel> {
-  const response = await axiosInstance.get<BillResponseModel>(`/bills/appointment/${appointmentId}`);
+  const response = await axiosInstance.get<BillResponseModel>(
+    `/bills/appointment/${appointmentId}`
+  );
   return response.data;
 }

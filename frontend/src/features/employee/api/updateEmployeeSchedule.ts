@@ -11,9 +11,6 @@ export async function updateEmployeeSchedule(
   request: UpdateEmployeeScheduleRequest
 ): Promise<EmployeeSchedule[]> {
   const { employeeId, scheduleRequests } = request;
-  const response = await axiosInstance.put(
-    `/employees/${employeeId}/schedules`,
-    scheduleRequests
-  );
+  const response = await axiosInstance.put(`/employees/${employeeId}/schedules`, scheduleRequests);
   return response.data;
 }

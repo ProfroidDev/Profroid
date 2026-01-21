@@ -33,7 +33,10 @@
   font-size: 1rem;
   font-weight: 700;
   box-shadow: 0 6px 16px rgba(122, 9, 1, 0.18);
-  transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease,
+    background 0.2s ease;
 }
 
 .btn-primary:hover {
@@ -45,7 +48,7 @@
 .appointments-title-light {
   font-size: 2.6rem;
   font-weight: 700;
-  font-family: "Georgia", serif;
+  font-family: 'Georgia', serif;
   color: #7a0901;
   margin-bottom: 10px;
   letter-spacing: 1px;
@@ -86,14 +89,17 @@
   cursor: pointer;
   font-size: 0.9rem;
   font-weight: 600;
-  transition: background 0.2s, box-shadow 0.2s, transform 0.2s;
-  box-shadow: 0 2px 8px rgba(122,9,1,0.08);
+  transition:
+    background 0.2s,
+    box-shadow 0.2s,
+    transform 0.2s;
+  box-shadow: 0 2px 8px rgba(122, 9, 1, 0.08);
 }
 
 .btn-toggle-id:hover {
   background: linear-gradient(90deg, #a32c1a 60%, #7a0901 100%);
   transform: translateY(-2px) scale(1.04);
-  box-shadow: 0 4px 16px rgba(122,9,1,0.12);
+  box-shadow: 0 4px 16px rgba(122, 9, 1, 0.12);
 }
 
 .id-input-container {
@@ -157,8 +163,12 @@
 }
 
 @keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
 }
 
 .empty-state {
@@ -228,7 +238,9 @@
   border-radius: 16px;
   padding: 24px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease;
   position: relative;
   display: flex;
   flex-direction: column;
@@ -287,7 +299,7 @@
   font-weight: 700;
   color: #5a2a27;
   margin: 0;
-  font-family: "Georgia", serif;
+  font-family: 'Georgia', serif;
 }
 
 .appointment-job-type {
@@ -361,15 +373,18 @@
   cursor: pointer;
   font-size: 1rem;
   font-weight: 600;
-  transition: background 0.2s, box-shadow 0.2s, transform 0.2s;
-  box-shadow: 0 2px 8px rgba(122,9,1,0.08);
+  transition:
+    background 0.2s,
+    box-shadow 0.2s,
+    transform 0.2s;
+  box-shadow: 0 2px 8px rgba(122, 9, 1, 0.08);
   margin-top: 8px;
 }
 
 .btn-view-details:hover {
   background: linear-gradient(90deg, #a32c1a 60%, #7a0901 100%);
   transform: translateY(-2px) scale(1.04);
-  box-shadow: 0 4px 16px rgba(122,9,1,0.12);
+  box-shadow: 0 4px 16px rgba(122, 9, 1, 0.12);
 }
 
 /* ===============================
@@ -379,7 +394,7 @@
 .modal-overlay-light {
   position: fixed;
   inset: 0;
-  background: rgba(0,0,0,0.18);
+  background: rgba(0, 0, 0, 0.18);
   display: flex;
   justify-content: center;
   align-items: center;
@@ -395,7 +410,7 @@
   border-radius: 22px;
   border: 1px solid #e4e2df;
   padding: 28px;
-  box-shadow: 0 18px 38px rgba(0,0,0,0.13);
+  box-shadow: 0 18px 38px rgba(0, 0, 0, 0.13);
   max-height: 90vh;
   overflow-y: auto;
 }
@@ -414,7 +429,7 @@
   font-weight: 700;
   color: #7a0901;
   margin: 0;
-  font-family: "Georgia", serif;
+  font-family: 'Georgia', serif;
 }
 
 .modal-close-light {
@@ -454,7 +469,7 @@
   font-weight: 700;
   color: #7a0901;
   margin-bottom: 10px;
-  font-family: "Georgia", serif;
+  font-family: 'Georgia', serif;
 }
 
 .detail-section p {
@@ -501,7 +516,10 @@
   cursor: pointer;
   font-size: 0.9rem;
   font-weight: 600;
-  transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease,
+    background 0.2s ease;
 }
 
 .btn-edit {
@@ -551,13 +569,16 @@
   background: #fff;
   color: #7a0901;
   cursor: pointer;
-  box-shadow: 0 2px 6px rgba(0,0,0,0.06);
-  transition: transform 0.15s ease, box-shadow 0.15s ease, background 0.15s ease;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.06);
+  transition:
+    transform 0.15s ease,
+    box-shadow 0.15s ease,
+    background 0.15s ease;
 }
 
 .pagination-button:hover:not(:disabled) {
   transform: translateY(-2px);
-  box-shadow: 0 4px 10px rgba(0,0,0,0.12);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.12);
   background: #faf9f7;
 }
 
@@ -614,7 +635,7 @@
   border: 1px solid #e9e6e2;
   border-radius: 16px;
   padding: 14px 16px;
-  box-shadow: 0 8px 24px rgba(0,0,0,0.06);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.06);
   min-width: 280px;
 }
 
@@ -634,7 +655,6 @@
   margin-top: 16px; /* further lower chips under header */
 }
 
-
 .chip {
   border: 1px solid #a32c1a;
   border-radius: 999px;
@@ -643,13 +663,17 @@
   color: #7a0901;
   cursor: pointer;
   font-weight: 600;
-  box-shadow: 0 2px 8px rgba(122,9,1,0.08);
-  transition: transform 0.15s ease, box-shadow 0.15s ease, background 0.15s ease, color 0.15s ease;
+  box-shadow: 0 2px 8px rgba(122, 9, 1, 0.08);
+  transition:
+    transform 0.15s ease,
+    box-shadow 0.15s ease,
+    background 0.15s ease,
+    color 0.15s ease;
 }
 
-.chip:hover { 
+.chip:hover {
   transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(122,9,1,0.12);
+  box-shadow: 0 4px 12px rgba(122, 9, 1, 0.12);
   background: #fff7f6;
 }
 
@@ -695,12 +719,15 @@
   border-radius: 12px;
   cursor: pointer;
   font-weight: 700;
-  box-shadow: 0 4px 10px rgba(0,0,0,0.06);
-  transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.06);
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease,
+    background 0.2s ease;
 }
 
 .btn-secondary:hover {
   transform: translateY(-2px);
-  box-shadow: 0 8px 16px rgba(0,0,0,0.08);
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.08);
   background: #faf9f7;
 }

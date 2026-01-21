@@ -1,14 +1,14 @@
-import React, { useEffect, useState } from "react";
-import { useTranslation } from "react-i18next";
-import { getAllParts } from "../../features/parts/api/getAllParts";
-import { deletePart } from "../../features/parts/api/deletePart";
-import type { PartResponseModel } from "../../features/parts/models/PartResponseModel";
-import PartDetailModal from "../../features/parts/components/PartDetailModal";
-import PartAddModal from "../../features/parts/components/PartAddModal";
-import PartEditModal from "../../features/parts/components/PartEditModal";
-import ConfirmationModal from "../../components/ConfirmationModal";
-import Toast from "../../shared/components/Toast";
-import "./PartsPage.css";
+import React, { useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
+import { getAllParts } from '../../features/parts/api/getAllParts';
+import { deletePart } from '../../features/parts/api/deletePart';
+import type { PartResponseModel } from '../../features/parts/models/PartResponseModel';
+import PartDetailModal from '../../features/parts/components/PartDetailModal';
+import PartAddModal from '../../features/parts/components/PartAddModal';
+import PartEditModal from '../../features/parts/components/PartEditModal';
+import ConfirmationModal from '../../components/ConfirmationModal';
+import Toast from '../../shared/components/Toast';
+import './PartsPage.css';
 
 const ITEMS_PER_PAGE = 12;
 
@@ -17,7 +17,7 @@ export default function PartsPage(): React.ReactElement {
   const [parts, setParts] = useState<PartResponseModel[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
   const [currentPage, setCurrentPage] = useState<number>(1);
-  const [searchTerm, setSearchTerm] = useState<string>("");
+  const [searchTerm, setSearchTerm] = useState<string>('');
   const [selectedPart, setSelectedPart] = useState<PartResponseModel | null>(null);
   const [detailModalOpen, setDetailModalOpen] = useState<boolean>(false);
   const [editModalOpen, setEditModalOpen] = useState<boolean>(false);
@@ -26,18 +26,21 @@ export default function PartsPage(): React.ReactElement {
   const [deleteTarget, setDeleteTarget] = useState<PartResponseModel | null>(null);
   const [deleteLoading, setDeleteLoading] = useState<boolean>(false);
   const [deleteError, setDeleteError] = useState<string | null>(null);
-  const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' | 'info' } | null>(null);
+  const [toast, setToast] = useState<{
+    message: string;
+    type: 'success' | 'error' | 'info';
+  } | null>(null);
 
   useEffect(() => {
     async function load() {
       setLoading(true);
       try {
         const data = await getAllParts();
-        console.log("Parts fetched:", data);
+        console.log('Parts fetched:', data);
         setParts(data);
       } catch (error) {
-        console.error("Error fetching parts:", error);
-        setToast({ message: t("messages.failedToLoadParts"), type: "error" });
+        console.error('Error fetching parts:', error);
+        setToast({ message: t('messages.failedToLoadParts'), type: 'error' });
       } finally {
         setLoading(false);
       }
@@ -47,9 +50,10 @@ export default function PartsPage(): React.ReactElement {
     setCurrentPage(1);
   }, [t]);
 
-  const filteredParts = parts.filter((part) =>
-    part.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    part.partId.toLowerCase().includes(searchTerm.toLowerCase())
+  const filteredParts = parts.filter(
+    (part) =>
+      part.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      part.partId.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   const resolveImage = (part: PartResponseModel) =>
@@ -107,19 +111,19 @@ export default function PartsPage(): React.ReactElement {
   };
 
   const handlePartAdded = async () => {
-    setToast({ message: t("messages.partAddedSuccessfully"), type: "success" });
+    setToast({ message: t('messages.partAddedSuccessfully'), type: 'success' });
     // Reload parts
     try {
       const data = await getAllParts();
       setParts(data);
       setCurrentPage(1);
     } catch (error) {
-      console.error("Error reloading parts:", error);
+      console.error('Error reloading parts:', error);
     }
   };
 
   const handleAddError = (message: string) => {
-    setToast({ message, type: "error" });
+    setToast({ message, type: 'error' });
   };
 
   const handleOpenEditModal = (part: PartResponseModel) => {
@@ -133,19 +137,19 @@ export default function PartsPage(): React.ReactElement {
   };
 
   const handlePartUpdated = async () => {
-    setToast({ message: t("messages.partUpdatedSuccessfully"), type: "success" });
+    setToast({ message: t('messages.partUpdatedSuccessfully'), type: 'success' });
     // Reload parts
     try {
       const data = await getAllParts();
       setParts(data);
       setCurrentPage(1);
     } catch (error) {
-      console.error("Error reloading parts:", error);
+      console.error('Error reloading parts:', error);
     }
   };
 
   const handleEditError = (message: string) => {
-    setToast({ message, type: "error" });
+    setToast({ message, type: 'error' });
   };
 
   const handleOpenDeleteConfirm = (part: PartResponseModel) => {
@@ -169,11 +173,11 @@ export default function PartsPage(): React.ReactElement {
     try {
       await deletePart(deleteTarget.partId);
       setParts((prev) => prev.filter((p) => p.partId !== deleteTarget.partId));
-      setToast({ message: t("messages.partDeletedSuccessfully"), type: "success" });
+      setToast({ message: t('messages.partDeletedSuccessfully'), type: 'success' });
       handleCloseDeleteConfirm();
     } catch (error) {
-      console.error("Error deleting part:", error);
-      setDeleteError(t("messages.failedToDeletePart"));
+      console.error('Error deleting part:', error);
+      setDeleteError(t('messages.failedToDeletePart'));
     } finally {
       setDeleteLoading(false);
     }
@@ -203,35 +207,40 @@ export default function PartsPage(): React.ReactElement {
       ) : parts.length === 0 ? (
         <div className="parts-empty">{t('pages.parts.noParts')}</div>
       ) : filteredParts.length === 0 ? (
-        <div className="parts-empty">{t("pages.parts.partsPage.noPartsMatch")}</div>
+        <div className="parts-empty">{t('pages.parts.partsPage.noPartsMatch')}</div>
       ) : (
         <>
           <div className="parts-grid">
             {currentParts.map((part) => (
-            <div key={part.partId} className="part-card-light">
-              <div className="part-image-container">
-                <img
-                  src={resolveImage(part)}
-                  alt={part.name}
-                  className="part-image"
-                />
-              </div>
-              <div className="part-card-content">
-                <h2 className="part-card-title">{part.name}</h2>
-                <div className="part-card-details">
-                  <p className="part-id">
-                    <span className="part-label">{t("pages.parts.partsPage.partId")}</span>
-                    <span className="part-value">{part.partId}</span>
-                  </p>
+              <div key={part.partId} className="part-card-light">
+                <div className="part-image-container">
+                  <img src={resolveImage(part)} alt={part.name} className="part-image" />
                 </div>
-                <div className="part-card-buttons">
-                  <button className="btn-view-part" onClick={() => handleViewDetails(part)}>{t("pages.parts.partsPage.viewDetails")}</button>
-                  <button className="btn-edit-part" onClick={() => handleOpenEditModal(part)}>{t("pages.parts.partsPage.edit")}</button>
-                  <button className="btn-delete-part" onClick={() => handleOpenDeleteConfirm(part)}>{t("pages.parts.partsPage.delete")}</button>
+                <div className="part-card-content">
+                  <h2 className="part-card-title">{part.name}</h2>
+                  <div className="part-card-details">
+                    <p className="part-id">
+                      <span className="part-label">{t('pages.parts.partsPage.partId')}</span>
+                      <span className="part-value">{part.partId}</span>
+                    </p>
+                  </div>
+                  <div className="part-card-buttons">
+                    <button className="btn-view-part" onClick={() => handleViewDetails(part)}>
+                      {t('pages.parts.partsPage.viewDetails')}
+                    </button>
+                    <button className="btn-edit-part" onClick={() => handleOpenEditModal(part)}>
+                      {t('pages.parts.partsPage.edit')}
+                    </button>
+                    <button
+                      className="btn-delete-part"
+                      onClick={() => handleOpenDeleteConfirm(part)}
+                    >
+                      {t('pages.parts.partsPage.delete')}
+                    </button>
+                  </div>
                 </div>
               </div>
-            </div>
-          ))}
+            ))}
           </div>
 
           <div className="parts-pagination">
@@ -244,7 +253,10 @@ export default function PartsPage(): React.ReactElement {
             </button>
 
             <div className="pagination-pages">
-              {Array.from({ length: endPage - displayStartPage + 1 }, (_, i) => displayStartPage + i).map((page) => (
+              {Array.from(
+                { length: endPage - displayStartPage + 1 },
+                (_, i) => displayStartPage + i
+              ).map((page) => (
                 <button
                   key={page}
                   className={`pagination-page ${currentPage === page ? 'active' : ''}`}
@@ -264,26 +276,18 @@ export default function PartsPage(): React.ReactElement {
             </button>
           </div>
           <div className="pagination-info">
-            Page {currentPage} of {totalPages} • Showing {currentParts.length} of {parts.length} parts
+            Page {currentPage} of {totalPages} • Showing {currentParts.length} of {parts.length}{' '}
+            parts
           </div>
         </>
       )}
 
-      {toast && (
-        <Toast
-          message={toast.message}
-          type={toast.type}
-          onClose={() => setToast(null)}
-        />
-      )}
+      {toast && <Toast message={toast.message} type={toast.type} onClose={() => setToast(null)} />}
 
       <ConfirmationModal
         isOpen={deleteModalOpen}
         title={t('pages.parts.deletePart')}
-        message={
-          deleteError ??
-          `${t('messages.confirmDelete')}`
-        }
+        message={deleteError ?? `${t('messages.confirmDelete')}`}
         confirmText={t('common.delete')}
         cancelText={t('common.cancel')}
         isDanger
@@ -292,11 +296,7 @@ export default function PartsPage(): React.ReactElement {
         onCancel={handleCloseDeleteConfirm}
       />
 
-      <PartDetailModal
-        part={selectedPart}
-        isOpen={detailModalOpen}
-        onClose={handleCloseModal}
-      />
+      <PartDetailModal part={selectedPart} isOpen={detailModalOpen} onClose={handleCloseModal} />
 
       <PartEditModal
         part={selectedPart}

@@ -1,7 +1,6 @@
-import axiosInstance from "../../../shared/api/axiosInstance";
-import type { AppointmentRequestModel } from "../models/AppointmentRequestModel";
-import type { AppointmentResponseModel } from "../models/AppointmentResponseModel";
-
+import axiosInstance from '../../../shared/api/axiosInstance';
+import type { AppointmentRequestModel } from '../models/AppointmentRequestModel';
+import type { AppointmentResponseModel } from '../models/AppointmentResponseModel';
 
 export async function updateAppointment(
   appointmentId: string,

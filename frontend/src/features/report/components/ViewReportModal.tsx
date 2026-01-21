@@ -1,7 +1,7 @@
-import React from "react";
-import { X, User, Briefcase, Calendar, Clock, DollarSign, Package } from "lucide-react";
-import type { ReportResponseModel } from "../models/ReportResponseModel";
-import "./ViewReportModal.css";
+import React from 'react';
+import { X, User, Briefcase, Calendar, Clock, DollarSign, Package } from 'lucide-react';
+import type { ReportResponseModel } from '../models/ReportResponseModel';
+import './ViewReportModal.css';
 
 interface ViewReportModalProps {
   isOpen: boolean;
@@ -51,7 +51,9 @@ export default function ViewReportModal({
                 <User size={18} />
                 <div>
                   <span className="info-label">Customer</span>
-                  <span className="info-value">{report.customerFirstName} {report.customerLastName}</span>
+                  <span className="info-value">
+                    {report.customerFirstName} {report.customerLastName}
+                  </span>
                 </div>
               </div>
               <div className="info-item">
@@ -129,7 +131,9 @@ export default function ViewReportModal({
                     </div>
                     <div className="part-details">
                       <span className="part-quantity">Quantity: {part.quantity}</span>
-                      <span className="part-total">Total: {formatCurrency(part.price * part.quantity)}</span>
+                      <span className="part-total">
+                        Total: {formatCurrency(part.price * part.quantity)}
+                      </span>
                     </div>
                     {part.notes && (
                       <div className="part-notes">

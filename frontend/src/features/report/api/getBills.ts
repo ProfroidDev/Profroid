@@ -1,4 +1,4 @@
-import axiosInstance from "../../../shared/api/axiosInstance";
+import axiosInstance from '../../../shared/api/axiosInstance';
 import type { BillResponseModel } from '../models/BillResponseModel';
 
 /**
@@ -24,7 +24,9 @@ export async function getBillByReportId(reportId: number): Promise<BillResponseM
  * Customers can only view their own bills, admins can view all
  */
 export async function getBillByAppointmentId(appointmentId: string): Promise<BillResponseModel> {
-  const response = await axiosInstance.get<BillResponseModel>(`/bills/appointment/${appointmentId}`);
+  const response = await axiosInstance.get<BillResponseModel>(
+    `/bills/appointment/${appointmentId}`
+  );
   return response.data;
 }
 
@@ -42,7 +44,7 @@ export async function getCustomerBills(customerId: string): Promise<BillResponse
  * Returns all bills in the system
  */
 export async function getAllBills(): Promise<BillResponseModel[]> {
-  const response = await axiosInstance.get<BillResponseModel[]>("/bills");
+  const response = await axiosInstance.get<BillResponseModel[]>('/bills');
   return response.data;
 }
 
@@ -50,7 +52,12 @@ export async function getAllBills(): Promise<BillResponseModel[]> {
  * Update bill status (mark as paid or unpaid)
  * Admin only
  */
-export async function updateBillStatus(billId: string, status: 'PAID' | 'UNPAID'): Promise<BillResponseModel> {
-  const response = await axiosInstance.put<BillResponseModel>(`/bills/${billId}/status?status=${status}`);
+export async function updateBillStatus(
+  billId: string,
+  status: 'PAID' | 'UNPAID'
+): Promise<BillResponseModel> {
+  const response = await axiosInstance.put<BillResponseModel>(
+    `/bills/${billId}/status?status=${status}`
+  );
   return response.data;
 }

@@ -18,11 +18,24 @@ interface EmployeeEditModalProps {
   onSuccess?: () => void;
 }
 
-const provinces = ['Ontario', 'Quebec', 'British Columbia', 'Alberta', 'Manitoba', 'Saskatchewan', 'Nova Scotia'];
+const provinces = [
+  'Ontario',
+  'Quebec',
+  'British Columbia',
+  'Alberta',
+  'Manitoba',
+  'Saskatchewan',
+  'Nova Scotia',
+];
 const roles: EmployeeRoleType[] = ['ADMIN', 'TECHNICIAN', 'SUPPORT', 'SALES'];
 const phoneTypes = ['MOBILE', 'HOME', 'WORK'];
 
-export default function EmployeeEditModal({ isOpen, employee, onClose, onSuccess }: EmployeeEditModalProps) {
+export default function EmployeeEditModal({
+  isOpen,
+  employee,
+  onClose,
+  onSuccess,
+}: EmployeeEditModalProps) {
   const { t } = useTranslation();
   const [formData, setFormData] = useState({
     firstName: '',
@@ -46,16 +59,19 @@ export default function EmployeeEditModal({ isOpen, employee, onClose, onSuccess
   useEffect(() => {
     if (employee) {
       // Extract role type
-      const roleType = typeof employee.employeeRole === 'object'
-        ? (employee.employeeRole as unknown as { employeeRoleType: EmployeeRoleType }).employeeRoleType
-        : employee.employeeRole as EmployeeRoleType;
+      const roleType =
+        typeof employee.employeeRole === 'object'
+          ? (employee.employeeRole as unknown as { employeeRoleType: EmployeeRoleType })
+              .employeeRoleType
+          : (employee.employeeRole as EmployeeRoleType);
 
       // Extract phone numbers
-      const phones = employee.phoneNumbers?.map(phone => ({
+      const phones = employee.phoneNumbers?.map((phone) => ({
         number: phone.number,
-        type: typeof phone.type === 'object'
-          ? (phone.type as unknown as { phoneType: EmployeePhoneType }).phoneType
-          : phone.type as string
+        type:
+          typeof phone.type === 'object'
+            ? (phone.type as unknown as { phoneType: EmployeePhoneType }).phoneType
+            : (phone.type as string),
       })) || [{ number: '', type: 'MOBILE' }];
 
       setFormData({
@@ -88,14 +104,14 @@ export default function EmployeeEditModal({ isOpen, employee, onClose, onSuccess
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
 
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
       [name]: value,
     }));
 
     // Clear error for this field
     if (errors[name]) {
-      setErrors(prev => {
+      setErrors((prev) => {
         const newErrors = { ...prev };
         delete newErrors[name];
         return newErrors;
@@ -107,7 +123,7 @@ export default function EmployeeEditModal({ isOpen, employee, onClose, onSuccess
       const errorKey = getPostalCodeError(value, formData.city, formData.province);
       if (errorKey) {
         const translatedError = t(errorKey, { city: formData.city, province: formData.province });
-        setErrors(prev => ({ ...prev, postalCode: translatedError }));
+        setErrors((prev) => ({ ...prev, postalCode: translatedError }));
       }
     }
   };
@@ -115,7 +131,7 @@ export default function EmployeeEditModal({ isOpen, employee, onClose, onSuccess
   const handlePhoneChange = (index: number, field: string, value: string) => {
     const newPhones = [...formData.phoneNumbers];
     newPhones[index] = { ...newPhones[index], [field]: value };
-    setFormData(prev => ({ ...prev, phoneNumbers: newPhones }));
+    setFormData((prev) => ({ ...prev, phoneNumbers: newPhones }));
   };
 
   const validateForm = (): boolean => {
@@ -128,13 +144,20 @@ export default function EmployeeEditModal({ isOpen, employee, onClose, onSuccess
     if (!formData.city.trim()) newErrors.city = 'City is required';
     if (!formData.postalCode.trim()) newErrors.postalCode = 'Postal code is required';
     else {
-      const postalErrorKey = getPostalCodeError(formData.postalCode, formData.city, formData.province);
+      const postalErrorKey = getPostalCodeError(
+        formData.postalCode,
+        formData.city,
+        formData.province
+      );
       if (postalErrorKey) {
-        newErrors.postalCode = t(postalErrorKey, { city: formData.city, province: formData.province });
+        newErrors.postalCode = t(postalErrorKey, {
+          city: formData.city,
+          province: formData.province,
+        });
       }
     }
 
-    if (formData.phoneNumbers.some(p => !p.number.trim())) {
+    if (formData.phoneNumbers.some((p) => !p.number.trim())) {
       newErrors.phoneNumbers = 'All phone numbers must be filled';
     }
 
@@ -151,10 +174,13 @@ export default function EmployeeEditModal({ isOpen, employee, onClose, onSuccess
     setLoading(true);
 
     try {
-      const employeeId = (employee.employeeIdentifier as EmployeeResponseModel['employeeIdentifier'] & Record<string, unknown>)?.employeeId;
-      
+      const employeeId = (
+        employee.employeeIdentifier as EmployeeResponseModel['employeeIdentifier'] &
+          Record<string, unknown>
+      )?.employeeId;
+
       if (!employeeId) {
-        throw new Error("Employee ID not found");
+        throw new Error('Employee ID not found');
       }
 
       const employeeAddress: EmployeeAddress = {
@@ -165,7 +191,7 @@ export default function EmployeeEditModal({ isOpen, employee, onClose, onSuccess
         postalCode: formData.postalCode,
       };
 
-      const phoneNumbers: EmployeePhoneNumber[] = formData.phoneNumbers.map(p => ({
+      const phoneNumbers: EmployeePhoneNumber[] = formData.phoneNumbers.map((p) => ({
         number: p.number,
         type: p.type as EmployeePhoneType,
       }));
@@ -244,13 +270,8 @@ export default function EmployeeEditModal({ isOpen, employee, onClose, onSuccess
 
             <div className="form-group">
               <label htmlFor="role">{t('pages.employees.role')} *</label>
-              <select
-                id="role"
-                name="role"
-                value={formData.role}
-                onChange={handleInputChange}
-              >
-                {allowedRoles.map(role => (
+              <select id="role" name="role" value={formData.role} onChange={handleInputChange}>
+                {allowedRoles.map((role) => (
                   <option key={role} value={role}>
                     {role}
                   </option>
@@ -292,7 +313,7 @@ export default function EmployeeEditModal({ isOpen, employee, onClose, onSuccess
                   onChange={handleInputChange}
                   disabled
                 >
-                  {provinces.map(province => (
+                  {provinces.map((province) => (
                     <option key={province} value={province}>
                       {province}
                     </option>
@@ -351,7 +372,9 @@ export default function EmployeeEditModal({ isOpen, employee, onClose, onSuccess
               <div key={index} className="phone-group">
                 <div className="form-row">
                   <div className="form-group">
-                    <label htmlFor={`phoneNumber-${index}`}>{t('pages.employees.phoneNumber')} *</label>
+                    <label htmlFor={`phoneNumber-${index}`}>
+                      {t('pages.employees.phoneNumber')} *
+                    </label>
                     <input
                       type="tel"
                       id={`phoneNumber-${index}`}
@@ -371,7 +394,7 @@ export default function EmployeeEditModal({ isOpen, employee, onClose, onSuccess
                       onChange={(e) => handlePhoneChange(index, 'type', e.target.value)}
                       disabled
                     >
-                      {phoneTypes.map(type => (
+                      {phoneTypes.map((type) => (
                         <option key={type} value={type}>
                           {type}
                         </option>
@@ -386,18 +409,10 @@ export default function EmployeeEditModal({ isOpen, employee, onClose, onSuccess
 
           {/* Buttons */}
           <div className="form-actions">
-            <button
-              type="submit"
-              disabled={loading}
-              className="btn-submit"
-            >
+            <button type="submit" disabled={loading} className="btn-submit">
               {loading ? 'Updating...' : 'Update Employee'}
             </button>
-            <button
-              type="button"
-              onClick={onClose}
-              className="btn-cancel"
-            >
+            <button type="button" onClick={onClose} className="btn-cancel">
               Cancel
             </button>
           </div>

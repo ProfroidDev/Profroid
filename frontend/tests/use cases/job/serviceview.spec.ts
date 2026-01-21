@@ -1,19 +1,15 @@
-import { adminTest as test, expect } from "../../fixtures/authFixtures";
+import { adminTest as test, expect } from '../../fixtures/authFixtures';
 
-test.describe("Services Page - View Service Details", () => {
+test.describe('Services Page - View Service Details', () => {
   test.beforeEach(async ({ loggedInAdminHomePage, jobPage }) => {
     await loggedInAdminHomePage.goToServices();
     await jobPage.goto();
   });
 
-  test("User can view service details", async ({ jobPage }) => {
+  test('User can view service details', async ({ jobPage }) => {
     // Find the first service card and get its name
-    const firstServiceCard = jobPage.page
-      .locator(".service-card-wrapper")
-      .first();
-    const serviceName = await firstServiceCard
-      .locator(".service-title")
-      .textContent();
+    const firstServiceCard = jobPage.page.locator('.service-card-wrapper').first();
+    const serviceName = await firstServiceCard.locator('.service-title').textContent();
 
     if (!serviceName) {
       test.skip();
@@ -39,13 +35,9 @@ test.describe("Services Page - View Service Details", () => {
     await expect(detailsModal).toBeHidden();
   });
 
-  test("User can close service details modal", async ({ jobPage }) => {
-    const firstServiceCard = jobPage.page
-      .locator(".service-card-wrapper")
-      .first();
-    const serviceName = await firstServiceCard
-      .locator(".service-title")
-      .textContent();
+  test('User can close service details modal', async ({ jobPage }) => {
+    const firstServiceCard = jobPage.page.locator('.service-card-wrapper').first();
+    const serviceName = await firstServiceCard.locator('.service-title').textContent();
 
     if (!serviceName) {
       test.skip();

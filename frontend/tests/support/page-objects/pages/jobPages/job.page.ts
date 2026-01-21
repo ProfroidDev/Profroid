@@ -1,4 +1,4 @@
-import { Page, Locator, expect } from "@playwright/test";
+import { Page, Locator, expect } from '@playwright/test';
 
 export class JobPage {
   readonly page: Page;
@@ -7,14 +7,14 @@ export class JobPage {
 
   constructor(page: Page) {
     this.page = page;
-    this.addServiceButton = page.getByRole("button", {
+    this.addServiceButton = page.getByRole('button', {
       name: /\+ add service/i,
     });
-    this.serviceCards = page.locator(".service-card-wrapper");
+    this.serviceCards = page.locator('.service-card-wrapper');
   }
 
   async goto() {
-    await this.page.goto("http://localhost:5173/services");
+    await this.page.goto('http://localhost:5173/services');
   }
 
   // ============================================
@@ -23,30 +23,30 @@ export class JobPage {
 
   async getServiceCard(serviceName: string) {
     return this.page
-      .locator(".service-card-wrapper", {
-        hasText: new RegExp(serviceName, "i"),
+      .locator('.service-card-wrapper', {
+        hasText: new RegExp(serviceName, 'i'),
       })
       .first();
   }
 
   async clickViewDetails(serviceName: string) {
     const card = await this.getServiceCard(serviceName);
-    await card.getByRole("button", { name: /view details/i }).click();
+    await card.getByRole('button', { name: /view details/i }).click();
   }
 
   async clickModify(serviceName: string) {
     const card = await this.getServiceCard(serviceName);
-    await card.getByRole("button", { name: /modify/i }).click();
+    await card.getByRole('button', { name: /modify/i }).click();
   }
 
   async clickDeactivate(serviceName: string) {
     const card = await this.getServiceCard(serviceName);
-    await card.getByRole("button", { name: /deactivate/i }).click();
+    await card.getByRole('button', { name: /deactivate/i }).click();
   }
 
   async clickReactivate(serviceName: string) {
     const card = await this.getServiceCard(serviceName);
-    await card.getByRole("button", { name: /reactivate/i }).click();
+    await card.getByRole('button', { name: /reactivate/i }).click();
   }
 
   // ============================================
@@ -54,28 +54,21 @@ export class JobPage {
   // ============================================
 
   createModal = () =>
-    this.page
-      .locator(".modal-overlay")
-      .filter({ hasText: /Create New Service/i });
+    this.page.locator('.modal-overlay').filter({ hasText: /Create New Service/i });
 
-  createFormInputs = () =>
-    this.createModal().locator("input, textarea, select");
+  createFormInputs = () => this.createModal().locator('input, textarea, select');
 
-  jobNameCreateInput = () => this.createModal().locator("#jobName");
-  jobDescriptionCreateInput = () =>
-    this.createModal().locator("#jobDescription");
-  hourlyRateCreateInput = () => this.createModal().locator("#hourlyRate");
-  estimatedDurationCreateInput = () =>
-    this.createModal().locator("#estimatedDurationMinutes");
+  jobNameCreateInput = () => this.createModal().locator('#jobName');
+  jobDescriptionCreateInput = () => this.createModal().locator('#jobDescription');
+  hourlyRateCreateInput = () => this.createModal().locator('#hourlyRate');
+  estimatedDurationCreateInput = () => this.createModal().locator('#estimatedDurationMinutes');
 
   createButton = () =>
     this.createModal()
-      .getByRole("button", { name: /^Create Service$/i })
+      .getByRole('button', { name: /^Create Service$/i })
       .first();
-  cancelCreateButton = () =>
-    this.createModal().getByRole("button", { name: /^cancel$/i });
-  closeCreateButton = () =>
-    this.createModal().locator(".modal-close-light").first();
+  cancelCreateButton = () => this.createModal().getByRole('button', { name: /^cancel$/i });
+  closeCreateButton = () => this.createModal().locator('.modal-close-light').first();
 
   async openCreateModal() {
     await this.addServiceButton.click();
@@ -91,9 +84,7 @@ export class JobPage {
     await this.jobNameCreateInput().fill(data.jobName);
     await this.jobDescriptionCreateInput().fill(data.jobDescription);
     await this.hourlyRateCreateInput().fill(String(data.hourlyRate));
-    await this.estimatedDurationCreateInput().fill(
-      String(data.estimatedDurationMinutes)
-    );
+    await this.estimatedDurationCreateInput().fill(String(data.estimatedDurationMinutes));
 
     await this.createButton().click();
     await expect(this.createModal()).toBeHidden({ timeout: 5000 });
@@ -107,24 +98,20 @@ export class JobPage {
   // UPDATE/MODIFY MODAL
   // ============================================
 
-  updateModal = () =>
-    this.page.locator(".modal-overlay").filter({ hasText: /Modify Service/i });
+  updateModal = () => this.page.locator('.modal-overlay').filter({ hasText: /Modify Service/i });
 
-  jobNameUpdateInput = () => this.updateModal().locator("#updateJobName");
-  jobDescriptionUpdateInput = () =>
-    this.updateModal().locator("#updateJobDescription");
-  hourlyRateUpdateInput = () => this.updateModal().locator("#updateHourlyRate");
+  jobNameUpdateInput = () => this.updateModal().locator('#updateJobName');
+  jobDescriptionUpdateInput = () => this.updateModal().locator('#updateJobDescription');
+  hourlyRateUpdateInput = () => this.updateModal().locator('#updateHourlyRate');
   estimatedDurationUpdateInput = () =>
-    this.updateModal().locator("#updateEstimatedDurationMinutes");
+    this.updateModal().locator('#updateEstimatedDurationMinutes');
 
   updateButton = () =>
     this.updateModal()
-      .getByRole("button", { name: /^Update Service$/i })
+      .getByRole('button', { name: /^Update Service$/i })
       .first();
-  cancelUpdateButton = () =>
-    this.updateModal().getByRole("button", { name: /^cancel$/i });
-  closeUpdateButton = () =>
-    this.updateModal().locator(".modal-close-light").first();
+  cancelUpdateButton = () => this.updateModal().getByRole('button', { name: /^cancel$/i });
+  closeUpdateButton = () => this.updateModal().locator('.modal-close-light').first();
 
   async updateService(data: {
     jobName?: string;
@@ -133,14 +120,10 @@ export class JobPage {
     estimatedDurationMinutes?: string | number;
   }) {
     if (data.jobName) await this.jobNameUpdateInput().fill(data.jobName);
-    if (data.jobDescription)
-      await this.jobDescriptionUpdateInput().fill(data.jobDescription);
-    if (data.hourlyRate)
-      await this.hourlyRateUpdateInput().fill(String(data.hourlyRate));
+    if (data.jobDescription) await this.jobDescriptionUpdateInput().fill(data.jobDescription);
+    if (data.hourlyRate) await this.hourlyRateUpdateInput().fill(String(data.hourlyRate));
     if (data.estimatedDurationMinutes)
-      await this.estimatedDurationUpdateInput().fill(
-        String(data.estimatedDurationMinutes)
-      );
+      await this.estimatedDurationUpdateInput().fill(String(data.estimatedDurationMinutes));
 
     await this.updateButton().click();
     await expect(this.updateModal()).toBeHidden({ timeout: 5000 });
@@ -154,11 +137,9 @@ export class JobPage {
   // DETAILS MODAL
   // ============================================
 
-  detailsModal = () =>
-    this.page.locator(".modal-overlay").filter({ hasText: /Service Details/i });
+  detailsModal = () => this.page.locator('.modal-overlay').filter({ hasText: /Service Details/i });
 
-  closeDetailsButton = () =>
-    this.detailsModal().locator(".modal-close-light").first();
+  closeDetailsButton = () => this.detailsModal().locator('.modal-close-light').first();
 
   async closeDetailsModal() {
     await this.closeDetailsButton().click();
@@ -169,32 +150,28 @@ export class JobPage {
   // ============================================
 
   deactivateConfirmationModal = () =>
-    this.page
-      .locator(".confirmation-modal-container")
-      .filter({ hasText: /Deactivate Service/i });
+    this.page.locator('.confirmation-modal-container').filter({ hasText: /Deactivate Service/i });
 
   reactivateConfirmationModal = () =>
-    this.page
-      .locator(".confirmation-modal-container")
-      .filter({ hasText: /Reactivate Service/i });
+    this.page.locator('.confirmation-modal-container').filter({ hasText: /Reactivate Service/i });
 
   confirmDeactivateButton = () =>
-    this.deactivateConfirmationModal().getByRole("button", {
+    this.deactivateConfirmationModal().getByRole('button', {
       name: /^deactivate$/i,
     });
 
   confirmReactivateButton = () =>
-    this.reactivateConfirmationModal().getByRole("button", {
+    this.reactivateConfirmationModal().getByRole('button', {
       name: /^reactivate$/i,
     });
 
   cancelDeactivateButton = () =>
-    this.deactivateConfirmationModal().getByRole("button", {
+    this.deactivateConfirmationModal().getByRole('button', {
       name: /^cancel$/i,
     });
 
   cancelReactivateButton = () =>
-    this.reactivateConfirmationModal().getByRole("button", {
+    this.reactivateConfirmationModal().getByRole('button', {
       name: /^cancel$/i,
     });
 
@@ -225,8 +202,8 @@ export class JobPage {
 
   async expectServiceNotVisible(serviceName: string) {
     const card = this.page
-      .locator(".service-card-wrapper", {
-        hasText: new RegExp(serviceName, "i"),
+      .locator('.service-card-wrapper', {
+        hasText: new RegExp(serviceName, 'i'),
       })
       .first();
     await expect(card).not.toBeVisible();
@@ -238,18 +215,16 @@ export class JobPage {
   }
 
   async expectSuccessToast(message: string | RegExp) {
-    const pattern =
-      typeof message === "string" ? new RegExp(message, "i") : message;
-    await expect(
-      this.page.locator(".toast").filter({ hasText: pattern })
-    ).toBeVisible({ timeout: 5000 });
+    const pattern = typeof message === 'string' ? new RegExp(message, 'i') : message;
+    await expect(this.page.locator('.toast').filter({ hasText: pattern })).toBeVisible({
+      timeout: 5000,
+    });
   }
 
   async expectErrorMessage(message: string | RegExp) {
-    const pattern =
-      typeof message === "string" ? new RegExp(message, "i") : message;
-    await expect(
-      this.page.locator(".error-message").filter({ hasText: pattern })
-    ).toBeVisible({ timeout: 5000 });
+    const pattern = typeof message === 'string' ? new RegExp(message, 'i') : message;
+    await expect(this.page.locator('.error-message').filter({ hasText: pattern })).toBeVisible({
+      timeout: 5000,
+    });
   }
 }

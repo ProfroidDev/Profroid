@@ -1,40 +1,37 @@
-import React, { useEffect } from "react";
-import { Routes, Route } from "react-router-dom";
-import "./App.css";
-import "./i18n/config";
+import React, { useEffect } from 'react';
+import { Routes, Route } from 'react-router-dom';
+import './App.css';
+import './i18n/config';
 
-import CustomerListPage from "./pages/Customer/CustomerListPage";
-import CustomerBills from "./pages/Customer/CustomerBills";
-import ServicesPage from "./pages/jobs/ServicesPage";
-import Navigation from "./shared/components/Navigation";
-import Footer from "./shared/components/Footer";
-import EmployeeListPage from "./pages/Employee/EmployeeListPage";
-import PartsPage from "./pages/Parts/PartsPage";
-import Inventory from "./pages/Parts/Inventory";
-import ServiceReports from "./pages/Reports/ServiceReports";
-import MyAppointmentsPage from "./pages/Appointment/MyAppointmentsPage";
-import MyJobsPage from "./pages/Appointment/MyJobsPage";
-import HomePage from "./pages/Home/HomePage";
-import ForbiddenPage from "./pages/Error/ForbiddenPage";
-import AboutPage from "./pages/About/AboutPage";
-import ContactPage from "./pages/Contact/ContactPage";
-import PrivacyPolicyPage from "./pages/Privacy/PrivacyPolicyPage";
+import CustomerListPage from './pages/Customer/CustomerListPage';
+import CustomerBills from './pages/Customer/CustomerBills';
+import ServicesPage from './pages/jobs/ServicesPage';
+import Navigation from './shared/components/Navigation';
+import Footer from './shared/components/Footer';
+import EmployeeListPage from './pages/Employee/EmployeeListPage';
+import PartsPage from './pages/Parts/PartsPage';
+import Inventory from './pages/Parts/Inventory';
+import ServiceReports from './pages/Reports/ServiceReports';
+import MyAppointmentsPage from './pages/Appointment/MyAppointmentsPage';
+import MyJobsPage from './pages/Appointment/MyJobsPage';
+import HomePage from './pages/Home/HomePage';
+import ForbiddenPage from './pages/Error/ForbiddenPage';
+import AboutPage from './pages/About/AboutPage';
+import ContactPage from './pages/Contact/ContactPage';
+import PrivacyPolicyPage from './pages/Privacy/PrivacyPolicyPage';
 
 // Auth pages and components
-import LoginPage from "./pages/Auth/LoginPage";
-import RegisterPage from "./pages/Auth/RegisterPage";
-import ProfilePage from "./pages/Auth/ProfilePage";
-import ForgotPasswordPage from "./pages/Auth/ForgotPasswordPage";
-import ResetPasswordPage from "./pages/Auth/ResetPasswordPage";
-import EmailVerificationPage from "./pages/Auth/EmailVerificationPage";
-import {
-  ProtectedRoute,
-  PublicRoute,
-} from "./features/authentication/components/ProtectedRoute";
-import useAuthStore from "./features/authentication/store/authStore";
-import SessionExpiredPage from "./pages/SessionExpiredPage";
-import PermissionDeniedPage from "./pages/PermissionDeniedPage";
-import NotFoundPage from "./pages/NotFoundPage";
+import LoginPage from './pages/Auth/LoginPage';
+import RegisterPage from './pages/Auth/RegisterPage';
+import ProfilePage from './pages/Auth/ProfilePage';
+import ForgotPasswordPage from './pages/Auth/ForgotPasswordPage';
+import ResetPasswordPage from './pages/Auth/ResetPasswordPage';
+import EmailVerificationPage from './pages/Auth/EmailVerificationPage';
+import { ProtectedRoute, PublicRoute } from './features/authentication/components/ProtectedRoute';
+import useAuthStore from './features/authentication/store/authStore';
+import SessionExpiredPage from './pages/SessionExpiredPage';
+import PermissionDeniedPage from './pages/PermissionDeniedPage';
+import NotFoundPage from './pages/NotFoundPage';
 
 function AppRoutes(): React.ReactElement {
   const { initializeAuth } = useAuthStore();
@@ -133,10 +130,7 @@ function AppRoutes(): React.ReactElement {
             </ProtectedRoute>
           }
         />
-        <Route
-          path="/services"
-          element={<ServicesPage />}
-        />
+        <Route path="/services" element={<ServicesPage />} />
         {/* Inventory - ADMIN only */}
         <Route
           path="/inventory"
@@ -205,9 +199,7 @@ function AppRoutes(): React.ReactElement {
 }
 
 function App(): React.ReactElement {
-  return (
-    <AppRoutes />
-  );
+  return <AppRoutes />;
 }
 
 export default App;

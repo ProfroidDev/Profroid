@@ -5,8 +5,6 @@ export async function getEmployeeScheduleForDate(
   employeeId: string,
   date: string // Format: YYYY-MM-DD
 ): Promise<EmployeeSchedule[]> {
-  const response = await axiosInstance.get(
-    `/employees/${employeeId}/schedules?date=${date}`
-  );
+  const response = await axiosInstance.get(`/employees/${employeeId}/schedules?date=${date}`);
   return response.data;
 }

@@ -5,7 +5,7 @@
   padding-top: 60px; /* Add padding to offset the navbar */
   margin-top: -60px; /* Pull the section up to fill the space */
   min-height: 600px;
-  background-image: url("https://images.unsplash.com/photo-1568213816046-0ee1c42bd559?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80"); /* Wine cellar placeholder */
+  background-image: url('https://images.unsplash.com/photo-1568213816046-0ee1c42bd559?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80'); /* Wine cellar placeholder */
   background-size: cover;
   background-position: center;
   display: flex;

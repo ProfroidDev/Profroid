@@ -1,4 +1,4 @@
-import axiosInstance from "../../../shared/api/axiosInstance";
+import axiosInstance from '../../../shared/api/axiosInstance';
 import type { BillResponseModel } from '../models/BillResponseModel';
 
 /**
@@ -6,6 +6,6 @@ import type { BillResponseModel } from '../models/BillResponseModel';
  * Returns all bills in the system
  */
 export async function getAllBills(): Promise<BillResponseModel[]> {
-  const response = await axiosInstance.get<BillResponseModel[]>("/bills");
+  const response = await axiosInstance.get<BillResponseModel[]>('/bills');
   return response.data;
 }

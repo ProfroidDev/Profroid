@@ -1,11 +1,11 @@
 /* eslint-disable react-hooks/rules-of-hooks */
-import { test as base } from "@playwright/test";
-import { LoginPage } from "../support/page-objects/pages/login.page";
-import { CustomerPage } from "../support/page-objects/pages/customerPages/customer.page";
-import { HomePage } from "../support/page-objects/pages/customerPages/home.page";
-import { EmployeePage } from "../support/page-objects/pages/employeePages/employee.page";
-import { EmployeeHomePage } from "../support/page-objects/pages/employeePages/home.page";
-import { JobPage } from "../support/page-objects/pages/jobPages/job.page";
+import { test as base } from '@playwright/test';
+import { LoginPage } from '../support/page-objects/pages/login.page';
+import { CustomerPage } from '../support/page-objects/pages/customerPages/customer.page';
+import { HomePage } from '../support/page-objects/pages/customerPages/home.page';
+import { EmployeePage } from '../support/page-objects/pages/employeePages/employee.page';
+import { EmployeeHomePage } from '../support/page-objects/pages/employeePages/home.page';
+import { JobPage } from '../support/page-objects/pages/jobPages/job.page';
 
 export const test = base.extend<{
   loginPage: LoginPage;

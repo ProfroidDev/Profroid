@@ -1,1 +1,1 @@
-export type FileCategory = "IMAGE" | "REPORT";
+export type FileCategory = 'IMAGE' | 'REPORT';

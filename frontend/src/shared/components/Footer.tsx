@@ -1,11 +1,10 @@
-import { Wine } from "lucide-react";
-import "./Footer.css";
+import { Wine } from 'lucide-react';
+import './Footer.css';
 
 export default function Footer() {
   return (
     <footer className="footer-container">
       <div className="footer-inner">
-
         <div className="footer-brand">
           <Wine className="footer-icon" />
           <span className="footer-logo">Profroid</span>
@@ -29,7 +28,6 @@ export default function Footer() {
           <a href="#">Maintenance</a>
           <a href="#">FAQs</a>
         </div>
-
       </div>
 
       <div className="footer-bottom">

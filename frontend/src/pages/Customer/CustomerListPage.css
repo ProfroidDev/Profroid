@@ -15,7 +15,7 @@
 .customers-title-light {
   font-size: 2.8rem;
   font-weight: 700;
-  font-family: "Georgia", serif;
+  font-family: 'Georgia', serif;
   color: #5a2a27;
   margin-bottom: 30px;
 }
@@ -27,7 +27,7 @@
   border: 1px solid #e5e3df;
   border-radius: 22px;
   padding: 32px;
-  box-shadow: 0 6px 18px rgba(0,0,0,0.06);
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.06);
 }
 
 .customers-table-light {
@@ -79,7 +79,7 @@
 .modal-overlay-light {
   position: fixed;
   inset: 0;
-  background: rgba(0,0,0,0.25);
+  background: rgba(0, 0, 0, 0.25);
   display: flex;
   justify-content: center;
   align-items: center;
@@ -97,8 +97,9 @@
   border-radius: 22px;
   border: 1px solid #e4e2df;
   padding: 40px 60px;
-  box-shadow: 0 25px 45px rgba(0,0,0,0.15),
-              0 8px 20px rgba(0,0,0,0.08);
+  box-shadow:
+    0 25px 45px rgba(0, 0, 0, 0.15),
+    0 8px 20px rgba(0, 0, 0, 0.08);
 
   display: flex;
   flex-direction: column;
@@ -209,7 +210,7 @@
 .form-group select:focus {
   outline: none;
   border-color: #5a2a27;
-  box-shadow: 0 0 0 3px rgba(90,42,39,0.1);
+  box-shadow: 0 0 0 3px rgba(90, 42, 39, 0.1);
 }
 
 .form-row {
@@ -276,5 +277,3 @@
     padding: 20px;
   }
 }
-
-

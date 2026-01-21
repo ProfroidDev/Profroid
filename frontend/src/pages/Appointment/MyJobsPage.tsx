@@ -1,47 +1,74 @@
-import React, { useEffect, useMemo, useState } from "react";
-import { useTranslation } from "react-i18next";
-import { getMyJobs } from "../../features/appointment/api/getMyJobs";
-import type { AppointmentResponseModel } from "../../features/appointment/models/AppointmentResponseModel";
-import AddAppointmentModal from "../../features/appointment/components/AddAppointmentModal";
-import { patchAppointmentStatus } from "../../features/appointment/api/patchAppointmentStatus";
-import Toast from "../../shared/components/Toast";
-import useAuthStore from "../../features/authentication/store/authStore";
-import ConfirmationModal from "../../components/ConfirmationModal";
-import { MapPin, Clock, User, Wrench, DollarSign, Phone, AlertCircle, Edit, CheckCircle, X, ChevronLeft, ChevronRight, Filter, Calendar, FileText, Download } from "lucide-react";
-import "./MyJobsPage.css";
-import ReportFormModal from "../../features/report/components/ReportFormModal";
-import ViewReportModal from "../../features/report/components/ViewReportModal";
-import { getReportByAppointmentId } from "../../features/report/api/getReportByAppointmentId";
-import { exportReportPdf } from "../../features/report/api/exportReportPdf";
-import type { ReportResponseModel } from "../../features/report/models/ReportResponseModel";
-import { getCellars } from "../../features/cellar/api/getAllCellars";
-import type { CellarResponseModel } from "../../features/cellar/models/CellarResponseModel";
+import React, { useEffect, useMemo, useState } from 'react';
+import { useTranslation } from 'react-i18next';
+import { getMyJobs } from '../../features/appointment/api/getMyJobs';
+import type { AppointmentResponseModel } from '../../features/appointment/models/AppointmentResponseModel';
+import AddAppointmentModal from '../../features/appointment/components/AddAppointmentModal';
+import { patchAppointmentStatus } from '../../features/appointment/api/patchAppointmentStatus';
+import Toast from '../../shared/components/Toast';
+import useAuthStore from '../../features/authentication/store/authStore';
+import ConfirmationModal from '../../components/ConfirmationModal';
+import {
+  MapPin,
+  Clock,
+  User,
+  Wrench,
+  DollarSign,
+  Phone,
+  AlertCircle,
+  Edit,
+  CheckCircle,
+  X,
+  ChevronLeft,
+  ChevronRight,
+  Filter,
+  Calendar,
+  FileText,
+  Download,
+} from 'lucide-react';
+import './MyJobsPage.css';
+import ReportFormModal from '../../features/report/components/ReportFormModal';
+import ViewReportModal from '../../features/report/components/ViewReportModal';
+import { getReportByAppointmentId } from '../../features/report/api/getReportByAppointmentId';
+import { exportReportPdf } from '../../features/report/api/exportReportPdf';
+import type { ReportResponseModel } from '../../features/report/models/ReportResponseModel';
+import { getCellars } from '../../features/cellar/api/getAllCellars';
+import type { CellarResponseModel } from '../../features/cellar/models/CellarResponseModel';
 
 export default function MyJobsPage(): React.ReactElement {
   const { t, i18n } = useTranslation();
   const [jobs, setJobs] = useState<AppointmentResponseModel[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
   const [selectedJob, setSelectedJob] = useState<AppointmentResponseModel | null>(null);
-  const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' | 'info' | 'warning' } | null>(null);
+  const [toast, setToast] = useState<{
+    message: string;
+    type: 'success' | 'error' | 'info' | 'warning';
+  } | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [showAddModal, setShowAddModal] = useState<boolean>(false);
-  const [editingAppointment, setEditingAppointment] = useState<AppointmentResponseModel | null>(null);
-  const [confirmModal, setConfirmModal] = useState<{ isOpen: boolean; type: 'complete' | 'cancel' | 'accept' | null; appointmentId: string | null }>({ isOpen: false, type: null, appointmentId: null });
+  const [editingAppointment, setEditingAppointment] = useState<AppointmentResponseModel | null>(
+    null
+  );
+  const [confirmModal, setConfirmModal] = useState<{
+    isOpen: boolean;
+    type: 'complete' | 'cancel' | 'accept' | null;
+    appointmentId: string | null;
+  }>({ isOpen: false, type: null, appointmentId: null });
   const [cellars, setCellars] = useState<CellarResponseModel[] | null>(null);
   const [matchedCellar, setMatchedCellar] = useState<CellarResponseModel | null>(null);
   const [currentPage, setCurrentPage] = useState<number>(1);
   const pageSize = 6;
   const [statusFilters, setStatusFilters] = useState<string[]>([]);
-  const [startDateFilter, setStartDateFilter] = useState<string>("");
-  const [endDateFilter, setEndDateFilter] = useState<string>("");
+  const [startDateFilter, setStartDateFilter] = useState<string>('');
+  const [endDateFilter, setEndDateFilter] = useState<string>('');
   const [showReportModal, setShowReportModal] = useState(false);
-  const [selectedAppointmentForReport, setSelectedAppointmentForReport] = useState<AppointmentResponseModel | null>(null);
+  const [selectedAppointmentForReport, setSelectedAppointmentForReport] =
+    useState<AppointmentResponseModel | null>(null);
   const [existingReport, setExistingReport] = useState<ReportResponseModel | null>(null);
   const [reportCheckLoading, setReportCheckLoading] = useState<string | null>(null);
   const [jobReports, setJobReports] = useState<Map<string, ReportResponseModel>>(new Map());
   const [showViewReportModal, setShowViewReportModal] = useState(false);
   const [reportToView, setReportToView] = useState<ReportResponseModel | null>(null);
-  
+
   const { user, customerData } = useAuthStore();
 
   useEffect(() => {
@@ -59,11 +86,11 @@ export default function MyJobsPage(): React.ReactElement {
         (a, b) => new Date(a.appointmentDate).getTime() - new Date(b.appointmentDate).getTime()
       );
       setJobs(sorted);
-      
+
       // Check for existing reports for completed jobs
       const reportMap = new Map<string, ReportResponseModel>();
-      const completedJobs = sorted.filter(job => job.status === "COMPLETED");
-      
+      const completedJobs = sorted.filter((job) => job.status === 'COMPLETED');
+
       await Promise.all(
         completedJobs.map(async (job) => {
           try {
@@ -77,33 +104,37 @@ export default function MyJobsPage(): React.ReactElement {
           }
         })
       );
-      
+
       setJobReports(reportMap);
-      
+
       const newTotalPages = Math.max(1, Math.ceil(sorted.length / pageSize));
       setCurrentPage((prev) => Math.min(prev, newTotalPages));
     } catch (error: unknown) {
-      console.error("Error fetching jobs:", error);
-      
+      console.error('Error fetching jobs:', error);
+
       // Check if it's a 404 or permission error (deactivated technician)
       if (error instanceof Error && 'response' in error) {
         const axiosError = error as { response?: { status: number; data?: { message: string } } };
         if (axiosError.response?.status === 404) {
-          const errorMsg = axiosError.response?.data?.message || "Technician not found or you don't have permission to view these jobs";
+          const errorMsg =
+            axiosError.response?.data?.message ||
+            "Technician not found or you don't have permission to view these jobs";
           setError(errorMsg);
           setJobs([]);
           return;
         }
         if (axiosError.response?.status === 403) {
-          setError("You don't have permission to view jobs. Please ensure you're logged in as a technician.");
+          setError(
+            "You don't have permission to view jobs. Please ensure you're logged in as a technician."
+          );
           setJobs([]);
           return;
         }
       }
-      
+
       setToast({
-        message: "Failed to fetch jobs",
-        type: "error"
+        message: 'Failed to fetch jobs',
+        type: 'error',
       });
     } finally {
       setLoading(false);
@@ -114,11 +145,11 @@ export default function MyJobsPage(): React.ReactElement {
     setShowAddModal(false);
     setEditingAppointment(null);
     fetchJobs();
-    setToast({ 
-      message: editingAppointment 
-        ? t('pages.appointments.appointmentUpdated') 
-        : t('pages.appointments.appointmentCreated'), 
-      type: "success" 
+    setToast({
+      message: editingAppointment
+        ? t('pages.appointments.appointmentUpdated')
+        : t('pages.appointments.appointmentCreated'),
+      type: 'success',
     });
   };
 
@@ -135,40 +166,41 @@ export default function MyJobsPage(): React.ReactElement {
 
     try {
       if (confirmModal.type === 'accept') {
-        await patchAppointmentStatus(confirmModal.appointmentId, { status: "SCHEDULED" });
+        await patchAppointmentStatus(confirmModal.appointmentId, { status: 'SCHEDULED' });
         fetchJobs();
-        setToast({ message: t('pages.jobs.jobAccepted'), type: "success" });
+        setToast({ message: t('pages.jobs.jobAccepted'), type: 'success' });
       } else if (confirmModal.type === 'complete') {
-        await patchAppointmentStatus(confirmModal.appointmentId, { status: "COMPLETED" });
+        await patchAppointmentStatus(confirmModal.appointmentId, { status: 'COMPLETED' });
         fetchJobs();
-        setToast({ message: t('pages.jobs.jobCompleted'), type: "success" });
+        setToast({ message: t('pages.jobs.jobCompleted'), type: 'success' });
       } else if (confirmModal.type === 'cancel') {
-        await patchAppointmentStatus(confirmModal.appointmentId, { status: "CANCELLED" });
+        await patchAppointmentStatus(confirmModal.appointmentId, { status: 'CANCELLED' });
         fetchJobs();
-        setToast({ message: t('pages.appointments.appointmentCancelled'), type: "success" });
+        setToast({ message: t('pages.appointments.appointmentCancelled'), type: 'success' });
       }
       setConfirmModal({ isOpen: false, type: null, appointmentId: null });
     } catch (error: unknown) {
-      console.error("Error updating job:", error);
-      
+      console.error('Error updating job:', error);
+
       // Extract error message for user
-      let errorMessage = confirmModal.type === 'complete' 
-        ? t('pages.jobs.errorCompleting')
-        : t('pages.appointments.errorCancelling');
-      
-      if (typeof error === "object" && error && "response" in error) {
+      let errorMessage =
+        confirmModal.type === 'complete'
+          ? t('pages.jobs.errorCompleting')
+          : t('pages.appointments.errorCancelling');
+
+      if (typeof error === 'object' && error && 'response' in error) {
         const resp = (error as { response?: { data?: unknown } }).response;
         if (resp?.data) {
-          if (typeof resp.data === "string") {
+          if (typeof resp.data === 'string') {
             errorMessage = resp.data;
-          } else if (typeof resp.data === "object") {
+          } else if (typeof resp.data === 'object') {
             const data = resp.data as Record<string, unknown>;
             errorMessage = (data.message as string) || (data.error as string) || errorMessage;
           }
         }
       }
-      
-      setToast({ message: errorMessage, type: "error" });
+
+      setToast({ message: errorMessage, type: 'error' });
       setConfirmModal({ isOpen: false, type: null, appointmentId: null });
     }
   };
@@ -187,7 +219,7 @@ export default function MyJobsPage(): React.ReactElement {
       const report = await getReportByAppointmentId(job.appointmentId);
       setExistingReport(report);
     } catch (error) {
-      console.error("Error checking for existing report:", error);
+      console.error('Error checking for existing report:', error);
       setExistingReport(null);
     } finally {
       setReportCheckLoading(null);
@@ -199,12 +231,12 @@ export default function MyJobsPage(): React.ReactElement {
     setShowReportModal(false);
     setSelectedAppointmentForReport(null);
     setExistingReport(null);
-    setToast({ message, type: "success" });
+    setToast({ message, type: 'success' });
     fetchJobs(); // Refresh the jobs list
   };
 
   const handleReportError = (message: string) => {
-    setToast({ message, type: "error" });
+    setToast({ message, type: 'error' });
   };
 
   const handleViewReport = (appointmentId: string) => {
@@ -219,37 +251,37 @@ export default function MyJobsPage(): React.ReactElement {
     const date = new Date(dateString);
     const locale = i18n.language === 'fr' ? 'fr-FR' : 'en-US';
     return date.toLocaleDateString(locale, {
-      weekday: "long",
-      year: "numeric",
-      month: "long",
-      day: "numeric",
-      hour: "2-digit",
-      minute: "2-digit"
+      weekday: 'long',
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
     });
   };
-  
-    // No formatting for start/end time, display raw string as in appointment page
+
+  // No formatting for start/end time, display raw string as in appointment page
 
   const getStatusBadge = (status: string): string => {
     switch (status) {
-      case "SCHEDULED":
-        return "status-scheduled";
-      case "COMPLETED":
-        return "status-completed";
-      case "CANCELLED":
-        return "status-cancelled";
+      case 'SCHEDULED':
+        return 'status-scheduled';
+      case 'COMPLETED':
+        return 'status-completed';
+      case 'CANCELLED':
+        return 'status-cancelled';
       default:
-        return "";
+        return '';
     }
   };
 
   const getStatusLabel = (status: string): string => {
     switch (status) {
-      case "SCHEDULED":
+      case 'SCHEDULED':
         return t('pages.appointments.statusScheduled');
-      case "COMPLETED":
+      case 'COMPLETED':
         return t('pages.appointments.statusCompleted');
-      case "CANCELLED":
+      case 'CANCELLED':
         return t('pages.appointments.statusCancelled');
       default:
         return status;
@@ -268,18 +300,22 @@ export default function MyJobsPage(): React.ReactElement {
         if (!cellars) {
           const all = await getCellars();
           setCellars(all);
-          const match = all.find(
-            (c) => c.ownerCustomerId === selectedJob.customerId && c.name === selectedJob.cellarName
-          ) || null;
+          const match =
+            all.find(
+              (c) =>
+                c.ownerCustomerId === selectedJob.customerId && c.name === selectedJob.cellarName
+            ) || null;
           setMatchedCellar(match);
         } else {
-          const match = cellars.find(
-            (c) => c.ownerCustomerId === selectedJob.customerId && c.name === selectedJob.cellarName
-          ) || null;
+          const match =
+            cellars.find(
+              (c) =>
+                c.ownerCustomerId === selectedJob.customerId && c.name === selectedJob.cellarName
+            ) || null;
           setMatchedCellar(match);
         }
       } catch (e) {
-        console.warn("Unable to fetch cellar details", e);
+        console.warn('Unable to fetch cellar details', e);
         setMatchedCellar(null);
       }
     };
@@ -296,7 +332,7 @@ export default function MyJobsPage(): React.ReactElement {
   const filteredJobs = useMemo(() => {
     return jobs.filter((a) => {
       const statusMatch = statusFilters.length === 0 ? true : statusFilters.includes(a.status);
-      const dateOnly = new Date(a.appointmentDate).toISOString().split("T")[0];
+      const dateOnly = new Date(a.appointmentDate).toISOString().split('T')[0];
       const startOk = startDateFilter ? dateOnly >= startDateFilter : true;
       const endOk = endDateFilter ? dateOnly <= endDateFilter : true;
       return statusMatch && startOk && endOk;
@@ -320,7 +356,9 @@ export default function MyJobsPage(): React.ReactElement {
       <div className="jobs-header">
         <h1 className="jobs-title-light">{t('pages.jobs.myJobs')}</h1>
         {customerData?.firstName && customerData?.lastName && (
-          <p className="user-name-display">{t('common.welcome')}, {customerData.firstName} {customerData.lastName}</p>
+          <p className="user-name-display">
+            {t('common.welcome')}, {customerData.firstName} {customerData.lastName}
+          </p>
         )}
         <p className="jobs-subtitle">{t('pages.jobs.yourAssignedJobs')}</p>
         <div className="header-actions">
@@ -351,7 +389,9 @@ export default function MyJobsPage(): React.ReactElement {
                     return Array.from(next);
                   });
                 }}
-              >{t('pages.jobs.statusScheduled') || t('pages.appointments.statusScheduled')}</button>
+              >
+                {t('pages.jobs.statusScheduled') || t('pages.appointments.statusScheduled')}
+              </button>
               <button
                 type="button"
                 className={`chip ${statusFilters.includes('COMPLETED') ? 'active' : ''}`}
@@ -367,7 +407,9 @@ export default function MyJobsPage(): React.ReactElement {
                     return Array.from(next);
                   });
                 }}
-              >{t('pages.jobs.statusCompleted') || t('pages.appointments.statusCompleted')}</button>
+              >
+                {t('pages.jobs.statusCompleted') || t('pages.appointments.statusCompleted')}
+              </button>
               <button
                 type="button"
                 className={`chip ${statusFilters.includes('CANCELLED') ? 'active' : ''}`}
@@ -383,7 +425,9 @@ export default function MyJobsPage(): React.ReactElement {
                     return Array.from(next);
                   });
                 }}
-              >{t('pages.jobs.statusCancelled') || t('pages.appointments.statusCancelled')}</button>
+              >
+                {t('pages.jobs.statusCancelled') || t('pages.appointments.statusCancelled')}
+              </button>
             </div>
           </div>
 
@@ -398,7 +442,10 @@ export default function MyJobsPage(): React.ReactElement {
                 <input
                   type="date"
                   value={startDateFilter}
-                  onChange={(e) => { setStartDateFilter(e.target.value); setCurrentPage(1); }}
+                  onChange={(e) => {
+                    setStartDateFilter(e.target.value);
+                    setCurrentPage(1);
+                  }}
                   className="filter-input"
                 />
               </label>
@@ -408,17 +455,25 @@ export default function MyJobsPage(): React.ReactElement {
                 <input
                   type="date"
                   value={endDateFilter}
-                  onChange={(e) => { setEndDateFilter(e.target.value); setCurrentPage(1); }}
+                  onChange={(e) => {
+                    setEndDateFilter(e.target.value);
+                    setCurrentPage(1);
+                  }}
                   className="filter-input"
                 />
               </label>
             </div>
           </div>
 
-          {(startDateFilter || endDateFilter || statusFilters.length > 0) ? (
+          {startDateFilter || endDateFilter || statusFilters.length > 0 ? (
             <button
               className="btn-secondary"
-              onClick={() => { setStatusFilters([]); setStartDateFilter(''); setEndDateFilter(''); setCurrentPage(1); }}
+              onClick={() => {
+                setStatusFilters([]);
+                setStartDateFilter('');
+                setEndDateFilter('');
+                setCurrentPage(1);
+              }}
             >
               {t('common.clear')}
             </button>
@@ -443,201 +498,203 @@ export default function MyJobsPage(): React.ReactElement {
         </div>
       ) : (
         <>
-        <div className="jobs-grid">
-          {paginatedJobs.map((job) => (
-            <div key={job.appointmentId} className="job-card">
-              {/* Status Badge */}
-              <div className={`status-badge ${getStatusBadge(job.status)}`}>
-                {getStatusLabel(job.status)}
-              </div>
+          <div className="jobs-grid">
+            {paginatedJobs.map((job) => (
+              <div key={job.appointmentId} className="job-card">
+                {/* Status Badge */}
+                <div className={`status-badge ${getStatusBadge(job.status)}`}>
+                  {getStatusLabel(job.status)}
+                </div>
 
-              {/* Job Header */}
-              <div className="job-header-section">
-                <h3 className="job-name">{job.jobName}</h3>
-                <span className="job-type">{job.jobType}</span>
-              </div>
+                {/* Job Header */}
+                <div className="job-header-section">
+                  <h3 className="job-name">{job.jobName}</h3>
+                  <span className="job-type">{job.jobType}</span>
+                </div>
 
-              {/* Date & Time */}
-              <div className="job-info-row">
-                <Clock size={18} />
-                <span>
-                  {formatDate(job.appointmentDate)}
-                  {job.appointmentStartTime && job.appointmentEndTime && (
+                {/* Date & Time */}
+                <div className="job-info-row">
+                  <Clock size={18} />
+                  <span>
+                    {formatDate(job.appointmentDate)}
+                    {job.appointmentStartTime && job.appointmentEndTime && (
+                      <>
+                        {' | '}
+                        <strong>Start:</strong> {job.appointmentStartTime}
+                        {' | '}
+                        <strong>End:</strong> {job.appointmentEndTime}
+                      </>
+                    )}
+                  </span>
+                </div>
+
+                {/* Customer Info */}
+                <div className="job-info-row">
+                  <User size={18} />
+                  <span>
+                    {t('pages.jobs.customer')}: {job.customerFirstName} {job.customerLastName}
+                  </span>
+                </div>
+
+                {/* Customer Phone */}
+                {job.customerPhoneNumbers.length > 0 && (
+                  <div className="job-info-row">
+                    <Phone size={18} />
+                    <span>{job.customerPhoneNumbers[0].number}</span>
+                  </div>
+                )}
+
+                {/* Cellar */}
+                <div className="job-info-row">
+                  <Wrench size={18} />
+                  <span>
+                    {t('pages.jobs.cellar')}: {job.cellarName}
+                  </span>
+                </div>
+
+                {/* Address */}
+                <div className="job-info-row">
+                  <MapPin size={18} />
+                  <span>
+                    {job.appointmentAddress.streetAddress}, {job.appointmentAddress.city}
+                  </span>
+                </div>
+
+                {/* Hourly Rate */}
+                <div className="job-info-row highlight-rate">
+                  <DollarSign size={18} />
+                  <span>
+                    ${job.hourlyRate.toFixed(2)}
+                    {t('pages.jobs.hour')}
+                  </span>
+                </div>
+
+                {/* Description */}
+                <div className="job-description">
+                  <AlertCircle size={16} />
+                  <p>{job.description}</p>
+                </div>
+                {/* Action Buttons */}
+                <div className="job-actions">
+                  {job.status === 'SCHEDULED' && (
                     <>
-                      {" | "}
-                      <strong>Start:</strong> {job.appointmentStartTime}
-                      {" | "}
-                      <strong>End:</strong> {job.appointmentEndTime}
+                      <button
+                        className="btn-edit"
+                        onClick={() => handleEditJob(job)}
+                        title={t('pages.jobs.editJob')}
+                      >
+                        <Edit size={16} />
+                        {t('common.edit')}
+                      </button>
+                      <button
+                        className="btn-complete"
+                        onClick={() => handleCompleteJob(job.appointmentId)}
+                        title={t('pages.jobs.markComplete')}
+                      >
+                        <CheckCircle size={16} />
+                        {t('pages.jobs.markComplete')}
+                      </button>
+                      <button
+                        className="btn-cancel"
+                        onClick={() => handleCancelJob(job.appointmentId)}
+                        title={t('pages.appointments.cancelAppointment')}
+                      >
+                        <X size={16} />
+                        {t('common.cancel')}
+                      </button>
                     </>
                   )}
-                </span>
-              </div>
-
-              {/* Customer Info */}
-              <div className="job-info-row">
-                <User size={18} />
-                <span>
-                  {t('pages.jobs.customer')}: {job.customerFirstName} {job.customerLastName}
-                </span>
-              </div>
-
-              {/* Customer Phone */}
-              {job.customerPhoneNumbers.length > 0 && (
-                <div className="job-info-row">
-                  <Phone size={18} />
-                  <span>{job.customerPhoneNumbers[0].number}</span>
-                </div>
-              )}
-
-              {/* Cellar */}
-              <div className="job-info-row">
-                <Wrench size={18} />
-                <span>{t('pages.jobs.cellar')}: {job.cellarName}</span>
-              </div>
-
-              {/* Address */}
-              <div className="job-info-row">
-                <MapPin size={18} />
-                <span>
-                  {job.appointmentAddress.streetAddress}, {job.appointmentAddress.city}
-                </span>
-              </div>
-
-              {/* Hourly Rate */}
-              <div className="job-info-row highlight-rate">
-                <DollarSign size={18} />
-                <span>${job.hourlyRate.toFixed(2)}{t('pages.jobs.hour')}</span>
-              </div>
-
-              {/* Description */}
-              <div className="job-description">
-                <AlertCircle size={16} />
-                <p>{job.description}</p>
-              </div>
-              {/* Action Buttons */}
-              <div className="job-actions">
-                {job.status === "SCHEDULED" && (
-                  <>
-                    <button
-                      className="btn-edit"
-                      onClick={() => handleEditJob(job)}
-                      title={t('pages.jobs.editJob')}
-                    >
-                      <Edit size={16} />
-                      {t('common.edit')}
-                    </button>
-                    <button
-                      className="btn-complete"
-                      onClick={() => handleCompleteJob(job.appointmentId)}
-                      title={t('pages.jobs.markComplete')}
-                    >
-                      <CheckCircle size={16} />
-                      {t('pages.jobs.markComplete')}
-                    </button>
-                    <button
-                      className="btn-cancel"
-                      onClick={() => handleCancelJob(job.appointmentId)}
-                      title={t('pages.appointments.cancelAppointment')}
-                    >
-                      <X size={16} />
-                      {t('common.cancel')}
-                    </button>
-                  </>
-                )}
-                {job.status === "COMPLETED" && (
-                  <>
-                    <button
-                      className="btn-report"
-                      onClick={() => handleOpenReportModal(job)}
-                      disabled={reportCheckLoading === job.appointmentId}
-                      title="Create/Edit Work Report"
-                    >
-                      <FileText size={16} />
-                      {reportCheckLoading === job.appointmentId 
-                        ? "Loading..." 
-                        : jobReports.has(job.appointmentId) 
-                        ? "Edit Report" 
-                        : "Create Report"}
-                    </button>
-                    {jobReports.has(job.appointmentId) && (
+                  {job.status === 'COMPLETED' && (
+                    <>
                       <button
-                        className="btn-view-report"
-                        onClick={() => handleViewReport(job.appointmentId)}
-                        title="View Report Details"
+                        className="btn-report"
+                        onClick={() => handleOpenReportModal(job)}
+                        disabled={reportCheckLoading === job.appointmentId}
+                        title="Create/Edit Work Report"
                       >
                         <FileText size={16} />
-                        View Report
+                        {reportCheckLoading === job.appointmentId
+                          ? 'Loading...'
+                          : jobReports.has(job.appointmentId)
+                            ? 'Edit Report'
+                            : 'Create Report'}
                       </button>
-                    )}
-                  </>
-                )}
-              </div>
+                      {jobReports.has(job.appointmentId) && (
+                        <button
+                          className="btn-view-report"
+                          onClick={() => handleViewReport(job.appointmentId)}
+                          title="View Report Details"
+                        >
+                          <FileText size={16} />
+                          View Report
+                        </button>
+                      )}
+                    </>
+                  )}
+                </div>
 
-              {/* View Details & Download Report Button */}
-              <div style={{ display: "flex", gap: "8px" }}>
-                <button
-                  className="btn-view-details"
-                  onClick={() => setSelectedJob(job)}
-                >
-                  {t('pages.jobs.viewFullDetails')}
-                </button>
-                {job.status === "COMPLETED" && jobReports.has(job.appointmentId) && (
-                  <button
-                    className="btn-view-details"
-                    onClick={async () => {
-                      try {
-                        const reportId = jobReports.get(job.appointmentId)?.reportId;
-                        if (!reportId) return;
-                        const blob = await exportReportPdf(reportId);
-                        const url = window.URL.createObjectURL(blob);
-                        const link = document.createElement("a");
-                        link.href = url;
-                        link.download = `report_${reportId}.pdf`;
-                        document.body.appendChild(link);
-                        link.click();
-                        link.remove();
-                        window.URL.revokeObjectURL(url);
-                        setToast({ message: "Report PDF downloaded", type: "success" });
-                      } catch (err) {
-                        console.error("Download PDF failed", err);
-                        setToast({ message: "Failed to download PDF", type: "error" });
-                      }
-                    }}
-                    title="Download Report PDF"
-                    style={{ display: "flex", alignItems: "center", gap: "6px" }}
-                  >
-                    <Download size={16} />
-                    {t('common.download')}
+                {/* View Details & Download Report Button */}
+                <div style={{ display: 'flex', gap: '8px' }}>
+                  <button className="btn-view-details" onClick={() => setSelectedJob(job)}>
+                    {t('pages.jobs.viewFullDetails')}
                   </button>
-                )}
+                  {job.status === 'COMPLETED' && jobReports.has(job.appointmentId) && (
+                    <button
+                      className="btn-view-details"
+                      onClick={async () => {
+                        try {
+                          const reportId = jobReports.get(job.appointmentId)?.reportId;
+                          if (!reportId) return;
+                          const blob = await exportReportPdf(reportId);
+                          const url = window.URL.createObjectURL(blob);
+                          const link = document.createElement('a');
+                          link.href = url;
+                          link.download = `report_${reportId}.pdf`;
+                          document.body.appendChild(link);
+                          link.click();
+                          link.remove();
+                          window.URL.revokeObjectURL(url);
+                          setToast({ message: 'Report PDF downloaded', type: 'success' });
+                        } catch (err) {
+                          console.error('Download PDF failed', err);
+                          setToast({ message: 'Failed to download PDF', type: 'error' });
+                        }
+                      }}
+                      title="Download Report PDF"
+                      style={{ display: 'flex', alignItems: 'center', gap: '6px' }}
+                    >
+                      <Download size={16} />
+                      {t('common.download')}
+                    </button>
+                  )}
+                </div>
               </div>
-            </div>
-          ))}
-        </div>
+            ))}
+          </div>
 
-        <div className="pagination-controls">
-          <button
-            className="pagination-button"
-            onClick={goPrev}
-            disabled={currentPage === 1}
-            title="Previous"
-            aria-label="Previous"
-          >
-            <ChevronLeft size={18} />
-          </button>
-          <span className="page-indicator">
-            {currentPage} / {totalPages}
-          </span>
-          <button
-            className="pagination-button"
-            onClick={goNext}
-            disabled={currentPage === totalPages}
-            title="Next"
-            aria-label="Next"
-          >
-            <ChevronRight size={18} />
-          </button>
-        </div>
+          <div className="pagination-controls">
+            <button
+              className="pagination-button"
+              onClick={goPrev}
+              disabled={currentPage === 1}
+              title="Previous"
+              aria-label="Previous"
+            >
+              <ChevronLeft size={18} />
+            </button>
+            <span className="page-indicator">
+              {currentPage} / {totalPages}
+            </span>
+            <button
+              className="pagination-button"
+              onClick={goNext}
+              disabled={currentPage === totalPages}
+              title="Next"
+              aria-label="Next"
+            >
+              <ChevronRight size={18} />
+            </button>
+          </div>
         </>
       )}
 
@@ -655,10 +712,21 @@ export default function MyJobsPage(): React.ReactElement {
             <div className="modal-content-light">
               <div className="detail-section">
                 <h3>{t('pages.jobs.serviceInformation')}</h3>
-                <p><strong>{t('pages.jobs.job')}:</strong> {selectedJob.jobName}</p>
-                <p><strong>{t('pages.jobs.type')}:</strong> {selectedJob.jobType}</p>
-                <p><strong>{t('pages.jobs.rate')}:</strong> ${selectedJob.hourlyRate.toFixed(2)}/hour</p>
-                <p><strong>{t('pages.jobs.status')}:</strong> <span className={`modal-status-badge ${getStatusBadge(selectedJob.status)}`}>{getStatusLabel(selectedJob.status)}</span></p>
+                <p>
+                  <strong>{t('pages.jobs.job')}:</strong> {selectedJob.jobName}
+                </p>
+                <p>
+                  <strong>{t('pages.jobs.type')}:</strong> {selectedJob.jobType}
+                </p>
+                <p>
+                  <strong>{t('pages.jobs.rate')}:</strong> ${selectedJob.hourlyRate.toFixed(2)}/hour
+                </p>
+                <p>
+                  <strong>{t('pages.jobs.status')}:</strong>{' '}
+                  <span className={`modal-status-badge ${getStatusBadge(selectedJob.status)}`}>
+                    {getStatusLabel(selectedJob.status)}
+                  </span>
+                </p>
               </div>
 
               <div className="detail-section">
@@ -669,7 +737,7 @@ export default function MyJobsPage(): React.ReactElement {
                     <>
                       <br />
                       <strong>{t('pages.jobs.start')}:</strong> {selectedJob.appointmentStartTime}
-                      {" | "}
+                      {' | '}
                       <strong>{t('pages.jobs.end')}:</strong> {selectedJob.appointmentEndTime}
                     </>
                   )}
@@ -678,25 +746,48 @@ export default function MyJobsPage(): React.ReactElement {
 
               <div className="detail-section customer-highlight">
                 <h3>{t('pages.jobs.customerInformation')}</h3>
-                <p><strong>{t('pages.jobs.name')}:</strong> {selectedJob.customerFirstName} {selectedJob.customerLastName}</p>
+                <p>
+                  <strong>{t('pages.jobs.name')}:</strong> {selectedJob.customerFirstName}{' '}
+                  {selectedJob.customerLastName}
+                </p>
                 {selectedJob.customerPhoneNumbers.map((phone, idx) => (
-                  <p key={idx}><strong>{phone.type}:</strong> {phone.number}</p>
+                  <p key={idx}>
+                    <strong>{phone.type}:</strong> {phone.number}
+                  </p>
                 ))}
               </div>
 
               <div className="detail-section">
                 <h3>{t('pages.jobs.cellar')}</h3>
-                <p><strong>{t('pages.jobs.name')}:</strong> {selectedJob.cellarName}</p>
+                <p>
+                  <strong>{t('pages.jobs.name')}:</strong> {selectedJob.cellarName}
+                </p>
                 {matchedCellar ? (
                   <>
-                    <p><strong>{t('pages.jobs.type')}:</strong> {matchedCellar.cellarType}</p>
-                    <p><strong>{t('pages.jobs.dimensions')}:</strong> {cellarDimensions}</p>
-                    <p><strong>{t('pages.jobs.capacity')}:</strong> {matchedCellar.bottleCapacity} bottles</p>
-                    <p><strong>{t('pages.jobs.features')}:</strong> {[
-                      matchedCellar.hasCoolingSystem ? t('pages.appointments.cooling') : null,
-                      matchedCellar.hasHumidityControl ? t('pages.appointments.humidityControl') : null,
-                      matchedCellar.hasAutoRegulation ? t('pages.appointments.autoRegulation') : null,
-                    ].filter(Boolean).join(', ') || t('common.none')}</p>
+                    <p>
+                      <strong>{t('pages.jobs.type')}:</strong> {matchedCellar.cellarType}
+                    </p>
+                    <p>
+                      <strong>{t('pages.jobs.dimensions')}:</strong> {cellarDimensions}
+                    </p>
+                    <p>
+                      <strong>{t('pages.jobs.capacity')}:</strong> {matchedCellar.bottleCapacity}{' '}
+                      bottles
+                    </p>
+                    <p>
+                      <strong>{t('pages.jobs.features')}:</strong>{' '}
+                      {[
+                        matchedCellar.hasCoolingSystem ? t('pages.appointments.cooling') : null,
+                        matchedCellar.hasHumidityControl
+                          ? t('pages.appointments.humidityControl')
+                          : null,
+                        matchedCellar.hasAutoRegulation
+                          ? t('pages.appointments.autoRegulation')
+                          : null,
+                      ]
+                        .filter(Boolean)
+                        .join(', ') || t('common.none')}
+                    </p>
                   </>
                 ) : null}
               </div>
@@ -704,8 +795,13 @@ export default function MyJobsPage(): React.ReactElement {
               <div className="detail-section">
                 <h3>{t('pages.jobs.serviceLocation')}</h3>
                 <p>{selectedJob.appointmentAddress.streetAddress}</p>
-                <p>{selectedJob.appointmentAddress.city}, {selectedJob.appointmentAddress.province}</p>
-                <p>{selectedJob.appointmentAddress.country} {selectedJob.appointmentAddress.postalCode}</p>
+                <p>
+                  {selectedJob.appointmentAddress.city}, {selectedJob.appointmentAddress.province}
+                </p>
+                <p>
+                  {selectedJob.appointmentAddress.country}{' '}
+                  {selectedJob.appointmentAddress.postalCode}
+                </p>
               </div>
 
               <div className="detail-section">
@@ -729,19 +825,23 @@ export default function MyJobsPage(): React.ReactElement {
         />
       )}
 
-      {toast && (
-        <Toast
-          message={toast.message}
-          type={toast.type}
-          onClose={() => setToast(null)}
-        />
-      )}
+      {toast && <Toast message={toast.message} type={toast.type} onClose={() => setToast(null)} />}
 
       <ConfirmationModal
         isOpen={confirmModal.isOpen}
-        title={confirmModal.type === 'complete' ? t('pages.jobs.confirmCompleteTitle') : t('pages.appointments.confirmCancelTitle')}
-        message={confirmModal.type === 'complete' ? t('pages.jobs.confirmComplete') : t('pages.appointments.confirmCancel')}
-        confirmText={confirmModal.type === 'complete' ? t('pages.jobs.markComplete') : t('common.cancel')}
+        title={
+          confirmModal.type === 'complete'
+            ? t('pages.jobs.confirmCompleteTitle')
+            : t('pages.appointments.confirmCancelTitle')
+        }
+        message={
+          confirmModal.type === 'complete'
+            ? t('pages.jobs.confirmComplete')
+            : t('pages.appointments.confirmCancel')
+        }
+        confirmText={
+          confirmModal.type === 'complete' ? t('pages.jobs.markComplete') : t('common.cancel')
+        }
         cancelText={t('common.goBack')}
         isDanger={confirmModal.type === 'cancel'}
         onConfirm={handleConfirmAction}

@@ -1,4 +1,4 @@
-import axiosInstance from "../../../shared/api/axiosInstance";
+import axiosInstance from '../../../shared/api/axiosInstance';
 import type { BillResponseModel } from '../models/BillResponseModel';
 
 /**

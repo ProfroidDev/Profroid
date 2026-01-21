@@ -53,9 +53,7 @@
     transform: translateX(0);
   }
   100% {
-    transform: translateX(
-      -50%
-    ); /* Move half the width (since we duplicated content) */
+    transform: translateX(-50%); /* Move half the width (since we duplicated content) */
   }
 }
 

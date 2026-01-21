@@ -1,4 +1,4 @@
-import { Page, Locator, expect } from "@playwright/test";
+import { Page, Locator, expect } from '@playwright/test';
 
 export class CustomerPage {
   readonly page: Page;
@@ -7,12 +7,12 @@ export class CustomerPage {
 
   constructor(page: Page) {
     this.page = page;
-    this.addCustomerButton = page.getByRole("button", { name: /add customer/i });
-    this.tableRows = page.locator(".customers-table-light tbody tr");
+    this.addCustomerButton = page.getByRole('button', { name: /add customer/i });
+    this.tableRows = page.locator('.customers-table-light tbody tr');
   }
 
   async goto() {
-    await this.page.goto("http://localhost:5173/customers");
+    await this.page.goto('http://localhost:5173/customers');
   }
 
   async openCreateModal() {
@@ -21,24 +21,22 @@ export class CustomerPage {
 
   // Works even when DOM splits text
   async rowByName(first: string, last: string) {
-    return this.page
-      .locator("tr", { hasText: new RegExp(`${first}.*${last}`, "i") })
-      .first();
+    return this.page.locator('tr', { hasText: new RegExp(`${first}.*${last}`, 'i') }).first();
   }
 
   async clickViewDetails(first: string, last: string) {
     const row = await this.rowByName(first, last);
-    await row.getByRole("button", { name: /view details/i }).click();
+    await row.getByRole('button', { name: /view details/i }).click();
   }
 
   async clickEdit(first: string, last: string) {
     const row = await this.rowByName(first, last);
-    await row.getByRole("button", { name: /^edit$/i }).click();
+    await row.getByRole('button', { name: /^edit$/i }).click();
   }
 
   async clickDelete(first: string, last: string) {
     const row = await this.rowByName(first, last);
-    await row.getByRole("button", { name: /^delete$/i }).click();
+    await row.getByRole('button', { name: /^delete$/i }).click();
   }
 
   // ============================================
@@ -46,14 +44,11 @@ export class CustomerPage {
   // ============================================
 
   deleteModal = () =>
-    this.page.locator(".confirmation-modal-container")
-      .filter({ hasText: "Delete Customer" });
+    this.page.locator('.confirmation-modal-container').filter({ hasText: 'Delete Customer' });
 
-  confirmDeleteButton = () =>
-    this.deleteModal().getByRole("button", { name: /^delete$/i });
+  confirmDeleteButton = () => this.deleteModal().getByRole('button', { name: /^delete$/i });
 
-  cancelDeleteButton = () =>
-    this.deleteModal().getByRole("button", { name: /^cancel$/i });
+  cancelDeleteButton = () => this.deleteModal().getByRole('button', { name: /^cancel$/i });
 
   async confirmDelete() {
     // Wait for modal to actually open
@@ -70,23 +65,21 @@ export class CustomerPage {
   // ============================================
   // EDIT MODAL FIELDS
   // ============================================
-  firstNameInput = () => this.page.locator("input").nth(0);
-  lastNameInput = () => this.page.locator("input").nth(1);
-  phoneNumberInput = () => this.page.locator("input").nth(2);
-  streetInput = () => this.page.locator("input").nth(3);
-  cityInput = () => this.page.locator("input").nth(4);
-  provinceInput = () => this.page.locator("input").nth(5);
-  countryInput = () => this.page.locator("input").nth(6);
-  postalCodeInput = () => this.page.locator("input").nth(7);
-  userIdInput = () => this.page.locator("input").nth(8);
+  firstNameInput = () => this.page.locator('input').nth(0);
+  lastNameInput = () => this.page.locator('input').nth(1);
+  phoneNumberInput = () => this.page.locator('input').nth(2);
+  streetInput = () => this.page.locator('input').nth(3);
+  cityInput = () => this.page.locator('input').nth(4);
+  provinceInput = () => this.page.locator('input').nth(5);
+  countryInput = () => this.page.locator('input').nth(6);
+  postalCodeInput = () => this.page.locator('input').nth(7);
+  userIdInput = () => this.page.locator('input').nth(8);
 
-  phoneTypeSelect = () => this.page.locator("select").nth(0);
+  phoneTypeSelect = () => this.page.locator('select').nth(0);
 
-  saveButton = () =>
-    this.page.getByRole("button", { name: /save changes/i });
+  saveButton = () => this.page.getByRole('button', { name: /save changes/i });
 
-  createButton = () =>
-    this.page.getByRole("button", { name: /Create Customer/i });
+  createButton = () => this.page.getByRole('button', { name: /Create Customer/i });
 
   // ============================================
   // EDIT ACTION

@@ -1,9 +1,9 @@
-import { Page } from "@playwright/test";
-import { customerTest as test, expect } from "../../fixtures/authFixtures";
-import { UserProfilePage } from "../../support/page-objects/pages/userProfile.page";
+import { Page } from '@playwright/test';
+import { customerTest as test, expect } from '../../fixtures/authFixtures';
+import { UserProfilePage } from '../../support/page-objects/pages/userProfile.page';
 
-test.describe("Profile - View and Edit", () => {
-  test("User can view profile, edit fields, and save", async ({ loggedInHomePage }) => {
+test.describe('Profile - View and Edit', () => {
+  test('User can view profile, edit fields, and save', async ({ loggedInHomePage }) => {
     const page = (loggedInHomePage as unknown as { page: Page }).page;
     const profilePage = new UserProfilePage(page);
 
@@ -19,8 +19,8 @@ test.describe("Profile - View and Edit", () => {
     const ts = Date.now();
     const newFirst = `John${ts}`;
     const newLast = `Doe${ts}`;
-    const newPhone = "555-111-2222";
-    const newStreet = "789 Updated St";
+    const newPhone = '555-111-2222';
+    const newStreet = '789 Updated St';
 
     await profilePage.firstNameInput().fill(newFirst);
     await profilePage.lastNameInput().fill(newLast);

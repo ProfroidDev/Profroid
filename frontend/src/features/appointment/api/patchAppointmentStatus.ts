@@ -1,6 +1,6 @@
-import axiosInstance from "../../../shared/api/axiosInstance";
-import type { AppointmentResponseModel } from "../models/AppointmentResponseModel";
-import type { AppointmentStatusChangeRequestModel } from "../models/AppointmentStatusChangeRequestModel";
+import axiosInstance from '../../../shared/api/axiosInstance';
+import type { AppointmentResponseModel } from '../models/AppointmentResponseModel';
+import type { AppointmentStatusChangeRequestModel } from '../models/AppointmentStatusChangeRequestModel';
 
 export async function patchAppointmentStatus(
   appointmentId: string,

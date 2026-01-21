@@ -1,5 +1,5 @@
-import axiosInstance from "../../../shared/api/axiosInstance";
+import axiosInstance from '../../../shared/api/axiosInstance';
 
 export async function deletePart(partId: string): Promise<void> {
-    await axiosInstance.delete(`/parts/${partId}`);
+  await axiosInstance.delete(`/parts/${partId}`);
 }

@@ -1,4 +1,4 @@
-import type { JobType } from "./JobType";
+import type { JobType } from './JobType';
 
 export interface JobResponseModel {
   jobId: string;

@@ -1,4 +1,4 @@
-import type { CustomerPhoneNumber } from "./CustomerPhoneNumber";
+import type { CustomerPhoneNumber } from './CustomerPhoneNumber';
 
 export interface CustomerResponseModel {
   customerId: string;

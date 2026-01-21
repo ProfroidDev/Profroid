@@ -1,31 +1,30 @@
-import React, { useEffect, useState } from "react";
-import { useTranslation } from "react-i18next";
-import { getEmployees } from "../../features/employee/api/getAllEmployees";
-import { getEmployee } from "../../features/employee/api/getEmployeeById";
-import { deactivateEmployee } from "../../features/employee/api/deactivateEmployee";
-import { reactivateEmployee } from "../../features/employee/api/reactivateEmployee";
-import type { EmployeeResponseModel } from "../../features/employee/models/EmployeeResponseModel";
-import type { EmployeeSchedule } from "../../features/employee/models/EmployeeSchedule";
-import { getEmployeeSchedule } from "../../features/employee/api/getEmployeeSchedule";
-import { getEmployeeScheduleForDate } from "../../features/employee/api/getEmployeeScheduleForDate";
+import React, { useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
+import { getEmployees } from '../../features/employee/api/getAllEmployees';
+import { getEmployee } from '../../features/employee/api/getEmployeeById';
+import { deactivateEmployee } from '../../features/employee/api/deactivateEmployee';
+import { reactivateEmployee } from '../../features/employee/api/reactivateEmployee';
+import type { EmployeeResponseModel } from '../../features/employee/models/EmployeeResponseModel';
+import type { EmployeeSchedule } from '../../features/employee/models/EmployeeSchedule';
+import { getEmployeeSchedule } from '../../features/employee/api/getEmployeeSchedule';
+import { getEmployeeScheduleForDate } from '../../features/employee/api/getEmployeeScheduleForDate';
 import Calendar from 'react-calendar';
 import 'react-calendar/dist/Calendar.css';
-import EmployeeAssignModal from "../../components/EmployeeAssignModal";
-import EmployeeEditModal from "../../components/EmployeeEditModal";
-import ConfirmationModal from "../../components/ConfirmationModal";
-import Toast from "../../shared/components/Toast";
-import AddScheduleModal from "../../features/employee/components/AddScheduleModal";
-import UpdateScheduleModal from "../../features/employee/components/UpdateScheduleModal";
-import UpdateDayScheduleModal from "../../features/employee/components/UpdateDayScheduleModal";
+import EmployeeAssignModal from '../../components/EmployeeAssignModal';
+import EmployeeEditModal from '../../components/EmployeeEditModal';
+import ConfirmationModal from '../../components/ConfirmationModal';
+import Toast from '../../shared/components/Toast';
+import AddScheduleModal from '../../features/employee/components/AddScheduleModal';
+import UpdateScheduleModal from '../../features/employee/components/UpdateScheduleModal';
+import UpdateDayScheduleModal from '../../features/employee/components/UpdateDayScheduleModal';
 
-import "./EmployeeListPage.css";
+import './EmployeeListPage.css';
 
 export default function EmployeeListPage(): React.ReactElement {
   const { t, i18n } = useTranslation();
   const [employees, setEmployees] = useState<EmployeeResponseModel[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
-  const [selectedEmployee, setSelectedEmployee] =
-    useState<EmployeeResponseModel | null>(null);
+  const [selectedEmployee, setSelectedEmployee] = useState<EmployeeResponseModel | null>(null);
   const [modalOpen, setModalOpen] = useState<boolean>(false);
   const [detailLoading, setDetailLoading] = useState<boolean>(false);
   const [scheduleModalOpen, setScheduleModalOpen] = useState<boolean>(false);
@@ -33,7 +32,9 @@ export default function EmployeeListPage(): React.ReactElement {
   const [employeeSchedule, setEmployeeSchedule] = useState<EmployeeSchedule[]>([]);
   const [addScheduleOpen, setAddScheduleOpen] = useState<boolean>(false);
   const [addScheduleEmployeeId, setAddScheduleEmployeeId] = useState<string | null>(null);
-  const [scheduleEmployeeData, setScheduleEmployeeData] = useState<EmployeeResponseModel | null>(null);
+  const [scheduleEmployeeData, setScheduleEmployeeData] = useState<EmployeeResponseModel | null>(
+    null
+  );
   // Removed unused selectedDay state
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [selectedDateSchedule, setSelectedDateSchedule] = useState<EmployeeSchedule | null>(null);
@@ -42,7 +43,12 @@ export default function EmployeeListPage(): React.ReactElement {
   useEffect(() => {
     async function fetchDateSchedule() {
       if (selectedDate && scheduleEmployeeData) {
-        const employeeId = String((scheduleEmployeeData.employeeIdentifier as EmployeeResponseModel['employeeIdentifier'] & Record<string, unknown>)?.employeeId);
+        const employeeId = String(
+          (
+            scheduleEmployeeData.employeeIdentifier as EmployeeResponseModel['employeeIdentifier'] &
+              Record<string, unknown>
+          )?.employeeId
+        );
         if (employeeId) {
           try {
             const formattedDate = selectedDate.toISOString().split('T')[0];
@@ -55,15 +61,23 @@ export default function EmployeeListPage(): React.ReactElement {
           } catch (error) {
             console.error('Error fetching date schedule:', error);
             // Fall back to weekly template on error
-            const dayOfWeek = selectedDate.toLocaleDateString('en-US', { weekday: 'long' }).toUpperCase();
-            const weeklySchedule = employeeSchedule.find(s => s.dayOfWeek.toUpperCase() === dayOfWeek);
+            const dayOfWeek = selectedDate
+              .toLocaleDateString('en-US', { weekday: 'long' })
+              .toUpperCase();
+            const weeklySchedule = employeeSchedule.find(
+              (s) => s.dayOfWeek.toUpperCase() === dayOfWeek
+            );
             setSelectedDateSchedule(weeklySchedule || null);
           }
         }
       } else if (selectedDate && employeeSchedule.length > 0) {
         // Fall back to weekly template if no employee data
-        const dayOfWeek = selectedDate.toLocaleDateString('en-US', { weekday: 'long' }).toUpperCase();
-        const weeklySchedule = employeeSchedule.find(s => s.dayOfWeek.toUpperCase() === dayOfWeek);
+        const dayOfWeek = selectedDate
+          .toLocaleDateString('en-US', { weekday: 'long' })
+          .toUpperCase();
+        const weeklySchedule = employeeSchedule.find(
+          (s) => s.dayOfWeek.toUpperCase() === dayOfWeek
+        );
         setSelectedDateSchedule(weeklySchedule || null);
       } else {
         setSelectedDateSchedule(null);
@@ -72,7 +86,10 @@ export default function EmployeeListPage(): React.ReactElement {
     fetchDateSchedule();
   }, [selectedDate, scheduleEmployeeData, employeeSchedule]);
   const [assignModalOpen, setAssignModalOpen] = useState<boolean>(false);
-  const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' | 'info' | 'warning' } | null>(null);
+  const [toast, setToast] = useState<{
+    message: string;
+    type: 'success' | 'error' | 'info' | 'warning';
+  } | null>(null);
 
   // Edit modal state
   const [editModalOpen, setEditModalOpen] = useState<boolean>(false);
@@ -80,13 +97,13 @@ export default function EmployeeListPage(): React.ReactElement {
 
   // Update schedule modal state
   const [updateScheduleOpen, setUpdateScheduleOpen] = useState<boolean>(false);
-  
+
   // Update day schedule modal state
   const [updateDayScheduleOpen, setUpdateDayScheduleOpen] = useState<boolean>(false);
-  
+
   // Deactivate/Reactivate state
   const [deactivateLoading, setDeactivateLoading] = useState<boolean>(false);
-  
+
   // Confirmation modal state
   const [confirmationModal, setConfirmationModal] = useState<{
     isOpen: boolean;
@@ -103,10 +120,10 @@ export default function EmployeeListPage(): React.ReactElement {
       setLoading(true);
       try {
         const data = await getEmployees();
-        console.log("Employees fetched:", data);
+        console.log('Employees fetched:', data);
         setEmployees(data);
       } catch (error) {
-        console.error("Error fetching employees:", error);
+        console.error('Error fetching employees:', error);
       } finally {
         setLoading(false);
       }
@@ -118,19 +135,22 @@ export default function EmployeeListPage(): React.ReactElement {
     setModalOpen(true);
     setDetailLoading(true);
     try {
-      const employeeId = (employee.employeeIdentifier as EmployeeResponseModel['employeeIdentifier'] & Record<string, unknown>)?.employeeId;
-      
+      const employeeId = (
+        employee.employeeIdentifier as EmployeeResponseModel['employeeIdentifier'] &
+          Record<string, unknown>
+      )?.employeeId;
+
       if (employeeId) {
-        console.log("Fetching employee with ID:", employeeId);
+        console.log('Fetching employee with ID:', employeeId);
         const data = await getEmployee(String(employeeId));
-        console.log("Employee details fetched:", data);
+        console.log('Employee details fetched:', data);
         setSelectedEmployee(data);
       } else {
-        console.warn("No employee ID found, using employee data directly");
+        console.warn('No employee ID found, using employee data directly');
         setSelectedEmployee(employee);
       }
     } catch (error) {
-      console.error("Error fetching employee details:", error);
+      console.error('Error fetching employee details:', error);
       // Fallback: just use the employee data we already have
       setSelectedEmployee(employee);
     } finally {
@@ -151,7 +171,10 @@ export default function EmployeeListPage(): React.ReactElement {
     setScheduleLoading(true);
     setScheduleEmployeeData(employee);
     try {
-      const employeeId = (employee.employeeIdentifier as EmployeeResponseModel['employeeIdentifier'] & Record<string, unknown>)?.employeeId;
+      const employeeId = (
+        employee.employeeIdentifier as EmployeeResponseModel['employeeIdentifier'] &
+          Record<string, unknown>
+      )?.employeeId;
       if (employeeId) {
         const scheduleData = await getEmployeeSchedule(String(employeeId));
         setEmployeeSchedule(scheduleData);
@@ -165,7 +188,7 @@ export default function EmployeeListPage(): React.ReactElement {
         setAddScheduleEmployeeId(null);
       }
     } catch (error) {
-      console.error("Error fetching employee schedule:", error);
+      console.error('Error fetching employee schedule:', error);
       setEmployeeSchedule([]);
       setAddScheduleEmployeeId(null);
     } finally {
@@ -191,19 +214,34 @@ export default function EmployeeListPage(): React.ReactElement {
 
     setDeactivateLoading(true);
     try {
-      const employeeId = (confirmationModal.employee.employeeIdentifier as EmployeeResponseModel['employeeIdentifier'] & Record<string, unknown>)?.employeeId;
+      const employeeId = (
+        confirmationModal.employee
+          .employeeIdentifier as EmployeeResponseModel['employeeIdentifier'] &
+          Record<string, unknown>
+      )?.employeeId;
       if (employeeId) {
         const updatedEmployee = await deactivateEmployee(String(employeeId));
-        setToast({ message: t('pages.employees.employeeDeactivated', { firstName: confirmationModal.employee.firstName, lastName: confirmationModal.employee.lastName }), type: 'warning' });
+        setToast({
+          message: t('pages.employees.employeeDeactivated', {
+            firstName: confirmationModal.employee.firstName,
+            lastName: confirmationModal.employee.lastName,
+          }),
+          type: 'warning',
+        });
         // Update the employee in the list to show deactivated state
-        setEmployees(employees.map(e => 
-          (e.employeeIdentifier as EmployeeResponseModel['employeeIdentifier'] & Record<string, unknown>)?.employeeId === employeeId 
-            ? updatedEmployee 
-            : e
-        ));
+        setEmployees(
+          employees.map((e) =>
+            (
+              e.employeeIdentifier as EmployeeResponseModel['employeeIdentifier'] &
+                Record<string, unknown>
+            )?.employeeId === employeeId
+              ? updatedEmployee
+              : e
+          )
+        );
       }
     } catch (error) {
-      console.error("Error deactivating employee:", error);
+      console.error('Error deactivating employee:', error);
       setToast({ message: t('pages.employees.failedToDeactivate'), type: 'error' });
     } finally {
       setDeactivateLoading(false);
@@ -224,19 +262,34 @@ export default function EmployeeListPage(): React.ReactElement {
 
     setDeactivateLoading(true);
     try {
-      const employeeId = (confirmationModal.employee.employeeIdentifier as EmployeeResponseModel['employeeIdentifier'] & Record<string, unknown>)?.employeeId;
+      const employeeId = (
+        confirmationModal.employee
+          .employeeIdentifier as EmployeeResponseModel['employeeIdentifier'] &
+          Record<string, unknown>
+      )?.employeeId;
       if (employeeId) {
         const updatedEmployee = await reactivateEmployee(String(employeeId));
-        setToast({ message: t('pages.employees.employeeReactivated', { firstName: confirmationModal.employee.firstName, lastName: confirmationModal.employee.lastName }), type: 'success' });
+        setToast({
+          message: t('pages.employees.employeeReactivated', {
+            firstName: confirmationModal.employee.firstName,
+            lastName: confirmationModal.employee.lastName,
+          }),
+          type: 'success',
+        });
         // Update the employee in the list to show reactivated state
-        setEmployees(employees.map(e => 
-          (e.employeeIdentifier as EmployeeResponseModel['employeeIdentifier'] & Record<string, unknown>)?.employeeId === employeeId 
-            ? updatedEmployee 
-            : e
-        ));
+        setEmployees(
+          employees.map((e) =>
+            (
+              e.employeeIdentifier as EmployeeResponseModel['employeeIdentifier'] &
+                Record<string, unknown>
+            )?.employeeId === employeeId
+              ? updatedEmployee
+              : e
+          )
+        );
       }
     } catch (error) {
-      console.error("Error reactivating employee:", error);
+      console.error('Error reactivating employee:', error);
       setToast({ message: t('pages.employees.failedToReactivate'), type: 'error' });
     } finally {
       setDeactivateLoading(false);
@@ -250,10 +303,7 @@ export default function EmployeeListPage(): React.ReactElement {
 
       <div className="employees-card-light">
         <div style={{ marginBottom: '20px' }}>
-          <button 
-            className="btn-add-employee" 
-            onClick={() => setAssignModalOpen(true)}
-          >
+          <button className="btn-add-employee" onClick={() => setAssignModalOpen(true)}>
             + {t('pages.employees.addEmployee')}
           </button>
         </div>
@@ -336,9 +386,7 @@ export default function EmployeeListPage(): React.ReactElement {
               </button>
             </div>
 
-            {detailLoading && (
-              <div className="loading-light">{t('common.loading')}</div>
-            )}
+            {detailLoading && <div className="loading-light">{t('common.loading')}</div>}
 
             {!detailLoading && selectedEmployee && (
               <div className="modal-content-light">
@@ -346,7 +394,10 @@ export default function EmployeeListPage(): React.ReactElement {
                 <div className="modal-section">
                   <h4 className="modal-label">{t('pages.employees.employeeId')}</h4>
                   <p className="modal-value">
-                    {((selectedEmployee.employeeIdentifier as EmployeeResponseModel['employeeIdentifier'] & Record<string, unknown>) || {})?.employeeId || "N/A"}
+                    {(
+                      (selectedEmployee.employeeIdentifier as EmployeeResponseModel['employeeIdentifier'] &
+                        Record<string, unknown>) || {}
+                    )?.employeeId || 'N/A'}
                   </p>
                 </div>
 
@@ -361,7 +412,10 @@ export default function EmployeeListPage(): React.ReactElement {
                 <div className="modal-section">
                   <h4 className="modal-label">{t('pages.employees.role')}</h4>
                   <p className="modal-value">
-                    {String((selectedEmployee.employeeRole as unknown as Record<string, string>)?.employeeRoleType || "N/A")}
+                    {String(
+                      (selectedEmployee.employeeRole as unknown as Record<string, string>)
+                        ?.employeeRoleType || 'N/A'
+                    )}
                   </p>
                 </div>
 
@@ -372,7 +426,11 @@ export default function EmployeeListPage(): React.ReactElement {
                     {selectedEmployee.phoneNumbers?.map((p, i) => (
                       <li key={i} className="modal-list-item">
                         <span className="modal-list-type">
-                          {String(typeof p.type === 'object' ? (p.type as unknown as Record<string, string>).phoneType : p.type)}
+                          {String(
+                            typeof p.type === 'object'
+                              ? (p.type as unknown as Record<string, string>).phoneType
+                              : p.type
+                          )}
                         </span>
                         <span>{p.number}</span>
                       </li>
@@ -385,19 +443,19 @@ export default function EmployeeListPage(): React.ReactElement {
                   <h4 className="modal-label">{t('pages.employees.address')}</h4>
                   <p className="modal-value">
                     {selectedEmployee.employeeAddress?.streetAddress}
-                    {selectedEmployee.employeeAddress?.city && `, ${selectedEmployee.employeeAddress.city}`}
+                    {selectedEmployee.employeeAddress?.city &&
+                      `, ${selectedEmployee.employeeAddress.city}`}
                     {selectedEmployee.employeeAddress?.province &&
                       `, ${selectedEmployee.employeeAddress.province}`}
                     <br />
-                    {selectedEmployee.employeeAddress?.country} {selectedEmployee.employeeAddress?.postalCode}
+                    {selectedEmployee.employeeAddress?.country}{' '}
+                    {selectedEmployee.employeeAddress?.postalCode}
                   </p>
                 </div>
 
                 <div className="modal-section">
                   <h4 className="modal-label">{t('pages.employees.userId')}</h4>
-                  <p className="modal-value">
-                    {selectedEmployee.userId}
-                  </p>
+                  <p className="modal-value">{selectedEmployee.userId}</p>
                 </div>
               </div>
             )}
@@ -417,18 +475,18 @@ export default function EmployeeListPage(): React.ReactElement {
             {scheduleLoading && (
               <div className="loading-light">{t('pages.employees.loadingSchedule')}</div>
             )}
-            
+
             {!scheduleLoading && !scheduleEmployeeData?.isActive && (
               <div className="modal-content-light">
                 <div className="modal-section">
-                  <h4 className="modal-label" style={{ color: '#ff6b6b' }}>{t('pages.employees.employeeInactive')}</h4>
-                  <p className="modal-value">
-                    {t('pages.employees.employeeInactiveMessage')}
-                  </p>
+                  <h4 className="modal-label" style={{ color: '#ff6b6b' }}>
+                    {t('pages.employees.employeeInactive')}
+                  </h4>
+                  <p className="modal-value">{t('pages.employees.employeeInactiveMessage')}</p>
                 </div>
               </div>
             )}
-            
+
             {!scheduleLoading && scheduleEmployeeData?.isActive && employeeSchedule.length > 0 && (
               <div className="modal-content-light">
                 <div className="modal-section schedule-calendar-section">
@@ -445,53 +503,81 @@ export default function EmployeeListPage(): React.ReactElement {
                   <h4 className="modal-label">{t('pages.employees.timeSlots')}</h4>
                   <ul className="modal-list">
                     {(() => {
-                      if (!selectedDate) return <li className="modal-list-item">{t('pages.employees.selectADate')}</li>;
-                      
+                      if (!selectedDate)
+                        return (
+                          <li className="modal-list-item">{t('pages.employees.selectADate')}</li>
+                        );
+
                       // Use selectedDateSchedule which includes date-specific overrides
                       const sched = selectedDateSchedule;
                       if (!sched || !sched.timeSlots || sched.timeSlots.length === 0) {
                         // Fallback: show weekly template while loading
-                        const dayOfWeek = selectedDate.toLocaleDateString('en-US', { weekday: 'long' }).toUpperCase();
-                        const weeklySchedule = employeeSchedule.find(s => s.dayOfWeek.toUpperCase() === dayOfWeek);
-                        if (weeklySchedule && weeklySchedule.timeSlots && weeklySchedule.timeSlots.length > 0) {
+                        const dayOfWeek = selectedDate
+                          .toLocaleDateString('en-US', { weekday: 'long' })
+                          .toUpperCase();
+                        const weeklySchedule = employeeSchedule.find(
+                          (s) => s.dayOfWeek.toUpperCase() === dayOfWeek
+                        );
+                        if (
+                          weeklySchedule &&
+                          weeklySchedule.timeSlots &&
+                          weeklySchedule.timeSlots.length > 0
+                        ) {
                           return weeklySchedule.timeSlots.map((slot: string, i: number) => (
-                            <li key={i} className="modal-list-item">{slot}</li>
+                            <li key={i} className="modal-list-item">
+                              {slot}
+                            </li>
                           ));
                         }
-                      return <li className="modal-list-item">{t('pages.employees.noScheduleForDate')}</li>;
+                        return (
+                          <li className="modal-list-item">
+                            {t('pages.employees.noScheduleForDate')}
+                          </li>
+                        );
                       }
                       return sched.timeSlots.map((slot: string, i: number) => (
-                        <li key={i} className="modal-list-item">{slot}</li>
+                        <li key={i} className="modal-list-item">
+                          {slot}
+                        </li>
                       ));
                     })()}
                   </ul>
                 </div>
-                <div className="modal-section" style={{ display: 'flex', gap: '8px', justifyContent: 'flex-start' }}>
-                  <button 
-                    className="btn-view-light" 
+                <div
+                  className="modal-section"
+                  style={{ display: 'flex', gap: '8px', justifyContent: 'flex-start' }}
+                >
+                  <button
+                    className="btn-view-light"
                     onClick={() => setUpdateDayScheduleOpen(true)}
                     disabled={!selectedDate}
                   >
                     {t('pages.employees.updateThisDay')}
                   </button>
-                  <button className="btn-view-light" onClick={() => setUpdateScheduleOpen(true)}>{t('pages.employees.updateFullWeek')}</button>
+                  <button className="btn-view-light" onClick={() => setUpdateScheduleOpen(true)}>
+                    {t('pages.employees.updateFullWeek')}
+                  </button>
                 </div>
               </div>
             )}
-            {!scheduleLoading && scheduleEmployeeData?.isActive && employeeSchedule.length === 0 && (
-              <div className="modal-content-light">
-                <div className="modal-section">
-                  <h4 className="modal-label">{t('pages.employees.noScheduleFound')}</h4>
-                  <button className="btn-view-light" onClick={() => setAddScheduleOpen(true)}>{t('pages.employees.addSchedule')}</button>
+            {!scheduleLoading &&
+              scheduleEmployeeData?.isActive &&
+              employeeSchedule.length === 0 && (
+                <div className="modal-content-light">
+                  <div className="modal-section">
+                    <h4 className="modal-label">{t('pages.employees.noScheduleFound')}</h4>
+                    <button className="btn-view-light" onClick={() => setAddScheduleOpen(true)}>
+                      {t('pages.employees.addSchedule')}
+                    </button>
+                  </div>
                 </div>
-              </div>
-            )}
+              )}
           </div>
         </div>
       )}
 
-      <EmployeeAssignModal 
-        isOpen={assignModalOpen} 
+      <EmployeeAssignModal
+        isOpen={assignModalOpen}
         onClose={() => setAssignModalOpen(false)}
         onSuccess={() => {
           setAssignModalOpen(false);
@@ -503,7 +589,7 @@ export default function EmployeeListPage(): React.ReactElement {
               const data = await getEmployees();
               setEmployees(data);
             } catch (error) {
-              console.error("Error fetching employees:", error);
+              console.error('Error fetching employees:', error);
             } finally {
               setLoading(false);
             }
@@ -512,8 +598,8 @@ export default function EmployeeListPage(): React.ReactElement {
         }}
       />
 
-      <EmployeeAssignModal 
-        isOpen={assignModalOpen} 
+      <EmployeeAssignModal
+        isOpen={assignModalOpen}
         onClose={() => setAssignModalOpen(false)}
         onSuccess={() => {
           setAssignModalOpen(false);
@@ -525,7 +611,7 @@ export default function EmployeeListPage(): React.ReactElement {
               const data = await getEmployees();
               setEmployees(data);
             } catch (error) {
-              console.error("Error fetching employees:", error);
+              console.error('Error fetching employees:', error);
             } finally {
               setLoading(false);
             }
@@ -533,18 +619,17 @@ export default function EmployeeListPage(): React.ReactElement {
           load();
         }}
       />
-      {toast && (
-        <Toast
-          message={toast.message}
-          type={toast.type}
-          onClose={() => setToast(null)}
-        />
-      )}
+      {toast && <Toast message={toast.message} type={toast.type} onClose={() => setToast(null)} />}
 
       {addScheduleOpen && addScheduleEmployeeId && scheduleEmployeeData && (
         <AddScheduleModal
           employeeId={addScheduleEmployeeId}
-          isTechnician={String((scheduleEmployeeData.employeeRole as unknown as Record<string, string>)?.employeeRoleType || "").toUpperCase() === 'TECHNICIAN'}
+          isTechnician={
+            String(
+              (scheduleEmployeeData.employeeRole as unknown as Record<string, string>)
+                ?.employeeRoleType || ''
+            ).toUpperCase() === 'TECHNICIAN'
+          }
           onClose={() => setAddScheduleOpen(false)}
           onAdded={async () => {
             if (addScheduleEmployeeId) {
@@ -552,7 +637,10 @@ export default function EmployeeListPage(): React.ReactElement {
               setEmployeeSchedule(scheduleData);
               setAddScheduleOpen(false);
               setAddScheduleEmployeeId(null);
-              setToast({ message: t('pages.employees.scheduleAddedSuccessfully'), type: 'success' });
+              setToast({
+                message: t('pages.employees.scheduleAddedSuccessfully'),
+                type: 'success',
+              });
             }
           }}
           onError={(message: string) => {
@@ -578,7 +666,7 @@ export default function EmployeeListPage(): React.ReactElement {
                 const data = await getEmployees();
                 setEmployees(data);
               } catch (error) {
-                console.error("Error fetching employees:", error);
+                console.error('Error fetching employees:', error);
               } finally {
                 setLoading(false);
               }
@@ -590,17 +678,35 @@ export default function EmployeeListPage(): React.ReactElement {
 
       {updateScheduleOpen && scheduleEmployeeData && employeeSchedule.length > 0 && (
         <UpdateScheduleModal
-          employeeId={String((scheduleEmployeeData.employeeIdentifier as EmployeeResponseModel['employeeIdentifier'] & Record<string, unknown>)?.employeeId)}
-          isTechnician={String((scheduleEmployeeData.employeeRole as unknown as Record<string, string>)?.employeeRoleType || "").toUpperCase() === 'TECHNICIAN'}
+          employeeId={String(
+            (
+              scheduleEmployeeData.employeeIdentifier as EmployeeResponseModel['employeeIdentifier'] &
+                Record<string, unknown>
+            )?.employeeId
+          )}
+          isTechnician={
+            String(
+              (scheduleEmployeeData.employeeRole as unknown as Record<string, string>)
+                ?.employeeRoleType || ''
+            ).toUpperCase() === 'TECHNICIAN'
+          }
           existingSchedule={employeeSchedule}
           onClose={() => setUpdateScheduleOpen(false)}
           onUpdated={async () => {
-            const employeeId = String((scheduleEmployeeData.employeeIdentifier as EmployeeResponseModel['employeeIdentifier'] & Record<string, unknown>)?.employeeId);
+            const employeeId = String(
+              (
+                scheduleEmployeeData.employeeIdentifier as EmployeeResponseModel['employeeIdentifier'] &
+                  Record<string, unknown>
+              )?.employeeId
+            );
             if (employeeId) {
               const scheduleData = await getEmployeeSchedule(employeeId);
               setEmployeeSchedule(scheduleData);
               setUpdateScheduleOpen(false);
-              setToast({ message: t('pages.employees.scheduleUpdatedSuccessfully'), type: 'success' });
+              setToast({
+                message: t('pages.employees.scheduleUpdatedSuccessfully'),
+                type: 'success',
+              });
             }
           }}
           onError={(message: string) => {
@@ -609,53 +715,97 @@ export default function EmployeeListPage(): React.ReactElement {
         />
       )}
 
-      {updateDayScheduleOpen && scheduleEmployeeData && employeeSchedule.length > 0 && selectedDate && (
-        <UpdateDayScheduleModal
-          employeeId={String((scheduleEmployeeData.employeeIdentifier as EmployeeResponseModel['employeeIdentifier'] & Record<string, unknown>)?.employeeId)}
-          isTechnician={String((scheduleEmployeeData.employeeRole as unknown as Record<string, string>)?.employeeRoleType || "").toUpperCase() === 'TECHNICIAN'}
-          selectedDate={selectedDate}
-          currentSchedule={(() => {
-            // Use selectedDateSchedule if available, otherwise fall back to weekly template
-            if (selectedDateSchedule) return selectedDateSchedule;
-            const dayOfWeek = selectedDate.toLocaleDateString('en-US', { weekday: 'long' }).toUpperCase();
-            return employeeSchedule.find(s => s.dayOfWeek.toUpperCase() === dayOfWeek) || null;
-          })()}
-          onClose={() => setUpdateDayScheduleOpen(false)}
-          onUpdated={async () => {
-            // After PATCH succeeds, refresh the date-specific schedule
-            const employeeId = String((scheduleEmployeeData.employeeIdentifier as EmployeeResponseModel['employeeIdentifier'] & Record<string, unknown>)?.employeeId);
-            if (employeeId && selectedDate) {
-              try {
-                const formattedDate = selectedDate.toISOString().split('T')[0];
-                const dateSchedule = await getEmployeeScheduleForDate(employeeId, formattedDate);
-                if (dateSchedule && dateSchedule.length > 0) {
-                  setSelectedDateSchedule(dateSchedule[0]);
-                }
-              } catch (error) {
-                console.error('Error refreshing date schedule:', error);
-              }
-              setUpdateDayScheduleOpen(false);
-              const dayOfWeek = selectedDate.toLocaleDateString('en-US', { weekday: 'long' }).toUpperCase() as 'MONDAY' | 'TUESDAY' | 'WEDNESDAY' | 'THURSDAY' | 'FRIDAY';
-              const dayName = t(`common.dayOfWeek.${dayOfWeek.toLowerCase()}`);
-              const monthDay = selectedDate.toLocaleDateString(i18n.language === 'fr' ? 'fr-FR' : 'en-US', { month: 'short', day: 'numeric' });
-              setToast({ message: t('pages.employees.scheduleUpdatedForDate', { date: `${dayName}, ${monthDay}` }), type: 'success' });
+      {updateDayScheduleOpen &&
+        scheduleEmployeeData &&
+        employeeSchedule.length > 0 &&
+        selectedDate && (
+          <UpdateDayScheduleModal
+            employeeId={String(
+              (
+                scheduleEmployeeData.employeeIdentifier as EmployeeResponseModel['employeeIdentifier'] &
+                  Record<string, unknown>
+              )?.employeeId
+            )}
+            isTechnician={
+              String(
+                (scheduleEmployeeData.employeeRole as unknown as Record<string, string>)
+                  ?.employeeRoleType || ''
+              ).toUpperCase() === 'TECHNICIAN'
             }
-          }}
-          onError={(message: string) => {
-            setToast({ message, type: 'error' });
-          }}
-        />
-      )}
+            selectedDate={selectedDate}
+            currentSchedule={(() => {
+              // Use selectedDateSchedule if available, otherwise fall back to weekly template
+              if (selectedDateSchedule) return selectedDateSchedule;
+              const dayOfWeek = selectedDate
+                .toLocaleDateString('en-US', { weekday: 'long' })
+                .toUpperCase();
+              return employeeSchedule.find((s) => s.dayOfWeek.toUpperCase() === dayOfWeek) || null;
+            })()}
+            onClose={() => setUpdateDayScheduleOpen(false)}
+            onUpdated={async () => {
+              // After PATCH succeeds, refresh the date-specific schedule
+              const employeeId = String(
+                (
+                  scheduleEmployeeData.employeeIdentifier as EmployeeResponseModel['employeeIdentifier'] &
+                    Record<string, unknown>
+                )?.employeeId
+              );
+              if (employeeId && selectedDate) {
+                try {
+                  const formattedDate = selectedDate.toISOString().split('T')[0];
+                  const dateSchedule = await getEmployeeScheduleForDate(employeeId, formattedDate);
+                  if (dateSchedule && dateSchedule.length > 0) {
+                    setSelectedDateSchedule(dateSchedule[0]);
+                  }
+                } catch (error) {
+                  console.error('Error refreshing date schedule:', error);
+                }
+                setUpdateDayScheduleOpen(false);
+                const dayOfWeek = selectedDate
+                  .toLocaleDateString('en-US', { weekday: 'long' })
+                  .toUpperCase() as 'MONDAY' | 'TUESDAY' | 'WEDNESDAY' | 'THURSDAY' | 'FRIDAY';
+                const dayName = t(`common.dayOfWeek.${dayOfWeek.toLowerCase()}`);
+                const monthDay = selectedDate.toLocaleDateString(
+                  i18n.language === 'fr' ? 'fr-FR' : 'en-US',
+                  { month: 'short', day: 'numeric' }
+                );
+                setToast({
+                  message: t('pages.employees.scheduleUpdatedForDate', {
+                    date: `${dayName}, ${monthDay}`,
+                  }),
+                  type: 'success',
+                });
+              }
+            }}
+            onError={(message: string) => {
+              setToast({ message, type: 'error' });
+            }}
+          />
+        )}
 
       <ConfirmationModal
         isOpen={confirmationModal.isOpen}
-        title={confirmationModal.type === 'deactivate' ? t('pages.employees.deactivateEmployee') : t('pages.employees.reactivateEmployee')}
+        title={
+          confirmationModal.type === 'deactivate'
+            ? t('pages.employees.deactivateEmployee')
+            : t('pages.employees.reactivateEmployee')
+        }
         message={
           confirmationModal.type === 'deactivate'
-            ? t('pages.employees.deactivateConfirmMessage', { firstName: confirmationModal.employee?.firstName, lastName: confirmationModal.employee?.lastName })
-            : t('pages.employees.reactivateConfirmMessage', { firstName: confirmationModal.employee?.firstName, lastName: confirmationModal.employee?.lastName })
+            ? t('pages.employees.deactivateConfirmMessage', {
+                firstName: confirmationModal.employee?.firstName,
+                lastName: confirmationModal.employee?.lastName,
+              })
+            : t('pages.employees.reactivateConfirmMessage', {
+                firstName: confirmationModal.employee?.firstName,
+                lastName: confirmationModal.employee?.lastName,
+              })
         }
-        confirmText={confirmationModal.type === 'deactivate' ? t('pages.employees.deactivate') : t('pages.employees.reactivate')}
+        confirmText={
+          confirmationModal.type === 'deactivate'
+            ? t('pages.employees.deactivate')
+            : t('pages.employees.reactivate')
+        }
         cancelText={t('common.cancel')}
         isDanger={confirmationModal.type === 'deactivate'}
         isLoading={deactivateLoading}

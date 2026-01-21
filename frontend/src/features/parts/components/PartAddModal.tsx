@@ -1,9 +1,9 @@
-import React, { useState } from "react";
-import { createPart } from "../api/createPart";
-import { createPartWithImage } from "../api/createPartWithImage";
-import type { PartRequestModel } from "../models/PartRequestModel";
-import "./PartAddModal.css";
-import { X } from "lucide-react";
+import React, { useState } from 'react';
+import { createPart } from '../api/createPart';
+import { createPartWithImage } from '../api/createPartWithImage';
+import type { PartRequestModel } from '../models/PartRequestModel';
+import './PartAddModal.css';
+import { X } from 'lucide-react';
 
 interface PartAddModalProps {
   isOpen: boolean;
@@ -18,11 +18,11 @@ export default function PartAddModal({
   onPartAdded,
   onError,
 }: PartAddModalProps): React.ReactElement | null {
-  const [name, setName] = useState<string>("");
-  const [category, setCategory] = useState<string>("General");
+  const [name, setName] = useState<string>('');
+  const [category, setCategory] = useState<string>('General');
   const [quantity, setQuantity] = useState<number>(0);
   const [price, setPrice] = useState<number>(0);
-  const [supplier, setSupplier] = useState<string>("");
+  const [supplier, setSupplier] = useState<string>('');
   const [lowStockThreshold, setLowStockThreshold] = useState<number>(5);
   const [outOfStockThreshold, setOutOfStockThreshold] = useState<number>(0);
   const [highStockThreshold, setHighStockThreshold] = useState<number>(100);
@@ -38,8 +38,8 @@ export default function PartAddModal({
   }
 
   const validateFile = (selectedFile: File): boolean => {
-    if (!selectedFile.type.startsWith("image/")) {
-      onError("Only image files are allowed.");
+    if (!selectedFile.type.startsWith('image/')) {
+      onError('Only image files are allowed.');
       return false;
     }
     if (selectedFile.size > MAX_FILE_SIZE_BYTES) {
@@ -53,7 +53,7 @@ export default function PartAddModal({
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const selectedFile = e.target.files?.[0] ?? null;
     if (selectedFile && !validateFile(selectedFile)) {
-      e.target.value = ""; // Reset input
+      e.target.value = ''; // Reset input
       return;
     }
     setFile(selectedFile);
@@ -61,9 +61,9 @@ export default function PartAddModal({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!name.trim()) {
-      onError("Part name is required");
+      onError('Part name is required');
       return;
     }
 
@@ -86,24 +86,24 @@ export default function PartAddModal({
       } else {
         await createPart(partData);
       }
-      
+
       // Reset form
-      setName("");
-      setCategory("General");
+      setName('');
+      setCategory('General');
       setQuantity(0);
       setPrice(0);
-      setSupplier("");
+      setSupplier('');
       setLowStockThreshold(5);
       setOutOfStockThreshold(0);
       setHighStockThreshold(100);
       setAvailable(true);
       setFile(null);
-      
+
       onPartAdded();
       onClose();
     } catch (error) {
-      console.error("Error creating part:", error);
-      onError("Failed to create part. Please try again.");
+      console.error('Error creating part:', error);
+      onError('Failed to create part. Please try again.');
     } finally {
       setSubmitting(false);
     }
@@ -111,11 +111,11 @@ export default function PartAddModal({
 
   const handleClose = () => {
     if (!submitting) {
-      setName("");
-      setCategory("General");
+      setName('');
+      setCategory('General');
       setQuantity(0);
       setPrice(0);
-      setSupplier("");
+      setSupplier('');
       setLowStockThreshold(5);
       setOutOfStockThreshold(0);
       setHighStockThreshold(100);
@@ -130,7 +130,12 @@ export default function PartAddModal({
       <div className="modal-content" onClick={(e) => e.stopPropagation()}>
         <div className="modal-header">
           <h2 className="modal-title">Add New Part</h2>
-          <button className="modal-close" onClick={handleClose} disabled={submitting} aria-label="Close modal">
+          <button
+            className="modal-close"
+            onClick={handleClose}
+            disabled={submitting}
+            aria-label="Close modal"
+          >
             <X className="h-5 w-5" />
           </button>
         </div>
@@ -301,7 +306,9 @@ export default function PartAddModal({
                 disabled={submitting}
                 onChange={handleFileChange}
               />
-              <p className="helper-text">Maximum file size: {MAX_FILE_SIZE_MB} MB. Only image files allowed.</p>
+              <p className="helper-text">
+                Maximum file size: {MAX_FILE_SIZE_MB} MB. Only image files allowed.
+              </p>
             </div>
           </div>
 
@@ -314,12 +321,8 @@ export default function PartAddModal({
             >
               Cancel
             </button>
-            <button
-              type="submit"
-              className="btn-submit"
-              disabled={submitting}
-            >
-              {submitting ? "Adding..." : "Add Part"}
+            <button type="submit" className="btn-submit" disabled={submitting}>
+              {submitting ? 'Adding...' : 'Add Part'}
             </button>
           </div>
         </form>
