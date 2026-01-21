@@ -105,7 +105,7 @@ public class CellarControllerIntegrationTest {
     @Test
     void whenGetAllCellars_thenReturnsList() {
         webTestClient.get()
-                .uri("/api/v1/cellars?ownerCustomerId={customerId}", testCustomerId)
+                .uri("/v1/cellars?ownerCustomerId={customerId}", testCustomerId)
                 .exchange()
                 .expectStatus().isOk()
                 .expectHeader().contentType(MediaType.APPLICATION_JSON)
@@ -144,7 +144,7 @@ public class CellarControllerIntegrationTest {
         Customer savedTempCustomer = customerRepository.save(tempCustomer);
 
         webTestClient.get()
-                .uri("/api/v1/cellars?ownerCustomerId={customerId}", savedTempCustomer.getCustomerIdentifier().getCustomerId())
+                .uri("/v1/cellars?ownerCustomerId={customerId}", savedTempCustomer.getCustomerIdentifier().getCustomerId())
                 .exchange()
                 .expectStatus().isOk()
                 .expectHeader().contentType(MediaType.APPLICATION_JSON)
@@ -158,7 +158,7 @@ public class CellarControllerIntegrationTest {
     @Test
     void whenGetCellarById_withValidId_thenReturnsCellar() {
         webTestClient.get()
-                .uri("/api/v1/cellars/{cellarId}", testCellarId)
+                .uri("/v1/cellars/{cellarId}", testCellarId)
                 .exchange()
                 .expectStatus().isOk()
                 .expectBody(CellarResponseModel.class)
@@ -173,7 +173,7 @@ public class CellarControllerIntegrationTest {
     @Test
     void whenGetCellarById_withInvalidId_thenReturns422() {
         webTestClient.get()
-                .uri("/api/v1/cellars/{cellarId}", "bad-id")
+                .uri("/v1/cellars/{cellarId}", "bad-id")
                 .exchange()
                 .expectStatus().isEqualTo(422);
     }
@@ -181,7 +181,7 @@ public class CellarControllerIntegrationTest {
     @Test
     void whenGetCellarById_withNonExistingId_thenReturns404() {
         webTestClient.get()
-                .uri("/api/v1/cellars/{cellarId}",
+                .uri("/v1/cellars/{cellarId}",
                         "00000000-0000-0000-0000-000000000000")
                 .exchange()
                 .expectStatus().isNotFound();
@@ -207,7 +207,7 @@ public class CellarControllerIntegrationTest {
         request.setCellarType(CellarType.COMMERCIAL);
 
         webTestClient.post()
-                .uri("/api/v1/cellars")
+                .uri("/v1/cellars")
                 .contentType(MediaType.APPLICATION_JSON)
                 .bodyValue(request)
                 .exchange()
@@ -239,7 +239,7 @@ public class CellarControllerIntegrationTest {
         modularRequest.setCellarType(CellarType.MODULAR);
 
         webTestClient.post()
-                .uri("/api/v1/cellars")
+                .uri("/v1/cellars")
                 .contentType(MediaType.APPLICATION_JSON)
                 .bodyValue(modularRequest)
                 .exchange()
@@ -271,7 +271,7 @@ public class CellarControllerIntegrationTest {
         updateRequest.setCellarType(CellarType.PRIVATE);
 
         webTestClient.put()
-                .uri("/api/v1/cellars/{cellarId}", testCellarId)
+                .uri("/v1/cellars/{cellarId}", testCellarId)
                 .contentType(MediaType.APPLICATION_JSON)
                 .bodyValue(updateRequest)
                 .exchange()
@@ -301,7 +301,7 @@ public class CellarControllerIntegrationTest {
         updateRequest.setCellarType(CellarType.PRIVATE);
 
         webTestClient.put()
-                .uri("/api/v1/cellars/{cellarId}", "bad-id")
+                .uri("/v1/cellars/{cellarId}", "bad-id")
                 .contentType(MediaType.APPLICATION_JSON)
                 .bodyValue(updateRequest)
                 .exchange()
@@ -325,7 +325,7 @@ public class CellarControllerIntegrationTest {
         updateRequest.setCellarType(CellarType.PRIVATE);
 
         webTestClient.put()
-                .uri("/api/v1/cellars/{cellarId}", "00000000-0000-0000-0000-000000000000")
+                .uri("/v1/cellars/{cellarId}", "00000000-0000-0000-0000-000000000000")
                 .contentType(MediaType.APPLICATION_JSON)
                 .bodyValue(updateRequest)
                 .exchange()
@@ -338,7 +338,7 @@ public class CellarControllerIntegrationTest {
     @Test
     void whenDeactivateCellar_withValidId_thenReturns200AndCellarIsDeactivated() {
         webTestClient.delete()
-                .uri("/api/v1/cellars/{cellarId}/deactivate", testCellarId)
+                .uri("/v1/cellars/{cellarId}/deactivate", testCellarId)
                 .exchange()
                 .expectStatus().isOk()
                 .expectBody(CellarResponseModel.class)
@@ -357,7 +357,7 @@ public class CellarControllerIntegrationTest {
     @Test
     void whenDeactivateCellar_withInvalidId_thenReturns422() {
         webTestClient.delete()
-                .uri("/api/v1/cellars/{cellarId}/deactivate", "bad-id")
+                .uri("/v1/cellars/{cellarId}/deactivate", "bad-id")
                 .exchange()
                 .expectStatus().isEqualTo(422);
     }
@@ -365,7 +365,7 @@ public class CellarControllerIntegrationTest {
     @Test
     void whenDeactivateCellar_withNonExistingId_thenReturns404() {
         webTestClient.delete()
-                .uri("/api/v1/cellars/{cellarId}/deactivate", "00000000-0000-0000-0000-000000000000")
+                .uri("/v1/cellars/{cellarId}/deactivate", "00000000-0000-0000-0000-000000000000")
                 .exchange()
                 .expectStatus().isNotFound();
     }
@@ -374,13 +374,13 @@ public class CellarControllerIntegrationTest {
     void whenDeactivateCellar_alreadyDeactivated_thenReturns400() {
         // First deactivate – should succeed
         webTestClient.delete()
-                .uri("/api/v1/cellars/{cellarId}/deactivate", testCellarId)
+                .uri("/v1/cellars/{cellarId}/deactivate", testCellarId)
                 .exchange()
                 .expectStatus().isOk();
 
         // Try to deactivate again – currently returns 400 in your app
         webTestClient.delete()
-                .uri("/api/v1/cellars/{cellarId}/deactivate", testCellarId)
+                .uri("/v1/cellars/{cellarId}/deactivate", testCellarId)
                 .exchange()
                 .expectStatus().isBadRequest()
                 .expectBody(String.class)
@@ -397,13 +397,13 @@ public class CellarControllerIntegrationTest {
     void whenReactivateCellar_withValidId_thenReturns200AndCellarIsReactivated() {
         // First deactivate
         webTestClient.delete()
-                .uri("/api/v1/cellars/{cellarId}/deactivate", testCellarId)
+                .uri("/v1/cellars/{cellarId}/deactivate", testCellarId)
                 .exchange()
                 .expectStatus().isOk();
 
         // Then reactivate
         webTestClient.patch()
-                .uri("/api/v1/cellars/{cellarId}/reactivate", testCellarId)
+                .uri("/v1/cellars/{cellarId}/reactivate", testCellarId)
                 .exchange()
                 .expectStatus().isOk()
                 .expectBody(CellarResponseModel.class)
@@ -422,7 +422,7 @@ public class CellarControllerIntegrationTest {
     @Test
     void whenReactivateCellar_withInvalidId_thenReturns422() {
         webTestClient.patch()
-                .uri("/api/v1/cellars/{cellarId}/reactivate", "bad-id")
+                .uri("/v1/cellars/{cellarId}/reactivate", "bad-id")
                 .exchange()
                 .expectStatus().isEqualTo(422);
     }
@@ -430,14 +430,14 @@ public class CellarControllerIntegrationTest {
     @Test
     void whenReactivateCellar_withNonExistingId_thenReturns404() {
         webTestClient.patch()
-                .uri("/api/v1/cellars/{cellarId}/reactivate", "00000000-0000-0000-0000-000000000000")
+                .uri("/v1/cellars/{cellarId}/reactivate", "00000000-0000-0000-0000-000000000000")
                 .exchange()
                 .expectStatus().isNotFound();
     }
     @Test
     void whenReactivateCellar_alreadyActive_thenReturns400() {
         webTestClient.patch()
-                .uri("/api/v1/cellars/{cellarId}/reactivate", testCellarId)
+                .uri("/v1/cellars/{cellarId}/reactivate", testCellarId)
                 .exchange()
                 .expectStatus().isBadRequest()
                 .expectBody(String.class)

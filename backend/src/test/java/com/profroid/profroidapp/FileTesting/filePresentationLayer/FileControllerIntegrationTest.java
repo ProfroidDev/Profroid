@@ -65,7 +65,7 @@ public class FileControllerIntegrationTest {
         builder.part("file", new byte[]{1, 2, 3}).filename("test.pdf").contentType(MediaType.APPLICATION_PDF);
 
         webTestClient.post()
-                .uri("/api/v1/files/{ownerType}/{ownerId}/{category}", "report", "REP-123", "report")
+                .uri("/v1/files/{ownerType}/{ownerId}/{category}", "report", "REP-123", "report")
                 .contentType(MediaType.MULTIPART_FORM_DATA)
                 .bodyValue(builder.build())
                 .exchange()
@@ -83,7 +83,7 @@ public class FileControllerIntegrationTest {
                 .thenReturn(List.of(stored));
 
         webTestClient.get()
-                .uri("/api/v1/files?ownerType={ot}&ownerId={oid}", "report", "REP-123")
+                .uri("/v1/files?ownerType={ot}&ownerId={oid}", "report", "REP-123")
                 .exchange()
                 .expectStatus().isOk()
                 .expectBodyList(FileResponseModel.class)
@@ -96,7 +96,7 @@ public class FileControllerIntegrationTest {
         when(fileService.getOrThrow(eq(stored.getId()))).thenReturn(stored);
 
         webTestClient.get()
-                .uri("/api/v1/files/{id}", stored.getId())
+                .uri("/v1/files/{id}", stored.getId())
                 .exchange()
                 .expectStatus().isOk()
                 .expectBody(FileResponseModel.class)
@@ -110,7 +110,7 @@ public class FileControllerIntegrationTest {
         when(fileService.openStream(eq(stored))).thenReturn(new ByteArrayInputStream(new byte[]{1, 2, 3}));
 
         webTestClient.get()
-                .uri("/api/v1/files/{id}/download", stored.getId())
+                .uri("/v1/files/{id}/download", stored.getId())
                 .exchange()
                 .expectStatus().isOk()
                 .expectHeader().contentType(MediaType.APPLICATION_PDF)
@@ -127,7 +127,7 @@ public class FileControllerIntegrationTest {
         when(fileService.openStream(eq(stored))).thenReturn(new ByteArrayInputStream(new byte[]{9, 9, 9}));
 
         webTestClient.get()
-                .uri("/api/v1/files/{id}/download", stored.getId())
+                .uri("/v1/files/{id}/download", stored.getId())
                 .exchange()
                 .expectStatus().isOk()
                 .expectHeader().contentType(MediaType.IMAGE_JPEG)
@@ -141,7 +141,7 @@ public class FileControllerIntegrationTest {
         doNothing().when(fileService).delete(eq(stored.getId()));
 
         webTestClient.delete()
-                .uri("/api/v1/files/{id}", stored.getId())
+                .uri("/v1/files/{id}", stored.getId())
                 .exchange()
                 .expectStatus().isNoContent();
     }

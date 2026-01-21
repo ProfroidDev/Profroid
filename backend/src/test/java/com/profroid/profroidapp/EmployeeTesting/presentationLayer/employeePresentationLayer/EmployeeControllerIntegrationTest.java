@@ -80,7 +80,7 @@ public class EmployeeControllerIntegrationTest {
     @Test
     void whenGetAllEmployees_thenReturnsList() {
         webTestClient.get()
-                .uri("/api/v1/employees")
+                .uri("/v1/employees")
                 .exchange()
                 .expectStatus().isOk()
                 .expectHeader().contentType(MediaType.APPLICATION_JSON)
@@ -99,7 +99,7 @@ public class EmployeeControllerIntegrationTest {
         employeeRepository.deleteAll();
 
         webTestClient.get()
-                .uri("/api/v1/employees")
+                .uri("/v1/employees")
                 .exchange()
                 .expectStatus().isOk()
                 .expectHeader().contentType(MediaType.APPLICATION_JSON)
@@ -116,7 +116,7 @@ public class EmployeeControllerIntegrationTest {
     @Test
     void whenGetEmployeeById_withValidId_thenReturnsEmployee() {
         webTestClient.get()
-                .uri("/api/v1/employees/{employeeId}", testEmployeeId)
+                .uri("/v1/employees/{employeeId}", testEmployeeId)
                 .exchange()
                 .expectStatus().isOk()
                 .expectHeader().contentType(MediaType.APPLICATION_JSON)
@@ -134,7 +134,7 @@ public class EmployeeControllerIntegrationTest {
     @Test
     void whenGetEmployeeById_withInvalidId_thenReturns422() {
         webTestClient.get()
-                .uri("/api/v1/employees/{employeeId}", "invalid-id")
+                .uri("/v1/employees/{employeeId}", "invalid-id")
                 .exchange()
                 .expectStatus().isEqualTo(422);
     }
@@ -145,7 +145,7 @@ public class EmployeeControllerIntegrationTest {
         String nonExistingId = "00000000-0000-0000-0000-000000000000";
 
         webTestClient.get()
-                .uri("/api/v1/employees/{employeeId}", nonExistingId)
+                .uri("/v1/employees/{employeeId}", nonExistingId)
                 .exchange()
                 .expectStatus().isNotFound();
     }
@@ -180,7 +180,7 @@ public class EmployeeControllerIntegrationTest {
                 .build();
 
         webTestClient.post()
-                .uri("/api/v1/employees")
+                .uri("/v1/employees")
                 .contentType(MediaType.APPLICATION_JSON)
                 .bodyValue(request)
                 .exchange()
@@ -228,7 +228,7 @@ public class EmployeeControllerIntegrationTest {
                 .build();
 
         webTestClient.post()
-                .uri("/api/v1/employees")
+                .uri("/v1/employees")
                 .contentType(MediaType.APPLICATION_JSON)
                 .bodyValue(request)
                 .exchange()
@@ -268,7 +268,7 @@ public class EmployeeControllerIntegrationTest {
 //                .build();
 //
 //        webTestClient.put()
-//                .uri("/api/v1/employees/{employeeId}", testEmployeeId)
+//                .uri("/v1/employees/{employeeId}", testEmployeeId)
 //                .contentType(MediaType.APPLICATION_JSON)
 //                .bodyValue(request)
 //                .exchange()
@@ -299,7 +299,7 @@ public class EmployeeControllerIntegrationTest {
                 .build();
 
         webTestClient.put()
-                .uri("/api/v1/employees/{employeeId}", "invalid-id")
+                .uri("/v1/employees/{employeeId}", "invalid-id")
                 .contentType(MediaType.APPLICATION_JSON)
                 .bodyValue(request)
                 .exchange()
@@ -319,7 +319,7 @@ public class EmployeeControllerIntegrationTest {
                 .build();
 
         webTestClient.put()
-                .uri("/api/v1/employees/{employeeId}", nonExistingId)
+                .uri("/v1/employees/{employeeId}", nonExistingId)
                 .contentType(MediaType.APPLICATION_JSON)
                 .bodyValue(request)
                 .exchange()
@@ -342,7 +342,7 @@ public class EmployeeControllerIntegrationTest {
 //                .build();
 //
 //        webTestClient.put()
-//                .uri("/api/v1/employees/{employeeId}", testEmployeeId)
+//                .uri("/v1/employees/{employeeId}", testEmployeeId)
 //                .contentType(MediaType.APPLICATION_JSON)
 //                .bodyValue(request)
 //                .exchange()

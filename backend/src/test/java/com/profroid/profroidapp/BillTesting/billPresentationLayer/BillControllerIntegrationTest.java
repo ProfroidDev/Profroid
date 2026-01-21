@@ -50,7 +50,7 @@ public class BillControllerIntegrationTest {
                 .thenReturn(bill);
 
         webTestClient.get()
-                .uri("/api/v1/bills/{id}", "BILL-2026-000001")
+                .uri("/v1/bills/{id}", "BILL-2026-000001")
                 .exchange()
                 .expectStatus().isOk()
                                 .expectBody(BillResponseModel.class)
@@ -67,7 +67,7 @@ public class BillControllerIntegrationTest {
                 .thenReturn(bill);
 
         webTestClient.get()
-                .uri("/api/v1/bills/report/{repId}", 1)
+                .uri("/v1/bills/report/{repId}", 1)
                 .exchange()
                 .expectStatus().isOk()
                 .expectBody(BillResponseModel.class)
@@ -84,7 +84,7 @@ public class BillControllerIntegrationTest {
                 .thenReturn(bill);
 
         webTestClient.get()
-                .uri("/api/v1/bills/appointment/{aptId}", "APT-1")
+                .uri("/v1/bills/appointment/{aptId}", "APT-1")
                 .exchange()
                 .expectStatus().isOk()
                 .expectBody(BillResponseModel.class)
@@ -100,7 +100,7 @@ public class BillControllerIntegrationTest {
                 .thenReturn(List.of(sampleBill()));
 
         webTestClient.get()
-                .uri("/api/v1/bills/customer/{custId}", "CUST-1")
+                .uri("/v1/bills/customer/{custId}", "CUST-1")
                 .exchange()
                 .expectStatus().isOk()
                 .expectBodyList(BillResponseModel.class)
@@ -113,7 +113,7 @@ public class BillControllerIntegrationTest {
                 .thenReturn(List.of(sampleBill()));
 
         webTestClient.get()
-                .uri("/api/v1/bills")
+                .uri("/v1/bills")
                 .exchange()
                 .expectStatus().isOk()
                 .expectBodyList(BillResponseModel.class)
@@ -126,7 +126,7 @@ public class BillControllerIntegrationTest {
                 .thenReturn(new byte[]{9, 9, 9});
 
         webTestClient.get()
-                .uri("/api/v1/bills/{id}/pdf", "BILL-2026-000001")
+                .uri("/v1/bills/{id}/pdf", "BILL-2026-000001")
                 .exchange()
                 .expectStatus().isOk()
                 .expectHeader().contentType(MediaType.APPLICATION_PDF)
@@ -144,7 +144,7 @@ public class BillControllerIntegrationTest {
                 .thenReturn(updated);
 
         webTestClient.put()
-                .uri("/api/v1/bills/{id}/status?status=PAID", "BILL-2026-000001")
+                .uri("/v1/bills/{id}/status?status=PAID", "BILL-2026-000001")
                 .exchange()
                 .expectStatus().isOk()
                 .expectBody(BillResponseModel.class)

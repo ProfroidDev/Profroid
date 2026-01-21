@@ -66,7 +66,7 @@ public class JobControllerIntegrationTest {
     @Test
     void whenGetAllJobs_thenReturnsList() {
         webTestClient.get()
-                .uri("/api/v1/jobs")
+                .uri("/v1/jobs")
                 .exchange()
                 .expectStatus().isOk()
                 .expectHeader().contentType(MediaType.APPLICATION_JSON)
@@ -83,7 +83,7 @@ public class JobControllerIntegrationTest {
         jobRepository.deleteAll();
 
         webTestClient.get()
-                .uri("/api/v1/jobs")
+                .uri("/v1/jobs")
                 .exchange()
                 .expectStatus().isOk()
                 .expectBodyList(JobResponseModel.class)
@@ -96,7 +96,7 @@ public class JobControllerIntegrationTest {
     @Test
     void whenGetJobById_withValidId_thenReturnsJob() {
         webTestClient.get()
-                .uri("/api/v1/jobs/{jobId}", testJobId)
+                .uri("/v1/jobs/{jobId}", testJobId)
                 .exchange()
                 .expectStatus().isOk()
                 .expectBody(JobResponseModel.class)
@@ -111,7 +111,7 @@ public class JobControllerIntegrationTest {
     @Test
     void whenGetJobById_withInvalidId_thenReturns422() {
         webTestClient.get()
-                .uri("/api/v1/jobs/{jobId}", "bad-id")
+                .uri("/v1/jobs/{jobId}", "bad-id")
                 .exchange()
                 .expectStatus().isEqualTo(422);
     }
@@ -119,7 +119,7 @@ public class JobControllerIntegrationTest {
     @Test
     void whenGetJobById_withNonExistingId_thenReturns404() {
         webTestClient.get()
-                .uri("/api/v1/jobs/{jobId}",
+                .uri("/v1/jobs/{jobId}",
                         "00000000-0000-0000-0000-000000000000")
                 .exchange()
                 .expectStatus().isNotFound();
@@ -140,7 +140,7 @@ public class JobControllerIntegrationTest {
                 .build();
 
         webTestClient.post()
-                .uri("/api/v1/jobs")
+                .uri("/v1/jobs")
                 .contentType(MediaType.APPLICATION_JSON)
                 .bodyValue(request)
                 .exchange()
@@ -167,7 +167,7 @@ public class JobControllerIntegrationTest {
                 .build();
 
         webTestClient.post()
-                .uri("/api/v1/jobs")
+                .uri("/v1/jobs")
                 .contentType(MediaType.APPLICATION_JSON)
                 .bodyValue(quotationRequest)
                 .exchange()
@@ -194,7 +194,7 @@ public class JobControllerIntegrationTest {
                 .build();
 
         webTestClient.put()
-                .uri("/api/v1/jobs/{jobId}", testJobId)
+                .uri("/v1/jobs/{jobId}", testJobId)
                 .contentType(MediaType.APPLICATION_JSON)
                 .bodyValue(updateRequest)
                 .exchange()
@@ -219,7 +219,7 @@ public class JobControllerIntegrationTest {
                 .build();
 
         webTestClient.put()
-                .uri("/api/v1/jobs/{jobId}", "bad-id")
+                .uri("/v1/jobs/{jobId}", "bad-id")
                 .contentType(MediaType.APPLICATION_JSON)
                 .bodyValue(updateRequest)
                 .exchange()
@@ -238,7 +238,7 @@ public class JobControllerIntegrationTest {
                 .build();
 
         webTestClient.put()
-                .uri("/api/v1/jobs/{jobId}", "00000000-0000-0000-0000-000000000000")
+                .uri("/v1/jobs/{jobId}", "00000000-0000-0000-0000-000000000000")
                 .contentType(MediaType.APPLICATION_JSON)
                 .bodyValue(updateRequest)
                 .exchange()
@@ -251,7 +251,7 @@ public class JobControllerIntegrationTest {
     @Test
     void whenDeactivateJob_withValidId_thenReturns200AndJobIsDeactivated() {
         webTestClient.delete()
-                .uri("/api/v1/jobs/{jobId}/deactivate", testJobId)
+                .uri("/v1/jobs/{jobId}/deactivate", testJobId)
                 .exchange()
                 .expectStatus().isOk()
                 .expectBody(JobResponseModel.class)
@@ -269,7 +269,7 @@ public class JobControllerIntegrationTest {
     @Test
     void whenDeactivateJob_withInvalidId_thenReturns422() {
         webTestClient.delete()
-                .uri("/api/v1/jobs/{jobId}/deactivate", "bad-id")
+                .uri("/v1/jobs/{jobId}/deactivate", "bad-id")
                 .exchange()
                 .expectStatus().isEqualTo(422);
     }
@@ -277,7 +277,7 @@ public class JobControllerIntegrationTest {
     @Test
     void whenDeactivateJob_withNonExistingId_thenReturns404() {
         webTestClient.delete()
-                .uri("/api/v1/jobs/{jobId}/deactivate", "00000000-0000-0000-0000-000000000000")
+                .uri("/v1/jobs/{jobId}/deactivate", "00000000-0000-0000-0000-000000000000")
                 .exchange()
                 .expectStatus().isNotFound();
     }
@@ -286,13 +286,13 @@ public class JobControllerIntegrationTest {
     void whenDeactivateJob_alreadyDeactivated_thenReturns400() {
         // First deactivate – should succeed
         webTestClient.delete()
-                .uri("/api/v1/jobs/{jobId}/deactivate", testJobId)
+                .uri("/v1/jobs/{jobId}/deactivate", testJobId)
                 .exchange()
                 .expectStatus().isOk();
 
         // Try to deactivate again – should now fail with 400 Bad Request
         webTestClient.delete()
-                .uri("/api/v1/jobs/{jobId}/deactivate", testJobId)
+                .uri("/v1/jobs/{jobId}/deactivate", testJobId)
                 .exchange()
                 .expectStatus().isBadRequest()
                 .expectBody(String.class)
@@ -310,13 +310,13 @@ public class JobControllerIntegrationTest {
     void whenReactivateJob_withValidId_thenReturns200AndJobIsReactivated() {
         // First deactivate
         webTestClient.delete()
-                .uri("/api/v1/jobs/{jobId}/deactivate", testJobId)
+                .uri("/v1/jobs/{jobId}/deactivate", testJobId)
                 .exchange()
                 .expectStatus().isOk();
 
         // Then reactivate
         webTestClient.patch()
-                .uri("/api/v1/jobs/{jobId}/reactivate", testJobId)
+                .uri("/v1/jobs/{jobId}/reactivate", testJobId)
                 .exchange()
                 .expectStatus().isOk()
                 .expectBody(JobResponseModel.class)
@@ -334,7 +334,7 @@ public class JobControllerIntegrationTest {
     @Test
     void whenReactivateJob_withInvalidId_thenReturns422() {
         webTestClient.patch()
-                .uri("/api/v1/jobs/{jobId}/reactivate", "bad-id")
+                .uri("/v1/jobs/{jobId}/reactivate", "bad-id")
                 .exchange()
                 .expectStatus().isEqualTo(422);
     }
@@ -342,7 +342,7 @@ public class JobControllerIntegrationTest {
     @Test
     void whenReactivateJob_withNonExistingId_thenReturns404() {
         webTestClient.patch()
-                .uri("/api/v1/jobs/{jobId}/reactivate", "00000000-0000-0000-0000-000000000000")
+                .uri("/v1/jobs/{jobId}/reactivate", "00000000-0000-0000-0000-000000000000")
                 .exchange()
                 .expectStatus().isNotFound();
     }
@@ -350,7 +350,7 @@ public class JobControllerIntegrationTest {
     @Test
     void whenReactivateJob_alreadyActive_thenReturns400() {
         webTestClient.patch()
-                .uri("/api/v1/jobs/{jobId}/reactivate", testJobId)
+                .uri("/v1/jobs/{jobId}/reactivate", testJobId)
                 .exchange()
                 .expectStatus().isBadRequest()
                 .expectBody(String.class)

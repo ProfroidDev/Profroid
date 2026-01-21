@@ -141,7 +141,7 @@ public class EmployeeScheduleControllerIntegrationTest {
         scheduleRepository.saveAll(Arrays.asList(s1, s2));
 
         webTestClient.get()
-                .uri("/api/v1/employees/{employeeId}/schedules", technicianEmployeeId)
+                .uri("/v1/employees/{employeeId}/schedules", technicianEmployeeId)
                 .exchange()
                 .expectStatus().isOk()
                 .expectHeader().contentType(MediaType.APPLICATION_JSON)
@@ -159,7 +159,7 @@ public class EmployeeScheduleControllerIntegrationTest {
     @Test
     void whenGetSchedule_withNoSchedules_thenReturnsEmptyList() {
         webTestClient.get()
-                .uri("/api/v1/employees/{employeeId}/schedules", technicianEmployeeId)
+                .uri("/v1/employees/{employeeId}/schedules", technicianEmployeeId)
                 .exchange()
                 .expectStatus().isOk()
                 .expectHeader().contentType(MediaType.APPLICATION_JSON)
@@ -174,7 +174,7 @@ public class EmployeeScheduleControllerIntegrationTest {
     @Test
     void whenGetSchedule_withInvalidId_thenReturns422() {
         webTestClient.get()
-                .uri("/api/v1/employees/{employeeId}/schedules", "invalid-id")
+                .uri("/v1/employees/{employeeId}/schedules", "invalid-id")
                 .exchange()
                 .expectStatus().isEqualTo(422);
     }
@@ -185,7 +185,7 @@ public class EmployeeScheduleControllerIntegrationTest {
         String nonExistingId = "00000000-0000-0000-0000-000000000000";
 
         webTestClient.get()
-                .uri("/api/v1/employees/{employeeId}/schedules", nonExistingId)
+                .uri("/v1/employees/{employeeId}/schedules", nonExistingId)
                 .exchange()
                 .expectStatus().isNotFound();
     }
@@ -203,7 +203,7 @@ public class EmployeeScheduleControllerIntegrationTest {
         requests.add(buildRequest(DayOfWeekType.FRIDAY, TimeSlotType.NINE_AM, TimeSlotType.ELEVEN_AM));
 
         webTestClient.post()
-                .uri("/api/v1/employees/{employeeId}/schedules", technicianEmployeeId)
+                .uri("/v1/employees/{employeeId}/schedules", technicianEmployeeId)
                 .contentType(MediaType.APPLICATION_JSON)
                 .bodyValue(requests)
                 .exchange()
@@ -231,7 +231,7 @@ public class EmployeeScheduleControllerIntegrationTest {
         requests.add(buildRequest(DayOfWeekType.FRIDAY, TimeSlotType.NINE_AM, TimeSlotType.FIVE_PM));
 
         webTestClient.post()
-                .uri("/api/v1/employees/{employeeId}/schedules", supportEmployeeId)
+                .uri("/v1/employees/{employeeId}/schedules", supportEmployeeId)
                 .contentType(MediaType.APPLICATION_JSON)
                 .bodyValue(requests)
                 .exchange()
@@ -255,7 +255,7 @@ public class EmployeeScheduleControllerIntegrationTest {
         requests.add(buildRequest(DayOfWeekType.MONDAY, TimeSlotType.NINE_AM, TimeSlotType.ELEVEN_AM));
 
         webTestClient.post()
-                .uri("/api/v1/employees/{employeeId}/schedules", "invalid-id")
+                .uri("/v1/employees/{employeeId}/schedules", "invalid-id")
                 .contentType(MediaType.APPLICATION_JSON)
                 .bodyValue(requests)
                 .exchange()
@@ -270,7 +270,7 @@ public class EmployeeScheduleControllerIntegrationTest {
         requests.add(buildRequest(DayOfWeekType.MONDAY, TimeSlotType.NINE_AM, TimeSlotType.ELEVEN_AM));
 
         webTestClient.post()
-                .uri("/api/v1/employees/{employeeId}/schedules", nonExistingId)
+                .uri("/v1/employees/{employeeId}/schedules", nonExistingId)
                 .contentType(MediaType.APPLICATION_JSON)
                 .bodyValue(requests)
                 .exchange()
@@ -300,7 +300,7 @@ public class EmployeeScheduleControllerIntegrationTest {
         requests.add(buildRequest(DayOfWeekType.FRIDAY, TimeSlotType.NINE_AM, TimeSlotType.ELEVEN_AM));
 
         webTestClient.post()
-                .uri("/api/v1/employees/{employeeId}/schedules", technicianEmployeeId)
+                .uri("/v1/employees/{employeeId}/schedules", technicianEmployeeId)
                 .contentType(MediaType.APPLICATION_JSON)
                 .bodyValue(requests)
                 .exchange()
@@ -315,7 +315,7 @@ public class EmployeeScheduleControllerIntegrationTest {
         // Only 1 day provided, missing 4
 
         webTestClient.post()
-                .uri("/api/v1/employees/{employeeId}/schedules", technicianEmployeeId)
+                .uri("/v1/employees/{employeeId}/schedules", technicianEmployeeId)
                 .contentType(MediaType.APPLICATION_JSON)
                 .bodyValue(requests)
                 .exchange()
@@ -347,7 +347,7 @@ public class EmployeeScheduleControllerIntegrationTest {
         requests.add(buildRequest(DayOfWeekType.FRIDAY, TimeSlotType.ONE_PM, TimeSlotType.THREE_PM));
 
         webTestClient.put()
-                .uri("/api/v1/employees/{employeeId}/schedules", technicianEmployeeId)
+                .uri("/v1/employees/{employeeId}/schedules", technicianEmployeeId)
                 .contentType(MediaType.APPLICATION_JSON)
                 .bodyValue(requests)
                 .exchange()
@@ -372,7 +372,7 @@ public class EmployeeScheduleControllerIntegrationTest {
         requests.add(buildRequest(DayOfWeekType.MONDAY, TimeSlotType.NINE_AM, TimeSlotType.ELEVEN_AM));
 
         webTestClient.put()
-                .uri("/api/v1/employees/{employeeId}/schedules", "invalid-id")
+                .uri("/v1/employees/{employeeId}/schedules", "invalid-id")
                 .contentType(MediaType.APPLICATION_JSON)
                 .bodyValue(requests)
                 .exchange()
@@ -387,7 +387,7 @@ public class EmployeeScheduleControllerIntegrationTest {
         requests.add(buildRequest(DayOfWeekType.MONDAY, TimeSlotType.NINE_AM, TimeSlotType.ELEVEN_AM));
 
         webTestClient.put()
-                .uri("/api/v1/employees/{employeeId}/schedules", nonExistingId)
+                .uri("/v1/employees/{employeeId}/schedules", nonExistingId)
                 .contentType(MediaType.APPLICATION_JSON)
                 .bodyValue(requests)
                 .exchange()
@@ -405,7 +405,7 @@ public class EmployeeScheduleControllerIntegrationTest {
         requests.add(buildRequest(DayOfWeekType.FRIDAY, TimeSlotType.NINE_AM, TimeSlotType.ELEVEN_AM));
 
         webTestClient.put()
-                .uri("/api/v1/employees/{employeeId}/schedules", technicianEmployeeId)
+                .uri("/v1/employees/{employeeId}/schedules", technicianEmployeeId)
                 .contentType(MediaType.APPLICATION_JSON)
                 .bodyValue(requests)
                 .exchange()

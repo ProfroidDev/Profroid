@@ -1,6 +1,8 @@
 package com.profroid.profroidapp.config;
 
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.core.Ordered;
+import org.springframework.core.annotation.Order;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.AccessDeniedException;
@@ -18,7 +20,7 @@ import java.util.Map;
  * - 401 Unauthorized: Authentication missing or invalid
  * - 403 Forbidden: Authenticated but lacking permission
  */
-@Slf4j
+@Order(Ordered.LOWEST_PRECEDENCE)
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
@@ -30,8 +32,6 @@ public class GlobalExceptionHandler {
     public ResponseEntity<Map<String, Object>> handleAccessDeniedException(
             AccessDeniedException ex,
             WebRequest request) {
-        
-        log.warn("Access denied: {}", ex.getMessage());
         
         Map<String, Object> body = new LinkedHashMap<>();
         body.put("success", false);
@@ -52,8 +52,7 @@ public class GlobalExceptionHandler {
             NoHandlerFoundException ex,
             WebRequest request) {
         
-        log.warn("Resource not found: {}", ex.getRequestURL());
-        
+
         Map<String, Object> body = new LinkedHashMap<>();
         body.put("success", false);
         body.put("error", "Not Found");
@@ -71,8 +70,6 @@ public class GlobalExceptionHandler {
     public ResponseEntity<Map<String, Object>> handleGenericException(
             Exception ex,
             WebRequest request) {
-        
-        log.error("Unexpected error: ", ex);
         
         Map<String, Object> body = new LinkedHashMap<>();
         body.put("success", false);

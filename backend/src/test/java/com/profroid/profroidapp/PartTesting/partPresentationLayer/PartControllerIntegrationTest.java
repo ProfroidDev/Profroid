@@ -67,7 +67,7 @@ public class PartControllerIntegrationTest {
     @Test
     void whenGetAllParts_thenReturnList() {
         webTestClient.get()
-                .uri("/api/v1/parts")
+                .uri("/v1/parts")
                 .exchange()
                 .expectStatus().isOk()
                 .expectBodyList(PartResponseModel.class)
@@ -83,7 +83,7 @@ public class PartControllerIntegrationTest {
         partRepository.deleteAll();
 
         webTestClient.get()
-                .uri("/api/v1/parts")
+                .uri("/v1/parts")
                 .exchange()
                 .expectStatus().isOk()
                 .expectBodyList(PartResponseModel.class)
@@ -95,7 +95,7 @@ public class PartControllerIntegrationTest {
     @Test
     void whenGetPartById_withValidId_thenReturnPart() {
         webTestClient.get()
-                .uri("/api/v1/parts/{partId}", testPartId)
+                .uri("/v1/parts/{partId}", testPartId)
                 .exchange()
                 .expectStatus().isOk()
                 .expectBody(PartResponseModel.class)
@@ -111,7 +111,7 @@ public class PartControllerIntegrationTest {
     @Test
     void whenGetPartById_withNonExistingId_thenReturn404() {
         webTestClient.get()
-                .uri("/api/v1/parts/{partId}", "PC-999999")
+                .uri("/v1/parts/{partId}", "PC-999999")
                 .exchange()
                 .expectStatus().isNotFound();
     }
@@ -130,7 +130,7 @@ public class PartControllerIntegrationTest {
                 .build();
 
         webTestClient.post()
-                .uri("/api/v1/parts")
+                .uri("/v1/parts")
                 .contentType(MediaType.APPLICATION_JSON)
                 .bodyValue(request)
                 .exchange()
@@ -156,7 +156,7 @@ public class PartControllerIntegrationTest {
                 .build();
 
         webTestClient.post()
-                .uri("/api/v1/parts")
+                .uri("/v1/parts")
                 .contentType(MediaType.APPLICATION_JSON)
                 .bodyValue(request)
                 .exchange()
@@ -179,7 +179,7 @@ public class PartControllerIntegrationTest {
                 .build();
 
         webTestClient.put()
-                .uri("/api/v1/parts/{partId}", testPartId)
+                .uri("/v1/parts/{partId}", testPartId)
                 .contentType(MediaType.APPLICATION_JSON)
                 .bodyValue(updateRequest)
                 .exchange()
@@ -205,7 +205,7 @@ public class PartControllerIntegrationTest {
                 .build();
 
         webTestClient.put()
-                .uri("/api/v1/parts/{partId}", "PC-999999")
+                .uri("/v1/parts/{partId}", "PC-999999")
                 .contentType(MediaType.APPLICATION_JSON)
                 .bodyValue(updateRequest)
                 .exchange()
@@ -216,7 +216,7 @@ public class PartControllerIntegrationTest {
     @Test
     void whenDeletePart_withValidId_thenReturn204() {
         webTestClient.delete()
-                .uri("/api/v1/parts/{partId}", testPartId)
+                .uri("/v1/parts/{partId}", testPartId)
                 .exchange()
                 .expectStatus().isNoContent();
 
@@ -231,7 +231,7 @@ public class PartControllerIntegrationTest {
     @Test
     void whenDeletePart_withNonExistingId_thenReturn404() {
         webTestClient.delete()
-                .uri("/api/v1/parts/{partId}", "PC-999999")
+                .uri("/v1/parts/{partId}", "PC-999999")
                 .exchange()
                 .expectStatus().isNotFound();
     }

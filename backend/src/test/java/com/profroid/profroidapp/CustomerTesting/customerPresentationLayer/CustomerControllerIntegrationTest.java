@@ -83,7 +83,7 @@ public class CustomerControllerIntegrationTest {
     @Test
     void whenGetAllCustomers_thenReturnsList() {
         webTestClient.get()
-                .uri("/api/v1/customers")
+                .uri("/v1/customers")
                 .exchange()
                 .expectStatus().isOk()
                 .expectHeader().contentType(MediaType.APPLICATION_JSON)
@@ -100,7 +100,7 @@ public class CustomerControllerIntegrationTest {
         customerRepository.deleteAll();
 
         webTestClient.get()
-                .uri("/api/v1/customers")
+                .uri("/v1/customers")
                 .exchange()
                 .expectStatus().isOk()
                 .expectBodyList(CustomerResponseModel.class)
@@ -113,7 +113,7 @@ public class CustomerControllerIntegrationTest {
     @Test
     void whenGetCustomerById_withValidId_thenReturnsCustomer() {
         webTestClient.get()
-                .uri("/api/v1/customers/{customerId}", testCustomerId)
+                .uri("/v1/customers/{customerId}", testCustomerId)
                 .exchange()
                 .expectStatus().isOk()
                 .expectBody(CustomerResponseModel.class)
@@ -127,7 +127,7 @@ public class CustomerControllerIntegrationTest {
     @Test
     void whenGetCustomerById_withInvalidId_thenReturns422() {
         webTestClient.get()
-                .uri("/api/v1/customers/{customerId}", "bad-id")
+                .uri("/v1/customers/{customerId}", "bad-id")
                 .exchange()
                 .expectStatus().isEqualTo(422);
     }
@@ -135,7 +135,7 @@ public class CustomerControllerIntegrationTest {
     @Test
     void whenGetCustomerById_withNonExistingId_thenReturns404() {
         webTestClient.get()
-                .uri("/api/v1/customers/{customerId}",
+                .uri("/v1/customers/{customerId}",
                         "00000000-0000-0000-0000-000000000000")
                 .exchange()
                 .expectStatus().isNotFound();
@@ -163,7 +163,7 @@ public class CustomerControllerIntegrationTest {
                 .build();
 
         webTestClient.post()
-                .uri("/api/v1/customers")
+                .uri("/v1/customers")
                 .contentType(MediaType.APPLICATION_JSON)
                 .bodyValue(request)
                 .exchange()
@@ -193,7 +193,7 @@ public class CustomerControllerIntegrationTest {
                 .build();
 
         webTestClient.post()
-                .uri("/api/v1/customers")
+                .uri("/v1/customers")
                 .contentType(MediaType.APPLICATION_JSON)
                 .bodyValue(request)
                 .exchange()
@@ -224,7 +224,7 @@ public class CustomerControllerIntegrationTest {
                 .build();
 
         webTestClient.put()
-                .uri("/api/v1/customers/{customerId}", testCustomerId)
+                .uri("/v1/customers/{customerId}", testCustomerId)
                 .contentType(MediaType.APPLICATION_JSON)
                 .bodyValue(request)
                 .exchange()
@@ -256,7 +256,7 @@ public class CustomerControllerIntegrationTest {
                 .build();
 
         webTestClient.put()
-                .uri("/api/v1/customers/{customerId}", "bad-id")
+                .uri("/v1/customers/{customerId}", "bad-id")
                 .contentType(MediaType.APPLICATION_JSON)
                 .bodyValue(request)
                 .exchange()
@@ -282,7 +282,7 @@ public class CustomerControllerIntegrationTest {
                 .build();
 
         webTestClient.put()
-                .uri("/api/v1/customers/{customerId}",
+                .uri("/v1/customers/{customerId}",
                         "00000000-0000-0000-0000-000000000000")
                 .contentType(MediaType.APPLICATION_JSON)
                 .bodyValue(request)
@@ -296,7 +296,7 @@ public class CustomerControllerIntegrationTest {
     @Test
     void whenDeleteCustomer_withValidId_thenReturns204() {
         webTestClient.delete()
-                .uri("/api/v1/customers/{customerId}", testCustomerId)
+                .uri("/v1/customers/{customerId}", testCustomerId)
                 .exchange()
                 .expectStatus().isNoContent();
 
@@ -309,7 +309,7 @@ public class CustomerControllerIntegrationTest {
     @Test
     void whenDeleteCustomer_withInvalidId_thenReturns422() {
         webTestClient.delete()
-                .uri("/api/v1/customers/{customerId}", "bad-id")
+                .uri("/v1/customers/{customerId}", "bad-id")
                 .exchange()
                 .expectStatus().isEqualTo(422);
     }
@@ -317,7 +317,7 @@ public class CustomerControllerIntegrationTest {
     @Test
     void whenDeleteCustomer_withNonExistingId_thenReturns404() {
         webTestClient.delete()
-                .uri("/api/v1/customers/{customerId}",
+                .uri("/v1/customers/{customerId}",
                         "00000000-0000-0000-0000-000000000000")
                 .exchange()
                 .expectStatus().isNotFound();
@@ -376,7 +376,7 @@ public class CustomerControllerIntegrationTest {
         cellarRepository.save(buildCellar(savedCustomer, "Basement Cellar", 80));
 
         webTestClient.get()
-                .uri("/api/v1/customers/{customerId}/cellars",
+                .uri("/v1/customers/{customerId}/cellars",
                         savedCustomer.getCustomerIdentifier().getCustomerId())
                 .exchange()
                 .expectStatus().isOk()
@@ -387,7 +387,7 @@ public class CustomerControllerIntegrationTest {
     @Test
     void whenGetAllCellars_withInvalidCustomerId_thenReturn422() {
         webTestClient.get()
-                .uri("/api/v1/customers/{customerId}/cellars", "invalid-id")
+                .uri("/v1/customers/{customerId}/cellars", "invalid-id")
                 .exchange()
                 .expectStatus().isEqualTo(422);
     }
@@ -395,7 +395,7 @@ public class CustomerControllerIntegrationTest {
     @Test
     void whenGetAllCellars_withNonExistingCustomerId_thenReturn404() {
         webTestClient.get()
-                .uri("/api/v1/customers/{customerId}/cellars",
+                .uri("/v1/customers/{customerId}/cellars",
                         "123e4567-e89b-12d3-a456-426614174999")
                 .exchange()
                 .expectStatus().isNotFound();
@@ -410,7 +410,7 @@ public class CustomerControllerIntegrationTest {
         Cellar cellar = cellarRepository.save(buildCellar(customer, "Premium Cellar", 200));
 
         webTestClient.get()
-                .uri("/api/v1/customers/{customerId}/cellars/{cellarId}",
+                .uri("/v1/customers/{customerId}/cellars/{cellarId}",
                         customer.getCustomerIdentifier().getCustomerId(),
                         cellar.getCellarIdentifier().getCellarId())
                 .exchange()
@@ -423,7 +423,7 @@ public class CustomerControllerIntegrationTest {
     @Test
     void whenGetCellarById_withInvalidCustomerId_thenReturn422() {
         webTestClient.get()
-                .uri("/api/v1/customers/{customerId}/cellars/{cellarId}",
+                .uri("/v1/customers/{customerId}/cellars/{cellarId}",
                         "invalid", "cellar-123")
                 .exchange()
                 .expectStatus().isEqualTo(422);
@@ -434,7 +434,7 @@ public class CustomerControllerIntegrationTest {
         Customer customer = customerRepository.save(buildCustomer("customerX"));
 
         webTestClient.get()
-                .uri("/api/v1/customers/{customerId}/cellars/{cellarId}",
+                .uri("/v1/customers/{customerId}/cellars/{cellarId}",
                         customer.getCustomerIdentifier().getCustomerId(),
                         "invalid-id")
                 .exchange()
@@ -446,7 +446,7 @@ public class CustomerControllerIntegrationTest {
         Customer customer = customerRepository.save(buildCustomer("userAAA"));
 
         webTestClient.get()
-                .uri("/api/v1/customers/{customerId}/cellars/{cellarId}",
+                .uri("/v1/customers/{customerId}/cellars/{cellarId}",
                         customer.getCustomerIdentifier().getCustomerId(),
                         "123e4567-e89b-12d3-a456-426614174999")
                 .exchange()
@@ -456,7 +456,7 @@ public class CustomerControllerIntegrationTest {
     @Test
     void whenGetCellarById_withNonExistingCustomerId_thenReturn404() {
         webTestClient.get()
-                .uri("/api/v1/customers/{customerId}/cellars/{cellarId}",
+                .uri("/v1/customers/{customerId}/cellars/{cellarId}",
                         "123e4567-e89b-12d3-a456-426614170000",
                         "123e4567-e89b-12d3-a456-426614179999")
                 .exchange()

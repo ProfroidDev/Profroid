@@ -40,7 +40,7 @@ public class ReportControllerIntegrationTest {
                 .thenReturn(new byte[]{1, 2, 3});
 
         webTestClient.get()
-                .uri("/api/v1/reports/{id}/pdf", "REP-123")
+                .uri("/v1/reports/{id}/pdf", "REP-123")
                 .exchange()
                 .expectStatus().isOk()
                 .expectHeader().contentType(MediaType.APPLICATION_PDF)
@@ -71,7 +71,7 @@ public class ReportControllerIntegrationTest {
                 .thenReturn(response);
 
         webTestClient.post()
-                .uri("/api/v1/reports")
+                .uri("/v1/reports")
                 .contentType(MediaType.APPLICATION_JSON)
                 .bodyValue(request)
                 .exchange()
@@ -90,7 +90,7 @@ public class ReportControllerIntegrationTest {
         when(reportService.getReportById(eq("REP-123"), anyString(), anyString())).thenReturn(response);
 
         webTestClient.get()
-                .uri("/api/v1/reports/{id}", "REP-123")
+                .uri("/v1/reports/{id}", "REP-123")
                 .exchange()
                 .expectStatus().isOk()
                                 .expectBody(ReportResponseModel.class)
@@ -106,7 +106,7 @@ public class ReportControllerIntegrationTest {
         when(reportService.getReportByAppointmentId(eq("APT-1"), anyString(), anyString())).thenReturn(response);
 
         webTestClient.get()
-                .uri("/api/v1/reports/appointment/{aptId}", "APT-1")
+                .uri("/v1/reports/appointment/{aptId}", "APT-1")
                 .exchange()
                 .expectStatus().isOk()
                                 .expectBody(ReportResponseModel.class)
@@ -123,7 +123,7 @@ public class ReportControllerIntegrationTest {
                 .thenReturn(List.of(ReportResponseModel.builder().reportId("REP-123").build()));
 
         webTestClient.get()
-                .uri("/api/v1/reports/technician/{techId}", "TECH-1")
+                .uri("/v1/reports/technician/{techId}", "TECH-1")
                 .exchange()
                 .expectStatus().isOk()
                 .expectBodyList(ReportResponseModel.class)
@@ -136,7 +136,7 @@ public class ReportControllerIntegrationTest {
                 .thenReturn(List.of(ReportResponseModel.builder().reportId("REP-123").build()));
 
         webTestClient.get()
-                .uri("/api/v1/reports/customer/{custId}", "CUST-1")
+                .uri("/v1/reports/customer/{custId}", "CUST-1")
                 .exchange()
                 .expectStatus().isOk()
                 .expectBodyList(ReportResponseModel.class)
@@ -149,7 +149,7 @@ public class ReportControllerIntegrationTest {
                 .thenReturn(List.of(ReportResponseModel.builder().reportId("REP-123").build()));
 
         webTestClient.get()
-                .uri("/api/v1/reports")
+                .uri("/v1/reports")
                 .exchange()
                 .expectStatus().isOk()
                 .expectBodyList(ReportResponseModel.class)
@@ -170,7 +170,7 @@ public class ReportControllerIntegrationTest {
                 .build();
 
         webTestClient.put()
-                .uri("/api/v1/reports/{id}", "REP-123")
+                .uri("/v1/reports/{id}", "REP-123")
                 .contentType(MediaType.APPLICATION_JSON)
                 .bodyValue(request)
                 .exchange()
@@ -187,7 +187,7 @@ public class ReportControllerIntegrationTest {
         doNothing().when(reportService).deleteReport(eq("REP-123"), anyString(), anyString());
 
         webTestClient.delete()
-                .uri("/api/v1/reports/{id}", "REP-123")
+                .uri("/v1/reports/{id}", "REP-123")
                 .exchange()
                 .expectStatus().isNoContent();
     }
