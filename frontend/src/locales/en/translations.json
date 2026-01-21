@@ -126,8 +126,8 @@
       "viewCustomers": "View Customers",
       "viewServices": "View Services",
       "hero": {
-        "title": "Expert Wine Cellar Repair Services",
-        "subtitle": "Your trusted partner for wine cellar cooling system repairs and maintenance",
+        "title": "Expert Wine Cellar Repair Services - Now with CI/CD! 🚀",
+        "subtitle": "Your trusted partner for wine cellar cooling system repairs and maintenance • Automated deployments powered by GitHub Actions",
         "cta": "Browse Services"
       },
       "services": {
