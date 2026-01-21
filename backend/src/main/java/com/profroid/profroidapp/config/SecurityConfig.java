@@ -58,6 +58,7 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         // Public endpoints - no auth required
                         .requestMatchers(HttpMethod.POST, "/v1/customers").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/v1/files/*/download").permitAll()
                         // All other requests require authentication
                         .anyRequest().authenticated()
                 )
