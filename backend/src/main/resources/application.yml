@@ -27,6 +27,11 @@ minio:
 spring:
   profiles:
     active: h2  # IDE + CI will default to H2 (safe)
+  web:
+    resources:
+      add-mappings: false
+  mvc:
+    throw-exception-if-no-handler-found: true
 ---
 ## ===============================
 ## H2 PROFILE (local dev + CI tests)

@@ -17,7 +17,6 @@ const FeedbackSection: React.FC = () => {
     if (rating === 0) return;
 
     // Simulate API call
-    console.log({ rating, feedback });
     setSubmitted(true);
 
     // Reset after showing success message

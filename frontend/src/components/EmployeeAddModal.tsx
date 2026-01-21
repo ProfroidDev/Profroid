@@ -149,7 +149,6 @@ export default function EmployeeAddModal({ isOpen, onClose, onSuccess }: Employe
       onClose();
       onSuccess?.();
     } catch (error: unknown) {
-      console.error('Error adding employee:', error);
       setSubmitError(getErrorMessage(error));
     } finally {
       setLoading(false);

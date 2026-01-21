@@ -7,6 +7,7 @@ import org.springframework.security.access.AccessDeniedException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.context.request.WebRequest;
+import org.springframework.web.servlet.NoHandlerFoundException;
 
 import java.time.LocalDateTime;
 import java.util.LinkedHashMap;
@@ -40,6 +41,27 @@ public class GlobalExceptionHandler {
         body.put("path", request.getDescription(false).replace("uri=", ""));
         
         return new ResponseEntity<>(body, HttpStatus.FORBIDDEN);
+    }
+
+    /**
+     * Handle 404 Not Found
+     * Requested resource does not exist
+     */
+    @ExceptionHandler(NoHandlerFoundException.class)
+    public ResponseEntity<Map<String, Object>> handleNotFound(
+            NoHandlerFoundException ex,
+            WebRequest request) {
+        
+        log.warn("Resource not found: {}", ex.getRequestURL());
+        
+        Map<String, Object> body = new LinkedHashMap<>();
+        body.put("success", false);
+        body.put("error", "Not Found");
+        body.put("message", "The requested resource does not exist");
+        body.put("timestamp", LocalDateTime.now());
+        body.put("path", ex.getRequestURL());
+        
+        return new ResponseEntity<>(body, HttpStatus.NOT_FOUND);
     }
 
     /**

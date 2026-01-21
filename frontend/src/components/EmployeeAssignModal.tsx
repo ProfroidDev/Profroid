@@ -103,7 +103,6 @@ export default function EmployeeAssignModal({ isOpen, onClose, onSuccess }: Empl
       const employeeIds = new Set(employees.map(emp => emp.userId).filter(Boolean));
       setEmployeeUserIds(employeeIds);
     } catch (error: unknown) {
-      console.error('Error fetching existing employees:', error);
       // Continue even if this fails - just won't filter out employees
     }
   };
@@ -148,7 +147,6 @@ export default function EmployeeAssignModal({ isOpen, onClose, onSuccess }: Empl
       setUnassignedUsers(users);
       setAllUsers(users);
     } catch (error: unknown) {
-      console.error('Error fetching users:', error);
       setFetchError(getErrorMessage(error));
     }
   }, [employeeUserIds]);
@@ -224,7 +222,6 @@ export default function EmployeeAssignModal({ isOpen, onClose, onSuccess }: Empl
     try {
       const token = localStorage.getItem('authToken');
       const url = `${import.meta.env.VITE_BACKEND_URL}/customers/by-user/${userId}`;
-      console.log('Fetching customer data from:', url);
       
       const response = await fetch(url, {
         method: 'GET',
@@ -235,12 +232,10 @@ export default function EmployeeAssignModal({ isOpen, onClose, onSuccess }: Empl
       });
 
       if (!response.ok) {
-        console.warn(`Failed to fetch customer data: ${response.status} ${response.statusText}`);
         return;
       }
 
       const customerData: CustomerData = await response.json();
-      console.log('Customer data received:', customerData);
       
       // Safely map phone numbers with fallback
       let mappedPhones = [{ number: '', type: 'MOBILE' }];
@@ -264,7 +259,6 @@ export default function EmployeeAssignModal({ isOpen, onClose, onSuccess }: Empl
         phoneNumbers: mappedPhones,
       }));
     } catch (error) {
-      console.error('Error fetching customer data:', error);
       // Not critical - user can still fill in manually
     }
   };
@@ -341,9 +335,7 @@ export default function EmployeeAssignModal({ isOpen, onClose, onSuccess }: Empl
         employeeRole: employeeRole,
       };
 
-      console.log('Sending employee data to backend:', employeeData);
       await addEmployee(employeeData);
-      console.log('Employee created successfully in backend');
 
       // Step 2: Only update auth-service role AFTER backend succeeds
       const authResponse = await fetch(
@@ -364,10 +356,8 @@ export default function EmployeeAssignModal({ isOpen, onClose, onSuccess }: Empl
       if (!authResponse.ok) {
         const errorData = await authResponse.json();
         // Backend succeeded but auth failed - this is a problem but employee exists
-        console.error('Warning: Employee created but auth-service update failed:', errorData);
         throw new Error(errorData.error || 'Employee created but failed to update auth role');
       }
-      console.log('Auth-service role updated successfully');
 
       onClose();
       onSuccess?.();
@@ -388,7 +378,6 @@ export default function EmployeeAssignModal({ isOpen, onClose, onSuccess }: Empl
         phoneNumbers: [{ number: '', type: 'MOBILE' }],
       });
     } catch (error: unknown) {
-      console.error('Error assigning employee:', error);
       setSubmitError(getErrorMessage(error));
     } finally {
       setLoading(false);

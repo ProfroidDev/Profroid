@@ -89,7 +89,6 @@ const useAuthStore = create<AuthStore>((set, get) => ({
             set({ isLoading: false });
           }
         } catch (fetchError) {
-          console.error('Failed to fetch full user details:', fetchError);
           set({ isLoading: false });
         }
         return true;
@@ -203,7 +202,6 @@ const useAuthStore = create<AuthStore>((set, get) => ({
             set({ isLoading: false });
           }
         } catch (error) {
-          console.error('Error fetching customer data during init:', error);
           set({ isLoading: false });
         }
       } else {
@@ -311,11 +309,8 @@ const useAuthStore = create<AuthStore>((set, get) => ({
         };
         
         set({ customerData });
-      } else if (response.status !== 404) {
-        console.error('Failed to fetch customer data:', response.status);
       }
     } catch (error) {
-      console.error('Error fetching customer data:', error);
     }
   },
 

@@ -43,8 +43,6 @@ export function ProtectedRoute({ children, requiredRoles }: ProtectedRouteProps)
       role => userRole === role.toUpperCase()
     );
 
-    console.log('ProtectedRoute check:', { userRole, requiredRoles, hasRequiredRole, userObject: user });
-
     if (!hasRequiredRole) {
       // User is authenticated but doesn't have required role
       return <Navigate to="/error/permission-denied" replace />;

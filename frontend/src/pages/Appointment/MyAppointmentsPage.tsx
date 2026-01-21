@@ -54,8 +54,6 @@ export default function MyAppointmentsPage(): React.ReactElement {
       const newTotalPages = Math.max(1, Math.ceil(sorted.length / pageSize));
       setCurrentPage((prev) => Math.min(prev, newTotalPages));
     } catch (error: unknown) {
-      console.error("Error fetching appointments:", error);
-      
       // Check if it's a 404 or permission error
       if (error instanceof Error && 'response' in error) {
         const axiosError = error as { response?: { status: number; data?: { message: string } } };
@@ -105,7 +103,6 @@ export default function MyAppointmentsPage(): React.ReactElement {
       setToast({ message: t('pages.appointments.appointmentCancelled'), type: "success" });
       setConfirmModal({ isOpen: false, appointmentId: null });
     } catch (error: unknown) {
-      console.error("Error cancelling appointment:", error);
       setToast({ message: t('pages.appointments.errorCancelling'), type: "error" });
       setConfirmModal({ isOpen: false, appointmentId: null });
     }
@@ -169,7 +166,6 @@ export default function MyAppointmentsPage(): React.ReactElement {
         const emp = await getEmployee(selectedAppointment.technicianId);
         setTechnicianDetails(emp);
       } catch (e) {
-        console.warn("Unable to fetch technician details", e);
         setTechnicianDetails(null);
       }
 
@@ -189,7 +185,6 @@ export default function MyAppointmentsPage(): React.ReactElement {
           setMatchedCellar(match);
         }
       } catch (e) {
-        console.warn("Unable to fetch cellar details", e);
         setMatchedCellar(null);
       }
     };
