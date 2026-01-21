@@ -12,6 +12,7 @@
     "preview": "vite preview",
     "start:docker": "vite --mode production",
     "test": "playwright test",
+    "test:coverage": "playwright test --reporter=json --reporter=junit --reporter=html",
     "test:ui": "playwright test --ui",
     "test:debug": "playwright test --debug",
     "test:headed": "playwright test --headed",

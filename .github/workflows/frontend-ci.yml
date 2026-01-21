@@ -131,12 +131,39 @@ jobs:
         run: npm ci
         working-directory: ./frontend
 
-      - name: Run unit tests (stub for now)
-        run: |
-          echo "Unit tests would run here"
-          echo "Configure with your test framework (Jest, Vitest, etc.)"
+      - name: Install Playwright browsers
+        run: npx playwright install --with-deps chromium
+        working-directory: ./frontend
+
+      - name: Run unit tests with Playwright
+        run: npm test -- --reporter=json --reporter=junit --reporter=html
         working-directory: ./frontend
         continue-on-error: true
+
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: frontend-test-results
+          path: frontend/test-results/
+          retention-days: 7
+
+      - name: Upload HTML test report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: frontend-test-report
+          path: frontend/playwright-report/
+          retention-days: 7
+
+      - name: Publish test report
+        if: always()
+        uses: dorny/test-reporter@v1
+        with:
+          name: Frontend Test Results
+          path: frontend/test-results/junit.xml
+          reporter: java-junit
+          fail-on-error: false
 
   # =====================================================
   # 5) E2E Tests with Playwright (Optional/Non-blocking)
