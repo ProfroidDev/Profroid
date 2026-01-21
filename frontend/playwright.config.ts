@@ -1,63 +1,63 @@
-import { defineConfig, devices } from "@playwright/test";
+import { defineConfig, devices } from '@playwright/test';
 
 export default defineConfig({
-  testDir: "./tests",
+  testDir: './tests',
   fullyParallel: true,
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 2 : 0,
   workers: process.env.CI ? 4 : undefined,
   reporter: [
-    ["html", { open: "never" }],
-    ["json", { outputFile: "test-results/results.json" }],
-    ["junit", { outputFile: "test-results/results.xml" }],
+    ['html', { open: 'never' }],
+    ['json', { outputFile: 'test-results/results.json' }],
+    ['junit', { outputFile: 'test-results/results.xml' }],
   ],
   timeout: 30000,
   expect: { timeout: 5000 },
 
   use: {
-    baseURL: "http://localhost:5173/",
-    trace: "on-first-retry",
+    baseURL: 'http://localhost:5173/',
+    trace: 'on-first-retry',
     headless: true,
-    video: "retain-on-failure",
-    screenshot: "only-on-failure",
+    video: 'retain-on-failure',
+    screenshot: 'only-on-failure',
     navigationTimeout: 30000,
   },
 
   projects: process.env.CI
     ? [
         {
-          name: "chromium",
-          use: { ...devices["Desktop Chrome"] },
+          name: 'chromium',
+          use: { ...devices['Desktop Chrome'] },
         },
       ]
     : [
         {
-          name: "chromium",
-          use: { ...devices["Desktop Chrome"] },
+          name: 'chromium',
+          use: { ...devices['Desktop Chrome'] },
         },
         {
-          name: "firefox",
-          use: { ...devices["Desktop Firefox"] },
+          name: 'firefox',
+          use: { ...devices['Desktop Firefox'] },
         },
         {
-          name: "webkit",
-          use: { ...devices["Desktop Safari"] },
+          name: 'webkit',
+          use: { ...devices['Desktop Safari'] },
         },
         {
-          name: "Mobile Chrome",
-          use: { ...devices["Pixel 5"] },
+          name: 'Mobile Chrome',
+          use: { ...devices['Pixel 5'] },
         },
         {
-          name: "Mobile Safari",
-          use: { ...devices["iPhone 12"] },
+          name: 'Mobile Safari',
+          use: { ...devices['iPhone 12'] },
         },
         {
-          name: "Microsoft Edge",
-          use: { ...devices["Desktop Edge"], channel: "msedge" },
+          name: 'Microsoft Edge',
+          use: { ...devices['Desktop Edge'], channel: 'msedge' },
         },
         {
-          name: "Google Chrome",
-          use: { ...devices["Desktop Chrome"], channel: "chrome" },
+          name: 'Google Chrome',
+          use: { ...devices['Desktop Chrome'], channel: 'chrome' },
         },
       ],
 
@@ -65,8 +65,8 @@ export default defineConfig({
   // START DEV SERVER
   // ---------------------
   webServer: {
-    command: "npm run dev",
-    url: "http://localhost:5173/",
+    command: 'npm run dev',
+    url: 'http://localhost:5173/',
     reuseExistingServer: !process.env.CI,
   },
 });
