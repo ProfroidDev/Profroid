@@ -60,6 +60,12 @@ public class Bill {
     @Column(name = "paid_at")
     private LocalDateTime paidAt;
 
+     @Column(name = "stripe_checkout_session_id")
+    private String stripeCheckoutSessionId;
+
+    @Column(name = "stripe_payment_intent_id")
+    private String stripePaymentIntentId;
+
     @PrePersist
     protected void onCreate() {
         createdAt = LocalDateTime.now();
@@ -77,4 +83,7 @@ public class Bill {
         UNPAID,
         PAID
     }
+
+   
+
 }

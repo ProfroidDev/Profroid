@@ -42,4 +42,6 @@ public interface BillRepository extends JpaRepository<Bill, Integer> {
      * Find all bills for a specific appointment
      */
     Optional<Bill> findByAppointment_AppointmentIdentifier_AppointmentId(String appointmentId);
+
+    Optional<Bill> findByStripeCheckoutSessionId(String stripeCheckoutSessionId);
 }

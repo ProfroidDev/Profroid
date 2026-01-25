@@ -61,6 +61,7 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.GET, "/v1/files/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/v1/jobs").permitAll()
                         .requestMatchers(HttpMethod.GET, "/v1/jobs/**").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/v1/payments/webhook").permitAll()
                         // All other requests require authentication
                         .anyRequest().authenticated()
                 )
