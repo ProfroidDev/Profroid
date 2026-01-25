@@ -69,7 +69,7 @@ public class NotificationPayloadBuilder {
         // Add appointment address
         Map<String, String> address = new HashMap<>();
         if (appointment.getAppointmentAddress() != null) {
-            address.put("street", appointment.getAppointmentAddress().getStreet());
+            address.put("street", appointment.getAppointmentAddress().getStreetAddress());
             address.put("city", appointment.getAppointmentAddress().getCity());
             address.put("province", appointment.getAppointmentAddress().getProvince());
             address.put("postalCode", appointment.getAppointmentAddress().getPostalCode());
@@ -95,14 +95,15 @@ public class NotificationPayloadBuilder {
     
     /**
      * Build list of notification recipients (customer and technician)
+     * Note: Email addresses must be fetched from auth service via userId
      */
     public static List<Map<String, String>> buildRecipients(Appointment appointment) {
         List<Map<String, String>> recipients = new ArrayList<>();
         
         // Add customer recipient
-        if (appointment.getCustomer() != null && appointment.getCustomer().getUser() != null) {
+        if (appointment.getCustomer() != null && appointment.getCustomer().getUserId() != null) {
             Map<String, String> customerRecipient = new HashMap<>();
-            customerRecipient.put("email", appointment.getCustomer().getUser().getEmail());
+            customerRecipient.put("userId", appointment.getCustomer().getUserId());
             customerRecipient.put("name", 
                 formatPersonName(
                     appointment.getCustomer().getFirstName(), 
@@ -113,9 +114,9 @@ public class NotificationPayloadBuilder {
         }
         
         // Add technician recipient
-        if (appointment.getTechnician() != null && appointment.getTechnician().getUser() != null) {
+        if (appointment.getTechnician() != null && appointment.getTechnician().getUserId() != null) {
             Map<String, String> technicianRecipient = new HashMap<>();
-            technicianRecipient.put("email", appointment.getTechnician().getUser().getEmail());
+            technicianRecipient.put("userId", appointment.getTechnician().getUserId());
             technicianRecipient.put("name", 
                 formatPersonName(
                     appointment.getTechnician().getFirstName(), 
@@ -176,16 +177,15 @@ public class NotificationPayloadBuilder {
             changedFields.add("appointmentEndTime");
         }
         
-        // Compare technician
-        Long originalTechId = original.getTechnician() != null ? original.getTechnician().getId() : null;
-        Long updatedTechId = updated.getTechnician() != null ? updated.getTechnician().getId() : null;
+        Integer originalTechId = original.getTechnician() != null ? original.getTechnician().getId() : null;
+        Integer updatedTechId = updated.getTechnician() != null ? updated.getTechnician().getId() : null;
         if (!objectsEqual(originalTechId, updatedTechId)) {
             changedFields.add("technician");
         }
         
         // Compare customer
-        Long originalCustId = original.getCustomer() != null ? original.getCustomer().getId() : null;
-        Long updatedCustId = updated.getCustomer() != null ? updated.getCustomer().getId() : null;
+        Integer originalCustId = original.getCustomer() != null ? original.getCustomer().getId() : null;
+        Integer updatedCustId = updated.getCustomer() != null ? updated.getCustomer().getId() : null;
         if (!objectsEqual(originalCustId, updatedCustId)) {
             changedFields.add("customer");
         }
@@ -210,8 +210,8 @@ public class NotificationPayloadBuilder {
         }
         
         // Compare cellar
-        Long originalCellarId = original.getCellar() != null ? original.getCellar().getId() : null;
-        Long updatedCellarId = updated.getCellar() != null ? updated.getCellar().getId() : null;
+        Integer originalCellarId = original.getCellar() != null ? original.getCellar().getId() : null;
+        Integer updatedCellarId = updated.getCellar() != null ? updated.getCellar().getId() : null;
         if (!objectsEqual(originalCellarId, updatedCellarId)) {
             changedFields.add("cellarName");
         }

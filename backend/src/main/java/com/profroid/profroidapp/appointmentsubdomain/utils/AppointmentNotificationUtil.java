@@ -105,6 +105,70 @@ public class AppointmentNotificationUtil {
             // Don't throw exception - notification failure shouldn't block reminder
         }
     }
+
+    /**
+     * Send technician unassigned notification
+     */
+    public void sendTechnicianUnassignedNotification(Map<String, String> technicianRecipient, Map<String, Object> details) {
+        try {
+            Map<String, Object> payload = new HashMap<>();
+            payload.put("recipient", technicianRecipient);
+            payload.put("details", details);
+            payload.put("notificationType", "technician_unassigned");
+            
+            sendNotification("/api/notifications/appointment/unassigned", payload);
+        } catch (Exception e) {
+            logger.log(Level.WARNING, "Failed to send technician unassigned notification", e);
+        }
+    }
+
+    /**
+     * Send technician assigned notification
+     */
+    public void sendTechnicianAssignedNotification(Map<String, String> technicianRecipient, Map<String, Object> details) {
+        try {
+            Map<String, Object> payload = new HashMap<>();
+            payload.put("recipient", technicianRecipient);
+            payload.put("details", details);
+            payload.put("notificationType", "technician_assigned");
+            
+            sendNotification("/api/notifications/appointment/assigned", payload);
+        } catch (Exception e) {
+            logger.log(Level.WARNING, "Failed to send technician assigned notification", e);
+        }
+    }
+
+    /**
+     * Send customer unassigned notification
+     */
+    public void sendCustomerUnassignedNotification(Map<String, String> customerRecipient, Map<String, Object> details) {
+        try {
+            Map<String, Object> payload = new HashMap<>();
+            payload.put("recipient", customerRecipient);
+            payload.put("details", details);
+            payload.put("notificationType", "customer_unassigned");
+            
+            sendNotification("/api/notifications/appointment/unassigned", payload);
+        } catch (Exception e) {
+            logger.log(Level.WARNING, "Failed to send customer unassigned notification", e);
+        }
+    }
+
+    /**
+     * Send customer assigned notification
+     */
+    public void sendCustomerAssignedNotification(Map<String, String> customerRecipient, Map<String, Object> details) {
+        try {
+            Map<String, Object> payload = new HashMap<>();
+            payload.put("recipient", customerRecipient);
+            payload.put("details", details);
+            payload.put("notificationType", "customer_assigned");
+            
+            sendNotification("/api/notifications/appointment/assigned", payload);
+        } catch (Exception e) {
+            logger.log(Level.WARNING, "Failed to send customer assigned notification", e);
+        }
+    }
     
     /**
      * Generic method to send notification request

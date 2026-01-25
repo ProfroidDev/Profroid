@@ -38,6 +38,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
 
 @Service
 public class AppointmentServiceImpl implements AppointmentService {
@@ -284,15 +285,18 @@ public class AppointmentServiceImpl implements AppointmentService {
         // Save appointment
         Appointment savedAppointment = appointmentRepository.save(appointment);
         
-        // Send appointment booked notification
-        try {
-            var recipients = NotificationPayloadBuilder.buildRecipients(savedAppointment);
-            var details = NotificationPayloadBuilder.buildAppointmentDetails(savedAppointment);
-            notificationUtil.sendAppointmentBookedNotification(recipients, details);
-        } catch (Exception e) {
-            // Log but don't fail the request if notification fails
-            System.err.println("Notification error: " + e.getMessage());
-        }
+        // Send appointment booked notification asynchronously (non-blocking)
+        new Thread(() -> {
+            try {
+                var recipients = NotificationPayloadBuilder.buildRecipients(savedAppointment);
+                var details = NotificationPayloadBuilder.buildAppointmentDetails(savedAppointment);
+                notificationUtil.sendAppointmentBookedNotification(recipients, details);
+            } catch (Exception e) {
+                // Log but don't fail the request if notification fails
+                System.err.println("Async notification error: " + e.getMessage());
+                e.printStackTrace();
+            }
+        }).start();
         
         return appointmentResponseMapper.toResponseModel(savedAppointment);
     }
@@ -600,6 +604,16 @@ public class AppointmentServiceImpl implements AppointmentService {
                 throw new InvalidOperationException("ERROR_APPOINTMENT_ENDS_AFTER_CLOSING");
             }
 
+            // Track old values before making any modifications for change detection
+            Appointment appointmentBeforeUpdate = new Appointment();
+            appointmentBeforeUpdate.setJob(appointment.getJob());
+            appointmentBeforeUpdate.setCellar(appointment.getCellar());
+            appointmentBeforeUpdate.setAppointmentDate(appointment.getAppointmentDate());
+            appointmentBeforeUpdate.setDescription(appointment.getDescription());
+            appointmentBeforeUpdate.setAppointmentAddress(appointment.getAppointmentAddress());
+            appointmentBeforeUpdate.setCustomer(appointment.getCustomer());
+            appointmentBeforeUpdate.setTechnician(appointment.getTechnician());
+
             // Update appointment fields
             appointment.setJob(job);
             appointment.setCellar(cellar);
@@ -607,32 +621,143 @@ public class AppointmentServiceImpl implements AppointmentService {
             appointment.setDescription(appointmentRequest.getDescription());
             appointment.setAppointmentAddress(appointmentRequest.getAppointmentAddress());
 
+            // Track old technician and customer from before-update snapshot for notification purposes
+            Employee oldTechnician = appointmentBeforeUpdate.getTechnician();
+            Customer oldCustomer = appointmentBeforeUpdate.getCustomer();
+            final Employee finalOldTechnician = oldTechnician;
+            final Customer finalOldCustomer = oldCustomer;
+            final Employee finalAssignedTechnician = assignedTechnician;
+
             // Update customer only if a technician user explicitly changed it
+            boolean customerWasChanged = false;
             if ("TECHNICIAN".equals(effectiveRole) && appointmentRequest.getCustomerId() != null) {
-                appointment.setCustomer(customerForValidation);
+                boolean isDifferent = appointment.getCustomer() == null ? customerForValidation != null : !appointment.getCustomer().getId().equals(customerForValidation.getId());
+                if (isDifferent) {
+                    customerWasChanged = true;
+                    appointment.setCustomer(customerForValidation);
+                }
             }
 
             // Update technician assignment if it was changed (for customer edits with conflicts)
             // For technician edits, the technician remains the same (already validated)
+            boolean technicianWasChanged = false;
             if (!assignedTechnician.getId().equals(appointment.getTechnician().getId())) {
+                technicianWasChanged = true;
                 appointment.setTechnician(assignedTechnician);
             }
 
             // Do not change status for customer or technician edits
             Appointment updatedAppointment = appointmentRepository.save(appointment);
             
-            // Detect changes and send update notification
+            // Detect changes and send update notification asynchronously (non-blocking)
+            final boolean finalCustomerWasChanged = customerWasChanged;
+            final boolean finalTechnicianWasChanged = technicianWasChanged;
             try {
-                var changedFields = NotificationPayloadBuilder.detectChangedFields(
-                    appointmentRepository.findAppointmentByAppointmentIdentifier_AppointmentId(appointmentId)
-                        .orElse(new Appointment()), 
-                    updatedAppointment
-                );
+                final List<String> changedFields = NotificationPayloadBuilder.detectChangedFields(appointmentBeforeUpdate, updatedAppointment);
                 
-                if (!changedFields.isEmpty()) {
-                    var recipients = NotificationPayloadBuilder.buildRecipients(updatedAppointment);
-                    var details = NotificationPayloadBuilder.buildAppointmentDetails(updatedAppointment);
-                    notificationUtil.sendAppointmentUpdatedNotification(recipients, details, changedFields);
+                if (!changedFields.isEmpty() || finalCustomerWasChanged || finalTechnicianWasChanged) {
+                    // Send notifications asynchronously in background thread to avoid latency
+                    new Thread(() -> {
+                        try {
+                            var details = NotificationPayloadBuilder.buildAppointmentDetails(updatedAppointment);
+                            
+                            // Handle technician change notifications
+                            if (finalTechnicianWasChanged) {
+                                // Notify old technician - unassigned (minimal info only)
+                                if (finalOldTechnician != null && finalOldTechnician.getUserId() != null) {
+                                    var oldTechRecipient = new java.util.HashMap<String, String>();
+                                    oldTechRecipient.put("userId", finalOldTechnician.getUserId());
+                                    oldTechRecipient.put("name", finalOldTechnician.getFirstName() + " " + finalOldTechnician.getLastName());
+                                    oldTechRecipient.put("role", "technician");
+                                    // Send ONLY appointment ID and message, NO details
+                                    var unassignDetails = new java.util.HashMap<String, Object>();
+                                    unassignDetails.put("appointmentId", updatedAppointment.getAppointmentIdentifier().getAppointmentId());
+                                    unassignDetails.put("notificationType", "technicianUnassigned");
+                                    notificationUtil.sendTechnicianUnassignedNotification(oldTechRecipient, unassignDetails);
+                                }
+                                
+                                // Notify new technician - assigned (full details)
+                                if (finalAssignedTechnician != null && finalAssignedTechnician.getUserId() != null) {
+                                    var newTechRecipient = new java.util.HashMap<String, String>();
+                                    newTechRecipient.put("userId", finalAssignedTechnician.getUserId());
+                                    newTechRecipient.put("name", finalAssignedTechnician.getFirstName() + " " + finalAssignedTechnician.getLastName());
+                                    newTechRecipient.put("role", "technician");
+                                    var assignDetails = new java.util.HashMap<String, Object>();
+                                    assignDetails.putAll(details);
+                                    assignDetails.put("notificationType", "technicianAssigned");
+                                    assignDetails.put("template", "green-confirmation");
+                                    assignDetails.put("severity", "success");
+                                    notificationUtil.sendTechnicianAssignedNotification(newTechRecipient, assignDetails);
+                                }
+                            }
+                            
+                            // Handle customer change notifications
+                            if (finalCustomerWasChanged) {
+                                // Notify old customer - unassigned (minimal info only)
+                                if (finalOldCustomer != null && finalOldCustomer.getUserId() != null) {
+                                    var oldCustRecipient = new java.util.HashMap<String, String>();
+                                    oldCustRecipient.put("userId", finalOldCustomer.getUserId());
+                                    oldCustRecipient.put("name", finalOldCustomer.getFirstName() + " " + finalOldCustomer.getLastName());
+                                    oldCustRecipient.put("role", "customer");
+                                    // Send ONLY appointment ID and message, NO details
+                                    var unassignDetails = new java.util.HashMap<String, Object>();
+                                    unassignDetails.put("appointmentId", updatedAppointment.getAppointmentIdentifier().getAppointmentId());
+                                    unassignDetails.put("notificationType", "customerUnassigned");
+                                    notificationUtil.sendCustomerUnassignedNotification(oldCustRecipient, unassignDetails);
+                                }
+                                
+                                // Notify new customer - assigned (full details)
+                                if (updatedAppointment.getCustomer() != null && updatedAppointment.getCustomer().getUserId() != null) {
+                                    var newCustRecipient = new java.util.HashMap<String, String>();
+                                    newCustRecipient.put("userId", updatedAppointment.getCustomer().getUserId());
+                                    newCustRecipient.put("name", updatedAppointment.getCustomer().getFirstName() + " " + updatedAppointment.getCustomer().getLastName());
+                                    newCustRecipient.put("role", "customer");
+                                    var assignDetails = new java.util.HashMap<String, Object>();
+                                    assignDetails.putAll(details);
+                                    assignDetails.put("notificationType", "customerAssigned");
+                                    assignDetails.put("template", "green-confirmation");
+                                    assignDetails.put("severity", "success");
+                                    notificationUtil.sendCustomerAssignedNotification(newCustRecipient, assignDetails);
+                                }
+                                
+                                // Notify the technician that job has been updated (customer changed)
+                                if (finalAssignedTechnician != null && finalAssignedTechnician.getUserId() != null) {
+                                    var techRecipient = new java.util.HashMap<String, String>();
+                                    techRecipient.put("userId", finalAssignedTechnician.getUserId());
+                                    techRecipient.put("name", finalAssignedTechnician.getFirstName() + " " + finalAssignedTechnician.getLastName());
+                                    techRecipient.put("role", "technician");
+                                    List<java.util.Map<String, String>> recipients = new ArrayList<>();
+                                    recipients.add(techRecipient);
+                                    List<String> changedList = new ArrayList<>();
+                                    changedList.add("customer");
+                                    var techDetails = new java.util.HashMap<String, Object>();
+                                    techDetails.putAll(details);
+                                    techDetails.put("notificationType", "appointmentUpdated");
+                                    techDetails.put("template", "blue-info");
+                                    techDetails.put("severity", "info");
+                                    notificationUtil.sendAppointmentUpdatedNotification(recipients, techDetails, changedList);
+                                }
+                            }
+                            
+                            // Send regular update notification ONLY if customer/technician did NOT change
+                            // AND there are other changes (not just customer/technician)
+                            if (!finalCustomerWasChanged && !finalTechnicianWasChanged && !changedFields.isEmpty()) {
+                                // Only notify the current technician about other field changes
+                                var techRecipient = new java.util.HashMap<String, String>();
+                                if (updatedAppointment.getTechnician() != null && updatedAppointment.getTechnician().getUserId() != null) {
+                                    techRecipient.put("userId", updatedAppointment.getTechnician().getUserId());
+                                    techRecipient.put("name", updatedAppointment.getTechnician().getFirstName() + " " + updatedAppointment.getTechnician().getLastName());
+                                    techRecipient.put("role", "technician");
+                                    List<java.util.Map<String, String>> recipients = new ArrayList<>();
+                                    recipients.add(techRecipient);
+                                    notificationUtil.sendAppointmentUpdatedNotification(recipients, details, new ArrayList<>(changedFields));
+                                }
+                            }
+                        } catch (Exception e) {
+                            System.err.println("Async notification error: " + e.getMessage());
+                            e.printStackTrace();
+                        }
+                    }).start();
                 }
             } catch (Exception e) {
                 // Log but don't fail the request if notification fails
@@ -691,16 +816,19 @@ public class AppointmentServiceImpl implements AppointmentService {
 
             Appointment updatedAppointment = appointmentRepository.save(appointment);
             
-            // Send cancellation notification if appointment was cancelled
+            // Send cancellation notification asynchronously (non-blocking) if appointment was cancelled
             if (newStatusType == AppointmentStatusType.CANCELLED) {
-                try {
-                    var recipients = NotificationPayloadBuilder.buildRecipients(updatedAppointment);
-                    var details = NotificationPayloadBuilder.buildAppointmentDetails(updatedAppointment);
-                    notificationUtil.sendAppointmentCancelledNotification(recipients, details, null);
-                } catch (Exception e) {
-                    // Log but don't fail the request if notification fails
-                    System.err.println("Notification error: " + e.getMessage());
-                }
+                new Thread(() -> {
+                    try {
+                        var recipients = NotificationPayloadBuilder.buildRecipients(updatedAppointment);
+                        var details = NotificationPayloadBuilder.buildAppointmentDetails(updatedAppointment);
+                        notificationUtil.sendAppointmentCancelledNotification(recipients, details, null);
+                    } catch (Exception e) {
+                        // Log but don't fail the request if notification fails
+                        System.err.println("Async notification error: " + e.getMessage());
+                        e.printStackTrace();
+                    }
+                }).start();
             }
             
             return appointmentResponseMapper.toResponseModel(updatedAppointment);
