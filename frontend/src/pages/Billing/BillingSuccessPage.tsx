@@ -66,9 +66,7 @@ export default function BillingSuccessPage() {
         <div className="billing-result-icon success">✓</div>
 
         <h1 className="billing-result-title">Payment successful</h1>
-        <p className="billing-result-subtitle">
-          Thank you! Your payment has been received.
-        </p>
+        <p className="billing-result-subtitle">Thank you! Your payment has been received.</p>
 
         {loading && <p className="billing-result-subtitle">Loading your bill…</p>}
 

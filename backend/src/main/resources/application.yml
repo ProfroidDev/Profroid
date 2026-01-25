@@ -24,7 +24,6 @@ minio:
   origin-base-url: ${MINIO_ORIGIN_BASE_URL:}
   cdn-base-url: ${MINIO_CDN_BASE_URL:}
 
-
 stripe:
   secret-key: ${STRIPE_SECRET_KEY}
   webhook-secret: ${STRIPE_WEBHOOK_SECRET}
@@ -105,4 +104,3 @@ server:
   datasource:
     hikari:
       initializationFailTimeout: 60000
-
