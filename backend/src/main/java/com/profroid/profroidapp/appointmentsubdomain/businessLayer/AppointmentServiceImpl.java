@@ -8,6 +8,8 @@ import com.profroid.profroidapp.appointmentsubdomain.presentationLayer.Appointme
 import com.profroid.profroidapp.appointmentsubdomain.presentationLayer.AppointmentStatusChangeRequestModel;
 import com.profroid.profroidapp.appointmentsubdomain.presentationLayer.TechnicianBookedSlotsResponseModel;
 import com.profroid.profroidapp.appointmentsubdomain.utils.AppointmentValidationUtils;
+import com.profroid.profroidapp.appointmentsubdomain.utils.AppointmentNotificationUtil;
+import com.profroid.profroidapp.appointmentsubdomain.utils.NotificationPayloadBuilder;
 import com.profroid.profroidapp.cellarsubdomain.dataAccessLayer.Cellar;
 import com.profroid.profroidapp.cellarsubdomain.dataAccessLayer.CellarRepository;
 import com.profroid.profroidapp.customersubdomain.dataAccessLayer.Customer;
@@ -50,6 +52,7 @@ public class AppointmentServiceImpl implements AppointmentService {
     private final EmployeeResponseMapper employeeResponseMapper;
     private final ScheduleRepository scheduleRepository;
     private final AppointmentValidationUtils validationUtils;
+    private final AppointmentNotificationUtil notificationUtil;
 
     public AppointmentServiceImpl(AppointmentRepository appointmentRepository,
                                   AppointmentRequestMapper appointmentRequestMapper,
@@ -60,7 +63,8 @@ public class AppointmentServiceImpl implements AppointmentService {
                                   CellarRepository cellarRepository,
                                   EmployeeResponseMapper employeeResponseMapper,
                                   ScheduleRepository scheduleRepository,
-                                  AppointmentValidationUtils validationUtils) {
+                                  AppointmentValidationUtils validationUtils,
+                                  AppointmentNotificationUtil notificationUtil) {
         this.appointmentRepository = appointmentRepository;
         this.appointmentRequestMapper = appointmentRequestMapper;
         this.appointmentResponseMapper = appointmentResponseMapper;
@@ -68,6 +72,7 @@ public class AppointmentServiceImpl implements AppointmentService {
         this.employeeRepository = employeeRepository;
         this.jobRepository = jobRepository;
         this.cellarRepository = cellarRepository;
+        this.notificationUtil = notificationUtil;
         this.employeeResponseMapper = employeeResponseMapper;
         this.scheduleRepository = scheduleRepository;
         this.validationUtils = validationUtils;
@@ -278,6 +283,16 @@ public class AppointmentServiceImpl implements AppointmentService {
         
         // Save appointment
         Appointment savedAppointment = appointmentRepository.save(appointment);
+        
+        // Send appointment booked notification
+        try {
+            var recipients = NotificationPayloadBuilder.buildRecipients(savedAppointment);
+            var details = NotificationPayloadBuilder.buildAppointmentDetails(savedAppointment);
+            notificationUtil.sendAppointmentBookedNotification(recipients, details);
+        } catch (Exception e) {
+            // Log but don't fail the request if notification fails
+            System.err.println("Notification error: " + e.getMessage());
+        }
         
         return appointmentResponseMapper.toResponseModel(savedAppointment);
     }
@@ -605,6 +620,25 @@ public class AppointmentServiceImpl implements AppointmentService {
 
             // Do not change status for customer or technician edits
             Appointment updatedAppointment = appointmentRepository.save(appointment);
+            
+            // Detect changes and send update notification
+            try {
+                var changedFields = NotificationPayloadBuilder.detectChangedFields(
+                    appointmentRepository.findAppointmentByAppointmentIdentifier_AppointmentId(appointmentId)
+                        .orElse(new Appointment()), 
+                    updatedAppointment
+                );
+                
+                if (!changedFields.isEmpty()) {
+                    var recipients = NotificationPayloadBuilder.buildRecipients(updatedAppointment);
+                    var details = NotificationPayloadBuilder.buildAppointmentDetails(updatedAppointment);
+                    notificationUtil.sendAppointmentUpdatedNotification(recipients, details, changedFields);
+                }
+            } catch (Exception e) {
+                // Log but don't fail the request if notification fails
+                System.err.println("Notification error: " + e.getMessage());
+            }
+            
             return appointmentResponseMapper.toResponseModel(updatedAppointment);
         }
 
@@ -656,6 +690,19 @@ public class AppointmentServiceImpl implements AppointmentService {
             }
 
             Appointment updatedAppointment = appointmentRepository.save(appointment);
+            
+            // Send cancellation notification if appointment was cancelled
+            if (newStatusType == AppointmentStatusType.CANCELLED) {
+                try {
+                    var recipients = NotificationPayloadBuilder.buildRecipients(updatedAppointment);
+                    var details = NotificationPayloadBuilder.buildAppointmentDetails(updatedAppointment);
+                    notificationUtil.sendAppointmentCancelledNotification(recipients, details, null);
+                } catch (Exception e) {
+                    // Log but don't fail the request if notification fails
+                    System.err.println("Notification error: " + e.getMessage());
+                }
+            }
+            
             return appointmentResponseMapper.toResponseModel(updatedAppointment);
         }
         
