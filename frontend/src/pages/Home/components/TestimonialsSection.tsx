@@ -57,10 +57,10 @@ const TestimonialsSection: React.FC = () => {
   // IMPORTANT: Use ONLY approved reviews from backend
   // If no approved reviews exist, show fallback testimonials
   let displayTestimonials;
-  
+
   if (reviews.length > 0) {
     // We have approved reviews - use ONLY these (replace hardcoded ones)
-    displayTestimonials = reviews.map(review => ({
+    displayTestimonials = reviews.map((review) => ({
       id: review.reviewId,
       name: review.customerName,
       location: '', // We don't have location in reviews
@@ -74,10 +74,10 @@ const TestimonialsSection: React.FC = () => {
 
   // Duplicate testimonials to create a seamless loop
   const allTestimonials = [
-    ...displayTestimonials, 
-    ...displayTestimonials, 
-    ...displayTestimonials, 
-    ...displayTestimonials
+    ...displayTestimonials,
+    ...displayTestimonials,
+    ...displayTestimonials,
+    ...displayTestimonials,
   ];
 
   return (

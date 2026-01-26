@@ -91,14 +91,16 @@ const FeedbackSection: React.FC = () => {
               exit={{ opacity: 0 }}
             >
               {error && (
-                <div style={{ 
-                  color: '#dc3545', 
-                  marginBottom: '15px', 
-                  padding: '10px', 
-                  backgroundColor: '#fee',
-                  borderRadius: '6px',
-                  textAlign: 'center'
-                }}>
+                <div
+                  style={{
+                    color: '#dc3545',
+                    marginBottom: '15px',
+                    padding: '10px',
+                    backgroundColor: '#fee',
+                    borderRadius: '6px',
+                    textAlign: 'center',
+                  }}
+                >
                   {error}
                 </div>
               )}
@@ -156,7 +158,7 @@ const FeedbackSection: React.FC = () => {
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
               >
-                {submitting ? t('common.loading') : t('pages.home.feedback.submitButton')} 
+                {submitting ? t('common.loading') : t('pages.home.feedback.submitButton')}
                 {!submitting && <Send size={18} style={{ marginLeft: 8 }} />}
               </motion.button>
             </motion.form>

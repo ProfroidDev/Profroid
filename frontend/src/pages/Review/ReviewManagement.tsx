@@ -89,7 +89,8 @@ export default function ReviewManagement(): React.ReactElement {
     setConfirmModal({
       isOpen: true,
       title: 'Delete Review',
-      message: 'Are you sure you want to permanently delete this review? This action cannot be undone.',
+      message:
+        'Are you sure you want to permanently delete this review? This action cannot be undone.',
       onConfirm: async () => {
         try {
           await deleteReview(reviewId);
@@ -225,9 +226,7 @@ export default function ReviewManagement(): React.ReactElement {
                 <div className="customer-name">
                   <strong>{review.customerName}</strong>
                 </div>
-                {review.comment && (
-                  <p className="review-comment">"{review.comment}"</p>
-                )}
+                {review.comment && <p className="review-comment">"{review.comment}"</p>}
               </div>
 
               <div className="review-meta">
@@ -291,13 +290,7 @@ export default function ReviewManagement(): React.ReactElement {
         </div>
       )}
 
-      {toast && (
-        <Toast
-          message={toast.message}
-          type={toast.type}
-          onClose={() => setToast(null)}
-        />
-      )}
+      {toast && <Toast message={toast.message} type={toast.type} onClose={() => setToast(null)} />}
 
       {confirmModal && (
         <ConfirmationModal
