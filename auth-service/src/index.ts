@@ -3,6 +3,7 @@ import cors from "cors";
 import dotenv from "dotenv";
 import auth from "./lib/auth";
 import authRoutes from "./routes/auth.routes.js";
+import notificationsRoutes from "./routes/notifications.routes.js";
 
 dotenv.config();
 
@@ -37,6 +38,9 @@ app.get("/health", (req: Request, res: Response) => {
 
 // Custom auth routes - mount at / since DigitalOcean routes /auth/* to this service
 app.use("/", authRoutes);
+
+// Notification routes
+app.use("/api/notifications", notificationsRoutes);
 
 // 404 handler
 app.use((req: Request, res: Response) => {
