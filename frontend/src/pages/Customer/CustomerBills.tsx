@@ -6,6 +6,7 @@ import { getCustomerBills } from '../../features/report/api/getCustomerBills';
 import { downloadBillPdf } from '../../features/report/api/downloadBillPdf';
 import useAuthStore from '../../features/authentication/store/authStore';
 import type { BillResponseModel } from '../../features/report/models/BillResponseModel';
+import { handlePayment } from '../../features/payment/api/handlePayment';
 import './CustomerBills.css';
 
 const ITEMS_PER_PAGE = 10;
@@ -13,15 +14,27 @@ const ITEMS_PER_PAGE = 10;
 const CustomerBills = () => {
   const { t } = useTranslation();
   const { customerData } = useAuthStore();
+
   const [bills, setBills] = useState<BillResponseModel[]>([]);
   const [loading, setLoading] = useState(false);
+
+  // Pay button loading (prevents double-click + shows "Paying..." if you want)
+  const [payingBillId, setPayingBillId] = useState<string | null>(null);
+
   const [searchQuery, setSearchQuery] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
+
   const [toastMessage, setToastMessage] = useState<{
     text: string;
     type: 'success' | 'error';
   } | null>(null);
+
   const [filterStatus, setFilterStatus] = useState<'ALL' | 'PAID' | 'UNPAID'>('ALL');
+
+  const showToast = (text: string, type: 'success' | 'error') => {
+    setToastMessage({ text, type });
+    setTimeout(() => setToastMessage(null), 3000);
+  };
 
   const loadBills = async () => {
     if (!customerData?.customerId) return;
@@ -43,11 +56,6 @@ const CustomerBills = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [customerData?.customerId]);
 
-  const showToast = (text: string, type: 'success' | 'error') => {
-    setToastMessage({ text, type });
-    setTimeout(() => setToastMessage(null), 3000);
-  };
-
   const handleDownloadPdf = async (billId: string) => {
     try {
       const blob = await downloadBillPdf(billId);
@@ -66,6 +74,20 @@ const CustomerBills = () => {
     }
   };
 
+  const handlePayBill = async (billId: string) => {
+    if (payingBillId) return; // avoid double click while any payment is starting
+    setPayingBillId(billId);
+
+    try {
+      const { url } = await handlePayment(billId);
+      window.location.href = url; // redirect to Stripe hosted checkout
+    } catch (error) {
+      showToast(t('messages.failedToStartPayment'), 'error');
+      console.error('Stripe redirect error:', error);
+      setPayingBillId(null);
+    }
+  };
+
   // Filtered bills based on search and status
   const filteredBills = useMemo(() => {
     return bills.filter((bill) => {
@@ -75,9 +97,7 @@ const CustomerBills = () => {
         bill.jobName.toLowerCase().includes(searchLower) ||
         bill.appointmentDate.includes(searchQuery);
 
-      if (filterStatus === 'ALL') {
-        return matchesSearch;
-      }
+      if (filterStatus === 'ALL') return matchesSearch;
       return matchesSearch && bill.status === filterStatus;
     });
   }, [bills, searchQuery, filterStatus]);
@@ -243,7 +263,19 @@ const CustomerBills = () => {
                       </span>
                     </td>
                     <td>{formatDate(bill.createdAt)}</td>
-                    <td>
+                    <td className="bills-actions">
+                      {bill.status === 'UNPAID' && (
+                        <button
+                          onClick={() => handlePayBill(bill.billId)}
+                          className="bill-pay-btn"
+                          title="Pay"
+                          disabled={payingBillId === bill.billId}
+                        >
+                          <DollarSign size={16} />
+                          {payingBillId === bill.billId ? 'Paying...' : 'Pay'}
+                        </button>
+                      )}
+
                       <button
                         onClick={() => handleDownloadPdf(bill.billId)}
                         className="bill-download-btn"

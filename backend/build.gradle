@@ -67,6 +67,8 @@ dependencies {
     
     // PDF generation
     implementation 'com.itextpdf:itext7-core:7.2.4'
+
+    implementation "com.stripe:stripe-java:31.2.0"
 }
 
 jacoco {
