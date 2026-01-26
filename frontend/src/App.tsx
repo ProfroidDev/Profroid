@@ -34,11 +34,14 @@ import SessionExpiredPage from './pages/SessionExpiredPage';
 import PermissionDeniedPage from './pages/PermissionDeniedPage';
 import NotFoundPage from './pages/NotFoundPage';
 
+// Payment Pages
+import BillingSuccessPage from './pages/Billing/BillingSuccessPage';
+import BillingCancelPage from './pages/Billing/BillingCancelPage';
+
 function AppRoutes(): React.ReactElement {
   const { initializeAuth } = useAuthStore();
 
   useEffect(() => {
-    // Initialize auth and fetch user + customer data on app load
     initializeAuth();
   }, [initializeAuth]);
 
@@ -103,8 +106,32 @@ function AppRoutes(): React.ReactElement {
           }
         />
 
-        {/* Protected Routes */}
+        {/* Public Pages */}
         <Route path="/" element={<HomePage />} />
+        <Route path="/services" element={<ServicesPage />} />
+        <Route path="/about" element={<AboutPage />} />
+        <Route path="/contact" element={<ContactPage />} />
+        <Route path="/privacy" element={<PrivacyPolicyPage />} />
+
+        {/* Payment return pages (Stripe hosted checkout redirects here) */}
+        <Route
+          path="/billing/success"
+          element={
+            <ProtectedRoute requiredRoles={['CUSTOMER']}>
+              <BillingSuccessPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/billing/cancel"
+          element={
+            <ProtectedRoute requiredRoles={['CUSTOMER']}>
+              <BillingCancelPage />
+            </ProtectedRoute>
+          }
+        />
+
+        {/* Protected Routes */}
         <Route
           path="/profile"
           element={
@@ -113,6 +140,7 @@ function AppRoutes(): React.ReactElement {
             </ProtectedRoute>
           }
         />
+
         {/* Parts - ADMIN only */}
         <Route
           path="/parts"
@@ -122,6 +150,7 @@ function AppRoutes(): React.ReactElement {
             </ProtectedRoute>
           }
         />
+
         {/* Customers - ADMIN only */}
         <Route
           path="/customers"
@@ -131,7 +160,7 @@ function AppRoutes(): React.ReactElement {
             </ProtectedRoute>
           }
         />
-        <Route path="/services" element={<ServicesPage />} />
+
         {/* Inventory - ADMIN only */}
         <Route
           path="/inventory"
@@ -141,6 +170,7 @@ function AppRoutes(): React.ReactElement {
             </ProtectedRoute>
           }
         />
+
         {/* Service Reports - ADMIN and TECHNICIAN */}
         <Route
           path="/service-reports"
@@ -168,6 +198,7 @@ function AppRoutes(): React.ReactElement {
             </ProtectedRoute>
           }
         />
+
         {/* My Appointments - CUSTOMER only */}
         <Route
           path="/my-appointments"
@@ -177,6 +208,7 @@ function AppRoutes(): React.ReactElement {
             </ProtectedRoute>
           }
         />
+
         {/* Bills - CUSTOMER only */}
         <Route
           path="/my-bills"
@@ -186,6 +218,7 @@ function AppRoutes(): React.ReactElement {
             </ProtectedRoute>
           }
         />
+
         {/* My Jobs - TECHNICIAN only */}
         <Route
           path="/my-jobs"
@@ -195,10 +228,7 @@ function AppRoutes(): React.ReactElement {
             </ProtectedRoute>
           }
         />
-        {/* Public Pages */}
-        <Route path="/about" element={<AboutPage />} />
-        <Route path="/contact" element={<ContactPage />} />
-        <Route path="/privacy" element={<PrivacyPolicyPage />} />
+
         {/* 404 Not Found - Catch all unmatched routes */}
         <Route path="*" element={<NotFoundPage />} />
       </Routes>
