@@ -119,6 +119,11 @@ export async function sendAppointmentBookedNotification(
       recipient.role === "customer"
         ? "Your appointment has been successfully booked with our team."
         : "A new appointment has been assigned to you.";
+    
+    // Use role-specific appointment view URL
+    const appointmentUrl = recipient.role === "customer" 
+      ? `${FRONTEND_URL}/my-appointments`
+      : `${FRONTEND_URL}/my-jobs`;
 
     const mailOptions = {
       from: SMTP_FROM,
@@ -198,7 +203,7 @@ export async function sendAppointmentBookedNotification(
                 <p>Please make sure to arrive on time. If you need to reschedule or cancel this appointment, please contact us as soon as possible.</p>
                 
                 <div style="text-align: center;">
-                  <a href="${FRONTEND_URL}/appointments" class="button">View Your Appointments</a>
+                  <a href="${appointmentUrl}" class="button">${recipient.role === "customer" ? "View Your Appointments" : "View Your Jobs"}</a>
                 </div>
                 
                 <div class="footer">
@@ -338,7 +343,7 @@ export async function sendAppointmentCancelledNotification(
                 <p>If you need to reschedule or have any questions, please contact our support team.</p>
                 
                 <div style="text-align: center;">
-                  <a href="${FRONTEND_URL}/appointments" class="button">Book a New Appointment</a>
+                  <a href="${FRONTEND_URL}/my-appointments" class="button">Book a New Appointment</a>
                 </div>
                 
                 <div class="footer">
@@ -412,6 +417,10 @@ export async function sendAppointmentUpdatedNotification(
 
   for (const recipient of recipients) {
     const greeting = recipient.role === "customer" ? "Dear Customer" : "Dear Technician";
+    // Use role-specific appointment view URL
+    const appointmentUrl = recipient.role === "customer" 
+      ? `${FRONTEND_URL}/my-appointments`
+      : `${FRONTEND_URL}/my-jobs`;
 
     const mailOptions = {
       from: SMTP_FROM,
@@ -492,7 +501,7 @@ export async function sendAppointmentUpdatedNotification(
                 <p>Please review the updated information carefully. If you have any questions or concerns, please contact us immediately.</p>
                 
                 <div style="text-align: center;">
-                  <a href="${FRONTEND_URL}/appointments" class="button">View Your Appointments</a>
+                  <a href="${appointmentUrl}" class="button">${recipient.role === "customer" ? "View Your Appointments" : "View Your Jobs"}</a>
                 </div>
                 
                 <div class="footer">
@@ -632,7 +641,7 @@ export async function sendAppointmentReminderNotification(
               <p><strong>Please arrive on time and bring any necessary documents or items.</strong></p>
               
               <div style="text-align: center;">
-                <a href="${FRONTEND_URL}/appointments" class="button">View Your Appointments</a>
+                <a href="${recipient.role === "customer" ? FRONTEND_URL + "/my-appointments" : FRONTEND_URL + "/my-jobs"}" class="button">${recipient.role === "customer" ? "View Your Appointments" : "View Your Jobs"}</a>
               </div>
               
               <div class="footer">
@@ -674,6 +683,286 @@ The Profroid Team
   } catch (error) {
     console.error(`Failed to send appointment reminder notification to ${recipient.email}:`, error);
     throw new Error(`Failed to send appointment reminder notification to ${recipient.email}`);
+  }
+}
+
+/**
+ * Send appointment canceled notification when customer is reassigned (unassigned from appointment)
+ * This differs from full appointment cancellation - the appointment still exists but customer no longer assigned
+ */
+export async function sendAppointmentCanceledFromReassignmentNotification(
+  recipient: NotificationRecipient,
+  details: AppointmentDetails
+): Promise<void> {
+  const transporter = createTransporter();
+
+  const greeting = recipient.role === "customer" ? "Dear Customer" : "Dear Technician";
+  // Use role-specific appointment view URL
+  const appointmentUrl = recipient.role === "customer" 
+    ? `${FRONTEND_URL}/my-appointments`
+    : `${FRONTEND_URL}/my-jobs`;
+
+  const mailOptions = {
+    from: SMTP_FROM,
+    to: recipient.email,
+    subject: `Appointment Reassigned - ${details.jobName}`,
+    html: `
+      <!DOCTYPE html>
+      <html>
+        <head>
+          <style>
+            body {
+              font-family: Arial, sans-serif;
+              line-height: 1.6;
+              color: #333;
+            }
+            .container {
+              max-width: 600px;
+              margin: 0 auto;
+              padding: 20px;
+            }
+            .header {
+              background-color: #dc3545;
+              color: white;
+              padding: 20px;
+              text-align: center;
+              border-radius: 5px 5px 0 0;
+            }
+            .content {
+              background-color: #f9f9f9;
+              padding: 30px;
+              border: 1px solid #ddd;
+              border-top: none;
+              border-radius: 0 0 5px 5px;
+            }
+            .button {
+              display: inline-block;
+              padding: 12px 30px;
+              margin: 20px 0;
+              background-color: #dc3545;
+              color: white !important;
+              text-decoration: none;
+              border-radius: 5px;
+              font-weight: bold;
+            }
+            .footer {
+              margin-top: 20px;
+              padding-top: 20px;
+              border-top: 1px solid #ddd;
+              font-size: 12px;
+              color: #666;
+            }
+            .warning {
+              background-color: #f8d7da;
+              border: 1px solid #f5c6cb;
+              padding: 15px;
+              margin: 20px 0;
+              border-radius: 5px;
+              color: #721c24;
+            }
+            .minimal-info {
+              background-color: #f9f9f9;
+              padding: 15px;
+              margin: 15px 0;
+              border-left: 4px solid #dc3545;
+            }
+          </style>
+        </head>
+        <body>
+          <div class="container">
+            <div class="header">
+              <h1>✗ Appointment Reassigned</h1>
+            </div>
+            <div class="content">
+              <p>${greeting},</p>
+              
+              <div class="warning">
+                <strong>Your appointment has been reassigned and is no longer assigned to you.</strong>
+              </div>
+              
+              <div class="minimal-info">
+                <p><strong>Appointment ID:</strong> ${details.appointmentId}</p>
+                <p><strong>Service:</strong> ${details.jobName}</p>
+              </div>
+              
+              <p>This appointment has been reassigned to another ${recipient.role === "customer" ? "customer" : "technician"}. You are no longer responsible for this appointment.</p>
+              
+              <p>If you have any questions, please contact our support team.</p>
+              
+              <div style="text-align: center;">
+                <a href="${appointmentUrl}" class="button">${recipient.role === "customer" ? "View Your Appointments" : "View Your Jobs"}</a>
+              </div>
+              
+              <div class="footer">
+                <p>This is an automated email from Profroid. Please do not reply to this email.</p>
+                <p>&copy; ${new Date().getFullYear()} Profroid. All rights reserved.</p>
+              </div>
+            </div>
+          </div>
+        </body>
+      </html>
+    `,
+    text: `
+${greeting}
+
+Your appointment has been reassigned and is no longer assigned to you.
+
+Appointment ID: ${details.appointmentId}
+Service: ${details.jobName}
+
+This appointment has been reassigned to another ${recipient.role === "customer" ? "customer" : "technician"}. You are no longer responsible for this appointment.
+
+If you have any questions, please contact our support team.
+
+Best regards,
+The Profroid Team
+    `,
+  };
+
+  try {
+    await transporter.sendMail(mailOptions);
+    console.log(`Appointment reassigned notification sent to ${recipient.email}`);
+  } catch (error) {
+    console.error(`Failed to send appointment reassigned notification to ${recipient.email}:`, error);
+    throw new Error(`Failed to send appointment reassigned notification to ${recipient.email}`);
+  }
+}
+
+/**
+ * Send appointment confirmed notification when a new customer is assigned to an appointment
+ * This is similar to booking confirmation but indicates assignment rather than initial booking
+ */
+export async function sendAppointmentConfirmedNotification(
+  recipient: NotificationRecipient,
+  details: AppointmentDetails
+): Promise<void> {
+  const transporter = createTransporter();
+
+  // Use role-specific appointment view URL
+  const appointmentUrl = recipient.role === "customer" 
+    ? `${FRONTEND_URL}/my-appointments`
+    : `${FRONTEND_URL}/my-jobs`;
+
+  const mailOptions = {
+    from: SMTP_FROM,
+    to: recipient.email,
+    subject: `Appointment Confirmed - ${details.jobName} on ${details.appointmentDate}`,
+    html: `
+      <!DOCTYPE html>
+      <html>
+        <head>
+          <style>
+            body {
+              font-family: Arial, sans-serif;
+              line-height: 1.6;
+              color: #333;
+            }
+            .container {
+              max-width: 600px;
+              margin: 0 auto;
+              padding: 20px;
+            }
+            .header {
+              background-color: #28a745;
+              color: white;
+              padding: 20px;
+              text-align: center;
+              border-radius: 5px 5px 0 0;
+            }
+            .content {
+              background-color: #f9f9f9;
+              padding: 30px;
+              border: 1px solid #ddd;
+              border-top: none;
+              border-radius: 0 0 5px 5px;
+            }
+            .button {
+              display: inline-block;
+              padding: 12px 30px;
+              margin: 20px 0;
+              background-color: #28a745;
+              color: white !important;
+              text-decoration: none;
+              border-radius: 5px;
+              font-weight: bold;
+            }
+            .footer {
+              margin-top: 20px;
+              padding-top: 20px;
+              border-top: 1px solid #ddd;
+              font-size: 12px;
+              color: #666;
+            }
+            .success {
+              background-color: #d4edda;
+              border: 1px solid #28a745;
+              padding: 15px;
+              margin: 20px 0;
+              border-radius: 5px;
+              color: #155724;
+            }
+          </style>
+        </head>
+        <body>
+          <div class="container">
+            <div class="header">
+              <h1>✓ Appointment Confirmed</h1>
+            </div>
+            <div class="content">
+              <p>Dear ${recipient.role === "customer" ? "Customer" : "Technician"},</p>
+              
+              <div class="success">
+                <strong>Your appointment has been confirmed with our team.</strong>
+              </div>
+              
+              <h2>Appointment Details</h2>
+              ${formatAppointmentDetails(details)}
+              
+              <p>Please make sure to arrive on time. If you need to reschedule or cancel this appointment, please contact us as soon as possible.</p>
+              
+              <div style="text-align: center;">
+                <a href="${appointmentUrl}" class="button">${recipient.role === "customer" ? "View Your Appointments" : "View Your Jobs"}</a>
+              </div>
+              
+              <div class="footer">
+                <p>This is an automated email from Profroid. Please do not reply to this email.</p>
+                <p>&copy; ${new Date().getFullYear()} Profroid. All rights reserved.</p>
+              </div>
+            </div>
+          </div>
+        </body>
+      </html>
+    `,
+    text: `
+Dear Customer,
+
+Your appointment has been confirmed with our team.
+
+Appointment Details:
+- Appointment ID: ${details.appointmentId}
+- Service: ${details.jobName}
+- Date: ${details.appointmentDate}
+- Time: ${details.appointmentStartTime.slice(0, 5)} - ${details.appointmentEndTime.slice(0, 5)}
+- Location: ${
+        details.appointmentAddress
+          ? `${details.appointmentAddress.street || ""}, ${details.appointmentAddress.city || ""}, ${details.appointmentAddress.province || ""}`
+          : "Not specified"
+      }
+- Technician: ${details.technicianName}
+
+Please make sure to arrive on time. If you need to reschedule or cancel this appointment, please contact us as soon as possible.
+
+Best regards,
+The Profroid Team
+    `,
+  };
+
+  try {
+    await transporter.sendMail(mailOptions);
+    console.log(`Appointment confirmed notification sent to ${recipient.email}`);
+  } catch (error) {
+    console.error(`Failed to send appointment confirmed notification to ${recipient.email}:`, error);
+    throw new Error(`Failed to send appointment confirmed notification to ${recipient.email}`);
   }
 }
 

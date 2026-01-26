@@ -669,9 +669,10 @@ public class AppointmentServiceImpl implements AppointmentService {
                                     oldTechRecipient.put("userId", finalOldTechnician.getUserId());
                                     oldTechRecipient.put("name", finalOldTechnician.getFirstName() + " " + finalOldTechnician.getLastName());
                                     oldTechRecipient.put("role", "technician");
-                                    // Send ONLY appointment ID and message, NO details
+                                    // Send minimal details - only appointmentId and jobName, NO full details
                                     var unassignDetails = new java.util.HashMap<String, Object>();
                                     unassignDetails.put("appointmentId", updatedAppointment.getAppointmentIdentifier().getAppointmentId());
+                                    unassignDetails.put("jobName", updatedAppointment.getJob().getJobName());
                                     unassignDetails.put("notificationType", "technicianUnassigned");
                                     notificationUtil.sendTechnicianUnassignedNotification(oldTechRecipient, unassignDetails);
                                 }
@@ -693,20 +694,21 @@ public class AppointmentServiceImpl implements AppointmentService {
                             
                             // Handle customer change notifications
                             if (finalCustomerWasChanged) {
-                                // Notify old customer - unassigned (minimal info only)
+                                // Notify old customer - unassigned (minimal info only - appointment ID and jobname)
                                 if (finalOldCustomer != null && finalOldCustomer.getUserId() != null) {
                                     var oldCustRecipient = new java.util.HashMap<String, String>();
                                     oldCustRecipient.put("userId", finalOldCustomer.getUserId());
                                     oldCustRecipient.put("name", finalOldCustomer.getFirstName() + " " + finalOldCustomer.getLastName());
                                     oldCustRecipient.put("role", "customer");
-                                    // Send ONLY appointment ID and message, NO details
+                                    // Send minimal details - only appointmentId and jobName, NO full details
                                     var unassignDetails = new java.util.HashMap<String, Object>();
                                     unassignDetails.put("appointmentId", updatedAppointment.getAppointmentIdentifier().getAppointmentId());
+                                    unassignDetails.put("jobName", updatedAppointment.getJob().getJobName());
                                     unassignDetails.put("notificationType", "customerUnassigned");
                                     notificationUtil.sendCustomerUnassignedNotification(oldCustRecipient, unassignDetails);
                                 }
                                 
-                                // Notify new customer - assigned (full details)
+                                // Notify new customer - assigned (full details with confirmation)
                                 if (updatedAppointment.getCustomer() != null && updatedAppointment.getCustomer().getUserId() != null) {
                                     var newCustRecipient = new java.util.HashMap<String, String>();
                                     newCustRecipient.put("userId", updatedAppointment.getCustomer().getUserId());
@@ -715,8 +717,6 @@ public class AppointmentServiceImpl implements AppointmentService {
                                     var assignDetails = new java.util.HashMap<String, Object>();
                                     assignDetails.putAll(details);
                                     assignDetails.put("notificationType", "customerAssigned");
-                                    assignDetails.put("template", "green-confirmation");
-                                    assignDetails.put("severity", "success");
                                     notificationUtil.sendCustomerAssignedNotification(newCustRecipient, assignDetails);
                                 }
                                 
@@ -742,15 +742,47 @@ public class AppointmentServiceImpl implements AppointmentService {
                             // Send regular update notification ONLY if customer/technician did NOT change
                             // AND there are other changes (not just customer/technician)
                             if (!finalCustomerWasChanged && !finalTechnicianWasChanged && !changedFields.isEmpty()) {
-                                // Only notify the current technician about other field changes
-                                var techRecipient = new java.util.HashMap<String, String>();
+                                // Notify BOTH the technician and customer about other field changes
+                                List<java.util.Map<String, String>> recipients = new ArrayList<>();
+                                
+                                // Add technician to recipients
                                 if (updatedAppointment.getTechnician() != null && updatedAppointment.getTechnician().getUserId() != null) {
+                                    var techRecipient = new java.util.HashMap<String, String>();
                                     techRecipient.put("userId", updatedAppointment.getTechnician().getUserId());
                                     techRecipient.put("name", updatedAppointment.getTechnician().getFirstName() + " " + updatedAppointment.getTechnician().getLastName());
                                     techRecipient.put("role", "technician");
-                                    List<java.util.Map<String, String>> recipients = new ArrayList<>();
                                     recipients.add(techRecipient);
+                                }
+                                
+                                // Add customer to recipients
+                                if (updatedAppointment.getCustomer() != null && updatedAppointment.getCustomer().getUserId() != null) {
+                                    var custRecipient = new java.util.HashMap<String, String>();
+                                    custRecipient.put("userId", updatedAppointment.getCustomer().getUserId());
+                                    custRecipient.put("name", updatedAppointment.getCustomer().getFirstName() + " " + updatedAppointment.getCustomer().getLastName());
+                                    custRecipient.put("role", "customer");
+                                    recipients.add(custRecipient);
+                                }
+                                
+                                // Send to all recipients
+                                if (!recipients.isEmpty()) {
+                                    System.out.println("DEBUG: Sending update notification to " + recipients.size() + " recipients for changed fields: " + changedFields);
                                     notificationUtil.sendAppointmentUpdatedNotification(recipients, details, new ArrayList<>(changedFields));
+                                }
+                            }
+                            
+                            // IMPORTANT: If customer updated the appointment themselves, notify them of their own changes
+                            // This ensures customers get confirmation of what they changed
+                            if ("CUSTOMER".equals(effectiveRole) && !changedFields.isEmpty()) {
+                                // Customer is updating their own appointment - send them a confirmation
+                                if (updatedAppointment.getCustomer() != null && updatedAppointment.getCustomer().getUserId() != null) {
+                                    var custRecipient = new java.util.HashMap<String, String>();
+                                    custRecipient.put("userId", updatedAppointment.getCustomer().getUserId());
+                                    custRecipient.put("name", updatedAppointment.getCustomer().getFirstName() + " " + updatedAppointment.getCustomer().getLastName());
+                                    custRecipient.put("role", "customer");
+                                    List<java.util.Map<String, String>> custRecipients = new ArrayList<>();
+                                    custRecipients.add(custRecipient);
+                                    System.out.println("DEBUG: Customer updated their own appointment. Sending confirmation email for changes: " + changedFields);
+                                    notificationUtil.sendAppointmentUpdatedNotification(custRecipients, details, new ArrayList<>(changedFields));
                                 }
                             }
                         } catch (Exception e) {

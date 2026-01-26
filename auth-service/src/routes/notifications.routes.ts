@@ -7,6 +7,8 @@ import {
   sendAppointmentCancelledNotification,
   sendAppointmentUpdatedNotification,
   sendAppointmentReminderNotification,
+  sendAppointmentCanceledFromReassignmentNotification,
+  sendAppointmentConfirmedNotification,
   type AppointmentDetails,
   type NotificationRecipient,
 } from "../services/appointmentNotification.service.js";
@@ -258,12 +260,13 @@ router.post("/appointment/reminder", async (req: Request, res: Response) => {
 
 /**
  * POST /api/notifications/appointment/assigned
- * Send notification when someone is assigned to an appointment
+ * Send notification when a customer is newly assigned to an appointment
+ * Sends "Appointment Confirmed" notification
  * Request body:
  * {
  *   recipient: { userId, name, role: "customer" | "technician" },
  *   details: { appointmentId, jobName, technicianName, customerName, ... },
- *   notificationType: "technician_assigned" | "customer_assigned"
+ *   notificationType: "customer_assigned" | "technician_assigned"
  * }
  */
 router.post("/appointment/assigned", async (req: Request, res: Response) => {
@@ -294,9 +297,17 @@ router.post("/appointment/assigned", async (req: Request, res: Response) => {
       };
     }
 
-    // For now, send as updated notification with "assigned" context
+    // For customer assignments, send appointment confirmed notification
+    // For technician assignments, send the appointment confirmed notification as well
     const assignedNotification: NotificationRecipient = enrichedRecipient;
-    await sendAppointmentUpdatedNotification([assignedNotification], details, ["assigned"]);
+    
+    if (notificationType === "customer_assigned" || recipient.role === "customer") {
+      // Send "Appointment Confirmed" notification to newly assigned customer
+      await sendAppointmentConfirmedNotification(assignedNotification, details);
+    } else {
+      // For technician, also send confirmation (can be used similarly)
+      await sendAppointmentConfirmedNotification(assignedNotification, details);
+    }
 
     return res.json({
       success: true,
@@ -313,12 +324,13 @@ router.post("/appointment/assigned", async (req: Request, res: Response) => {
 
 /**
  * POST /api/notifications/appointment/unassigned
- * Send notification when someone is unassigned from an appointment
+ * Send notification when a customer is unassigned from an appointment (reassignment)
+ * Sends "Appointment Reassigned" notification
  * Request body:
  * {
  *   recipient: { userId, name, role: "customer" | "technician" },
- *   details: { appointmentId, jobName, technicianName, customerName, ... },
- *   notificationType: "technician_unassigned" | "customer_unassigned"
+ *   details: { appointmentId, jobName, ... },
+ *   notificationType: "customer_unassigned" | "technician_unassigned"
  * }
  */
 router.post("/appointment/unassigned", async (req: Request, res: Response) => {
@@ -349,9 +361,16 @@ router.post("/appointment/unassigned", async (req: Request, res: Response) => {
       };
     }
 
-    // For now, send as updated notification with "unassigned" context
+    // For customer unassignment due to reassignment, send cancellation notification with minimal info
     const unassignedNotification: NotificationRecipient = enrichedRecipient;
-    await sendAppointmentUpdatedNotification([unassignedNotification], details, ["unassigned"]);
+    
+    if (notificationType === "customer_unassigned" || recipient.role === "customer") {
+      // Send "Appointment Reassigned" notification to unassigned customer with minimal details
+      await sendAppointmentCanceledFromReassignmentNotification(unassignedNotification, details);
+    } else {
+      // For technician unassignment
+      await sendAppointmentCanceledFromReassignmentNotification(unassignedNotification, details);
+    }
 
     return res.json({
       success: true,
