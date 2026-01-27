@@ -34,6 +34,7 @@
     "creating": "Creating...",
     "updating": "Updating...",
     "enterPlaceholder": "Enter {{field}}",
+    "or": "or",
     "dayOfWeek": {
       "monday": "Monday",
       "tuesday": "Tuesday",
@@ -120,7 +121,16 @@
     "verificationEmailResent": "Verification code resent to your email. Check your inbox.",
     "redirectingToProfile": "Redirecting to complete your profile...",
     "emailNotVerified": "Please verify your email before signing in",
-    "loginFailed": "Login failed. Please check your credentials and try again."
+    "loginFailed": "Login failed. Please check your credentials and try again.",
+    "signInWithGoogle": "Sign in with Google",
+    "processingLogin": "Processing Login",
+    "pleaseWait": "Please wait while we complete your authentication...",
+    "redirectingToLogin": "Redirecting to login page...",
+    "googleAuthFailed": "Google authentication failed. Please try again.",
+    "oauthNoUser": "Unable to retrieve user information from Google.",
+    "oauthNoToken": "No authentication token received.",
+    "oauthCallbackFailed": "Authentication failed. Please try again.",
+    "oauthError": "An error occurred during authentication."
   },
   "pages": {
     "home": {

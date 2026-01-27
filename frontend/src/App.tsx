@@ -28,6 +28,7 @@ import ProfilePage from './pages/Auth/ProfilePage';
 import ForgotPasswordPage from './pages/Auth/ForgotPasswordPage';
 import ResetPasswordPage from './pages/Auth/ResetPasswordPage';
 import EmailVerificationPage from './pages/Auth/EmailVerificationPage';
+import OAuthCallbackPage from './pages/Auth/OAuthCallbackPage';
 import { ProtectedRoute, PublicRoute } from './features/authentication/components/ProtectedRoute';
 import useAuthStore from './features/authentication/store/authStore';
 import SessionExpiredPage from './pages/SessionExpiredPage';
@@ -104,6 +105,10 @@ function AppRoutes(): React.ReactElement {
               <EmailVerificationPage />
             </PublicRoute>
           }
+        />
+        <Route
+          path="/auth/callback"
+          element={<OAuthCallbackPage />}
         />
 
         {/* Public Pages */}

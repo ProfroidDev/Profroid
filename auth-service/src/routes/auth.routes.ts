@@ -3,6 +3,7 @@ import { PrismaClient } from "@prisma/client";
 import crypto from "crypto";
 import jwt from "jsonwebtoken";
 import rateLimit from "express-rate-limit";
+import passport from "../config/passport.js";
 import { sendPasswordResetEmail, sendPasswordChangedEmail } from "../services/email.service.js";
 import { sendVerificationEmail, verifyEmailToken, resendVerificationEmail, generateAndStoreVerificationToken, isUserVerificationLocked } from "../services/verification.service.js";
 import { ForgotPasswordSchema, ResetPasswordSchema } from "../validation/schemas.js";
@@ -1182,5 +1183,56 @@ router.get("/verify-status", async (req: Request, res: Response) => {
     return res.status(500).json({ error: "Failed to check verification status" });
   }
 });
+
+// ==================== Google OAuth Routes ====================
+
+// Google OAuth - Initiate authentication
+router.get("/google", 
+  passport.authenticate("google", { 
+    scope: ["profile", "email"],
+    session: false 
+  })
+);
+
+// Google OAuth - Callback
+router.get("/google/callback",
+  passport.authenticate("google", { 
+    session: false,
+    failureRedirect: `${process.env.FRONTEND_URLS?.split(',')[0] || 'http://localhost:5173'}/login?error=google_auth_failed`
+  }),
+  async (req: Request, res: Response) => {
+    try {
+      const user = req.user as any;
+      
+      if (!user) {
+        return res.redirect(`${process.env.FRONTEND_URLS?.split(',')[0] || 'http://localhost:5173'}/login?error=no_user`);
+      }
+
+      // Generate JWT token
+      const token = signToken(
+        { id: user.id, email: user.email },
+        user.userProfile?.role,
+        user.userProfile?.employeeType
+      );
+
+      // Create a session record
+      await prisma.session.create({
+        data: {
+          id: crypto.randomUUID(),
+          userId: user.id,
+          expires: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7 days
+          sessionToken: crypto.randomBytes(32).toString('hex'),
+        },
+      });
+
+      // Redirect to frontend with token
+      const frontendUrl = process.env.FRONTEND_URLS?.split(',')[0] || 'http://localhost:5173';
+      res.redirect(`${frontendUrl}/auth/callback?token=${token}`);
+    } catch (error) {
+      console.error("Google OAuth callback error:", error);
+      res.redirect(`${process.env.FRONTEND_URLS?.split(',')[0] || 'http://localhost:5173'}/login?error=callback_failed`);
+    }
+  }
+);
 
 export default router;
