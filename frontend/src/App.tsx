@@ -19,6 +19,7 @@ import ForbiddenPage from './pages/Error/ForbiddenPage';
 import AboutPage from './pages/About/AboutPage';
 import ContactPage from './pages/Contact/ContactPage';
 import PrivacyPolicyPage from './pages/Privacy/PrivacyPolicyPage';
+import ReviewManagement from './pages/Review/ReviewManagement';
 
 // Auth pages and components
 import LoginPage from './pages/Auth/LoginPage';
@@ -179,7 +180,15 @@ function AppRoutes(): React.ReactElement {
             </ProtectedRoute>
           }
         />
-
+        {/* Review Management - ADMIN only */}
+        <Route
+          path="/reviews"
+          element={
+            <ProtectedRoute requiredRoles={['ADMIN']}>
+              <ReviewManagement />
+            </ProtectedRoute>
+          }
+        />
         {/* Employees - ADMIN only */}
         <Route
           path="/employees"

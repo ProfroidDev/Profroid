@@ -58,6 +58,7 @@
     "parts": "Parts",
     "inventory": "Inventory",
     "serviceReports": "Reports",
+    "reviews": "Reviews",
     "customers": "Customers",
     "employees": "Employees",
     "services": "Services",
@@ -242,6 +243,7 @@
         "title": "We Value Your Feedback",
         "subtitle": "Help us improve our service",
         "rateLabel": "Rate your experience",
+        "namePlaceholder": "Your Name",
         "placeholder": "Tell us about your experience...",
         "submitButton": "Submit Feedback",
         "success": {

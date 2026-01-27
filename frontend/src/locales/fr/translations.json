@@ -58,6 +58,7 @@
     "parts": "Pièces",
     "inventory": "Inventaire",
     "serviceReports": "Rapports",
+    "reviews": "Avis",
     "customers": "Clients",
     "employees": "Employés",
     "services": "Services",
@@ -242,6 +243,7 @@
         "title": "Nous Valorisons Vos Commentaires",
         "subtitle": "Aidez-nous à améliorer notre service",
         "rateLabel": "Évaluez votre expérience",
+        "namePlaceholder": "Votre Nom",
         "placeholder": "Parlez-nous de votre expérience...",
         "submitButton": "Envoyer les Commentaires",
         "success": {
