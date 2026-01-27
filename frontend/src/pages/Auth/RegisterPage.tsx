@@ -344,12 +344,14 @@ export default function RegisterPage() {
             </button>
 
             {/* Divider */}
-            <div style={{ 
-              display: 'flex', 
-              alignItems: 'center', 
-              margin: '1.5rem 0',
-              gap: '1rem'
-            }}>
+            <div
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                margin: '1.5rem 0',
+                gap: '1rem',
+              }}
+            >
               <div style={{ flex: 1, height: '1px', backgroundColor: '#e0e0e0' }}></div>
               <span style={{ color: '#666', fontSize: '0.9rem' }}>{t('common.or')}</span>
               <div style={{ flex: 1, height: '1px', backgroundColor: '#e0e0e0' }}></div>
