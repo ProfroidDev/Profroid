@@ -3,6 +3,7 @@ import { useNavigate, useLocation, Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import useAuthStore, { type AuthUser } from '../../features/authentication/store/authStore';
 import authClient from '../../features/authentication/api/authClient';
+import GoogleSignInButton from '../../features/authentication/components/GoogleSignInButton';
 import { getProvincePostalCodeError } from '../../utils/postalCodeValidator';
 import '../Auth.css';
 
@@ -341,6 +342,21 @@ export default function RegisterPage() {
             <button type="submit" disabled={submitting} className="btn btn-primary">
               {submitting ? t('common.loading') : t('common.save')}
             </button>
+
+            {/* Divider */}
+            <div style={{ 
+              display: 'flex', 
+              alignItems: 'center', 
+              margin: '1.5rem 0',
+              gap: '1rem'
+            }}>
+              <div style={{ flex: 1, height: '1px', backgroundColor: '#e0e0e0' }}></div>
+              <span style={{ color: '#666', fontSize: '0.9rem' }}>{t('common.or')}</span>
+              <div style={{ flex: 1, height: '1px', backgroundColor: '#e0e0e0' }}></div>
+            </div>
+
+            {/* Google Sign-Up Button */}
+            <GoogleSignInButton disabled={submitting} />
           </form>
         ) : (
           <form onSubmit={handleStep2Submit} className="auth-form">
