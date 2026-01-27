@@ -11,18 +11,21 @@ export default function OAuthCallbackPage() {
   const { initializeAuth } = useAuthStore();
   const [error, setError] = useState<string | null>(null);
 
-  const getErrorMessage = useCallback((errorCode: string): string => {
-    switch (errorCode) {
-      case 'google_auth_failed':
-        return t('auth.googleAuthFailed');
-      case 'no_user':
-        return t('auth.oauthNoUser');
-      case 'callback_failed':
-        return t('auth.oauthCallbackFailed');
-      default:
-        return t('auth.oauthError');
-    }
-  }, [t]);
+  const getErrorMessage = useCallback(
+    (errorCode: string): string => {
+      switch (errorCode) {
+        case 'google_auth_failed':
+          return t('auth.googleAuthFailed');
+        case 'no_user':
+          return t('auth.oauthNoUser');
+        case 'callback_failed':
+          return t('auth.oauthCallbackFailed');
+        default:
+          return t('auth.oauthError');
+      }
+    },
+    [t]
+  );
 
   useEffect(() => {
     const processOAuthCallback = async () => {
@@ -80,9 +83,7 @@ export default function OAuthCallbackPage() {
               <div className="alert alert-error" style={{ marginBottom: '1rem' }}>
                 {error}
               </div>
-              <p style={{ color: '#666', fontSize: '0.9rem' }}>
-                {t('auth.redirectingToLogin')}
-              </p>
+              <p style={{ color: '#666', fontSize: '0.9rem' }}>{t('auth.redirectingToLogin')}</p>
             </>
           ) : (
             <>

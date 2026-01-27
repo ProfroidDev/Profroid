@@ -5,7 +5,10 @@ interface GoogleSignInButtonProps {
   disabled?: boolean;
 }
 
-export default function GoogleSignInButton({ className = '', disabled = false }: GoogleSignInButtonProps) {
+export default function GoogleSignInButton({
+  className = '',
+  disabled = false,
+}: GoogleSignInButtonProps) {
   const { t } = useTranslation();
 
   const handleGoogleSignIn = () => {

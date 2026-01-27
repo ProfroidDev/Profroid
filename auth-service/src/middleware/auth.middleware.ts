@@ -21,7 +21,7 @@ export interface AuthRequest extends Request {
 export const verifyAuth = async (
   req: AuthRequest,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
 ): Promise<void> => {
   try {
     const authHeader = req.headers.authorization;
@@ -45,7 +45,11 @@ export const verifyAuth = async (
  * Middleware to check if user has specific role
  */
 export const requireRole = (allowedRoles: string[]) => {
-  return async (req: AuthRequest, res: Response, next: NextFunction): Promise<void> => {
+  return async (
+    req: AuthRequest,
+    res: Response,
+    next: NextFunction,
+  ): Promise<void> => {
     try {
       const authHeader = req.headers.authorization;
       if (!authHeader || !authHeader.startsWith("Bearer ")) {
@@ -81,7 +85,7 @@ export const requireRole = (allowedRoles: string[]) => {
 export const requireAdmin = async (
   req: AuthRequest,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
 ): Promise<void> => {
   try {
     const authHeader = req.headers.authorization;
@@ -115,7 +119,11 @@ export const requireAdmin = async (
  * Middleware to check if user has specific employee type
  */
 export const requireEmployeeType = (allowedTypes: string[]) => {
-  return async (req: AuthRequest, res: Response, next: NextFunction): Promise<void> => {
+  return async (
+    req: AuthRequest,
+    res: Response,
+    next: NextFunction,
+  ): Promise<void> => {
     try {
       const authHeader = req.headers.authorization;
       if (!authHeader || !authHeader.startsWith("Bearer ")) {
@@ -151,7 +159,7 @@ export const requireEmployeeType = (allowedTypes: string[]) => {
 export const optionalAuth = async (
   req: AuthRequest,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
 ): Promise<void> => {
   try {
     const authHeader = req.headers.authorization;

@@ -12,22 +12,26 @@ const app: Express = express();
 const port = process.env.PORT || 3001;
 
 // Middleware
-const allowedOrigins = (process.env.FRONTEND_URLS || "http://localhost:5173,http://localhost:3000")
+const allowedOrigins = (
+  process.env.FRONTEND_URLS || "http://localhost:5173,http://localhost:3000"
+)
   .split(",")
-  .map(url => url.trim());
+  .map((url) => url.trim());
 
-app.use(cors({
-  origin: (origin, callback) => {
-    if (!origin || allowedOrigins.includes(origin)) {
-      callback(null, true);
-    } else {
-      callback(new Error("CORS not allowed"));
-    }
-  },
-  credentials: true,
-  methods: ["GET", "POST", "PUT", "DELETE", "PATCH"],
-  allowedHeaders: ["Content-Type", "Authorization"],
-}));
+app.use(
+  cors({
+    origin: (origin, callback) => {
+      if (!origin || allowedOrigins.includes(origin)) {
+        callback(null, true);
+      } else {
+        callback(new Error("CORS not allowed"));
+      }
+    },
+    credentials: true,
+    methods: ["GET", "POST", "PUT", "DELETE", "PATCH"],
+    allowedHeaders: ["Content-Type", "Authorization"],
+  }),
+);
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
@@ -69,7 +73,9 @@ app.listen(port, () => {
   console.log(`   PUT    /api/auth/user - Update user profile`);
   console.log(`   POST   /api/auth/change-password - Change password`);
   console.log(`   POST   /api/auth/verify-email - Verify email`);
-  console.log(`   POST   /api/auth/resend-verification-email - Resend verification`);
+  console.log(
+    `   POST   /api/auth/resend-verification-email - Resend verification`,
+  );
   console.log(`   GET    /api/auth/google - Initiate Google OAuth`);
   console.log(`   GET    /api/auth/google/callback - Google OAuth callback`);
 });
