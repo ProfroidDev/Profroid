@@ -4,15 +4,28 @@ import crypto from "crypto";
 import jwt from "jsonwebtoken";
 import rateLimit from "express-rate-limit";
 import passport from "../config/passport.js";
-import { sendPasswordResetEmail, sendPasswordChangedEmail } from "../services/email.service.js";
-import { sendVerificationEmail, verifyEmailToken, resendVerificationEmail, generateAndStoreVerificationToken, isUserVerificationLocked } from "../services/verification.service.js";
-import { ForgotPasswordSchema, ResetPasswordSchema } from "../validation/schemas.js";
+import {
+  sendPasswordResetEmail,
+  sendPasswordChangedEmail,
+} from "../services/email.service.js";
+import {
+  sendVerificationEmail,
+  verifyEmailToken,
+  resendVerificationEmail,
+  generateAndStoreVerificationToken,
+  isUserVerificationLocked,
+} from "../services/verification.service.js";
+import {
+  ForgotPasswordSchema,
+  ResetPasswordSchema,
+} from "../validation/schemas.js";
 import { ZodError } from "zod";
 
 const router = Router();
 const prisma = new PrismaClient();
 
-const JWT_SECRET = process.env.JWT_SECRET || process.env.BETTER_AUTH_SECRET || "";
+const JWT_SECRET =
+  process.env.JWT_SECRET || process.env.BETTER_AUTH_SECRET || "";
 const JWT_EXPIRES_IN = "7d";
 
 if (!JWT_SECRET) {
@@ -30,12 +43,18 @@ function getRateLimitKey(req: Request): string {
       return `user:${decoded.sub}`; // Use user ID as key with prefix
     } catch (err) {
       // If token is invalid, use IP with invalid-token prefix for stricter tracking
-      const ip = req.headers['x-forwarded-for'] as string || req.socket.remoteAddress || 'unknown';
+      const ip =
+        (req.headers["x-forwarded-for"] as string) ||
+        req.socket.remoteAddress ||
+        "unknown";
       return `invalid-token:${ip}`;
     }
   }
   // No auth header - use IP with no-auth prefix
-  const ip = req.headers['x-forwarded-for'] as string || req.socket.remoteAddress || 'unknown';
+  const ip =
+    (req.headers["x-forwarded-for"] as string) ||
+    req.socket.remoteAddress ||
+    "unknown";
   return `no-auth:${ip}`;
 }
 
@@ -51,17 +70,19 @@ const searchUsersRateLimiter = rateLimit({
     const rateLimitKey = getRateLimitKey(req);
     // Security Note: rateLimitKey includes user IDs for audit purposes.
     // Ensure application logs are properly secured with access controls.
-    console.warn(`[RATE LIMIT] User search rate limit exceeded for ${rateLimitKey}`);
+    console.warn(
+      `[RATE LIMIT] User search rate limit exceeded for ${rateLimitKey}`,
+    );
     res.status(429).json({
       error: "Too many search requests. Please try again later.",
-      retryAfter: "15 minutes"
+      retryAfter: "15 minutes",
     });
   },
   skip: (req: Request) => {
     // Optionally skip rate limiting for admins
     // This can be enabled if admins need unrestricted access
     return false;
-  }
+  },
 });
 
 // Simple password hashing (for demo - use bcrypt in production)
@@ -80,7 +101,11 @@ type JWTPayload = {
   employeeType?: string;
 };
 
-function signToken(user: { id: string; email: string }, role?: string, employeeType?: string | null): string {
+function signToken(
+  user: { id: string; email: string },
+  role?: string,
+  employeeType?: string | null,
+): string {
   return jwt.sign(
     {
       sub: user.id,
@@ -89,7 +114,7 @@ function signToken(user: { id: string; email: string }, role?: string, employeeT
       employeeType: employeeType || null,
     },
     JWT_SECRET as string,
-    { expiresIn: JWT_EXPIRES_IN }
+    { expiresIn: JWT_EXPIRES_IN },
   );
 }
 
@@ -115,7 +140,7 @@ function getPayloadFromRequest(req: Request, res: Response): JWTPayload | null {
 /**
  * Register a new user
  * POST /api/auth/register
- * 
+ *
  * Security: User must verify email before login
  */
 router.post("/register", async (req: Request, res: Response) => {
@@ -135,7 +160,9 @@ router.post("/register", async (req: Request, res: Response) => {
       // If user exists but not verified, resend verification email
       if (!existingUser.emailVerified) {
         try {
-          const { token } = await generateAndStoreVerificationToken(existingUser.id);
+          const { token } = await generateAndStoreVerificationToken(
+            existingUser.id,
+          );
           // Send email asynchronously in background
           sendVerificationEmail(email, token, name).catch((error) => {
             console.error("Error sending verification email:", error);
@@ -144,7 +171,8 @@ router.post("/register", async (req: Request, res: Response) => {
             success: false,
             requiresVerification: true,
             userId: existingUser.id,
-            message: "Account already exists. A new verification email has been sent.",
+            message:
+              "Account already exists. A new verification email has been sent.",
           });
         } catch (error) {
           console.error("Error generating verification token:", error);
@@ -187,7 +215,7 @@ router.post("/register", async (req: Request, res: Response) => {
     // Generate verification token and send email (non-blocking)
     try {
       const { token } = await generateAndStoreVerificationToken(user.id);
-      
+
       // Send email asynchronously in background to avoid blocking the response
       sendVerificationEmail(email, token, name).catch((error) => {
         console.error("Error sending verification email:", error);
@@ -197,13 +225,16 @@ router.post("/register", async (req: Request, res: Response) => {
         success: true,
         requiresVerification: true,
         userId: user.id,
-        message: "Registration successful. Please verify your email to continue.",
+        message:
+          "Registration successful. Please verify your email to continue.",
       });
     } catch (error) {
       console.error("Error generating verification token:", error);
       // Delete user if token generation failed
       await prisma.user.delete({ where: { id: user.id } });
-      return res.status(500).json({ error: "Failed to generate verification token" });
+      return res
+        .status(500)
+        .json({ error: "Failed to generate verification token" });
     }
   } catch (error) {
     console.error("Registration error:", error);
@@ -214,7 +245,7 @@ router.post("/register", async (req: Request, res: Response) => {
 /**
  * Sign in user
  * POST /api/auth/sign-in
- * 
+ *
  * Security: User must have verified email to sign in
  */
 router.post("/sign-in", async (req: Request, res: Response) => {
@@ -269,7 +300,11 @@ router.post("/sign-in", async (req: Request, res: Response) => {
       });
     }
 
-    const token = signToken({ id: user.id, email: user.email as string }, profile?.role, profile?.employeeType);
+    const token = signToken(
+      { id: user.id, email: user.email as string },
+      profile?.role,
+      profile?.employeeType,
+    );
 
     res.json({
       success: true,
@@ -387,7 +422,9 @@ router.post("/change-password", async (req: Request, res: Response) => {
     const { oldPassword, newPassword } = req.body;
 
     if (!oldPassword || !newPassword) {
-      return res.status(400).json({ error: "Old password and new password are required" });
+      return res
+        .status(400)
+        .json({ error: "Old password and new password are required" });
     }
 
     // Get account and verify old password
@@ -452,13 +489,14 @@ router.post("/forgot-password", async (req: Request, res: Response) => {
     if (!user) {
       return res.json({
         success: true,
-        message: "If an account with that email exists, a password reset link has been sent.",
+        message:
+          "If an account with that email exists, a password reset link has been sent.",
       });
     }
 
     // Generate secure reset token
     const resetToken = crypto.randomBytes(32).toString("hex");
-    
+
     // Hash the token before storing (for security)
     const hashedToken = crypto
       .createHash("sha256")
@@ -495,24 +533,30 @@ router.post("/forgot-password", async (req: Request, res: Response) => {
       console.error("Failed to send reset email:", emailError);
       // Clear the token entry if email fails
       await prisma.verification.delete({ where: { id: verification.id } });
-      return res.status(500).json({ 
-        error: "Failed to send password reset email. Please try again later." 
+      return res.status(500).json({
+        error: "Failed to send password reset email. Please try again later.",
       });
     }
 
     res.json({
       success: true,
-      message: "If an account with that email exists, a password reset link has been sent.",
+      message:
+        "If an account with that email exists, a password reset link has been sent.",
     });
   } catch (error) {
     if (error instanceof ZodError) {
-      return res.status(400).json({ 
-        error: "Validation failed", 
-        details: error.errors.map(e => ({ field: e.path.join('.'), message: e.message })) 
+      return res.status(400).json({
+        error: "Validation failed",
+        details: error.errors.map((e) => ({
+          field: e.path.join("."),
+          message: e.message,
+        })),
       });
     }
     console.error("Forgot password error:", error);
-    return res.status(500).json({ error: "Failed to process password reset request" });
+    return res
+      .status(500)
+      .json({ error: "Failed to process password reset request" });
   }
 });
 
@@ -527,10 +571,7 @@ router.post("/reset-password", async (req: Request, res: Response) => {
     const { token, newPassword } = validatedData;
 
     // Hash the token to compare with stored hash
-    const hashedToken = crypto
-      .createHash("sha256")
-      .update(token)
-      .digest("hex");
+    const hashedToken = crypto.createHash("sha256").update(token).digest("hex");
 
     // Find verification by token
     const verification = await prisma.verification.findFirst({
@@ -541,8 +582,8 @@ router.post("/reset-password", async (req: Request, res: Response) => {
     });
 
     if (!verification) {
-      return res.status(400).json({ 
-        error: "Invalid or expired reset token" 
+      return res.status(400).json({
+        error: "Invalid or expired reset token",
       });
     }
 
@@ -552,16 +593,16 @@ router.post("/reset-password", async (req: Request, res: Response) => {
     });
 
     if (!user) {
-      return res.status(400).json({ 
-        error: "Invalid or expired reset token" 
+      return res.status(400).json({
+        error: "Invalid or expired reset token",
       });
     }
 
     // Check if token has expired
     if (verification.expiresAt < new Date()) {
       await prisma.verification.delete({ where: { id: verification.id } });
-      return res.status(400).json({ 
-        error: "Reset token has expired. Please request a new password reset." 
+      return res.status(400).json({
+        error: "Reset token has expired. Please request a new password reset.",
       });
     }
 
@@ -574,8 +615,8 @@ router.post("/reset-password", async (req: Request, res: Response) => {
     });
 
     if (!account) {
-      return res.status(404).json({ 
-        error: "User account not found" 
+      return res.status(404).json({
+        error: "User account not found",
       });
     }
 
@@ -604,13 +645,17 @@ router.post("/reset-password", async (req: Request, res: Response) => {
 
     res.json({
       success: true,
-      message: "Password has been reset successfully. You can now sign in with your new password.",
+      message:
+        "Password has been reset successfully. You can now sign in with your new password.",
     });
   } catch (error) {
     if (error instanceof ZodError) {
-      return res.status(400).json({ 
-        error: "Validation failed", 
-        details: error.errors.map(e => ({ field: e.path.join('.'), message: e.message })) 
+      return res.status(400).json({
+        error: "Validation failed",
+        details: error.errors.map((e) => ({
+          field: e.path.join("."),
+          message: e.message,
+        })),
       });
     }
     console.error("Reset password error:", error);
@@ -630,7 +675,7 @@ router.get("/health", (req: Request, res: Response) => {
  * Get paginated list of unassigned users (for admin to create employees)
  * GET /api/auth/unassigned-users?page=1&limit=20
  * Headers: Authorization: Bearer <jwt>
- * 
+ *
  * Security & Privacy Considerations:
  * - Pagination limits data exposure per request
  * - Only admins can access (role check)
@@ -715,7 +760,7 @@ router.get("/unassigned-users", async (req: Request, res: Response) => {
  * Search for users to assign as employees
  * GET /api/auth/search-users?q=email&page=1&limit=20
  * Headers: Authorization: Bearer <jwt>
- * 
+ *
  * Security & Privacy:
  * - Admins and employees only
  * - Rate limited to 30 requests per 15 minutes per user
@@ -724,92 +769,100 @@ router.get("/unassigned-users", async (req: Request, res: Response) => {
  * - Returns userId and email for search results
  * - All searches are logged for audit purposes
  */
-router.get("/search-users", searchUsersRateLimiter, async (req: Request, res: Response) => {
-  try {
-    const payload = getPayloadFromRequest(req, res);
-    if (!payload) return;
+router.get(
+  "/search-users",
+  searchUsersRateLimiter,
+  async (req: Request, res: Response) => {
+    try {
+      const payload = getPayloadFromRequest(req, res);
+      if (!payload) return;
 
-    // Check if user is authenticated (any role allowed)
-    // Customers need access to search users when editing quotations
-    const userProfile = await prisma.userProfile.findUnique({
-      where: { userId: payload.sub },
-    });
-
-    if (!userProfile) {
-      console.warn(`[SECURITY] User search attempt by unknown user ${payload.sub}`);
-      res.status(403).json({ error: "User profile not found" });
-      return;
-    }
-
-    const query = (req.query.q as string)?.trim() || "";
-
-    // Require search query to prevent bulk data exposure
-    if (query.length < 2) {
-      return res.status(400).json({
-        error: "Search query must be at least 2 characters",
+      // Check if user is authenticated (any role allowed)
+      // Customers need access to search users when editing quotations
+      const userProfile = await prisma.userProfile.findUnique({
+        where: { userId: payload.sub },
       });
+
+      if (!userProfile) {
+        console.warn(
+          `[SECURITY] User search attempt by unknown user ${payload.sub}`,
+        );
+        res.status(403).json({ error: "User profile not found" });
+        return;
+      }
+
+      const query = (req.query.q as string)?.trim() || "";
+
+      // Require search query to prevent bulk data exposure
+      if (query.length < 2) {
+        return res.status(400).json({
+          error: "Search query must be at least 2 characters",
+        });
+      }
+
+      // Log search activity for audit purposes
+      // Security Note: This log contains user IDs and search queries for security auditing.
+      // Logs should be stored securely with appropriate access controls and retention policies.
+      // User IDs and email searches are necessary to detect abuse patterns and investigate incidents.
+      console.info(
+        `[AUDIT] User search: userId=${payload.sub}, role=${userProfile.role}, query="${query}", ip=${req.ip}`,
+      );
+
+      // Parse pagination
+      let page = parseInt(req.query.page as string) || 1;
+      let limit = parseInt(req.query.limit as string) || 20;
+
+      if (page < 1) page = 1;
+      if (limit < 1) limit = 1;
+      if (limit > 50) limit = 50; // Stricter limit for search
+
+      const skip = (page - 1) * limit;
+
+      // Search users by email
+      const totalCount = await prisma.user.count({
+        where: {
+          email: { contains: query },
+        },
+      });
+
+      const users = await prisma.user.findMany({
+        where: {
+          email: { contains: query },
+        },
+        select: {
+          id: true,
+          email: true,
+        },
+        skip,
+        take: limit,
+        orderBy: {
+          email: "asc",
+        },
+      });
+
+      const totalPages = Math.ceil(totalCount / limit);
+
+      res.json({
+        success: true,
+        data: users.map((u) => ({
+          userId: u.id,
+          email: u.email,
+        })),
+        pagination: {
+          page,
+          limit,
+          totalCount,
+          totalPages,
+          hasNextPage: page < totalPages,
+          hasPrevPage: page > 1,
+        },
+      });
+    } catch (error) {
+      console.error("Search users error:", error);
+      return res.status(500).json({ error: "Failed to search users" });
     }
-
-    // Log search activity for audit purposes
-    // Security Note: This log contains user IDs and search queries for security auditing.
-    // Logs should be stored securely with appropriate access controls and retention policies.
-    // User IDs and email searches are necessary to detect abuse patterns and investigate incidents.
-    console.info(`[AUDIT] User search: userId=${payload.sub}, role=${userProfile.role}, query="${query}", ip=${req.ip}`);
-
-    // Parse pagination
-    let page = parseInt(req.query.page as string) || 1;
-    let limit = parseInt(req.query.limit as string) || 20;
-
-    if (page < 1) page = 1;
-    if (limit < 1) limit = 1;
-    if (limit > 50) limit = 50; // Stricter limit for search
-
-    const skip = (page - 1) * limit;
-
-    // Search users by email
-    const totalCount = await prisma.user.count({
-      where: {
-        email: { contains: query },
-      },
-    });
-
-    const users = await prisma.user.findMany({
-      where: {
-        email: { contains: query },
-      },
-      select: {
-        id: true,
-        email: true,
-      },
-      skip,
-      take: limit,
-      orderBy: {
-        email: "asc",
-      },
-    });
-
-    const totalPages = Math.ceil(totalCount / limit);
-
-    res.json({
-      success: true,
-      data: users.map((u) => ({
-        userId: u.id,
-        email: u.email,
-      })),
-      pagination: {
-        page,
-        limit,
-        totalCount,
-        totalPages,
-        hasNextPage: page < totalPages,
-        hasPrevPage: page > 1,
-      },
-    });
-  } catch (error) {
-    console.error("Search users error:", error);
-    return res.status(500).json({ error: "Failed to search users" });
-  }
-});
+  },
+);
 
 /**
  * Assign employee profile to existing user
@@ -910,7 +963,7 @@ router.get("/users/:userId", async (req: Request, res: Response) => {
  * POST /api/auth/complete-registration
  * Body: { userId: string, customerData: { firstName, lastName, streetAddress, city, province, postalCode, country, phoneNumbers } }
  * No auth required - but validates userId is pending AND email verified
- * 
+ *
  * Security: User MUST have verified email before completing registration
  */
 router.post("/complete-registration", async (req: Request, res: Response) => {
@@ -958,13 +1011,16 @@ router.post("/complete-registration", async (req: Request, res: Response) => {
       try {
         const backendUrl = process.env.BACKEND_URL;
         console.log(`Calling backend at: ${backendUrl}/api/v1/customers`);
-        
+
         const customerPayload = {
           ...customerData,
           userId,
         };
 
-        console.log("Customer payload:", JSON.stringify(customerPayload, null, 2));
+        console.log(
+          "Customer payload:",
+          JSON.stringify(customerPayload, null, 2),
+        );
 
         const backendResponse = await fetch(`${backendUrl}/api/v1/customers`, {
           method: "POST",
@@ -979,18 +1035,24 @@ router.post("/complete-registration", async (req: Request, res: Response) => {
         if (!backendResponse.ok) {
           const errorData = await backendResponse.json().catch(() => ({}));
           console.error("Backend customer creation failed:", errorData);
-          return res.status(500).json({ 
+          return res.status(500).json({
             error: "Failed to create customer record",
-            details: errorData.message || errorData.error || `Backend returned ${backendResponse.status}`,
-            backendUrl
+            details:
+              errorData.message ||
+              errorData.error ||
+              `Backend returned ${backendResponse.status}`,
+            backendUrl,
           });
         }
 
         console.log("Customer created successfully in backend");
       } catch (backendError) {
         console.error("Error calling backend:", backendError);
-        const errorMessage = backendError instanceof Error ? backendError.message : "Unknown error";
-        return res.status(500).json({ 
+        const errorMessage =
+          backendError instanceof Error
+            ? backendError.message
+            : "Unknown error";
+        return res.status(500).json({
           error: "Failed to communicate with backend service",
           details: errorMessage,
         });
@@ -1004,7 +1066,11 @@ router.post("/complete-registration", async (req: Request, res: Response) => {
     });
 
     // Issue token now that registration is complete
-    const token = signToken({ id: user.id, email: user.email as string }, updatedProfile.role, updatedProfile.employeeType);
+    const token = signToken(
+      { id: user.id, email: user.email as string },
+      updatedProfile.role,
+      updatedProfile.employeeType,
+    );
 
     return res.json({
       success: true,
@@ -1029,38 +1095,41 @@ router.post("/complete-registration", async (req: Request, res: Response) => {
  * DELETE /api/auth/cancel-registration/:userId
  * No auth required - cleanup endpoint
  */
-router.delete("/cancel-registration/:userId", async (req: Request, res: Response) => {
-  try {
-    const { userId } = req.params;
+router.delete(
+  "/cancel-registration/:userId",
+  async (req: Request, res: Response) => {
+    try {
+      const { userId } = req.params;
 
-    // Delete user and related records if not active (incomplete registration)
-    const profile = await prisma.userProfile.findUnique({
-      where: { userId },
-    });
-
-    if (profile && !profile.isActive) {
-      // Delete in order: account, profile, user
-      await prisma.account.deleteMany({ where: { userId } });
-      await prisma.userProfile.delete({ where: { userId } });
-      await prisma.user.delete({ where: { id: userId } });
-
-      return res.json({
-        success: true,
-        message: "Incomplete registration cancelled",
+      // Delete user and related records if not active (incomplete registration)
+      const profile = await prisma.userProfile.findUnique({
+        where: { userId },
       });
-    }
 
-    return res.status(400).json({ error: "Cannot cancel active user" });
-  } catch (error) {
-    console.error("Cancel registration error:", error);
-    return res.status(500).json({ error: "Failed to cancel registration" });
-  }
-});
+      if (profile && !profile.isActive) {
+        // Delete in order: account, profile, user
+        await prisma.account.deleteMany({ where: { userId } });
+        await prisma.userProfile.delete({ where: { userId } });
+        await prisma.user.delete({ where: { id: userId } });
+
+        return res.json({
+          success: true,
+          message: "Incomplete registration cancelled",
+        });
+      }
+
+      return res.status(400).json({ error: "Cannot cancel active user" });
+    } catch (error) {
+      console.error("Cancel registration error:", error);
+      return res.status(500).json({ error: "Failed to cancel registration" });
+    }
+  },
+);
 
 /**
  * Verify email token
  * POST /api/auth/verify-email/:token
- * 
+ *
  * Security:
  * - Constant-time token comparison (prevents timing attacks)
  * - Rate limiting: 5 attempts then lock 15 minutes
@@ -1118,7 +1187,7 @@ router.post("/verify-email/:token", async (req: Request, res: Response) => {
 /**
  * Resend verification email
  * POST /api/auth/resend-verification
- * 
+ *
  * Security:
  * - Rate limited: 3 per hour, 10 per day per email
  * - No email enumeration: same response whether email exists or not
@@ -1180,39 +1249,46 @@ router.get("/verify-status", async (req: Request, res: Response) => {
     });
   } catch (error) {
     console.error("Verify status error:", error);
-    return res.status(500).json({ error: "Failed to check verification status" });
+    return res
+      .status(500)
+      .json({ error: "Failed to check verification status" });
   }
 });
 
 // ==================== Google OAuth Routes ====================
 
 // Google OAuth - Initiate authentication
-router.get("/google", 
-  passport.authenticate("google", { 
+router.get(
+  "/google",
+  passport.authenticate("google", {
     scope: ["profile", "email"],
-    session: false 
-  })
+    session: false,
+    prompt: "select_account",
+  } as any),
 );
 
 // Google OAuth - Callback
-router.get("/google/callback",
-  passport.authenticate("google", { 
+router.get(
+  "/google/callback",
+  passport.authenticate("google", {
     session: false,
-    failureRedirect: `${process.env.FRONTEND_URLS?.split(',')[0] || 'http://localhost:5173'}/login?error=google_auth_failed`
+    failureRedirect: `${process.env.FRONTEND_URLS?.split(",")[0] || "http://localhost:5173"}/login?error=google_auth_failed`,
   }),
   async (req: Request, res: Response) => {
     try {
       const user = req.user as any;
-      
+
       if (!user) {
-        return res.redirect(`${process.env.FRONTEND_URLS?.split(',')[0] || 'http://localhost:5173'}/login?error=no_user`);
+        return res.redirect(
+          `${process.env.FRONTEND_URLS?.split(",")[0] || "http://localhost:5173"}/login?error=no_user`,
+        );
       }
 
       // Generate JWT token
       const token = signToken(
         { id: user.id, email: user.email },
         user.userProfile?.role,
-        user.userProfile?.employeeType
+        user.userProfile?.employeeType,
       );
 
       // Create a session record
@@ -1221,18 +1297,21 @@ router.get("/google/callback",
           id: crypto.randomUUID(),
           userId: user.id,
           expires: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7 days
-          sessionToken: crypto.randomBytes(32).toString('hex'),
+          sessionToken: crypto.randomBytes(32).toString("hex"),
         },
       });
 
       // Redirect to frontend with token
-      const frontendUrl = process.env.FRONTEND_URLS?.split(',')[0] || 'http://localhost:5173';
+      const frontendUrl =
+        process.env.FRONTEND_URLS?.split(",")[0] || "http://localhost:5173";
       res.redirect(`${frontendUrl}/auth/callback?token=${token}`);
     } catch (error) {
       console.error("Google OAuth callback error:", error);
-      res.redirect(`${process.env.FRONTEND_URLS?.split(',')[0] || 'http://localhost:5173'}/login?error=callback_failed`);
+      res.redirect(
+        `${process.env.FRONTEND_URLS?.split(",")[0] || "http://localhost:5173"}/login?error=callback_failed`,
+      );
     }
-  }
+  },
 );
 
 export default router;

@@ -1,5 +1,9 @@
 import passport from "passport";
-import { Strategy as GoogleStrategy } from "passport-google-oauth20";
+import {
+  Strategy as GoogleStrategy,
+  Profile,
+  VerifyCallback,
+} from "passport-google-oauth20";
 import { PrismaClient } from "@prisma/client";
 import crypto from "crypto";
 
@@ -36,7 +40,12 @@ if (process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET) {
         callbackURL: `${process.env.AUTH_URL || "http://localhost:3001"}/google/callback`,
         scope: ["profile", "email"],
       },
-      async (accessToken, refreshToken, profile, done) => {
+      async (
+        accessToken: string,
+        refreshToken: string,
+        profile: Profile,
+        done: VerifyCallback,
+      ) => {
         try {
           // Check if user already exists with this Google account
           let account = await prisma.account.findUnique({
