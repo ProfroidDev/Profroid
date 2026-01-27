@@ -64,6 +64,7 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.POST, "/v1/payments/webhook").permitAll()
                         .requestMatchers("/actuator/health/**").permitAll()
                         .requestMatchers("/actuator/info").permitAll()
+                        .requestMatchers("/actuator/health/**", "/api/actuator/health/**").permitAll()
                         // All other requests require authentication
                         .anyRequest().authenticated()
                 )
