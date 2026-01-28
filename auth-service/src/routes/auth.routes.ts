@@ -3,6 +3,7 @@ import { PrismaClient } from "@prisma/client";
 import crypto from "crypto";
 import jwt from "jsonwebtoken";
 import rateLimit from "express-rate-limit";
+import bcrypt from "bcrypt";
 import passport from "../config/passport.js";
 import {
   sendPasswordResetEmail,
@@ -26,7 +27,7 @@ const prisma = new PrismaClient();
 
 const JWT_SECRET =
   process.env.JWT_SECRET || process.env.BETTER_AUTH_SECRET || "";
-const JWT_EXPIRES_IN = "7d";
+const JWT_EXPIRES_IN = "2h"; // 2 hours for better security
 
 if (!JWT_SECRET) {
   throw new Error("JWT_SECRET is required");
@@ -85,13 +86,36 @@ const searchUsersRateLimiter = rateLimit({
   },
 });
 
-// Simple password hashing (for demo - use bcrypt in production)
-function hashPassword(password: string): string {
-  return crypto.createHash("sha256").update(password).digest("hex");
+// Bcrypt password hashing configuration
+const BCRYPT_ROUNDS = 12;
+
+async function hashPassword(password: string): Promise<string> {
+  return await bcrypt.hash(password, BCRYPT_ROUNDS);
 }
 
-function verifyPassword(password: string, hash: string): boolean {
-  return hashPassword(password) === hash;
+// Verify password with support for both bcrypt and legacy SHA256 hashes
+// Automatically migrates SHA256 hashes to bcrypt on successful login
+async function verifyPassword(password: string, hash: string): Promise<{ valid: boolean; needsUpdate: boolean }> {
+  try {
+    // Try bcrypt first (new hashes)
+    const isBcryptValid = await bcrypt.compare(password, hash);
+    if (isBcryptValid) {
+      return { valid: true, needsUpdate: false };
+    }
+  } catch (error) {
+    // Bcrypt compare failed - try legacy SHA256
+  }
+
+  // Try legacy SHA256 hash (old passwords)
+  const sha256Hash = crypto.createHash("sha256").update(password).digest("hex");
+  const isSha256Valid = sha256Hash === hash;
+  
+  if (isSha256Valid) {
+    // Password is valid but needs migration from SHA256 to bcrypt
+    return { valid: true, needsUpdate: true };
+  }
+
+  return { valid: false, needsUpdate: false };
 }
 
 type JWTPayload = {
@@ -201,6 +225,7 @@ router.post("/register", async (req: Request, res: Response) => {
     });
 
     // Store password separately
+    const hashedPassword = await hashPassword(password);
     await prisma.account.create({
       data: {
         id: crypto.randomUUID(),
@@ -208,7 +233,7 @@ router.post("/register", async (req: Request, res: Response) => {
         type: "email",
         provider: "email",
         providerAccountId: email,
-        accessToken: hashPassword(password),
+        accessToken: hashedPassword,
       },
     });
 
@@ -281,8 +306,23 @@ router.post("/sign-in", async (req: Request, res: Response) => {
       where: { userId: user!.id, provider: "email" },
     });
 
-    if (!account || !verifyPassword(password, account.accessToken || "")) {
+    if (!account) {
       return res.status(401).json({ error: "Invalid credentials" });
+    }
+
+    const passwordVerification = await verifyPassword(password, account.accessToken || "");
+    if (!passwordVerification.valid) {
+      return res.status(401).json({ error: "Invalid credentials" });
+    }
+
+    // Migrate SHA256 password to bcrypt if needed
+    if (passwordVerification.needsUpdate) {
+      const hashedPassword = await hashPassword(password);
+      await prisma.account.update({
+        where: { id: account.id },
+        data: { accessToken: hashedPassword },
+      });
+      console.log(`[PASSWORD MIGRATION] User ${user.email} password upgraded from SHA256 to bcrypt`);
     }
 
     // Get user profile
@@ -432,15 +472,21 @@ router.post("/change-password", async (req: Request, res: Response) => {
       where: { userId: payload.sub, provider: "email" },
     });
 
-    if (!account || !verifyPassword(oldPassword, account.accessToken || "")) {
+    if (!account) {
+      return res.status(401).json({ error: "Invalid current password" });
+    }
+
+    const passwordVerification = await verifyPassword(oldPassword, account.accessToken || "");
+    if (!passwordVerification.valid) {
       return res.status(401).json({ error: "Invalid current password" });
     }
 
     // Update password
+    const hashedNewPassword = await hashPassword(newPassword);
     await prisma.account.update({
       where: { id: account.id },
       data: {
-        accessToken: hashPassword(newPassword),
+        accessToken: hashedNewPassword,
       },
     });
 
@@ -607,7 +653,7 @@ router.post("/reset-password", async (req: Request, res: Response) => {
     }
 
     // Hash new password
-    const hashedPassword = hashPassword(newPassword);
+    const hashedPassword = await hashPassword(newPassword);
 
     // Update password in account table
     const account = await prisma.account.findFirst({
@@ -1280,7 +1326,7 @@ router.get("/google/callback", (req: Request, res: Response, next) => {
         return res.redirect(`${frontendUrl}/login?error=google_auth_failed`);
       }
 
-      const user = req.user as any;
+      const user = (req as any).user;
 
       if (!user) {
         const frontendUrl =

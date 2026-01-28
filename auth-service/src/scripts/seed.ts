@@ -1,9 +1,12 @@
 import { PrismaClient } from "@prisma/client";
 import crypto from "crypto";
+import bcrypt from "bcrypt";
 
-// Simple SHA-256 hashing (matches auth.routes.ts)
-function hashPassword(password: string): string {
-  return crypto.createHash("sha256").update(password).digest("hex");
+// Bcrypt password hashing configuration
+const BCRYPT_ROUNDS = 12;
+
+async function hashPassword(password: string): Promise<string> {
+  return await bcrypt.hash(password, BCRYPT_ROUNDS);
 }
 
 const prisma = new PrismaClient();
@@ -63,10 +66,11 @@ async function main() {
     });
 
     // Upsert account with hashed password
+    const hashedPassword = await hashPassword(u.password);
     await prisma.account.upsert({
       where: { provider_providerAccountId: { provider: "email", providerAccountId: u.email } },
       update: {
-        accessToken: hashPassword(u.password),
+        accessToken: hashedPassword,
       },
       create: {
         id: crypto.randomUUID(),
@@ -74,7 +78,7 @@ async function main() {
         type: "email",
         provider: "email",
         providerAccountId: u.email,
-        accessToken: hashPassword(u.password),
+        accessToken: hashedPassword,
       },
     });
 
