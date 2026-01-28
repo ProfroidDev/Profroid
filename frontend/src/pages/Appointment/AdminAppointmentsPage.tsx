@@ -70,8 +70,6 @@ export default function AdminAppointmentsPage(): React.ReactElement {
     }
   };
 
-
-
   const formatDate = (dateString: string): string => {
     const date = new Date(dateString);
     const locale = i18n.language === 'fr' ? 'fr-FR' : 'en-US';
@@ -173,9 +171,7 @@ export default function AdminAppointmentsPage(): React.ReactElement {
       // Technician search filter
       const technicianFullName = `${a.technicianFirstName} ${a.technicianLastName}`.toLowerCase();
       const searchTerm = technicianSearchTerm.toLowerCase().trim();
-      const technicianMatch = searchTerm
-        ? technicianFullName.includes(searchTerm)
-        : true;
+      const technicianMatch = searchTerm ? technicianFullName.includes(searchTerm) : true;
 
       return statusMatch && startOk && endOk && technicianMatch;
     });
@@ -197,9 +193,7 @@ export default function AdminAppointmentsPage(): React.ReactElement {
     <div className="appointments-page-light">
       <div className="appointments-header">
         <h1 className="appointments-title-light">{t('pages.appointments.allAppointments')}</h1>
-        <p className="appointments-subtitle">
-          {t('pages.appointments.manageAllAppointments')}
-        </p>
+        <p className="appointments-subtitle">{t('pages.appointments.manageAllAppointments')}</p>
 
         {/* Filters */}
         <div className="filters-section">
@@ -436,8 +430,7 @@ export default function AdminAppointmentsPage(): React.ReactElement {
                 </div>
 
                 {/* Action Buttons */}
-                <div className="appointment-actions">
-                </div>
+                <div className="appointment-actions"></div>
 
                 {/* View Details Button */}
                 <button
@@ -503,7 +496,7 @@ export default function AdminAppointmentsPage(): React.ReactElement {
                 </p>
                 <p>
                   <strong>{t('pages.appointments.status')}:</strong>{' '}
-                  <span 
+                  <span
                     style={{
                       padding: '4px 12px',
                       borderRadius: '16px',
@@ -512,7 +505,7 @@ export default function AdminAppointmentsPage(): React.ReactElement {
                       textTransform: 'uppercase',
                       letterSpacing: '0.5px',
                       display: 'inline-block',
-                      marginLeft: '8px'
+                      marginLeft: '8px',
                     }}
                     className={getStatusBadge(selectedAppointment.status)}
                   >
@@ -548,11 +541,14 @@ export default function AdminAppointmentsPage(): React.ReactElement {
                   <strong>{t('pages.appointments.name')}:</strong>{' '}
                   {selectedAppointment.technicianFirstName} {selectedAppointment.technicianLastName}
                 </p>
-                {technicianDetails && technicianDetails.phoneNumbers && technicianDetails.phoneNumbers.length > 0 && (
-                  <p>
-                    <strong>{t('pages.appointments.phone')}:</strong> {technicianDetails.phoneNumbers[0].number}
-                  </p>
-                )}
+                {technicianDetails &&
+                  technicianDetails.phoneNumbers &&
+                  technicianDetails.phoneNumbers.length > 0 && (
+                    <p>
+                      <strong>{t('pages.appointments.phone')}:</strong>{' '}
+                      {technicianDetails.phoneNumbers[0].number}
+                    </p>
+                  )}
               </div>
 
               <div className="detail-section">
@@ -591,13 +587,7 @@ export default function AdminAppointmentsPage(): React.ReactElement {
       )}
 
       {/* Toast Notification */}
-      {toast && (
-        <Toast
-          message={toast.message}
-          type={toast.type}
-          onClose={() => setToast(null)}
-        />
-      )}
+      {toast && <Toast message={toast.message} type={toast.type} onClose={() => setToast(null)} />}
     </div>
   );
 }
