@@ -1308,7 +1308,7 @@ router.get("/google/callback", (req: Request, res: Response, next) => {
       // Redirect to frontend with token
       const frontendUrl =
         process.env.FRONTEND_URLS?.split(",")[0] || "http://localhost:5173";
-      res.redirect(`${frontendUrl}/auth/callback?token=${token}`);
+      res.redirect(`${frontendUrl}/callback?token=${token}`);
     } catch (error) {
       console.error("Google OAuth callback error:", error);
       const frontendUrl =
