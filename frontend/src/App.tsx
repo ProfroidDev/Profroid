@@ -106,7 +106,7 @@ function AppRoutes(): React.ReactElement {
             </PublicRoute>
           }
         />
-        <Route path="/auth/callback" element={<OAuthCallbackPage />} />
+        <Route path="/callback" element={<OAuthCallbackPage />} />
 
         {/* Public Pages */}
         <Route path="/" element={<HomePage />} />
