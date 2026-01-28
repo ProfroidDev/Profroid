@@ -1268,20 +1268,24 @@ router.get(
 );
 
 // Google OAuth - Callback
-router.get(
-  "/google/callback",
+router.get("/google/callback", (req: Request, res: Response, next) => {
   passport.authenticate("google", {
     session: false,
-    failureRedirect: `${process.env.FRONTEND_URLS?.split(",")[0] || "http://localhost:5173"}/login?error=google_auth_failed`,
-  }),
-  async (req: Request, res: Response) => {
+  })(req, res, async (err: any) => {
     try {
+      if (err) {
+        console.error("Passport authentication error:", err);
+        const frontendUrl =
+          process.env.FRONTEND_URLS?.split(",")[0] || "http://localhost:5173";
+        return res.redirect(`${frontendUrl}/login?error=google_auth_failed`);
+      }
+
       const user = req.user as any;
 
       if (!user) {
-        return res.redirect(
-          `${process.env.FRONTEND_URLS?.split(",")[0] || "http://localhost:5173"}/login?error=no_user`,
-        );
+        const frontendUrl =
+          process.env.FRONTEND_URLS?.split(",")[0] || "http://localhost:5173";
+        return res.redirect(`${frontendUrl}/login?error=no_user`);
       }
 
       // Generate JWT token
@@ -1307,11 +1311,11 @@ router.get(
       res.redirect(`${frontendUrl}/auth/callback?token=${token}`);
     } catch (error) {
       console.error("Google OAuth callback error:", error);
-      res.redirect(
-        `${process.env.FRONTEND_URLS?.split(",")[0] || "http://localhost:5173"}/login?error=callback_failed`,
-      );
+      const frontendUrl =
+        process.env.FRONTEND_URLS?.split(",")[0] || "http://localhost:5173";
+      res.redirect(`${frontendUrl}/login?error=callback_failed`);
     }
-  },
-);
+  });
+});
 
 export default router;
