@@ -342,6 +342,17 @@ public class AppointmentServiceImpl implements AppointmentService {
     }
 
     @Override
+    public List<AppointmentResponseModel> getAllAppointments() {
+        // Get all appointments from the database (admin only)
+        List<Appointment> appointments = appointmentRepository.findAll();
+        
+        // Validate all appointments have valid related entities (in case some were deleted)
+        return appointmentResponseMapper.toResponseModelList(
+            validateAppointmentEntities(appointments)
+        );
+    }
+
+    @Override
     public AppointmentResponseModel getAppointmentById(String appointmentId, String userId, String userRole) {
         // Find appointment by ID
         Optional<Appointment> appointmentOptional = appointmentRepository.findAppointmentByAppointmentIdentifier_AppointmentId(appointmentId);
