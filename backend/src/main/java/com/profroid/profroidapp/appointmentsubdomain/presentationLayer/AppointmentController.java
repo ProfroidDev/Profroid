@@ -88,6 +88,17 @@ public class AppointmentController {
     }
 
     /**
+     * Get all appointments (admin only)
+     * Returns all appointments in the system for admin management
+     */
+    @PreAuthorize("hasRole('ADMIN')")
+    @GetMapping
+    public ResponseEntity<List<AppointmentResponseModel>> getAllAppointments() {
+        List<AppointmentResponseModel> appointments = appointmentService.getAllAppointments();
+        return ResponseEntity.ok(appointments);
+    }
+
+    /**
      * Get booked time slots for a technician on a specific date.
      * Used by customers to check technician availability when booking appointments.
      * Returns only time slots, not full appointment details for privacy.

@@ -18,6 +18,8 @@ public interface AppointmentService {
     List<AppointmentResponseModel> getCustomerAppointments(String customerId);
     
     List<AppointmentResponseModel> getTechnicianAppointments(String technicianId);
+    
+    List<AppointmentResponseModel> getAllAppointments();
 
     AppointmentResponseModel getAppointmentById(String appointmentId, String userId, String userRole);
 

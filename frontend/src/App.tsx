@@ -13,6 +13,7 @@ import PartsPage from './pages/Parts/PartsPage';
 import Inventory from './pages/Parts/Inventory';
 import ServiceReports from './pages/Reports/ServiceReports';
 import MyAppointmentsPage from './pages/Appointment/MyAppointmentsPage';
+import AdminAppointmentsPage from './pages/Appointment/AdminAppointmentsPage';
 import MyJobsPage from './pages/Appointment/MyJobsPage';
 import HomePage from './pages/Home/HomePage';
 import ForbiddenPage from './pages/Error/ForbiddenPage';
@@ -207,6 +208,16 @@ function AppRoutes(): React.ReactElement {
           element={
             <ProtectedRoute requiredRoles={['CUSTOMER']}>
               <MyAppointmentsPage />
+            </ProtectedRoute>
+          }
+        />
+
+        {/* Admin Appointments - ADMIN only */}
+        <Route
+          path="/admin/appointments"
+          element={
+            <ProtectedRoute requiredRoles={['ADMIN']}>
+              <AdminAppointmentsPage />
             </ProtectedRoute>
           }
         />
