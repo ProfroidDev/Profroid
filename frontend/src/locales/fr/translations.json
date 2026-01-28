@@ -34,6 +34,7 @@
     "creating": "Création en cours...",
     "updating": "Mise à jour en cours...",
     "enterPlaceholder": "Entrez {{field}}",
+    "or": "ou",
     "dayOfWeek": {
       "monday": "Lundi",
       "tuesday": "Mardi",
@@ -120,7 +121,16 @@
     "verificationEmailResent": "Code de vérification renvoyé à votre email. Vérifiez votre boîte de réception.",
     "redirectingToProfile": "Redirection pour compléter votre profil...",
     "emailNotVerified": "Veuillez vérifier votre email avant de vous connecter",
-    "loginFailed": "Échec de la connexion. Veuillez vérifier vos identifiants et réessayer."
+    "loginFailed": "Échec de la connexion. Veuillez vérifier vos identifiants et réessayer.",
+    "signInWithGoogle": "Se connecter avec Google",
+    "processingLogin": "Traitement de la connexion",
+    "pleaseWait": "Veuillez patienter pendant que nous complétons votre authentification...",
+    "redirectingToLogin": "Redirection vers la page de connexion...",
+    "googleAuthFailed": "L'authentification Google a échoué. Veuillez réessayer.",
+    "oauthNoUser": "Impossible de récupérer les informations utilisateur de Google.",
+    "oauthNoToken": "Aucun jeton d'authentification reçu.",
+    "oauthCallbackFailed": "L'authentification a échoué. Veuillez réessayer.",
+    "oauthError": "Une erreur s'est produite lors de l'authentification."
   },
   "pages": {
     "home": {

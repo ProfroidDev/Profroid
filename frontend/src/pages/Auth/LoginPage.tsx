@@ -3,6 +3,7 @@ import { useNavigate, Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import useAuthStore from '../../features/authentication/store/authStore';
 import authClient from '../../features/authentication/api/authClient';
+import GoogleSignInButton from '../../features/authentication/components/GoogleSignInButton';
 import '../Auth.css';
 
 export default function LoginPage() {
@@ -95,6 +96,23 @@ export default function LoginPage() {
           <button type="submit" disabled={isLoading} className="btn btn-primary">
             {isLoading ? t('common.loading') : t('auth.login')}
           </button>
+
+          {/* Divider */}
+          <div
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              margin: '1.5rem 0',
+              gap: '1rem',
+            }}
+          >
+            <div style={{ flex: 1, height: '1px', backgroundColor: '#e0e0e0' }}></div>
+            <span style={{ color: '#666', fontSize: '0.9rem' }}>{t('common.or')}</span>
+            <div style={{ flex: 1, height: '1px', backgroundColor: '#e0e0e0' }}></div>
+          </div>
+
+          {/* Google Sign-In Button */}
+          <GoogleSignInButton disabled={isLoading} />
         </form>
 
         <div className="auth-footer">
