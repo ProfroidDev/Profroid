@@ -6,6 +6,7 @@ import { getJobById } from '../../features/jobs/api/getJobById';
 import { createJob } from '../../features/jobs/api/createJob';
 import { deactivateJob } from '../../features/jobs/api/deactivateJob';
 import { reactivateJob } from '../../features/jobs/api/reactivateJob';
+import { sanitizeInput } from '../../utils/sanitizer';
 import type { JobResponseModel } from '../../features/jobs/models/JobResponseModel';
 import type { JobRequestModel } from '../../features/jobs/models/JobRequestModel';
 import './ServicesPage.css';
@@ -237,7 +238,12 @@ export default function ServicesPage(): React.ReactElement {
         [name]: value === '' ? 0 : parseFloat(value) || 0,
       }));
     } else {
-      setUpdateFormData((prev) => ({ ...prev, [name]: value }));
+      // Sanitize text inputs
+      let sanitizedValue = value;
+      if (name === 'jobName' || name === 'jobDescription') {
+        sanitizedValue = sanitizeInput(sanitizedValue);
+      }
+      setUpdateFormData((prev) => ({ ...prev, [name]: sanitizedValue }));
     }
   }
 
@@ -376,7 +382,12 @@ export default function ServicesPage(): React.ReactElement {
         [name]: value === '' ? 0 : parseFloat(value) || 0,
       }));
     } else {
-      setFormData((prev) => ({ ...prev, [name]: value }));
+      // Sanitize text inputs
+      let sanitizedValue = value;
+      if (name === 'jobName' || name === 'jobDescription') {
+        sanitizedValue = sanitizeInput(sanitizedValue);
+      }
+      setFormData((prev) => ({ ...prev, [name]: sanitizedValue }));
     }
   }
 

@@ -4,6 +4,7 @@ import { X, Plus, Trash2, Search } from 'lucide-react';
 import { createReport } from '../api/createReport';
 import { updateReport } from '../api/updateReport';
 import { getAllParts } from '../../parts/api/getAllParts';
+import { sanitizeInput } from '../../../utils/sanitizer';
 import type { AppointmentResponseModel } from '../../appointment/models/AppointmentResponseModel';
 import type { ReportRequestModel, ReportPartRequestModel } from '../models/ReportRequestModel';
 import type { ReportResponseModel } from '../models/ReportResponseModel';
@@ -287,7 +288,7 @@ export default function ReportFormModal({
                   min="0"
                   placeholder="0"
                   value={hoursWorked}
-                  onChange={(e) => setHoursWorked(e.target.value)}
+                  onChange={(e) => setHoursWorked(sanitizeInput(e.target.value))}
                   required
                 />
               </div>
@@ -301,7 +302,7 @@ export default function ReportFormModal({
                   className="no-arrows"
                   placeholder="0.00"
                   value={frais}
-                  onChange={(e) => setFrais(e.target.value)}
+                  onChange={(e) => setFrais(sanitizeInput(e.target.value))}
                   required
                 />
               </div>
@@ -315,7 +316,7 @@ export default function ReportFormModal({
                   className="no-arrows"
                   placeholder="0.00"
                   value={fraisDeplacement}
-                  onChange={(e) => setFraisDeplacement(e.target.value)}
+                  onChange={(e) => setFraisDeplacement(sanitizeInput(e.target.value))}
                   required
                 />
               </div>
@@ -345,7 +346,7 @@ export default function ReportFormModal({
                     type="text"
                     placeholder="Search parts..."
                     value={partSearchTerm}
-                    onChange={(e) => setPartSearchTerm(e.target.value)}
+                    onChange={(e) => setPartSearchTerm(sanitizeInput(e.target.value))}
                     autoFocus
                   />
                 </div>
@@ -423,7 +424,7 @@ export default function ReportFormModal({
                         type="text"
                         placeholder="Notes (optional)"
                         value={part.notes}
-                        onChange={(e) => handlePartChange(part.partId, 'notes', e.target.value)}
+                        onChange={(e) => handlePartChange(part.partId, 'notes', sanitizeInput(e.target.value))}
                       />
                     </div>
                   </div>

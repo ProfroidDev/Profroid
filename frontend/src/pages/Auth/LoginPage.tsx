@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 import useAuthStore from '../../features/authentication/store/authStore';
 import authClient from '../../features/authentication/api/authClient';
 import GoogleSignInButton from '../../features/authentication/components/GoogleSignInButton';
+import { sanitizeEmail, sanitizeInput, validateAndSanitizeEmail } from '../../utils/sanitizer';
 import '../Auth.css';
 
 export default function LoginPage() {
@@ -13,6 +14,18 @@ export default function LoginPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [formError, setFormError] = useState('');
+
+  const handleEmailChange = (value: string) => {
+    // Sanitize email as user types
+    const sanitized = sanitizeEmail(value);
+    setEmail(sanitized);
+  };
+
+  const handlePasswordChange = (value: string) => {
+    // Sanitize password input (remove null bytes and control chars)
+    const sanitized = sanitizeInput(value);
+    setPassword(sanitized);
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -24,8 +37,19 @@ export default function LoginPage() {
       return;
     }
 
+    // Validate and sanitize email before submission
+    const emailValidation = validateAndSanitizeEmail(email);
+    if (!emailValidation.isValid) {
+      setFormError(emailValidation.error || t('validation.emailInvalid'));
+      return;
+    }
+
+    // Final sanitization before sending to backend
+    const sanitizedEmail = sanitizeEmail(email);
+    const sanitizedPassword = sanitizeInput(password);
+
     // Call authClient directly to handle all response cases
-    const response = await authClient.signIn(email, password);
+    const response = await authClient.signIn(sanitizedEmail, sanitizedPassword);
 
     if (response.success) {
       // Initialize auth to load user and customer data immediately
@@ -37,12 +61,12 @@ export default function LoginPage() {
     ) {
       // Email not verified - redirect to verification page
       // Store email in sessionStorage so it persists if user refreshes
-      sessionStorage.setItem('verificationEmail', email);
-      navigate('/auth/verify-email', { state: { email } });
+      sessionStorage.setItem('verificationEmail', sanitizedEmail);
+      navigate('/auth/verify-email', { state: { email: sanitizedEmail } });
     } else if ('requiresCompletion' in response && response.requiresCompletion) {
       // Profile not completed - redirect to complete profile
       navigate('/auth/register', {
-        state: { completionMode: true, userId: response.userId, email },
+        state: { completionMode: true, userId: response.userId, email: sanitizedEmail },
       });
     } else {
       // Show error
@@ -65,10 +89,11 @@ export default function LoginPage() {
               id="email"
               type="email"
               value={email}
-              onChange={(e) => setEmail(e.target.value)}
+              onChange={(e) => handleEmailChange(e.target.value)}
               placeholder={t('auth.enterEmail')}
               disabled={isLoading}
               required
+              autoComplete="email"
             />
           </div>
 
@@ -78,10 +103,11 @@ export default function LoginPage() {
               id="password"
               type="password"
               value={password}
-              onChange={(e) => setPassword(e.target.value)}
+              onChange={(e) => handlePasswordChange(e.target.value)}
               placeholder="••••••••"
               disabled={isLoading}
               required
+              autoComplete="current-password"
             />
           </div>
 

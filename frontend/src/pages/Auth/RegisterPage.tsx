@@ -5,6 +5,7 @@ import useAuthStore, { type AuthUser } from '../../features/authentication/store
 import authClient from '../../features/authentication/api/authClient';
 import GoogleSignInButton from '../../features/authentication/components/GoogleSignInButton';
 import { getProvincePostalCodeError } from '../../utils/postalCodeValidator';
+import { sanitizeEmail, sanitizeInput, sanitizeName, sanitizeAddress, sanitizePostalCode, sanitizePhoneNumber, validateAndSanitizeEmail } from '../../utils/sanitizer';
 import '../Auth.css';
 
 const provinces = ['Ontario (ON)', 'Quebec (QC)'];
@@ -34,7 +35,7 @@ export default function RegisterPage() {
     // First check location state (from navigate)
     if (state?.completionMode && state?.userId) {
       setUserId(state.userId);
-      if (state.email) setEmail(state.email);
+      if (state.email) setEmail(sanitizeEmail(state.email));
       setStep(2); // Go directly to customer form
     } else {
       // Fall back to sessionStorage (from closed window redirect)
@@ -44,7 +45,7 @@ export default function RegisterPage() {
           const data = JSON.parse(verificationData);
           if (data.completionMode && data.userId) {
             setUserId(data.userId);
-            if (data.email) setEmail(data.email);
+            if (data.email) setEmail(sanitizeEmail(data.email));
             setStep(2); // Go directly to customer form
             // Clear sessionStorage after reading
             sessionStorage.removeItem('verificationData');
@@ -97,6 +98,24 @@ export default function RegisterPage() {
     return message; // Return original message if no translation found
   };
 
+  const handleEmailChange = (value: string) => {
+    // Sanitize email as user types
+    const sanitized = sanitizeEmail(value);
+    setEmail(sanitized);
+  };
+
+  const handlePasswordChange = (value: string) => {
+    // Sanitize password input
+    const sanitized = sanitizeInput(value);
+    setPassword(sanitized);
+  };
+
+  const handleConfirmPasswordChange = (value: string) => {
+    // Sanitize password input
+    const sanitized = sanitizeInput(value);
+    setConfirmPassword(sanitized);
+  };
+
   const handleStep1Submit = async (e: React.FormEvent) => {
     e.preventDefault();
     setFormError('');
@@ -107,23 +126,35 @@ export default function RegisterPage() {
       return;
     }
 
-    if (password !== confirmPassword) {
+    // Validate and sanitize email
+    const emailValidation = validateAndSanitizeEmail(email);
+    if (!emailValidation.isValid) {
+      setFormError(emailValidation.error || t('validation.emailInvalid'));
+      return;
+    }
+
+    // Final sanitization before submitting
+    const sanitizedEmail = sanitizeEmail(email);
+    const sanitizedPassword = sanitizeInput(password);
+    const sanitizedConfirmPassword = sanitizeInput(confirmPassword);
+
+    if (sanitizedPassword !== sanitizedConfirmPassword) {
       setFormError(t('auth.passwordMismatch'));
       return;
     }
 
-    if (password.length < 6) {
+    if (sanitizedPassword.length < 6) {
       setFormError(t('validation.passwordTooShort'));
       return;
     }
 
     setSubmitting(true);
     try {
-      const response = await authClient.register(email, password);
+      const response = await authClient.register(sanitizedEmail, sanitizedPassword);
       if (response.success) {
         // Redirect to email verification page
         navigate('/auth/verify-email', {
-          state: { email, userId: response.userId },
+          state: { email: sanitizedEmail, userId: response.userId },
         });
       } else {
         setFormError(translateBackendMessage(response.error));
@@ -139,7 +170,18 @@ export default function RegisterPage() {
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
   ) => {
     const { name, value } = e.target;
-    setCustomerData((prev) => ({ ...prev, [name]: value }));
+
+    // Sanitize input based on field type
+    let sanitizedValue = value;
+    if (name === 'firstName' || name === 'lastName') {
+      sanitizedValue = sanitizeName(value);
+    } else if (name === 'streetAddress' || name === 'city') {
+      sanitizedValue = sanitizeAddress(value);
+    } else if (name === 'postalCode') {
+      sanitizedValue = sanitizePostalCode(value);
+    }
+
+    setCustomerData((prev) => ({ ...prev, [name]: sanitizedValue }));
 
     if (errors[name]) {
       setErrors((prev) => {
@@ -152,9 +194,9 @@ export default function RegisterPage() {
     if (name === 'postalCode') {
       // Extract province code from dropdown value like "Ontario (ON)"
       const provinceCode =
-        (name === 'postalCode' ? customerData.province : value).match(/\(([A-Z]{2})\)/)?.[1] ||
-        (name === 'postalCode' ? customerData.province : value);
-      const errorKey = getProvincePostalCodeError(value, provinceCode);
+        (name === 'postalCode' ? customerData.province : sanitizedValue).match(/\(([A-Z]{2})\)/)?.[1] ||
+        (name === 'postalCode' ? customerData.province : sanitizedValue);
+      const errorKey = getProvincePostalCodeError(sanitizedValue, provinceCode);
       if (errorKey) {
         const translatedError = t(errorKey, { province: provinceCode });
         setErrors((prev) => ({ ...prev, postalCode: translatedError }));
@@ -164,7 +206,9 @@ export default function RegisterPage() {
 
   const handlePhoneChange = (index: number, field: string, value: string) => {
     const newPhones = [...customerData.phoneNumbers];
-    newPhones[index] = { ...newPhones[index], [field]: value };
+    // Sanitize phone number if editing the number field
+    const sanitizedValue = field === 'number' ? sanitizePhoneNumber(value) : value;
+    newPhones[index] = { ...newPhones[index], [field]: sanitizedValue };
     setCustomerData((prev) => ({ ...prev, phoneNumbers: newPhones }));
   };
 
@@ -302,7 +346,7 @@ export default function RegisterPage() {
                 id="email"
                 type="email"
                 value={email}
-                onChange={(e) => setEmail(e.target.value)}
+                onChange={(e) => handleEmailChange(e.target.value)}
                 placeholder={t('auth.enterEmail')}
                 disabled={submitting}
                 required
@@ -315,7 +359,7 @@ export default function RegisterPage() {
                 id="password"
                 type="password"
                 value={password}
-                onChange={(e) => setPassword(e.target.value)}
+                onChange={(e) => handlePasswordChange(e.target.value)}
                 placeholder="••••••••"
                 disabled={isLoading}
                 required
@@ -328,7 +372,7 @@ export default function RegisterPage() {
                 id="confirmPassword"
                 type="password"
                 value={confirmPassword}
-                onChange={(e) => setConfirmPassword(e.target.value)}
+                onChange={(e) => handleConfirmPasswordChange(e.target.value)}
                 placeholder="••••••••"
                 disabled={isLoading}
                 required

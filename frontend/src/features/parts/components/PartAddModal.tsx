@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { createPart } from '../api/createPart';
 import { createPartWithImage } from '../api/createPartWithImage';
+import { sanitizeInput } from '../../../utils/sanitizer';
 import type { PartRequestModel } from '../models/PartRequestModel';
 import './PartAddModal.css';
 import { X } from 'lucide-react';
@@ -152,7 +153,7 @@ export default function PartAddModal({
                 className="form-input"
                 placeholder="Enter part name"
                 value={name}
-                onChange={(e) => setName(e.target.value)}
+                onChange={(e) => setName(sanitizeInput(e.target.value))}
                 disabled={submitting}
                 required
               />
@@ -230,7 +231,7 @@ export default function PartAddModal({
                 className="form-input"
                 placeholder="Enter supplier name"
                 value={supplier}
-                onChange={(e) => setSupplier(e.target.value)}
+                onChange={(e) => setSupplier(sanitizeInput(e.target.value))}
                 disabled={submitting}
                 required
               />

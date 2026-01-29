@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import i18n from '../../i18n/config';
 import useAuthStore from '../../features/authentication/store/authStore';
+import { sanitizeName, sanitizePhoneNumber, sanitizeAddress, sanitizePostalCode, sanitizeInput } from '../../utils/sanitizer';
 import '../Auth.css';
 import '../jobs/ServicesPage.css'; // Import ServicesPage styles for modal
 import Calendar from 'react-calendar';
@@ -806,6 +807,50 @@ export default function ProfilePage() {
     navigate('/login');
   };
 
+  const handleFirstNameChange = (value: string) => {
+    setFirstName(sanitizeName(value));
+  };
+
+  const handleLastNameChange = (value: string) => {
+    setLastName(sanitizeName(value));
+  };
+
+  const handlePhoneChange = (value: string) => {
+    setPhone(sanitizePhoneNumber(value));
+  };
+
+  const handleAddressChange = (value: string) => {
+    setAddress(sanitizeAddress(value));
+  };
+
+  const handleCityChange = (value: string) => {
+    setCity(sanitizeAddress(value));
+  };
+
+  const handleProvinceChange = (value: string) => {
+    setProvince(sanitizeInput(value));
+  };
+
+  const handleCountryChange = (value: string) => {
+    setCountry(sanitizeInput(value));
+  };
+
+  const handlePostalCodeChange = (value: string) => {
+    setPostalCode(sanitizePostalCode(value));
+  };
+
+  const handleOldPasswordChange = (value: string) => {
+    setOldPassword(sanitizeInput(value));
+  };
+
+  const handleNewPasswordChange = (value: string) => {
+    setNewPassword(sanitizeInput(value));
+  };
+
+  const handleConfirmPasswordChange = (value: string) => {
+    setConfirmPassword(sanitizeInput(value));
+  };
+
   return (
     <div className="profile-container">
       {toast && <Toast message={toast.message} type={toast.type} onClose={() => setToast(null)} />}
@@ -854,7 +899,7 @@ export default function ProfilePage() {
                       id="firstName"
                       type="text"
                       value={firstName}
-                      onChange={(e) => setFirstName(e.target.value)}
+                      onChange={(e) => handleFirstNameChange(e.target.value)}
                       disabled={isLoading}
                     />
                   </div>
@@ -864,7 +909,7 @@ export default function ProfilePage() {
                       id="lastName"
                       type="text"
                       value={lastName}
-                      onChange={(e) => setLastName(e.target.value)}
+                      onChange={(e) => handleLastNameChange(e.target.value)}
                       disabled={isLoading}
                     />
                   </div>
@@ -881,7 +926,7 @@ export default function ProfilePage() {
                     id="phone"
                     type="tel"
                     value={phone}
-                    onChange={(e) => setPhone(e.target.value)}
+                    onChange={(e) => handlePhoneChange(e.target.value)}
                     placeholder="+1 (555) 123-4567"
                     disabled={isLoading}
                   />
@@ -893,7 +938,7 @@ export default function ProfilePage() {
                     id="address"
                     type="text"
                     value={address}
-                    onChange={(e) => setAddress(e.target.value)}
+                    onChange={(e) => handleAddressChange(e.target.value)}
                     placeholder="123 Main St"
                     disabled={isLoading}
                   />
@@ -906,7 +951,7 @@ export default function ProfilePage() {
                       id="postalCode"
                       type="text"
                       value={postalCode}
-                      onChange={(e) => setPostalCode(e.target.value)}
+                      onChange={(e) => handlePostalCodeChange(e.target.value)}
                       placeholder="A1A 1A1"
                       disabled={isLoading}
                     />
@@ -918,7 +963,7 @@ export default function ProfilePage() {
                       id="city"
                       type="text"
                       value={city}
-                      onChange={(e) => setCity(e.target.value)}
+                      onChange={(e) => handleCityChange(e.target.value)}
                       placeholder="Toronto"
                       disabled={isLoading}
                     />
@@ -932,7 +977,7 @@ export default function ProfilePage() {
                       id="province"
                       type="text"
                       value={province}
-                      onChange={(e) => setProvince(e.target.value)}
+                      onChange={(e) => handleProvinceChange(e.target.value)}
                       placeholder="ON"
                       disabled={isLoading}
                     />
@@ -944,7 +989,7 @@ export default function ProfilePage() {
                       id="country"
                       type="text"
                       value={country}
-                      onChange={(e) => setCountry(e.target.value)}
+                      onChange={(e) => handleCountryChange(e.target.value)}
                       placeholder="Canada"
                       disabled={isLoading}
                     />
@@ -1208,7 +1253,7 @@ export default function ProfilePage() {
                     id="cellarName"
                     type="text"
                     value={cellarName}
-                    onChange={(e) => setCellarName(e.target.value)}
+                    onChange={(e) => setCellarName(sanitizeInput(e.target.value))}
                     placeholder="e.g., Main Wine Cellar"
                     disabled={cellarLoading}
                     required
@@ -1410,7 +1455,7 @@ export default function ProfilePage() {
                     id="editCellarName"
                     type="text"
                     value={cellarName}
-                    onChange={(e) => setCellarName(e.target.value)}
+                    onChange={(e) => setCellarName(sanitizeInput(e.target.value))}
                     placeholder="e.g., Main Wine Cellar"
                     disabled={cellarLoading}
                     required
@@ -1590,7 +1635,7 @@ export default function ProfilePage() {
                   id="oldPassword"
                   type="password"
                   value={oldPassword}
-                  onChange={(e) => setOldPassword(e.target.value)}
+                  onChange={(e) => handleOldPasswordChange(e.target.value)}
                   placeholder="••••••••"
                   disabled={isLoading}
                   required
@@ -1603,7 +1648,7 @@ export default function ProfilePage() {
                   id="newPassword"
                   type="password"
                   value={newPassword}
-                  onChange={(e) => setNewPassword(e.target.value)}
+                  onChange={(e) => handleNewPasswordChange(e.target.value)}
                   placeholder="••••••••"
                   disabled={isLoading}
                   required
@@ -1616,7 +1661,7 @@ export default function ProfilePage() {
                   id="confirmPassword"
                   type="password"
                   value={confirmPassword}
-                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  onChange={(e) => handleConfirmPasswordChange(e.target.value)}
                   placeholder="••••••••"
                   disabled={isLoading}
                   required

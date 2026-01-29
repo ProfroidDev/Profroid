@@ -3,6 +3,7 @@ import { useNavigate, useSearchParams, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import './EmailVerificationPage.css';
 import authClient from '../../features/authentication/api/authClient';
+import { sanitizeEmail, sanitizeInput } from '../../utils/sanitizer';
 
 export default function EmailVerificationPage() {
   const { t } = useTranslation();
@@ -21,13 +22,14 @@ export default function EmailVerificationPage() {
 
   // Get email from URL or state
   useEffect(() => {
-    const token = searchParams.get('token');
-    const emailFromUrl = searchParams.get('email');
+    const rawToken = searchParams.get('token');
+    const token = rawToken ? sanitizeInput(rawToken) : null;
+    const emailFromUrl = searchParams.get('email') ? sanitizeEmail(searchParams.get('email')!) : '';
     const state = location.state as { email?: string; userId?: string } | null;
 
     // Try to get email from multiple sources: URL > state > sessionStorage
     const emailToUse =
-      emailFromUrl || state?.email || sessionStorage.getItem('verificationEmail') || '';
+      emailFromUrl || (state?.email ? sanitizeEmail(state.email) : '') || sessionStorage.getItem('verificationEmail') || '';
 
     if (emailToUse) {
       setEmail(emailToUse);
@@ -54,7 +56,7 @@ export default function EmailVerificationPage() {
                 JSON.stringify({
                   completionMode: true,
                   userId: response.userId,
-                  email: emailFromUrl || state?.email || '',
+                  email: emailFromUrl,
                 })
               );
               // Close current tab/window if it was opened by email link
@@ -66,7 +68,7 @@ export default function EmailVerificationPage() {
                   state: {
                     completionMode: true,
                     userId: response.userId,
-                    email: emailFromUrl || state?.email,
+                    email: emailFromUrl,
                   },
                 });
               }
@@ -157,14 +159,28 @@ export default function EmailVerificationPage() {
       return;
     }
 
-    await verifyToken(verificationCode.trim());
+    // Sanitize verification code before sending
+    const sanitizedCode = sanitizeInput(verificationCode.trim());
+    if (!sanitizedCode) {
+      setError('Invalid verification code format');
+      return;
+    }
+    await verifyToken(sanitizedCode);
   };
 
   const handleResend = async () => {
     setLoading(true);
     setError('');
     setMessage('');
+    
+    if (!email || !email.trim()) {
+      setError(t('validation.emailRequired') || 'Email is required');
+      setLoading(false);
+      return;
+    }
+
     try {
+      // Email should already be sanitized from state
       const response = await authClient.resendVerificationEmail(email);
       if (response.success) {
         // Check if email was already verified
@@ -219,7 +235,7 @@ export default function EmailVerificationPage() {
                   type="text"
                   placeholder={t('auth.enterVerificationCode')}
                   value={verificationCode}
-                  onChange={(e) => setVerificationCode(e.target.value)}
+                  onChange={(e) => setVerificationCode(sanitizeInput(e.target.value))}
                   disabled={loading}
                   className="form-input"
                 />
