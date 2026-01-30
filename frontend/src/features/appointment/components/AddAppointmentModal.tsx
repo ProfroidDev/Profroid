@@ -24,7 +24,12 @@ import { getMyJobs } from '../api/getMyJobs';
 import { getTechnicianBookedSlots, type BookedSlot } from '../api/getTechnicianBookedSlots';
 import { getAggregatedAvailability } from '../api/getAggregatedAvailability';
 import useAuthStore from '../../authentication/store/authStore';
-import { sanitizeAddress, sanitizeCity, sanitizeInput, sanitizePostalCode } from '../../../utils/sanitizer';
+import {
+  sanitizeAddress,
+  sanitizeCity,
+  sanitizeInput,
+  sanitizePostalCode,
+} from '../../../utils/sanitizer';
 
 // Cache for shared data to reduce API calls when modal is opened/closed multiple times
 const dataCache: {
@@ -1575,7 +1580,9 @@ export default function AddAppointmentModal({
                 <input
                   type="text"
                   value={address.streetAddress}
-                  onChange={(e) => setAddress({ ...address, streetAddress: sanitizeAddress(e.target.value) })}
+                  onChange={(e) =>
+                    setAddress({ ...address, streetAddress: sanitizeAddress(e.target.value) })
+                  }
                   required
                 />
               </label>
@@ -1621,7 +1628,9 @@ export default function AddAppointmentModal({
                 <input
                   type="text"
                   value={address.country}
-                  onChange={(e) => setAddress({ ...address, country: sanitizeInput(e.target.value) })}
+                  onChange={(e) =>
+                    setAddress({ ...address, country: sanitizeInput(e.target.value) })
+                  }
                   required
                 />
               </label>

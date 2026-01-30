@@ -248,7 +248,10 @@ export default function ServicesPage(): React.ReactElement {
       if (name === 'jobName' || name === 'jobDescription') {
         sanitizedValue = sanitizeInput(sanitizedValue);
         // Block dangerous patterns like << >> -- SQL keywords
-        sanitizedValue = sanitizedValue.replace(/<<|>>|--|';|DROP|DELETE|INSERT|UPDATE|SELECT|UNION|WHERE/gi, '');
+        sanitizedValue = sanitizedValue.replace(
+          /<<|>>|--|';|DROP|DELETE|INSERT|UPDATE|SELECT|UNION|WHERE/gi,
+          ''
+        );
       }
       setUpdateFormData((prev) => ({ ...prev, [name]: sanitizedValue }));
     }
@@ -398,7 +401,10 @@ export default function ServicesPage(): React.ReactElement {
       if (name === 'jobName' || name === 'jobDescription') {
         sanitizedValue = sanitizeInput(sanitizedValue);
         // Block dangerous patterns like << >> -- SQL keywords
-        sanitizedValue = sanitizedValue.replace(/<<|>>|--|';|DROP|DELETE|INSERT|UPDATE|SELECT|UNION|WHERE/gi, '');
+        sanitizedValue = sanitizedValue.replace(
+          /<<|>>|--|';|DROP|DELETE|INSERT|UPDATE|SELECT|UNION|WHERE/gi,
+          ''
+        );
       }
       setFormData((prev) => ({ ...prev, [name]: sanitizedValue }));
     }

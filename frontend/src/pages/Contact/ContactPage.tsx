@@ -2,7 +2,12 @@ import { useTranslation } from 'react-i18next';
 import { Mail, Phone, MapPin } from 'lucide-react';
 import './Contact.css';
 import { useState } from 'react';
-import { sanitizeName, sanitizeEmail, sanitizePhoneNumber, sanitizeInput } from '../../utils/sanitizer';
+import {
+  sanitizeName,
+  sanitizeEmail,
+  sanitizePhoneNumber,
+  sanitizeInput,
+} from '../../utils/sanitizer';
 
 export default function ContactPage() {
   const { t } = useTranslation();

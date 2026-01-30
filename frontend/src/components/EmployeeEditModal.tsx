@@ -1,6 +1,11 @@
 import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import { sanitizeName, sanitizePhoneNumber, sanitizeAddress, sanitizePostalCode} from '../utils/sanitizer';
+import {
+  sanitizeName,
+  sanitizePhoneNumber,
+  sanitizeAddress,
+  sanitizePostalCode,
+} from '../utils/sanitizer';
 import type { EmployeeRequestModel } from '../features/employee/models/EmployeeRequestModel';
 import type { EmployeeResponseModel } from '../features/employee/models/EmployeeResponseModel';
 import type { EmployeePhoneNumber } from '../features/employee/models/EmployeePhoneNumber';

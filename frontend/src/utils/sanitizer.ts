@@ -7,7 +7,7 @@
  * Sanitizes string input to prevent XSS attacks and SQL injection
  * - Only allows alphanumeric characters and spaces
  * - Removes all special characters
- * 
+ *
  * @param input - The input string to sanitize
  * @returns Sanitized string
  */
@@ -19,10 +19,13 @@ export function sanitizeInput(input: string): string {
   let sanitized = input;
 
   // Remove null bytes and control characters (ASCII 0-31 and 127)
-  sanitized = sanitized.split('').filter(char => {
-    const code = char.charCodeAt(0);
-    return code > 31 && code !== 127;
-  }).join('');
+  sanitized = sanitized
+    .split('')
+    .filter((char) => {
+      const code = char.charCodeAt(0);
+      return code > 31 && code !== 127;
+    })
+    .join('');
 
   // Only allow alphanumeric characters and spaces
   sanitized = sanitized.replace(/[^a-zA-Z0-9\s]/g, '');
@@ -36,7 +39,7 @@ export function sanitizeInput(input: string): string {
  * - Removes dangerous characters (XSS and SQL injection)
  * - Allows typing while you're still composing the email
  * - NOTE: Final validation happens via validateAndSanitizeEmail() on blur/submit
- * 
+ *
  * @param email - The email to sanitize
  * @returns Sanitized email (allows incomplete emails while typing)
  */
@@ -48,10 +51,13 @@ export function sanitizeEmail(email: string): string {
   let sanitized = email.toLowerCase();
 
   // Remove null bytes and control characters (ASCII 0-31 and 127)
-  sanitized = sanitized.split('').filter(char => {
-    const code = char.charCodeAt(0);
-    return code > 31 && code !== 127;
-  }).join('');
+  sanitized = sanitized
+    .split('')
+    .filter((char) => {
+      const code = char.charCodeAt(0);
+      return code > 31 && code !== 127;
+    })
+    .join('');
 
   // Remove dangerous characters
   sanitized = sanitized.replace(/[<>'`";#\\]/g, '');
@@ -66,7 +72,7 @@ export function sanitizeEmail(email: string): string {
  * Sanitizes name/text fields
  * - Removes dangerous characters (XSS and SQL injection)
  * - Allows letters, numbers, spaces, hyphens, apostrophes
- * 
+ *
  * @param input - The text to sanitize
  * @returns Sanitized text
  */
@@ -78,10 +84,13 @@ export function sanitizeName(input: string): string {
   let sanitized = input;
 
   // Remove null bytes and control characters (ASCII 0-31 and 127)
-  sanitized = sanitized.split('').filter(char => {
-    const code = char.charCodeAt(0);
-    return code > 31 && code !== 127;
-  }).join('');
+  sanitized = sanitized
+    .split('')
+    .filter((char) => {
+      const code = char.charCodeAt(0);
+      return code > 31 && code !== 127;
+    })
+    .join('');
 
   // Only allow alphanumeric characters, spaces, hyphens, and apostrophes
   sanitized = sanitized.replace(/[^a-zA-Z0-9\s\-']/g, '');
@@ -94,7 +103,7 @@ export function sanitizeName(input: string): string {
 /**
  * Sanitizes city input
  * - Only allows alphanumeric characters and spaces
- * 
+ *
  * @param input - The city to sanitize
  * @returns Sanitized city
  */
@@ -106,10 +115,13 @@ export function sanitizeCity(input: string): string {
   let sanitized = input;
 
   // Remove null bytes and control characters
-  sanitized = sanitized.split('').filter(char => {
-    const code = char.charCodeAt(0);
-    return code > 31 && code !== 127;
-  }).join('');
+  sanitized = sanitized
+    .split('')
+    .filter((char) => {
+      const code = char.charCodeAt(0);
+      return code > 31 && code !== 127;
+    })
+    .join('');
 
   // Only allow alphanumeric characters and spaces
   sanitized = sanitized.replace(/[^a-zA-Z0-9\s]/g, '');
@@ -125,10 +137,13 @@ export function sanitizeAddress(input: string): string {
   let sanitized = input;
 
   // Remove null bytes and control characters
-  sanitized = sanitized.split('').filter(char => {
-    const code = char.charCodeAt(0);
-    return code > 31 && code !== 127;
-  }).join('');
+  sanitized = sanitized
+    .split('')
+    .filter((char) => {
+      const code = char.charCodeAt(0);
+      return code > 31 && code !== 127;
+    })
+    .join('');
 
   // Only allow alphanumeric characters, spaces, hyphens, commas, and periods
   sanitized = sanitized.replace(/[^a-zA-Z0-9\s\-,.]/g, '');
@@ -143,7 +158,7 @@ export function sanitizeAddress(input: string): string {
  * Sanitizes postal code input
  * - Removes dangerous characters (XSS and SQL injection)
  * - Allows alphanumeric and spaces only
- * 
+ *
  * @param input - The postal code to sanitize
  * @returns Sanitized postal code
  */
@@ -155,10 +170,13 @@ export function sanitizePostalCode(input: string): string {
   let sanitized = input.toUpperCase();
 
   // Remove null bytes and control characters
-  sanitized = sanitized.split('').filter(char => {
-    const code = char.charCodeAt(0);
-    return code > 31 && code !== 127;
-  }).join('');
+  sanitized = sanitized
+    .split('')
+    .filter((char) => {
+      const code = char.charCodeAt(0);
+      return code > 31 && code !== 127;
+    })
+    .join('');
 
   // Only allow alphanumeric and spaces
   sanitized = sanitized.replace(/[^A-Z0-9\s]/g, '');
@@ -169,7 +187,7 @@ export function sanitizePostalCode(input: string): string {
  * Sanitizes phone number input
  * - Removes dangerous characters (XSS and SQL injection)
  * - Allows digits, spaces, hyphens, parentheses, plus sign, and periods
- * 
+ *
  * @param input - The phone number to sanitize
  * @returns Sanitized phone number
  */
@@ -181,10 +199,13 @@ export function sanitizePhoneNumber(input: string): string {
   let sanitized = input;
 
   // Remove null bytes and control characters
-  sanitized = sanitized.split('').filter(char => {
-    const code = char.charCodeAt(0);
-    return code > 31 && code !== 127;
-  }).join('');
+  sanitized = sanitized
+    .split('')
+    .filter((char) => {
+      const code = char.charCodeAt(0);
+      return code > 31 && code !== 127;
+    })
+    .join('');
 
   // Allow digits, spaces, hyphens, parentheses, plus sign, and periods
   sanitized = sanitized.replace(/[^\d\s()+.-]/g, '');
@@ -198,13 +219,15 @@ export function sanitizePhoneNumber(input: string): string {
 /**
  * Validates and sanitizes email with stricter rules
  * Ensures proper domain format with valid TLD
- * 
+ *
  * @param email - The email to validate and sanitize
  * @returns Object with sanitized email and validation status
  */
-export function validateAndSanitizeEmail(
-  email: string
-): { isValid: boolean; sanitized: string; error?: string } {
+export function validateAndSanitizeEmail(email: string): {
+  isValid: boolean;
+  sanitized: string;
+  error?: string;
+} {
   if (!email || typeof email !== 'string') {
     return { isValid: false, sanitized: '', error: 'Email is required' };
   }
@@ -250,7 +273,7 @@ export function validateAndSanitizeEmail(
  * Sanitizes token input
  * - Removes dangerous characters (XSS and SQL injection)
  * - Allows alphanumeric only
- * 
+ *
  * @param input - The token to sanitize
  * @returns Sanitized token
  */
@@ -262,10 +285,13 @@ export function sanitizeToken(input: string): string {
   let sanitized = input;
 
   // Remove null bytes and control characters
-  sanitized = sanitized.split('').filter(char => {
-    const code = char.charCodeAt(0);
-    return code > 31 && code !== 127;
-  }).join('');
+  sanitized = sanitized
+    .split('')
+    .filter((char) => {
+      const code = char.charCodeAt(0);
+      return code > 31 && code !== 127;
+    })
+    .join('');
 
   // Only allow alphanumeric
   sanitized = sanitized.replace(/[^a-zA-Z0-9]/g, '');
@@ -276,7 +302,7 @@ export function sanitizeToken(input: string): string {
 /**
  * Batch sanitizes an object of user inputs
  * Useful for sanitizing multiple form fields at once
- * 
+ *
  * @param data - Object containing fields to sanitize
  * @param sanitizers - Map of field names to their corresponding sanitizer functions
  * @returns Object with sanitized values

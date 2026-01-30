@@ -200,7 +200,9 @@ const ServiceReports = () => {
               type="text"
               placeholder={t('pages.serviceReports.searchPlaceholder')}
               value={searchQuery}
-              onChange={(e: React.ChangeEvent<HTMLInputElement>) => setSearchQuery(sanitizeInput(e.target.value))}
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                setSearchQuery(sanitizeInput(e.target.value))
+              }
               className="search-input"
             />
           </div>

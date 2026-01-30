@@ -3,7 +3,14 @@ import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import i18n from '../../i18n/config';
 import useAuthStore from '../../features/authentication/store/authStore';
-import { sanitizeName, sanitizePhoneNumber, sanitizeAddress, sanitizeCity, sanitizePostalCode, sanitizeInput } from '../../utils/sanitizer';
+import {
+  sanitizeName,
+  sanitizePhoneNumber,
+  sanitizeAddress,
+  sanitizeCity,
+  sanitizePostalCode,
+  sanitizeInput,
+} from '../../utils/sanitizer';
 import '../Auth.css';
 import '../jobs/ServicesPage.css'; // Import ServicesPage styles for modal
 import Calendar from 'react-calendar';

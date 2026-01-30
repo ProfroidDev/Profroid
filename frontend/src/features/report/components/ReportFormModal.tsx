@@ -424,7 +424,9 @@ export default function ReportFormModal({
                         type="text"
                         placeholder="Notes (optional)"
                         value={part.notes}
-                        onChange={(e) => handlePartChange(part.partId, 'notes', sanitizeInput(e.target.value))}
+                        onChange={(e) =>
+                          handlePartChange(part.partId, 'notes', sanitizeInput(e.target.value))
+                        }
                       />
                     </div>
                   </div>

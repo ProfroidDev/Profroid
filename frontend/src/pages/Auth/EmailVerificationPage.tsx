@@ -29,7 +29,10 @@ export default function EmailVerificationPage() {
 
     // Try to get email from multiple sources: URL > state > sessionStorage
     const emailToUse =
-      emailFromUrl || (state?.email ? sanitizeEmail(state.email) : '') || sessionStorage.getItem('verificationEmail') || '';
+      emailFromUrl ||
+      (state?.email ? sanitizeEmail(state.email) : '') ||
+      sessionStorage.getItem('verificationEmail') ||
+      '';
 
     if (emailToUse) {
       setEmail(emailToUse);
@@ -172,7 +175,7 @@ export default function EmailVerificationPage() {
     setLoading(true);
     setError('');
     setMessage('');
-    
+
     if (!email || !email.trim()) {
       setError(t('validation.emailRequired') || 'Email is required');
       setLoading(false);

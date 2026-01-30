@@ -5,7 +5,15 @@ import useAuthStore, { type AuthUser } from '../../features/authentication/store
 import authClient from '../../features/authentication/api/authClient';
 import GoogleSignInButton from '../../features/authentication/components/GoogleSignInButton';
 import { getProvincePostalCodeError } from '../../utils/postalCodeValidator';
-import { sanitizeEmail,sanitizeName, sanitizeAddress, sanitizeCity, sanitizePostalCode, sanitizePhoneNumber, validateAndSanitizeEmail } from '../../utils/sanitizer';
+import {
+  sanitizeEmail,
+  sanitizeName,
+  sanitizeAddress,
+  sanitizeCity,
+  sanitizePostalCode,
+  sanitizePhoneNumber,
+  validateAndSanitizeEmail,
+} from '../../utils/sanitizer';
 import '../Auth.css';
 
 const provinces = ['Ontario (ON)', 'Quebec (QC)'];
@@ -205,8 +213,9 @@ export default function RegisterPage() {
     if (name === 'postalCode') {
       // Extract province code from dropdown value like "Ontario (ON)"
       const provinceCode =
-        (name === 'postalCode' ? customerData.province : sanitizedValue).match(/\(([A-Z]{2})\)/)?.[1] ||
-        (name === 'postalCode' ? customerData.province : sanitizedValue);
+        (name === 'postalCode' ? customerData.province : sanitizedValue).match(
+          /\(([A-Z]{2})\)/
+        )?.[1] || (name === 'postalCode' ? customerData.province : sanitizedValue);
       const errorKey = getProvincePostalCodeError(sanitizedValue, provinceCode);
       if (errorKey) {
         const translatedError = t(errorKey, { province: provinceCode });

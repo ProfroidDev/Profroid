@@ -276,7 +276,9 @@ const Inventory = () => {
               type="text"
               placeholder={t('pages.parts.inventory.searchPlaceholder')}
               value={searchQuery}
-              onChange={(e: React.ChangeEvent<HTMLInputElement>) => setSearchQuery(sanitizeInput(e.target.value))}
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                setSearchQuery(sanitizeInput(e.target.value))
+              }
               className="search-input"
             />
           </div>
