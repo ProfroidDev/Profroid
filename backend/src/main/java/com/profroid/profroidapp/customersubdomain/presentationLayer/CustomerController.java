@@ -38,7 +38,7 @@ public class CustomerController {
         return ResponseEntity.ok(customerService.getCustomerByUserId(userId));
     }
 
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasRole('ADMIN') or @securityService.isCurrentUser(#userId)")
     @PutMapping("/by-user/{userId}")
     public ResponseEntity<CustomerResponseModel> updateCustomerByUserId(@PathVariable String userId,
                                                                         @Valid @RequestBody CustomerRequestModel requestModel) {

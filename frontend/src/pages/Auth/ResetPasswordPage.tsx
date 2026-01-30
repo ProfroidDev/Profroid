@@ -2,13 +2,15 @@ import { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams, Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import authClient from '../../features/authentication/api/authClient';
+import { sanitizeInput, sanitizeToken } from '../../utils/sanitizer';
 import '../Auth.css';
 
 export default function ResetPasswordPage() {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-  const token = searchParams.get('token');
+  const rawToken = searchParams.get('token');
+  const token = rawToken ? sanitizeToken(rawToken) : null;
 
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -42,13 +44,21 @@ export default function ResetPasswordPage() {
   };
 
   const handlePasswordChange = (pwd: string) => {
-    setPassword(pwd);
-    if (pwd) {
-      const errors = validatePassword(pwd);
+    // Sanitize password input (remove null bytes and control chars)
+    const sanitized = sanitizeInput(pwd);
+    setPassword(sanitized);
+    if (sanitized) {
+      const errors = validatePassword(sanitized);
       setValidationErrors(errors);
     } else {
       setValidationErrors([]);
     }
+  };
+
+  const handleConfirmPasswordChange = (pwd: string) => {
+    // Sanitize password input
+    const sanitized = sanitizeInput(pwd);
+    setConfirmPassword(sanitized);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -151,6 +161,7 @@ export default function ResetPasswordPage() {
                   placeholder="••••••••"
                   disabled={isLoading}
                   required
+                  autoComplete="new-password"
                 />
                 {validationErrors.length > 0 && password && (
                   <div className="password-requirements">
@@ -172,10 +183,11 @@ export default function ResetPasswordPage() {
                   id="confirmPassword"
                   type="password"
                   value={confirmPassword}
-                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  onChange={(e) => handleConfirmPasswordChange(e.target.value)}
                   placeholder="••••••••"
                   disabled={isLoading}
                   required
+                  autoComplete="new-password"
                 />
               </div>
 

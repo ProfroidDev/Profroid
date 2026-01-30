@@ -2,6 +2,7 @@ import { useState, useEffect, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Plus, Download, Edit2, Search, X } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
+import { sanitizeInput } from '../../utils/sanitizer';
 import { getAllParts } from '../../features/parts/api/getAllParts';
 import { createPart } from '../../features/parts/api/createPart';
 import { updatePart } from '../../features/parts/api/updatePart';
@@ -275,7 +276,9 @@ const Inventory = () => {
               type="text"
               placeholder={t('pages.parts.inventory.searchPlaceholder')}
               value={searchQuery}
-              onChange={(e: React.ChangeEvent<HTMLInputElement>) => setSearchQuery(e.target.value)}
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                setSearchQuery(sanitizeInput(e.target.value))
+              }
               className="search-input"
             />
           </div>

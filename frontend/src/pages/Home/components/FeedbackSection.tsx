@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useTranslation } from 'react-i18next';
 import { createReview } from '../../../features/review/api/createReview';
 import useAuthStore from '../../../features/authentication/store/authStore';
+import { sanitizeName, sanitizeInput } from '../../../utils/sanitizer';
 import '../HomePage.css';
 import './FeedbackSection.css';
 
@@ -111,7 +112,7 @@ const FeedbackSection: React.FC = () => {
                   className="feedback-textarea"
                   placeholder={t('pages.home.feedback.namePlaceholder') || 'Your Name'}
                   value={customerName}
-                  onChange={(e) => setCustomerName(e.target.value)}
+                  onChange={(e) => setCustomerName(sanitizeName(e.target.value))}
                   required
                   style={{ height: '45px', marginBottom: '15px' }}
                 />
@@ -146,7 +147,7 @@ const FeedbackSection: React.FC = () => {
                   className="feedback-textarea"
                   placeholder={t('pages.home.feedback.placeholder')}
                   value={feedback}
-                  onChange={(e) => setFeedback(e.target.value)}
+                  onChange={(e) => setFeedback(sanitizeInput(e.target.value))}
                   rows={4}
                 />
               </div>

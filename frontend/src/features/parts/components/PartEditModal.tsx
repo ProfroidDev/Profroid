@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { updatePart } from '../api/updatePart';
 import { uploadPartImage } from '../api/uploadPartImage';
 import { deleteFile } from '../../files/api/deleteFile';
+import { sanitizeInput } from '../../../utils/sanitizer';
 import type { PartRequestModel } from '../models/PartRequestModel';
 import type { PartResponseModel } from '../models/PartResponseModel';
 import './PartEditModal.css';
@@ -190,7 +191,7 @@ export default function PartEditModal({
                 className="form-input"
                 placeholder="Enter part name"
                 value={name}
-                onChange={(e) => setName(e.target.value)}
+                onChange={(e) => setName(sanitizeInput(e.target.value))}
                 disabled={submitting}
                 required
               />
@@ -268,7 +269,7 @@ export default function PartEditModal({
                 className="form-input"
                 placeholder="Enter supplier name"
                 value={supplier}
-                onChange={(e) => setSupplier(e.target.value)}
+                onChange={(e) => setSupplier(sanitizeInput(e.target.value))}
                 disabled={submitting}
                 required
               />

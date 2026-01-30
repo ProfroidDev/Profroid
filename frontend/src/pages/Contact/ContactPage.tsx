@@ -2,6 +2,12 @@ import { useTranslation } from 'react-i18next';
 import { Mail, Phone, MapPin } from 'lucide-react';
 import './Contact.css';
 import { useState } from 'react';
+import {
+  sanitizeName,
+  sanitizeEmail,
+  sanitizePhoneNumber,
+  sanitizeInput,
+} from '../../utils/sanitizer';
 
 export default function ContactPage() {
   const { t } = useTranslation();
@@ -15,9 +21,23 @@ export default function ContactPage() {
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
+
+    let sanitizedValue = value;
+    if (name === 'name') {
+      sanitizedValue = sanitizeName(value);
+    } else if (name === 'email') {
+      sanitizedValue = sanitizeEmail(value);
+    } else if (name === 'phone') {
+      sanitizedValue = sanitizePhoneNumber(value);
+    } else if (name === 'subject') {
+      sanitizedValue = sanitizeInput(value);
+    } else if (name === 'message') {
+      sanitizedValue = sanitizeInput(value);
+    }
+
     setFormData((prev) => ({
       ...prev,
-      [name]: value,
+      [name]: sanitizedValue,
     }));
   };
 

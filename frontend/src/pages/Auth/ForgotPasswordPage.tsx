@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import authClient from '../../features/authentication/api/authClient';
+import { sanitizeEmail, validateAndSanitizeEmail } from '../../utils/sanitizer';
 import '../Auth.css';
 
 export default function ForgotPasswordPage() {
@@ -10,6 +11,12 @@ export default function ForgotPasswordPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState(false);
+
+  const handleEmailChange = (value: string) => {
+    // Sanitize email as user types
+    const sanitized = sanitizeEmail(value);
+    setEmail(sanitized);
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -21,17 +28,20 @@ export default function ForgotPasswordPage() {
       return;
     }
 
-    // Basic email validation
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(email)) {
-      setError(t('validation.emailInvalid'));
+    // Validate and sanitize email before submission
+    const emailValidation = validateAndSanitizeEmail(email);
+    if (!emailValidation.isValid) {
+      setError(emailValidation.error || t('validation.emailInvalid'));
       return;
     }
+
+    // Final sanitization before sending to backend
+    const sanitizedEmail = sanitizeEmail(email);
 
     setIsLoading(true);
 
     try {
-      const response = await authClient.forgotPassword(email);
+      const response = await authClient.forgotPassword(sanitizedEmail);
 
       if (response.success) {
         setSuccess(true);
@@ -77,10 +87,11 @@ export default function ForgotPasswordPage() {
                   id="email"
                   type="email"
                   value={email}
-                  onChange={(e) => setEmail(e.target.value)}
+                  onChange={(e) => handleEmailChange(e.target.value)}
                   placeholder={t('auth.enterEmail')}
                   disabled={isLoading}
                   required
+                  autoComplete="email"
                 />
               </div>
 

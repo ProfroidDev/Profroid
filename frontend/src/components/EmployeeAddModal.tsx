@@ -1,5 +1,11 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import {
+  sanitizeName,
+  sanitizePhoneNumber,
+  sanitizeAddress,
+  sanitizePostalCode,
+} from '../utils/sanitizer';
 import type { EmployeeRequestModel } from '../features/employee/models/EmployeeRequestModel';
 import type { EmployeePhoneNumber } from '../features/employee/models/EmployeePhoneNumber';
 import type { EmployeeRole, EmployeeRoleType } from '../features/employee/models/EmployeeRole';
@@ -50,9 +56,19 @@ export default function EmployeeAddModal({ isOpen, onClose, onSuccess }: Employe
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
 
+    // Sanitize input based on field type
+    let sanitizedValue = value;
+    if (name === 'firstName' || name === 'lastName') {
+      sanitizedValue = sanitizeName(value);
+    } else if (name === 'streetAddress' || name === 'city') {
+      sanitizedValue = sanitizeAddress(value);
+    } else if (name === 'postalCode') {
+      sanitizedValue = sanitizePostalCode(value);
+    }
+
     setFormData((prev) => ({
       ...prev,
-      [name]: value,
+      [name]: sanitizedValue,
     }));
 
     // Clear error for this field
@@ -66,7 +82,7 @@ export default function EmployeeAddModal({ isOpen, onClose, onSuccess }: Employe
 
     // Validate postal code on change
     if (name === 'postalCode') {
-      const errorKey = getPostalCodeError(value, formData.city, formData.province);
+      const errorKey = getPostalCodeError(sanitizedValue, formData.city, formData.province);
       if (errorKey) {
         const translatedError = t(errorKey, { city: formData.city, province: formData.province });
         setErrors((prev) => ({ ...prev, postalCode: translatedError }));
@@ -76,7 +92,9 @@ export default function EmployeeAddModal({ isOpen, onClose, onSuccess }: Employe
 
   const handlePhoneChange = (index: number, field: string, value: string) => {
     const newPhones = [...formData.phoneNumbers];
-    newPhones[index] = { ...newPhones[index], [field]: value };
+    // Sanitize phone number if editing the number field
+    const sanitizedValue = field === 'number' ? sanitizePhoneNumber(value) : value;
+    newPhones[index] = { ...newPhones[index], [field]: sanitizedValue };
     setFormData((prev) => ({ ...prev, phoneNumbers: newPhones }));
   };
 
