@@ -233,15 +233,22 @@ export default function ServicesPage(): React.ReactElement {
       const checked = (e.target as HTMLInputElement).checked;
       setUpdateFormData((prev) => ({ ...prev, [name]: checked }));
     } else if (type === 'number') {
+      // Prevent negative numbers and -- pattern
+      let numValue = value === '' ? 0 : parseFloat(value) || 0;
+      if (numValue < 0) {
+        numValue = 0;
+      }
       setUpdateFormData((prev) => ({
         ...prev,
-        [name]: value === '' ? 0 : parseFloat(value) || 0,
+        [name]: numValue,
       }));
     } else {
-      // Sanitize text inputs
+      // Sanitize text inputs and block dangerous patterns
       let sanitizedValue = value;
       if (name === 'jobName' || name === 'jobDescription') {
         sanitizedValue = sanitizeInput(sanitizedValue);
+        // Block dangerous patterns like << >> -- SQL keywords
+        sanitizedValue = sanitizedValue.replace(/<<|>>|--|';|DROP|DELETE|INSERT|UPDATE|SELECT|UNION|WHERE/gi, '');
       }
       setUpdateFormData((prev) => ({ ...prev, [name]: sanitizedValue }));
     }
@@ -376,16 +383,22 @@ export default function ServicesPage(): React.ReactElement {
       const checked = (e.target as HTMLInputElement).checked;
       setFormData((prev) => ({ ...prev, [name]: checked }));
     } else if (type === 'number') {
-      // Allow empty string to clear the field
+      // Prevent negative numbers and -- pattern
+      let numValue = value === '' ? 0 : parseFloat(value) || 0;
+      if (numValue < 0) {
+        numValue = 0;
+      }
       setFormData((prev) => ({
         ...prev,
-        [name]: value === '' ? 0 : parseFloat(value) || 0,
+        [name]: numValue,
       }));
     } else {
-      // Sanitize text inputs
+      // Sanitize text inputs and block dangerous patterns
       let sanitizedValue = value;
       if (name === 'jobName' || name === 'jobDescription') {
         sanitizedValue = sanitizeInput(sanitizedValue);
+        // Block dangerous patterns like << >> -- SQL keywords
+        sanitizedValue = sanitizedValue.replace(/<<|>>|--|';|DROP|DELETE|INSERT|UPDATE|SELECT|UNION|WHERE/gi, '');
       }
       setFormData((prev) => ({ ...prev, [name]: sanitizedValue }));
     }
