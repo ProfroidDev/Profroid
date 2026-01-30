@@ -4,11 +4,9 @@
  */
 
 /**
- * Sanitizes string input to prevent XSS attacks
- * - Removes dangerous HTML/JavaScript characters
- * - Removes dangerous event handler and script keywords
- * - Removes null bytes and control characters
- * - Preserves safe text content
+ * Sanitizes string input to prevent XSS attacks and SQL injection
+ * - Only allows alphanumeric characters and spaces
+ * - Removes all special characters
  * 
  * @param input - The input string to sanitize
  * @returns Sanitized string
@@ -18,8 +16,7 @@ export function sanitizeInput(input: string): string {
     return '';
   }
 
-  // Trim whitespace
-  let sanitized = input.trim();
+  let sanitized = input;
 
   // Remove null bytes and control characters (ASCII 0-31 and 127)
   sanitized = sanitized.split('').filter(char => {
@@ -27,24 +24,8 @@ export function sanitizeInput(input: string): string {
     return code > 31 && code !== 127;
   }).join('');
 
-  // Remove dangerous HTML/JavaScript characters
-  sanitized = sanitized.replace(/[<>\"'`]/g, '');
-  
-  // Remove dangerous protocols (case-insensitive)
-  sanitized = sanitized.replace(/javascript:/gi, '');
-  sanitized = sanitized.replace(/data:/gi, '');
-  sanitized = sanitized.replace(/vbscript:/gi, '');
-  
-  // Remove dangerous event handlers and keywords (case-insensitive)
-  sanitized = sanitized.replace(/on\w+\s*=/gi, ''); // onclick=, onerror=, onload=, etc.
-  sanitized = sanitized.replace(/\bscript\b/gi, '');
-  sanitized = sanitized.replace(/\balert\b/gi, '');
-  sanitized = sanitized.replace(/\beval\b/gi, '');
-  sanitized = sanitized.replace(/\biframe\b/gi, '');
-  sanitized = sanitized.replace(/\bimg\b(?=\s+src)/gi, '');
-  sanitized = sanitized.replace(/\bsvg\b/gi, '');
-  sanitized = sanitized.replace(/\bstyle\b/gi, '');
-  sanitized = sanitized.replace(/\blink\b/gi, '');
+  // Only allow alphanumeric characters and spaces
+  sanitized = sanitized.replace(/[^a-zA-Z0-9\s]/g, '');
 
   return sanitized;
 }
@@ -52,7 +33,7 @@ export function sanitizeInput(input: string): string {
 /**
  * Sanitizes email input
  * - Converts to lowercase for consistency
- * - Removes dangerous characters
+ * - Removes dangerous characters (XSS and SQL injection)
  * - Allows typing while you're still composing the email
  * - NOTE: Final validation happens via validateAndSanitizeEmail() on blur/submit
  * 
@@ -64,8 +45,7 @@ export function sanitizeEmail(email: string): string {
     return '';
   }
 
-  // Convert to lowercase
-  let sanitized = email.toLowerCase().trim();
+  let sanitized = email.toLowerCase();
 
   // Remove null bytes and control characters (ASCII 0-31 and 127)
   sanitized = sanitized.split('').filter(char => {
@@ -73,16 +53,18 @@ export function sanitizeEmail(email: string): string {
     return code > 31 && code !== 127;
   }).join('');
 
-  // Only allow valid email characters: alphanumeric, +, -, ., _, @
-  // This allows users to type while composing - validation happens in validateAndSanitizeEmail()
-  sanitized = sanitized.replace(/[^a-z0-9+\-._@]/g, '');
+  // Remove dangerous characters
+  sanitized = sanitized.replace(/[<>'`";#\\]/g, '');
+
+  // Only allow valid email characters: alphanumeric, +, -, ., _, @, spaces
+  sanitized = sanitized.replace(/[^a-z0-9+\-._@\s]/g, '');
 
   return sanitized;
 }
 
 /**
  * Sanitizes name/text fields
- * - Removes dangerous characters
+ * - Removes dangerous characters (XSS and SQL injection)
  * - Allows letters, numbers, spaces, hyphens, apostrophes
  * 
  * @param input - The text to sanitize
@@ -93,7 +75,7 @@ export function sanitizeName(input: string): string {
     return '';
   }
 
-  let sanitized = input.trim();
+  let sanitized = input;
 
   // Remove null bytes and control characters (ASCII 0-31 and 127)
   sanitized = sanitized.split('').filter(char => {
@@ -101,29 +83,27 @@ export function sanitizeName(input: string): string {
     return code > 31 && code !== 127;
   }).join('');
 
-  // Allow letters, numbers, spaces, hyphens, apostrophes, and accented characters
-  sanitized = sanitized.replace(/[^\w\s\-']/gu, '');
+  // Only allow alphanumeric characters, spaces, hyphens, and apostrophes
+  sanitized = sanitized.replace(/[^a-zA-Z0-9\s\-']/g, '');
 
-  // Remove multiple consecutive spaces
-  sanitized = sanitized.replace(/\s+/g, ' ');
+  // Prevent double dashes
+  sanitized = sanitized.replace(/--+/g, '-');
 
   return sanitized;
 }
-
 /**
- * Sanitizes address input
- * - Removes dangerous characters
- * - Allows letters, numbers, spaces, hyphens, periods, commas, apostrophes
+ * Sanitizes city input
+ * - Only allows alphanumeric characters and spaces
  * 
- * @param input - The address to sanitize
- * @returns Sanitized address
+ * @param input - The city to sanitize
+ * @returns Sanitized city
  */
-export function sanitizeAddress(input: string): string {
+export function sanitizeCity(input: string): string {
   if (!input || typeof input !== 'string') {
     return '';
   }
 
-  let sanitized = input.trim();
+  let sanitized = input;
 
   // Remove null bytes and control characters
   sanitized = sanitized.split('').filter(char => {
@@ -131,18 +111,37 @@ export function sanitizeAddress(input: string): string {
     return code > 31 && code !== 127;
   }).join('');
 
-  // Allow: letters, numbers, spaces, hyphens, periods, commas, apostrophes, # symbol
-  sanitized = sanitized.replace(/[^\w\s\-.,#']/gu, '');
+  // Only allow alphanumeric characters and spaces
+  sanitized = sanitized.replace(/[^a-zA-Z0-9\s]/g, '');
 
-  // Remove multiple consecutive spaces
-  sanitized = sanitized.replace(/\s+/g, ' ');
+  return sanitized;
+}
+
+export function sanitizeAddress(input: string): string {
+  if (!input || typeof input !== 'string') {
+    return '';
+  }
+
+  let sanitized = input;
+
+  // Remove null bytes and control characters
+  sanitized = sanitized.split('').filter(char => {
+    const code = char.charCodeAt(0);
+    return code > 31 && code !== 127;
+  }).join('');
+
+  // Only allow alphanumeric characters, spaces, hyphens, commas, and periods
+  sanitized = sanitized.replace(/[^a-zA-Z0-9\s\-,.]/g, '');
+
+  // Prevent double dashes
+  sanitized = sanitized.replace(/--+/g, '-');
 
   return sanitized;
 }
 
 /**
  * Sanitizes postal code input
- * - Removes dangerous characters
+ * - Removes dangerous characters (XSS and SQL injection)
  * - Allows alphanumeric and spaces only
  * 
  * @param input - The postal code to sanitize
@@ -153,7 +152,7 @@ export function sanitizePostalCode(input: string): string {
     return '';
   }
 
-  let sanitized = input.trim().toUpperCase();
+  let sanitized = input.toUpperCase();
 
   // Remove null bytes and control characters
   sanitized = sanitized.split('').filter(char => {
@@ -161,19 +160,15 @@ export function sanitizePostalCode(input: string): string {
     return code > 31 && code !== 127;
   }).join('');
 
-  // Allow only alphanumeric and spaces
+  // Only allow alphanumeric and spaces
   sanitized = sanitized.replace(/[^A-Z0-9\s]/g, '');
-
-  // Remove multiple consecutive spaces
-  sanitized = sanitized.replace(/\s+/g, ' ');
 
   return sanitized;
 }
-
 /**
  * Sanitizes phone number input
- * - Removes dangerous characters
- * - Allows digits, spaces, hyphens, parentheses, plus sign
+ * - Removes dangerous characters (XSS and SQL injection)
+ * - Allows digits, spaces, hyphens, parentheses, plus sign, and periods
  * 
  * @param input - The phone number to sanitize
  * @returns Sanitized phone number
@@ -183,7 +178,7 @@ export function sanitizePhoneNumber(input: string): string {
     return '';
   }
 
-  let sanitized = input.trim();
+  let sanitized = input;
 
   // Remove null bytes and control characters
   sanitized = sanitized.split('').filter(char => {
@@ -191,8 +186,11 @@ export function sanitizePhoneNumber(input: string): string {
     return code > 31 && code !== 127;
   }).join('');
 
-  // Allow: digits, spaces, hyphens, parentheses, plus sign, periods
-  sanitized = sanitized.replace(/[^\d\s\-()+ .]/g, '');
+  // Allow digits, spaces, hyphens, parentheses, plus sign, and periods
+  sanitized = sanitized.replace(/[^\d\s()+.-]/g, '');
+
+  // Prevent double dashes
+  sanitized = sanitized.replace(/--+/g, '-');
 
   return sanitized;
 }
@@ -250,8 +248,8 @@ export function validateAndSanitizeEmail(
 
 /**
  * Sanitizes token input
- * - Removes dangerous characters
- * - Allows alphanumeric, hyphens, underscores, periods only
+ * - Removes dangerous characters (XSS and SQL injection)
+ * - Allows alphanumeric only
  * 
  * @param input - The token to sanitize
  * @returns Sanitized token
@@ -261,7 +259,7 @@ export function sanitizeToken(input: string): string {
     return '';
   }
 
-  let sanitized = input.trim();
+  let sanitized = input;
 
   // Remove null bytes and control characters
   sanitized = sanitized.split('').filter(char => {
@@ -269,8 +267,8 @@ export function sanitizeToken(input: string): string {
     return code > 31 && code !== 127;
   }).join('');
 
-  // Allow: alphanumeric, hyphens, underscores, periods only
-  sanitized = sanitized.replace(/[^a-zA-Z0-9\-_.]/g, '');
+  // Only allow alphanumeric
+  sanitized = sanitized.replace(/[^a-zA-Z0-9]/g, '');
 
   return sanitized;
 }

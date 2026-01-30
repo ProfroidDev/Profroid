@@ -4,8 +4,14 @@ import { useTranslation } from 'react-i18next';
 import useAuthStore from '../../features/authentication/store/authStore';
 import authClient from '../../features/authentication/api/authClient';
 import GoogleSignInButton from '../../features/authentication/components/GoogleSignInButton';
-import { sanitizeEmail, sanitizeInput, validateAndSanitizeEmail } from '../../utils/sanitizer';
+import { sanitizeEmail, validateAndSanitizeEmail } from '../../utils/sanitizer';
 import '../Auth.css';
+
+// Helper to prevent dangerous patterns in non-password fields
+function preventDangerousPatterns(value: string): string {
+  // Block patterns: << >> -- '; DROP etc.
+  return value.replace(/<<|>>|--|';|DROP|DELETE|INSERT|UPDATE|SELECT/gi, '');
+}
 
 export default function LoginPage() {
   const { t } = useTranslation();
@@ -16,15 +22,16 @@ export default function LoginPage() {
   const [formError, setFormError] = useState('');
 
   const handleEmailChange = (value: string) => {
-    // Sanitize email as user types
-    const sanitized = sanitizeEmail(value);
+    // Sanitize email as user types and block dangerous patterns
+    let sanitized = sanitizeEmail(value);
+    sanitized = preventDangerousPatterns(sanitized);
     setEmail(sanitized);
   };
 
   const handlePasswordChange = (value: string) => {
-    // Sanitize password input (remove null bytes and control chars)
-    const sanitized = sanitizeInput(value);
-    setPassword(sanitized);
+    // Allow passwords with ANY special characters (!@#$%^&*) - backend validates
+    // Password can contain: letters, numbers, and special characters
+    setPassword(value);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -46,10 +53,10 @@ export default function LoginPage() {
 
     // Final sanitization before sending to backend
     const sanitizedEmail = sanitizeEmail(email);
-    const sanitizedPassword = sanitizeInput(password);
+    // Do NOT sanitize password - backend will validate it
 
     // Call authClient directly to handle all response cases
-    const response = await authClient.signIn(sanitizedEmail, sanitizedPassword);
+    const response = await authClient.signIn(sanitizedEmail, password);
 
     if (response.success) {
       // Initialize auth to load user and customer data immediately

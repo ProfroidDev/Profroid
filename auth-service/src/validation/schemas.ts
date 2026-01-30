@@ -16,9 +16,9 @@ import {
 const emailRegex = /^[a-z0-9+\-._]+@[a-z0-9+\-._]+\.[a-z]{2,6}$/i;
 
 /**
- * Register Schema - Validates and sanitizes user registration input
+ * Register Schema - Validates user registration input
  * - Email: Sanitized, lowercase, validated against strict regex
- * - Password: Sanitized to remove dangerous characters, min 8 chars
+ * - Password: NOT sanitized (must match login password exactly), min 8 chars with uppercase and number
  * - Name: Optional, sanitized
  */
 export const RegisterSchema = z
@@ -36,7 +36,6 @@ export const RegisterSchema = z
       .string()
       .min(1, "Password is required")
       .min(8, "Password must be at least 8 characters")
-      .transform((val) => sanitizePassword(val))
       .refine(
         (pwd) => /[A-Z]/.test(pwd) && /[0-9]/.test(pwd),
         "Password must contain at least one uppercase letter and one number"
@@ -51,7 +50,7 @@ export const RegisterSchema = z
 /**
  * Sign In Schema - Validates and sanitizes login input
  * - Email: Sanitized, validated
- * - Password: Sanitized (preserves special chars)
+ * - Password: NOT sanitized (must match original hash exactly)
  */
 export const SignInSchema = z
   .object({
@@ -66,8 +65,7 @@ export const SignInSchema = z
       ),
     password: z
       .string()
-      .min(1, "Password is required")
-      .transform((val) => sanitizePassword(val)),
+      .min(1, "Password is required"),
   })
   .strict();
 
@@ -117,19 +115,18 @@ export const UpdateProfileSchema = z
   .strict();
 
 /**
- * Change Password Schema - Validates and sanitizes password change input
+ * Change Password Schema - Validates password change input
+ * Passwords are NOT sanitized - they must match original hashes exactly
  */
 export const ChangePasswordSchema = z
   .object({
     oldPassword: z
       .string()
-      .min(1, "Current password is required")
-      .transform((val) => sanitizePassword(val)),
+      .min(1, "Current password is required"),
     newPassword: z
       .string()
       .min(1, "New password is required")
       .min(8, "New password must be at least 8 characters")
-      .transform((val) => sanitizePassword(val))
       .refine(
         (pwd) => /[A-Z]/.test(pwd) && /[0-9]/.test(pwd),
         "Password must contain at least one uppercase letter and one number"

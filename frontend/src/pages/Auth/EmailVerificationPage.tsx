@@ -235,7 +235,11 @@ export default function EmailVerificationPage() {
                   type="text"
                   placeholder={t('auth.enterVerificationCode')}
                   value={verificationCode}
-                  onChange={(e) => setVerificationCode(sanitizeInput(e.target.value))}
+                  onChange={(e) => {
+                    // Only allow hex characters (0-9, A-F) for verification codes
+                    const sanitized = e.target.value.replace(/[^0-9A-Fa-f]/g, '').toUpperCase();
+                    setVerificationCode(sanitized);
+                  }}
                   disabled={loading}
                   className="form-input"
                 />

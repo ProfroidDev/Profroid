@@ -11,6 +11,8 @@ import org.springframework.security.config.annotation.method.configuration.Enabl
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -73,6 +75,39 @@ public class SecurityConfig {
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
+    }
+
+    /**
+     * SecurityService bean for custom authorization checks
+     * Allows checking if the current authenticated user matches a given user ID
+     */
+    @Bean("securityService")
+    public SecurityService securityService() {
+        return new SecurityService();
+    }
+
+    /**
+     * Service class for security-related utility methods
+     * Used for custom authorization checks in PreAuthorize annotations
+     */
+    public static class SecurityService {
+        /**
+         * Checks if the given userId matches the currently authenticated user's ID
+         * 
+         * @param userId The user ID to check against the current authentication
+         * @return true if the userId matches the current user's ID, false otherwise
+         */
+        public boolean isCurrentUser(String userId) {
+            Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+            
+            if (authentication == null || !authentication.isAuthenticated()) {
+                return false;
+            }
+            
+            // The principal is the userId (set in JwtAuthenticationFilter)
+            Object principal = authentication.getPrincipal();
+            return userId != null && userId.equals(principal);
+        }
     }
 }
 

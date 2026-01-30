@@ -229,8 +229,6 @@ export function sanitizeToken(input: string): string {
   // Don't over-sanitize as it can break valid tokens
   return sanitized;
 }
-}
-}
 
 /**
  * Batch sanitizes an object of user inputs

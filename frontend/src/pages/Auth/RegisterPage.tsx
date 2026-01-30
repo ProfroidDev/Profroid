@@ -5,10 +5,16 @@ import useAuthStore, { type AuthUser } from '../../features/authentication/store
 import authClient from '../../features/authentication/api/authClient';
 import GoogleSignInButton from '../../features/authentication/components/GoogleSignInButton';
 import { getProvincePostalCodeError } from '../../utils/postalCodeValidator';
-import { sanitizeEmail, sanitizeInput, sanitizeName, sanitizeAddress, sanitizePostalCode, sanitizePhoneNumber, validateAndSanitizeEmail } from '../../utils/sanitizer';
+import { sanitizeEmail,sanitizeName, sanitizeAddress, sanitizeCity, sanitizePostalCode, sanitizePhoneNumber, validateAndSanitizeEmail } from '../../utils/sanitizer';
 import '../Auth.css';
 
 const provinces = ['Ontario (ON)', 'Quebec (QC)'];
+
+// Helper to prevent dangerous patterns like << >> -- SQL injection
+function preventDangerousPatterns(value: string): string {
+  // Block patterns: << >> -- '; DROP DELETE INSERT UPDATE SELECT etc.
+  return value.replace(/<<|>>|--|';|DROP|DELETE|INSERT|UPDATE|SELECT|UNION|WHERE/gi, '');
+}
 
 export default function RegisterPage() {
   const { t } = useTranslation();
@@ -99,21 +105,22 @@ export default function RegisterPage() {
   };
 
   const handleEmailChange = (value: string) => {
-    // Sanitize email as user types
-    const sanitized = sanitizeEmail(value);
+    // Sanitize email as user types and block dangerous patterns
+    let sanitized = sanitizeEmail(value);
+    sanitized = preventDangerousPatterns(sanitized);
     setEmail(sanitized);
   };
 
   const handlePasswordChange = (value: string) => {
-    // Sanitize password input
-    const sanitized = sanitizeInput(value);
-    setPassword(sanitized);
+    // Allow passwords with ANY special characters (!@#$%^&*-_=+) - backend validates
+    // No character filtering for passwords
+    setPassword(value);
   };
 
   const handleConfirmPasswordChange = (value: string) => {
-    // Sanitize password input
-    const sanitized = sanitizeInput(value);
-    setConfirmPassword(sanitized);
+    // Allow passwords with ANY special characters (!@#$%^&*-_=+) - backend validates
+    // No character filtering for passwords
+    setConfirmPassword(value);
   };
 
   const handleStep1Submit = async (e: React.FormEvent) => {
@@ -135,22 +142,21 @@ export default function RegisterPage() {
 
     // Final sanitization before submitting
     const sanitizedEmail = sanitizeEmail(email);
-    const sanitizedPassword = sanitizeInput(password);
-    const sanitizedConfirmPassword = sanitizeInput(confirmPassword);
+    // Do NOT sanitize passwords - backend will validate them
 
-    if (sanitizedPassword !== sanitizedConfirmPassword) {
+    if (password !== confirmPassword) {
       setFormError(t('auth.passwordMismatch'));
       return;
     }
 
-    if (sanitizedPassword.length < 6) {
+    if (password.length < 6) {
       setFormError(t('validation.passwordTooShort'));
       return;
     }
 
     setSubmitting(true);
     try {
-      const response = await authClient.register(sanitizedEmail, sanitizedPassword);
+      const response = await authClient.register(sanitizedEmail, password);
       if (response.success) {
         // Redirect to email verification page
         navigate('/auth/verify-email', {
@@ -175,11 +181,16 @@ export default function RegisterPage() {
     let sanitizedValue = value;
     if (name === 'firstName' || name === 'lastName') {
       sanitizedValue = sanitizeName(value);
-    } else if (name === 'streetAddress' || name === 'city') {
+    } else if (name === 'streetAddress') {
       sanitizedValue = sanitizeAddress(value);
+    } else if (name === 'city') {
+      sanitizedValue = sanitizeCity(value);
     } else if (name === 'postalCode') {
       sanitizedValue = sanitizePostalCode(value);
     }
+
+    // Block dangerous patterns from all non-password fields
+    sanitizedValue = preventDangerousPatterns(sanitizedValue);
 
     setCustomerData((prev) => ({ ...prev, [name]: sanitizedValue }));
 
