@@ -1,6 +1,6 @@
 package com.profroid.profroidapp.config;
 
-import lombok.extern.slf4j.Slf4j;
+import com.profroid.profroidapp.reviewsubdomain.businessLayer.ProfanityException;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
 import org.springframework.http.HttpStatus;
@@ -41,6 +41,25 @@ public class GlobalExceptionHandler {
         body.put("path", request.getDescription(false).replace("uri=", ""));
         
         return new ResponseEntity<>(body, HttpStatus.FORBIDDEN);
+    }
+
+    /**
+     * Handle 400 Bad Request (Profanity Detected)
+     * Review contains inappropriate language
+     */
+    @ExceptionHandler(ProfanityException.class)
+    public ResponseEntity<Map<String, Object>> handleProfanityException(
+            ProfanityException ex,
+            WebRequest request) {
+        
+        Map<String, Object> body = new LinkedHashMap<>();
+        body.put("success", false);
+        body.put("error", "Bad Request");
+        body.put("message", ex.getMessage());
+        body.put("timestamp", LocalDateTime.now());
+        body.put("path", request.getDescription(false).replace("uri=", ""));
+        
+        return new ResponseEntity<>(body, HttpStatus.BAD_REQUEST);
     }
 
     /**

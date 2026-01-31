@@ -19,7 +19,6 @@ const TestimonialsSection: React.FC = () => {
         setReviews(approvedReviews);
       } catch (error) {
         console.error('Failed to fetch approved reviews:', error);
-        // Fallback to hardcoded testimonials if API fails
         setReviews([]);
       } finally {
         setLoading(false);
@@ -29,50 +28,21 @@ const TestimonialsSection: React.FC = () => {
     fetchReviews();
   }, []);
 
-  // Fallback testimonials from translations - ONLY if no approved reviews
-  const fallbackTestimonials = [
-    {
-      id: 1,
-      name: t('pages.home.testimonials.reviews.review1.name'),
-      location: t('pages.home.testimonials.reviews.review1.location'),
-      rating: 5,
-      text: t('pages.home.testimonials.reviews.review1.text'),
-    },
-    {
-      id: 2,
-      name: t('pages.home.testimonials.reviews.review2.name'),
-      location: t('pages.home.testimonials.reviews.review2.location'),
-      rating: 5,
-      text: t('pages.home.testimonials.reviews.review2.text'),
-    },
-    {
-      id: 3,
-      name: t('pages.home.testimonials.reviews.review3.name'),
-      location: t('pages.home.testimonials.reviews.review3.location'),
-      rating: 4,
-      text: t('pages.home.testimonials.reviews.review3.text'),
-    },
-  ];
+  // Use ONLY approved reviews from backend - no fallback testimonials
+  const displayTestimonials = reviews.map((review) => ({
+    id: review.reviewId,
+    name: review.customerName,
+    location: '', // We don't have location in reviews
+    rating: review.rating,
+    text: review.comment || 'Excellent service!',
+  }));
 
-  // IMPORTANT: Use ONLY approved reviews from backend
-  // If no approved reviews exist, show fallback testimonials
-  let displayTestimonials;
-
-  if (reviews.length > 0) {
-    // We have approved reviews - use ONLY these (replace hardcoded ones)
-    displayTestimonials = reviews.map((review) => ({
-      id: review.reviewId,
-      name: review.customerName,
-      location: '', // We don't have location in reviews
-      rating: review.rating,
-      text: review.comment || 'Great service!',
-    }));
-  } else {
-    // No approved reviews yet - use fallback testimonials
-    displayTestimonials = fallbackTestimonials;
+  // If no reviews, don't show the section
+  if (reviews.length === 0) {
+    return null;
   }
 
-  // Duplicate testimonials to create a seamless loop
+  // Duplicate testimonials to create a seamless loop (only if we have reviews)
   const allTestimonials = [
     ...displayTestimonials,
     ...displayTestimonials,
