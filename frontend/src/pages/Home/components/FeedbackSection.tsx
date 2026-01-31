@@ -45,7 +45,7 @@ const FeedbackSection: React.FC = () => {
       }, 5000);
     } catch (err: unknown) {
       console.error('Failed to submit review:', err);
-      
+
       // Check if error is from profanity filter
       const error = err as { response?: { status?: number; data?: { message?: string } } };
       if (error.response?.status === 400 && error.response?.data?.message) {
