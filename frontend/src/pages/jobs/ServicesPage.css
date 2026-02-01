@@ -583,6 +583,10 @@
   margin-bottom: 18px;
 }
 
+.services-modal-title {
+  color: #ffffff;
+}
+
 .modal-close-light {
   background: transparent;
   border: none;
