@@ -772,7 +772,7 @@ export async function sendAppointmentUpdatedNotification(
                 <p class="greeting">${greeting},</p>
                 
                 <div class="info-banner">
-                  <div class="info-title">⚡ Your appointment has been updated</div>
+                  <div class="info-title">Your appointment has been updated</div>
                   <div class="changed-fields">Changed: ${changedFieldsDisplay}</div>
                 </div>
                 
@@ -1013,7 +1013,6 @@ export async function sendAppointmentReminderNotification(
               <p class="greeting">${greeting},</p>
               
               <div class="reminder-banner">
-                <div class="reminder-icon">🔔</div>
                 <div class="reminder-title">This is a reminder about your ${reminderText}</div>
               </div>
               
@@ -1021,7 +1020,7 @@ export async function sendAppointmentReminderNotification(
               ${formatAppointmentDetails(details)}
               
               <div class="important-note">
-                ⏰ Please arrive on time and bring any necessary documents or items
+                Please arrive on time and bring any necessary documents or items
               </div>
               
               <div class="button-container">
@@ -1233,7 +1232,7 @@ export async function sendAppointmentCanceledFromReassignmentNotification(
               <p class="greeting">${greeting},</p>
               
               <div class="warning-banner">
-                <div class="warning-title">⚠️ Your appointment has been reassigned and is no longer assigned to you</div>
+                <div class="warning-title">Your appointment has been reassigned and is no longer assigned to you</div>
               </div>
               
               <div class="info-box">
