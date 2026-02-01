@@ -5,6 +5,7 @@ import { useTranslation } from 'react-i18next';
 import { getCustomerBills } from '../../features/report/api/getCustomerBills';
 import { downloadBillPdf } from '../../features/report/api/downloadBillPdf';
 import useAuthStore from '../../features/authentication/store/authStore';
+import { sanitizeInput } from '../../utils/sanitizer';
 import type { BillResponseModel } from '../../features/report/models/BillResponseModel';
 import { handlePayment } from '../../features/payment/api/handlePayment';
 import './CustomerBills.css';
@@ -181,7 +182,7 @@ const CustomerBills = () => {
             type="text"
             placeholder={t('pages.customers.bills.searchPlaceholder')}
             value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
+            onChange={(e) => setSearchQuery(sanitizeInput(e.target.value))}
             className="search-input"
           />
         </div>

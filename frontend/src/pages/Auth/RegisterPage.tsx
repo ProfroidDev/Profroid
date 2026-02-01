@@ -5,9 +5,24 @@ import useAuthStore, { type AuthUser } from '../../features/authentication/store
 import authClient from '../../features/authentication/api/authClient';
 import GoogleSignInButton from '../../features/authentication/components/GoogleSignInButton';
 import { getProvincePostalCodeError } from '../../utils/postalCodeValidator';
+import {
+  sanitizeEmail,
+  sanitizeName,
+  sanitizeAddress,
+  sanitizeCity,
+  sanitizePostalCode,
+  sanitizePhoneNumber,
+  validateAndSanitizeEmail,
+} from '../../utils/sanitizer';
 import '../Auth.css';
 
 const provinces = ['Ontario (ON)', 'Quebec (QC)'];
+
+// Helper to prevent dangerous patterns like << >> -- SQL injection
+function preventDangerousPatterns(value: string): string {
+  // Block patterns: << >> -- '; DROP DELETE INSERT UPDATE SELECT etc.
+  return value.replace(/<<|>>|--|';|DROP|DELETE|INSERT|UPDATE|SELECT|UNION|WHERE/gi, '');
+}
 
 export default function RegisterPage() {
   const { t } = useTranslation();
@@ -34,7 +49,7 @@ export default function RegisterPage() {
     // First check location state (from navigate)
     if (state?.completionMode && state?.userId) {
       setUserId(state.userId);
-      if (state.email) setEmail(state.email);
+      if (state.email) setEmail(sanitizeEmail(state.email));
       setStep(2); // Go directly to customer form
     } else {
       // Fall back to sessionStorage (from closed window redirect)
@@ -44,7 +59,7 @@ export default function RegisterPage() {
           const data = JSON.parse(verificationData);
           if (data.completionMode && data.userId) {
             setUserId(data.userId);
-            if (data.email) setEmail(data.email);
+            if (data.email) setEmail(sanitizeEmail(data.email));
             setStep(2); // Go directly to customer form
             // Clear sessionStorage after reading
             sessionStorage.removeItem('verificationData');
@@ -74,6 +89,7 @@ export default function RegisterPage() {
   });
 
   const [formError, setFormError] = useState('');
+  const [formErrors, setFormErrors] = useState<string[]>([]);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [submitting, setSubmitting] = useState(false);
 
@@ -97,15 +113,46 @@ export default function RegisterPage() {
     return message; // Return original message if no translation found
   };
 
+  const handleEmailChange = (value: string) => {
+    // Sanitize email as user types and block dangerous patterns
+    let sanitized = sanitizeEmail(value);
+    sanitized = preventDangerousPatterns(sanitized);
+    setEmail(sanitized);
+  };
+
+  const handlePasswordChange = (value: string) => {
+    // Allow passwords with ANY special characters (!@#$%^&*-_=+) - backend validates
+    // No character filtering for passwords
+    setPassword(value);
+  };
+
+  const handleConfirmPasswordChange = (value: string) => {
+    // Allow passwords with ANY special characters (!@#$%^&*-_=+) - backend validates
+    // No character filtering for passwords
+    setConfirmPassword(value);
+  };
+
   const handleStep1Submit = async (e: React.FormEvent) => {
     e.preventDefault();
     setFormError('');
+    setFormErrors([]);
     clearError();
 
     if (!email || !password || !confirmPassword) {
       setFormError(t('common.required'));
       return;
     }
+
+    // Validate and sanitize email
+    const emailValidation = validateAndSanitizeEmail(email);
+    if (!emailValidation.isValid) {
+      setFormError(emailValidation.error || t('validation.emailInvalid'));
+      return;
+    }
+
+    // Final sanitization before submitting
+    const sanitizedEmail = sanitizeEmail(email);
+    // Do NOT sanitize passwords - backend will validate them
 
     if (password !== confirmPassword) {
       setFormError(t('auth.passwordMismatch'));
@@ -119,17 +166,25 @@ export default function RegisterPage() {
 
     setSubmitting(true);
     try {
-      const response = await authClient.register(email, password);
+      const response = await authClient.register(sanitizedEmail, password);
       if (response.success) {
         // Redirect to email verification page
         navigate('/auth/verify-email', {
-          state: { email, userId: response.userId },
+          state: { email: sanitizedEmail, userId: response.userId },
         });
       } else {
-        setFormError(translateBackendMessage(response.error));
+        // Check if response has errors array
+        if (response.errors && Array.isArray(response.errors)) {
+          setFormErrors(response.errors);
+          setFormError('');
+        } else {
+          setFormError(translateBackendMessage(response.error));
+          setFormErrors([]);
+        }
       }
     } catch (err) {
       setFormError(translateBackendMessage(err instanceof Error ? err.message : undefined));
+      setFormErrors([]);
     } finally {
       setSubmitting(false);
     }
@@ -139,7 +194,23 @@ export default function RegisterPage() {
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
   ) => {
     const { name, value } = e.target;
-    setCustomerData((prev) => ({ ...prev, [name]: value }));
+
+    // Sanitize input based on field type
+    let sanitizedValue = value;
+    if (name === 'firstName' || name === 'lastName') {
+      sanitizedValue = sanitizeName(value);
+    } else if (name === 'streetAddress') {
+      sanitizedValue = sanitizeAddress(value);
+    } else if (name === 'city') {
+      sanitizedValue = sanitizeCity(value);
+    } else if (name === 'postalCode') {
+      sanitizedValue = sanitizePostalCode(value);
+    }
+
+    // Block dangerous patterns from all non-password fields
+    sanitizedValue = preventDangerousPatterns(sanitizedValue);
+
+    setCustomerData((prev) => ({ ...prev, [name]: sanitizedValue }));
 
     if (errors[name]) {
       setErrors((prev) => {
@@ -152,9 +223,10 @@ export default function RegisterPage() {
     if (name === 'postalCode') {
       // Extract province code from dropdown value like "Ontario (ON)"
       const provinceCode =
-        (name === 'postalCode' ? customerData.province : value).match(/\(([A-Z]{2})\)/)?.[1] ||
-        (name === 'postalCode' ? customerData.province : value);
-      const errorKey = getProvincePostalCodeError(value, provinceCode);
+        (name === 'postalCode' ? customerData.province : sanitizedValue).match(
+          /\(([A-Z]{2})\)/
+        )?.[1] || (name === 'postalCode' ? customerData.province : sanitizedValue);
+      const errorKey = getProvincePostalCodeError(sanitizedValue, provinceCode);
       if (errorKey) {
         const translatedError = t(errorKey, { province: provinceCode });
         setErrors((prev) => ({ ...prev, postalCode: translatedError }));
@@ -164,7 +236,9 @@ export default function RegisterPage() {
 
   const handlePhoneChange = (index: number, field: string, value: string) => {
     const newPhones = [...customerData.phoneNumbers];
-    newPhones[index] = { ...newPhones[index], [field]: value };
+    // Sanitize phone number if editing the number field
+    const sanitizedValue = field === 'number' ? sanitizePhoneNumber(value) : value;
+    newPhones[index] = { ...newPhones[index], [field]: sanitizedValue };
     setCustomerData((prev) => ({ ...prev, phoneNumbers: newPhones }));
   };
 
@@ -302,7 +376,7 @@ export default function RegisterPage() {
                 id="email"
                 type="email"
                 value={email}
-                onChange={(e) => setEmail(e.target.value)}
+                onChange={(e) => handleEmailChange(e.target.value)}
                 placeholder={t('auth.enterEmail')}
                 disabled={submitting}
                 required
@@ -315,7 +389,7 @@ export default function RegisterPage() {
                 id="password"
                 type="password"
                 value={password}
-                onChange={(e) => setPassword(e.target.value)}
+                onChange={(e) => handlePasswordChange(e.target.value)}
                 placeholder="••••••••"
                 disabled={isLoading}
                 required
@@ -328,7 +402,7 @@ export default function RegisterPage() {
                 id="confirmPassword"
                 type="password"
                 value={confirmPassword}
-                onChange={(e) => setConfirmPassword(e.target.value)}
+                onChange={(e) => handleConfirmPasswordChange(e.target.value)}
                 placeholder="••••••••"
                 disabled={isLoading}
                 required
@@ -337,6 +411,15 @@ export default function RegisterPage() {
 
             {(formError || error) && (
               <div className="alert alert-error">{formError || translateBackendMessage(error)}</div>
+            )}
+
+            {formErrors.length > 0 && (
+              <div className="alert alert-error">
+                <div>Validation Failed:</div>
+                {formErrors.map((err, index) => (
+                  <div key={index}>• {err}</div>
+                ))}
+              </div>
             )}
 
             <button type="submit" disabled={submitting} className="btn btn-primary">

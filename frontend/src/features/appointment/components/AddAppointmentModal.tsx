@@ -24,6 +24,12 @@ import { getMyJobs } from '../api/getMyJobs';
 import { getTechnicianBookedSlots, type BookedSlot } from '../api/getTechnicianBookedSlots';
 import { getAggregatedAvailability } from '../api/getAggregatedAvailability';
 import useAuthStore from '../../authentication/store/authStore';
+import {
+  sanitizeAddress,
+  sanitizeCity,
+  sanitizeInput,
+  sanitizePostalCode,
+} from '../../../utils/sanitizer';
 
 // Cache for shared data to reduce API calls when modal is opened/closed multiple times
 const dataCache: {
@@ -1574,7 +1580,9 @@ export default function AddAppointmentModal({
                 <input
                   type="text"
                   value={address.streetAddress}
-                  onChange={(e) => setAddress({ ...address, streetAddress: e.target.value })}
+                  onChange={(e) =>
+                    setAddress({ ...address, streetAddress: sanitizeAddress(e.target.value) })
+                  }
                   required
                 />
               </label>
@@ -1583,7 +1591,7 @@ export default function AddAppointmentModal({
                 <input
                   type="text"
                   value={address.city}
-                  onChange={(e) => setAddress({ ...address, city: e.target.value })}
+                  onChange={(e) => setAddress({ ...address, city: sanitizeCity(e.target.value) })}
                   required
                 />
               </label>
@@ -1620,7 +1628,9 @@ export default function AddAppointmentModal({
                 <input
                   type="text"
                   value={address.country}
-                  onChange={(e) => setAddress({ ...address, country: e.target.value })}
+                  onChange={(e) =>
+                    setAddress({ ...address, country: sanitizeInput(e.target.value) })
+                  }
                   required
                 />
               </label>
@@ -1630,7 +1640,7 @@ export default function AddAppointmentModal({
                   type="text"
                   value={address.postalCode}
                   onChange={(e) => {
-                    const newPostalCode = e.target.value;
+                    const newPostalCode = sanitizePostalCode(e.target.value);
                     setAddress({ ...address, postalCode: newPostalCode });
 
                     // Real-time validation
@@ -1659,7 +1669,7 @@ export default function AddAppointmentModal({
               <span>{t('pages.appointments.description')}</span>
               <textarea
                 value={description}
-                onChange={(e) => setDescription(e.target.value)}
+                onChange={(e) => setDescription(sanitizeInput(e.target.value))}
                 rows={3}
                 placeholder={t('pages.appointments.description')}
                 required

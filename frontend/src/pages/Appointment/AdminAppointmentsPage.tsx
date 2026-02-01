@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { sanitizeInput } from '../../utils/sanitizer';
 import { getAllAppointments } from '../../features/appointment/api/getAllAppointments';
 import type { AppointmentResponseModel } from '../../features/appointment/models/AppointmentResponseModel';
 import Toast from '../../shared/components/Toast';
@@ -305,7 +306,7 @@ export default function AdminAppointmentsPage(): React.ReactElement {
                 placeholder={t('pages.appointments.searchTechnician')}
                 value={technicianSearchTerm}
                 onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
-                  setTechnicianSearchTerm(e.target.value);
+                  setTechnicianSearchTerm(sanitizeInput(e.target.value));
                   setCurrentPage(1);
                 }}
                 className="search-input"

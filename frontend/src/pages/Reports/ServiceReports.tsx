@@ -6,6 +6,7 @@ import { getAllReports } from '../../features/report/api/getAllReports';
 import ViewReportModal from '../../features/report/components/ViewReportModal';
 import { exportReportPdf } from '../../features/report/api/exportReportPdf';
 import ReportFormModal from '../../features/report/components/ReportFormModal';
+import { sanitizeInput } from '../../utils/sanitizer';
 import type { ReportResponseModel } from '../../features/report/models/ReportResponseModel';
 import type { BillResponseModel } from '../../features/report/models/BillResponseModel';
 import type { AppointmentResponseModel } from '../../features/appointment/models/AppointmentResponseModel';
@@ -199,7 +200,9 @@ const ServiceReports = () => {
               type="text"
               placeholder={t('pages.serviceReports.searchPlaceholder')}
               value={searchQuery}
-              onChange={(e: React.ChangeEvent<HTMLInputElement>) => setSearchQuery(e.target.value)}
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                setSearchQuery(sanitizeInput(e.target.value))
+              }
               className="search-input"
             />
           </div>

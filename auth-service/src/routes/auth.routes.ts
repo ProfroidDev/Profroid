@@ -17,6 +17,8 @@ import {
   isUserVerificationLocked,
 } from "../services/verification.service.js";
 import {
+  RegisterSchema,
+  SignInSchema,
   ForgotPasswordSchema,
   ResetPasswordSchema,
 } from "../validation/schemas.js";
@@ -171,13 +173,19 @@ router.post("/register", async (req: Request, res: Response) => {
   try {
     const { email, password, name } = req.body;
 
-    if (!email || !password) {
-      return res.status(400).json({ error: "Email and password are required" });
+    // Validate input using Zod schema (includes sanitization)
+    const parseResult = RegisterSchema.safeParse(req.body);
+
+    if (!parseResult.success) {
+      const errorMessages = parseResult.error.errors.map((err) => err.message);
+      return res.status(400).json({ error: "Validation Failed", errors: errorMessages });
     }
+
+    const { email: sanitizedEmail, password: sanitizedPassword, name: sanitizedName } = parseResult.data;
 
     // Check if user already exists
     const existingUser = await prisma.user.findUnique({
-      where: { email },
+      where: { email: sanitizedEmail },
     });
 
     if (existingUser) {
@@ -188,7 +196,7 @@ router.post("/register", async (req: Request, res: Response) => {
             existingUser.id,
           );
           // Send email asynchronously in background
-          sendVerificationEmail(email, token, name).catch((error) => {
+          sendVerificationEmail(sanitizedEmail, token, sanitizedName).catch((error) => {
             console.error("Error sending verification email:", error);
           });
           return res.status(409).json({
@@ -210,7 +218,7 @@ router.post("/register", async (req: Request, res: Response) => {
     const user = await prisma.user.create({
       data: {
         id: crypto.randomUUID(),
-        email,
+        email: sanitizedEmail,
         emailVerified: false,
       },
     });
@@ -224,15 +232,15 @@ router.post("/register", async (req: Request, res: Response) => {
       },
     });
 
-    // Store password separately
-    const hashedPassword = await hashPassword(password);
+    // Store password separately (already sanitized)
+    const hashedPassword = await hashPassword(sanitizedPassword);
     await prisma.account.create({
       data: {
         id: crypto.randomUUID(),
         userId: user.id,
         type: "email",
         provider: "email",
-        providerAccountId: email,
+        providerAccountId: sanitizedEmail,
         accessToken: hashedPassword,
       },
     });
@@ -242,7 +250,7 @@ router.post("/register", async (req: Request, res: Response) => {
       const { token } = await generateAndStoreVerificationToken(user.id);
 
       // Send email asynchronously in background to avoid blocking the response
-      sendVerificationEmail(email, token, name).catch((error) => {
+      sendVerificationEmail(sanitizedEmail, token, sanitizedName).catch((error) => {
         console.error("Error sending verification email:", error);
       });
 
@@ -272,18 +280,23 @@ router.post("/register", async (req: Request, res: Response) => {
  * POST /api/auth/sign-in
  *
  * Security: User must have verified email to sign in
+ * Validates and sanitizes input using Zod schema
  */
 router.post("/sign-in", async (req: Request, res: Response) => {
   try {
-    const { email, password } = req.body;
+    // Validate input using Zod schema (includes sanitization)
+    const parseResult = SignInSchema.safeParse(req.body);
 
-    if (!email || !password) {
-      return res.status(400).json({ error: "Email and password are required" });
+    if (!parseResult.success) {
+      const errorMessages = parseResult.error.errors.map((err) => err.message);
+      return res.status(400).json({ error: "Validation Failed", errors: errorMessages });
     }
+
+    const { email: sanitizedEmail, password: sanitizedPassword } = parseResult.data;
 
     // Find user
     const user = await prisma.user.findUnique({
-      where: { email },
+      where: { email: sanitizedEmail },
     });
 
     if (!user) {
@@ -310,14 +323,14 @@ router.post("/sign-in", async (req: Request, res: Response) => {
       return res.status(401).json({ error: "Invalid credentials" });
     }
 
-    const passwordVerification = await verifyPassword(password, account.accessToken || "");
+    const passwordVerification = await verifyPassword(sanitizedPassword, account.accessToken || "");
     if (!passwordVerification.valid) {
       return res.status(401).json({ error: "Invalid credentials" });
     }
 
     // Migrate SHA256 password to bcrypt if needed
     if (passwordVerification.needsUpdate) {
-      const hashedPassword = await hashPassword(password);
+      const hashedPassword = await hashPassword(sanitizedPassword);
       await prisma.account.update({
         where: { id: account.id },
         data: { accessToken: hashedPassword },
@@ -1177,6 +1190,7 @@ router.delete(
  * POST /api/auth/verify-email/:token
  *
  * Security:
+ * - Token parameter sanitized to prevent injection attacks
  * - Constant-time token comparison (prevents timing attacks)
  * - Rate limiting: 5 attempts then lock 15 minutes
  * - Token single-use: deleted after verification
@@ -1190,7 +1204,15 @@ router.post("/verify-email/:token", async (req: Request, res: Response) => {
       return res.status(400).json({ error: "Verification token is required" });
     }
 
-    const result = await verifyEmailToken(token);
+    // Import sanitizer for token validation
+    const { sanitizeToken } = await import("../utils/sanitizer.js");
+    const sanitizedToken = sanitizeToken(token);
+
+    if (!sanitizedToken) {
+      return res.status(400).json({ error: "Invalid token format" });
+    }
+
+    const result = await verifyEmailToken(sanitizedToken);
 
     if (!result.success) {
       if (result.error === "RATE_LIMIT") {
@@ -1235,6 +1257,7 @@ router.post("/verify-email/:token", async (req: Request, res: Response) => {
  * POST /api/auth/resend-verification
  *
  * Security:
+ * - Input sanitized to prevent injection attacks
  * - Rate limited: 3 per hour, 10 per day per email
  * - No email enumeration: same response whether email exists or not
  * - Resets rate limit on attempts if expired
@@ -1247,7 +1270,19 @@ router.post("/resend-verification", async (req: Request, res: Response) => {
       return res.status(400).json({ error: "Email is required" });
     }
 
-    const result = await resendVerificationEmail(email);
+    // Import sanitizer for email validation
+    const { sanitizeEmail } = await import("../utils/sanitizer.js");
+    const sanitizedEmail = sanitizeEmail(email);
+
+    if (!sanitizedEmail) {
+      // Return generic message to prevent email enumeration
+      return res.json({
+        success: false,
+        message: "If an account exists, we sent a verification email",
+      });
+    }
+
+    const result = await resendVerificationEmail(sanitizedEmail);
 
     // Always return 200 with generic message to prevent email enumeration
     return res.json({
