@@ -19,6 +19,7 @@ export interface AuthResponse {
   userId?: string;
   message?: string;
   error?: string;
+  errors?: string[];
 }
 
 export interface UserResponse {
@@ -95,6 +96,7 @@ class AuthAPI {
         return {
           success: false,
           error: data.error || data.message || getErrorMessage(error),
+          errors: data.errors,
           requiresVerification: data.requiresVerification,
           userId: data.userId,
           message: data.message,

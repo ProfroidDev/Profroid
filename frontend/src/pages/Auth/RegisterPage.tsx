@@ -89,6 +89,7 @@ export default function RegisterPage() {
   });
 
   const [formError, setFormError] = useState('');
+  const [formErrors, setFormErrors] = useState<string[]>([]);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [submitting, setSubmitting] = useState(false);
 
@@ -134,6 +135,7 @@ export default function RegisterPage() {
   const handleStep1Submit = async (e: React.FormEvent) => {
     e.preventDefault();
     setFormError('');
+    setFormErrors([]);
     clearError();
 
     if (!email || !password || !confirmPassword) {
@@ -171,10 +173,18 @@ export default function RegisterPage() {
           state: { email: sanitizedEmail, userId: response.userId },
         });
       } else {
-        setFormError(translateBackendMessage(response.error));
+        // Check if response has errors array
+        if (response.errors && Array.isArray(response.errors)) {
+          setFormErrors(response.errors);
+          setFormError('');
+        } else {
+          setFormError(translateBackendMessage(response.error));
+          setFormErrors([]);
+        }
       }
     } catch (err) {
       setFormError(translateBackendMessage(err instanceof Error ? err.message : undefined));
+      setFormErrors([]);
     } finally {
       setSubmitting(false);
     }
@@ -401,6 +411,15 @@ export default function RegisterPage() {
 
             {(formError || error) && (
               <div className="alert alert-error">{formError || translateBackendMessage(error)}</div>
+            )}
+
+            {formErrors.length > 0 && (
+              <div className="alert alert-error">
+                <div>Validation Failed:</div>
+                {formErrors.map((err, index) => (
+                  <div key={index}>• {err}</div>
+                ))}
+              </div>
             )}
 
             <button type="submit" disabled={submitting} className="btn btn-primary">

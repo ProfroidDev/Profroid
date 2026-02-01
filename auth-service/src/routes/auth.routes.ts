@@ -177,10 +177,8 @@ router.post("/register", async (req: Request, res: Response) => {
     const parseResult = RegisterSchema.safeParse(req.body);
 
     if (!parseResult.success) {
-      const errorMessages = parseResult.error.errors
-        .map((err) => `${err.path.join('.')}: ${err.message}`)
-        .join(', ');
-      return res.status(400).json({ error: `Validation failed: ${errorMessages}` });
+      const errorMessages = parseResult.error.errors.map((err) => err.message);
+      return res.status(400).json({ error: "Validation Failed", errors: errorMessages });
     }
 
     const { email: sanitizedEmail, password: sanitizedPassword, name: sanitizedName } = parseResult.data;
@@ -290,10 +288,8 @@ router.post("/sign-in", async (req: Request, res: Response) => {
     const parseResult = SignInSchema.safeParse(req.body);
 
     if (!parseResult.success) {
-      const errorMessages = parseResult.error.errors
-        .map((err) => `${err.path.join('.')}: ${err.message}`)
-        .join(', ');
-      return res.status(400).json({ error: `Validation failed: ${errorMessages}` });
+      const errorMessages = parseResult.error.errors.map((err) => err.message);
+      return res.status(400).json({ error: "Validation Failed", errors: errorMessages });
     }
 
     const { email: sanitizedEmail, password: sanitizedPassword } = parseResult.data;
