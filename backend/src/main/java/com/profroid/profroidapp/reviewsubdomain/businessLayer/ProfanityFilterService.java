@@ -60,10 +60,9 @@ public class ProfanityFilterService {
         "git", "minger", "munter", "slag", "slags",
         
         // Racial slurs
-        "nigger", "nigga", "niggaz", "niggas", "negro", "negroes",
         "coon", "coons", "chink", "chinks", "gook", "gooks",
         "spic", "spics", "spick", "wetback", "beaner", "beaners",
-        "kike", "kyke", "kikes", "sandnigger", "towelhead", "raghead",
+        "kike", "kyke", "kikes", "towelhead", "raghead",
         "cracker", "crackers", "whitey", "honky",
         
         // Homophobic slurs
