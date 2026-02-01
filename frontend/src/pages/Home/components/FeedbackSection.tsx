@@ -28,7 +28,7 @@ const FeedbackSection: React.FC = () => {
     try {
       await createReview({
         rating,
-        comment: feedback,
+        comment: feedback.trim() || undefined,
         customerName: customerName.trim(),
         customerId: user?.id || undefined,
       });
@@ -42,9 +42,16 @@ const FeedbackSection: React.FC = () => {
         setFeedback('');
         setCustomerName('');
       }, 5000);
-    } catch (err) {
+    } catch (err: unknown) {
       console.error('Failed to submit review:', err);
-      setError('Failed to submit your review. Please try again.');
+
+      // Check if error is from profanity filter
+      const error = err as { response?: { status?: number; data?: { message?: string } } };
+      if (error.response?.status === 400 && error.response?.data?.message) {
+        setError(error.response.data.message);
+      } else {
+        setError('Failed to submit your review. Please try again.');
+      }
     } finally {
       setSubmitting(false);
     }
