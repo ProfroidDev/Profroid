@@ -25,19 +25,30 @@ public class ReviewServiceImpl implements ReviewService {
     private final ReviewRepository reviewRepository;
     private final ReviewRequestMapper reviewRequestMapper;
     private final ReviewResponseMapper reviewResponseMapper;
+    private final ProfanityFilterService profanityFilterService;
     
     public ReviewServiceImpl(ReviewRepository reviewRepository,
                             ReviewRequestMapper reviewRequestMapper,
-                            ReviewResponseMapper reviewResponseMapper) {
+                            ReviewResponseMapper reviewResponseMapper,
+                            ProfanityFilterService profanityFilterService) {
         this.reviewRepository = reviewRepository;
         this.reviewRequestMapper = reviewRequestMapper;
         this.reviewResponseMapper = reviewResponseMapper;
+        this.profanityFilterService = profanityFilterService;
     }
     
     @Override
     @Transactional
     public ReviewResponseModel createReview(ReviewRequestModel requestModel) {
         logger.info("Creating new review from customer: {}", requestModel.getCustomerName());
+        
+        // Check for profanity in customer name
+        profanityFilterService.validateText(requestModel.getCustomerName());
+        
+        // Check for profanity in comment
+        if (requestModel.getComment() != null && !requestModel.getComment().trim().isEmpty()) {
+            profanityFilterService.validateText(requestModel.getComment());
+        }
         
         // Generate unique review ID
         String reviewId = "REV-" + UUID.randomUUID().toString().substring(0, 8).toUpperCase();
