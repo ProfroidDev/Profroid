@@ -123,6 +123,7 @@
   display: flex;
   flex-wrap: wrap;
   gap: 0.5rem;
+  align-items: center;
 }
 
 /* Buttons */
@@ -528,6 +529,19 @@ select.filter-select:focus {
   font-size: 1.25rem;
   font-weight: 600;
   color: #111827;
+}
+
+.inventory-modal-header {
+  background: linear-gradient(135deg, #7a0901 0%, #5a0701 100%);
+  border-bottom: none;
+}
+
+.inventory-modal-title {
+  color: #ffffff;
+}
+
+.inventory-modal-header .inventory-modal-title {
+  color: #ffffff;
 }
 
 .modal-close {

@@ -22,6 +22,34 @@
   gap: 20px;
   border: 1px solid #e8e4dd;
 }
+
+/* Modern Scrollbar */
+.appointment-modal {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(122, 9, 1, 0.3) transparent;
+}
+
+.appointment-modal::-webkit-scrollbar {
+  width: 6px;
+}
+
+.appointment-modal::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.appointment-modal::-webkit-scrollbar-thumb {
+  background: rgba(122, 9, 1, 0.2);
+  border-radius: 10px;
+  transition: background 0.2s ease;
+}
+
+.appointment-modal::-webkit-scrollbar-thumb:hover {
+  background: rgba(122, 9, 1, 0.4);
+}
+
+.appointment-modal:hover::-webkit-scrollbar-thumb {
+  background: rgba(122, 9, 1, 0.3);
+}
 .appointment-modal__header {
   display: flex;
   justify-content: space-between;

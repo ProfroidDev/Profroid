@@ -900,7 +900,7 @@ export default function ProfilePage() {
             {editMode ? (
               <form onSubmit={handleProfileSubmit} className="auth-form">
                 <div className="form-row">
-                  <div className="form-group">
+                  <div className="auth-form-group">
                     <label htmlFor="firstName">{t('pages.profile.firstName')}</label>
                     <input
                       id="firstName"
@@ -910,7 +910,7 @@ export default function ProfilePage() {
                       disabled={isLoading}
                     />
                   </div>
-                  <div className="form-group">
+                  <div className="auth-form-group">
                     <label htmlFor="lastName">{t('pages.profile.lastName')}</label>
                     <input
                       id="lastName"
@@ -922,12 +922,12 @@ export default function ProfilePage() {
                   </div>
                 </div>
 
-                <div className="form-group">
+                <div className="auth-form-group">
                   <label htmlFor="email">{t('pages.profile.emailReadOnly')}</label>
                   <input id="email" type="email" value={user.email} disabled />
                 </div>
 
-                <div className="form-group">
+                <div className="auth-form-group">
                   <label htmlFor="phone">{t('pages.profile.phone')}</label>
                   <input
                     id="phone"
@@ -939,7 +939,7 @@ export default function ProfilePage() {
                   />
                 </div>
 
-                <div className="form-group">
+                <div className="auth-form-group">
                   <label htmlFor="address">{t('pages.profile.address')}</label>
                   <input
                     id="address"
@@ -952,7 +952,7 @@ export default function ProfilePage() {
                 </div>
 
                 <div className="form-row">
-                  <div className="form-group">
+                  <div className="auth-form-group">
                     <label htmlFor="postalCode">{t('pages.profile.postalCode')}</label>
                     <input
                       id="postalCode"
@@ -964,7 +964,7 @@ export default function ProfilePage() {
                     />
                   </div>
 
-                  <div className="form-group">
+                  <div className="auth-form-group">
                     <label htmlFor="city">{t('pages.profile.city')}</label>
                     <input
                       id="city"
@@ -978,7 +978,7 @@ export default function ProfilePage() {
                 </div>
 
                 <div className="form-row">
-                  <div className="form-group">
+                  <div className="auth-form-group">
                     <label htmlFor="province">{t('pages.profile.province')}</label>
                     <input
                       id="province"
@@ -990,7 +990,7 @@ export default function ProfilePage() {
                     />
                   </div>
 
-                  <div className="form-group">
+                  <div className="auth-form-group">
                     <label htmlFor="country">{t('pages.profile.country')}</label>
                     <input
                       id="country"
@@ -1254,7 +1254,7 @@ export default function ProfilePage() {
               {cellarError && <div className="alert alert-error">{cellarError}</div>}
 
               <form onSubmit={handleCellarSubmit} className="create-job-form">
-                <div className="form-group">
+                <div className="auth-form-group">
                   <label htmlFor="cellarName">{t('pages.profile.cellarName')} *</label>
                   <input
                     id="cellarName"
@@ -1268,7 +1268,7 @@ export default function ProfilePage() {
                 </div>
 
                 <div className="form-row">
-                  <div className="form-group">
+                  <div className="auth-form-group">
                     <label htmlFor="cellarHeight">{t('pages.profile.height')} *</label>
                     <input
                       id="cellarHeight"
@@ -1282,7 +1282,7 @@ export default function ProfilePage() {
                     />
                   </div>
 
-                  <div className="form-group">
+                  <div className="auth-form-group">
                     <label htmlFor="cellarWidth">{t('pages.profile.width')} *</label>
                     <input
                       id="cellarWidth"
@@ -1298,7 +1298,7 @@ export default function ProfilePage() {
                 </div>
 
                 <div className="form-row">
-                  <div className="form-group">
+                  <div className="auth-form-group">
                     <label htmlFor="cellarDepth">{t('pages.profile.depth')} *</label>
                     <input
                       id="cellarDepth"
@@ -1312,7 +1312,7 @@ export default function ProfilePage() {
                     />
                   </div>
 
-                  <div className="form-group">
+                  <div className="auth-form-group">
                     <label htmlFor="cellarBottleCapacity">
                       {t('pages.profile.bottleCapacity')} *
                     </label>
@@ -1328,7 +1328,7 @@ export default function ProfilePage() {
                   </div>
                 </div>
 
-                <div className="form-group">
+                <div className="auth-form-group">
                   <label htmlFor="cellarType">{t('pages.profile.cellarType')}</label>
                   <select
                     id="cellarType"
@@ -1344,7 +1344,7 @@ export default function ProfilePage() {
                 </div>
 
                 <div
-                  className="form-group"
+                  className="auth-form-group"
                   style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap' }}
                 >
                   <label
@@ -1456,7 +1456,7 @@ export default function ProfilePage() {
               {cellarError && <div className="alert alert-error">{cellarError}</div>}
 
               <form onSubmit={handleCellarUpdate} className="create-job-form">
-                <div className="form-group">
+                <div className="auth-form-group">
                   <label htmlFor="editCellarName">{t('pages.profile.cellarName')} *</label>
                   <input
                     id="editCellarName"
@@ -1470,7 +1470,7 @@ export default function ProfilePage() {
                 </div>
 
                 <div className="form-row">
-                  <div className="form-group">
+                  <div className="auth-form-group">
                     <label htmlFor="editCellarHeight">{t('pages.profile.height')} *</label>
                     <input
                       id="editCellarHeight"
@@ -1484,7 +1484,7 @@ export default function ProfilePage() {
                     />
                   </div>
 
-                  <div className="form-group">
+                  <div className="auth-form-group">
                     <label htmlFor="editCellarWidth">{t('pages.profile.width')} *</label>
                     <input
                       id="editCellarWidth"
@@ -1500,7 +1500,7 @@ export default function ProfilePage() {
                 </div>
 
                 <div className="form-row">
-                  <div className="form-group">
+                  <div className="auth-form-group">
                     <label htmlFor="editCellarDepth">{t('pages.profile.depth')} *</label>
                     <input
                       id="editCellarDepth"
@@ -1514,7 +1514,7 @@ export default function ProfilePage() {
                     />
                   </div>
 
-                  <div className="form-group">
+                  <div className="auth-form-group">
                     <label htmlFor="editCellarBottleCapacity">
                       {t('pages.profile.bottleCapacity')} *
                     </label>
@@ -1530,7 +1530,7 @@ export default function ProfilePage() {
                   </div>
                 </div>
 
-                <div className="form-group">
+                <div className="auth-form-group">
                   <label htmlFor="editCellarType">{t('pages.profile.cellarType')}</label>
                   <select
                     id="editCellarType"
@@ -1546,7 +1546,7 @@ export default function ProfilePage() {
                 </div>
 
                 <div
-                  className="form-group"
+                  className="auth-form-group"
                   style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap' }}
                 >
                   <label
@@ -1636,7 +1636,7 @@ export default function ProfilePage() {
             </div>
 
             <form onSubmit={handlePasswordSubmit} className="auth-form">
-              <div className="form-group">
+              <div className="auth-form-group">
                 <label htmlFor="oldPassword">{t('pages.profile.currentPassword')}</label>
                 <input
                   id="oldPassword"
@@ -1649,7 +1649,7 @@ export default function ProfilePage() {
                 />
               </div>
 
-              <div className="form-group">
+              <div className="auth-form-group">
                 <label htmlFor="newPassword">{t('pages.profile.newPassword')}</label>
                 <input
                   id="newPassword"
@@ -1662,7 +1662,7 @@ export default function ProfilePage() {
                 />
               </div>
 
-              <div className="form-group">
+              <div className="auth-form-group">
                 <label htmlFor="confirmPassword">{t('pages.profile.confirmNewPassword')}</label>
                 <input
                   id="confirmPassword"

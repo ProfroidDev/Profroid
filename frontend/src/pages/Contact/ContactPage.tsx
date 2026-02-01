@@ -83,7 +83,7 @@ export default function ContactPage() {
         </div>
 
         <form className="contact-form" onSubmit={handleSubmit}>
-          <div className="form-group">
+          <div className="auth-form-group">
             <label htmlFor="name">{t('pages.contact.formName')}</label>
             <input
               type="text"
@@ -96,7 +96,7 @@ export default function ContactPage() {
             />
           </div>
 
-          <div className="form-group">
+          <div className="auth-form-group">
             <label htmlFor="email">{t('pages.contact.formEmail')}</label>
             <input
               type="email"
@@ -109,7 +109,7 @@ export default function ContactPage() {
             />
           </div>
 
-          <div className="form-group">
+          <div className="auth-form-group">
             <label htmlFor="phone">{t('pages.contact.formPhone')}</label>
             <input
               type="tel"
@@ -121,7 +121,7 @@ export default function ContactPage() {
             />
           </div>
 
-          <div className="form-group">
+          <div className="auth-form-group">
             <label htmlFor="subject">{t('pages.contact.formSubject')}</label>
             <input
               type="text"
@@ -134,7 +134,7 @@ export default function ContactPage() {
             />
           </div>
 
-          <div className="form-group">
+          <div className="auth-form-group">
             <label htmlFor="message">{t('pages.contact.formMessage')}</label>
             <textarea
               id="message"

@@ -151,7 +151,7 @@ export default function ResetPasswordPage() {
         ) : (
           <>
             <form onSubmit={handleSubmit} className="auth-form">
-              <div className="form-group">
+              <div className="auth-form-group">
                 <label htmlFor="password">{t('common.password')}</label>
                 <input
                   id="password"
@@ -177,7 +177,7 @@ export default function ResetPasswordPage() {
                 )}
               </div>
 
-              <div className="form-group">
+              <div className="auth-form-group">
                 <label htmlFor="confirmPassword">{t('common.confirmPassword')}</label>
                 <input
                   id="confirmPassword"

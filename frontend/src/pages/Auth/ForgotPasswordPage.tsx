@@ -81,7 +81,7 @@ export default function ForgotPasswordPage() {
         ) : (
           <>
             <form onSubmit={handleSubmit} className="auth-form">
-              <div className="form-group">
+              <div className="auth-form-group">
                 <label htmlFor="email">{t('common.email')}</label>
                 <input
                   id="email"

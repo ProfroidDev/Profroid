@@ -434,6 +434,34 @@
   overflow-y: auto;
 }
 
+/* Modern Scrollbar */
+.modal-container-light {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(122, 9, 1, 0.3) transparent;
+}
+
+.modal-container-light::-webkit-scrollbar {
+  width: 6px;
+}
+
+.modal-container-light::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.modal-container-light::-webkit-scrollbar-thumb {
+  background: rgba(122, 9, 1, 0.2);
+  border-radius: 10px;
+  transition: background 0.2s ease;
+}
+
+.modal-container-light::-webkit-scrollbar-thumb:hover {
+  background: rgba(122, 9, 1, 0.4);
+}
+
+.modal-container-light:hover::-webkit-scrollbar-thumb {
+  background: rgba(122, 9, 1, 0.3);
+}
+
 .modal-header-light {
   display: flex;
   justify-content: space-between;

@@ -14,7 +14,7 @@
   margin: 0 auto;
   padding: 12px 24px;
   display: grid;
-  grid-template-columns: auto 1fr auto;
+  grid-template-columns: auto 1fr;
   align-items: center;
   gap: 24px;
 }
@@ -47,7 +47,7 @@
   display: flex;
   align-items: center;
   gap: 20px;
-  justify-content: center;
+  justify-content: flex-end;
   flex-wrap: wrap;
 }
 
