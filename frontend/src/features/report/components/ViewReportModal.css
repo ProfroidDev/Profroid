@@ -92,6 +92,34 @@
   background: #fafbfc;
 }
 
+/* Modern Scrollbar */
+.report-modal-body {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(122, 9, 1, 0.3) transparent;
+}
+
+.report-modal-body::-webkit-scrollbar {
+  width: 6px;
+}
+
+.report-modal-body::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.report-modal-body::-webkit-scrollbar-thumb {
+  background: rgba(122, 9, 1, 0.2);
+  border-radius: 10px;
+  transition: background 0.2s ease;
+}
+
+.report-modal-body::-webkit-scrollbar-thumb:hover {
+  background: rgba(122, 9, 1, 0.4);
+}
+
+.report-modal-body:hover::-webkit-scrollbar-thumb {
+  background: rgba(122, 9, 1, 0.3);
+}
+
 .report-section {
   margin-bottom: 24px;
   padding: 24px;

@@ -531,8 +531,10 @@ const Inventory = () => {
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.9, y: 20 }}
             >
-              <div className="modal-header">
-                <h2 className="modal-title">{t('pages.parts.inventory.modal.addTitle')}</h2>
+              <div className="modal-header inventory-modal-header">
+                <h2 className="modal-title inventory-modal-title">
+                  {t('pages.parts.inventory.modal.addTitle')}
+                </h2>
                 <button
                   className="modal-close"
                   onClick={() => setIsAddDialogOpen(false)}
@@ -745,8 +747,10 @@ const Inventory = () => {
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.9, y: 20 }}
             >
-              <div className="modal-header">
-                <h2 className="modal-title">{t('pages.parts.inventory.modal.editTitle')}</h2>
+              <div className="modal-header inventory-modal-header">
+                <h2 className="modal-title inventory-modal-title">
+                  {t('pages.parts.inventory.modal.editTitle')}
+                </h2>
                 <button
                   className="modal-close"
                   onClick={() => setEditingPart(null)}

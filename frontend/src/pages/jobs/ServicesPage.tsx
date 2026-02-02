@@ -758,7 +758,7 @@ export default function ServicesPage(): React.ReactElement {
         <div className="modal-overlay" role="dialog" aria-modal>
           <div className="modal">
             <div className="modal-header">
-              <h3>{t('pages.services.serviceDetails')}</h3>
+              <h3 className="services-modal-title">{t('pages.services.serviceDetails')}</h3>
               <button className="modal-close-light" aria-label="Close" onClick={closeModal}>
                 &#10005;
               </button>
@@ -819,7 +819,7 @@ export default function ServicesPage(): React.ReactElement {
         <div className="modal-overlay" role="dialog" aria-modal>
           <div className="modal">
             <div className="modal-header">
-              <h3>{t('pages.services.createNewService')}</h3>
+              <h3 className="services-modal-title">{t('pages.services.createNewService')}</h3>
               <button
                 className="modal-close-light"
                 aria-label="Close"
@@ -967,7 +967,7 @@ export default function ServicesPage(): React.ReactElement {
         <div className="modal-overlay" role="dialog" aria-modal onClick={closeUpdateModal}>
           <div className="modal" onClick={(e) => e.stopPropagation()}>
             <div className="modal-header">
-              <h3>{t('pages.services.modifyService')}</h3>
+              <h3 className="services-modal-title">{t('pages.services.modifyService')}</h3>
               <button
                 className="modal-close-light"
                 aria-label="Close"

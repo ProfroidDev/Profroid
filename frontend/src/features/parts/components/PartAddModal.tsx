@@ -127,12 +127,12 @@ export default function PartAddModal({
   };
 
   return (
-    <div className="modal-overlay" onClick={handleClose}>
-      <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-        <div className="modal-header">
-          <h2 className="modal-title">Add New Part</h2>
+    <div className="part-add-modal-overlay" onClick={handleClose}>
+      <div className="part-add-modal-content" onClick={(e) => e.stopPropagation()}>
+        <div className="part-add-modal-header">
+          <h2 className="part-add-modal-title">Add New Part</h2>
           <button
-            className="modal-close"
+            className="part-add-modal-close"
             onClick={handleClose}
             disabled={submitting}
             aria-label="Close modal"
@@ -142,15 +142,15 @@ export default function PartAddModal({
         </div>
 
         <form onSubmit={handleSubmit}>
-          <div className="modal-body">
-            <div className="form-group">
-              <label className="form-label" htmlFor="part-name">
-                Part Name <span className="required">*</span>
+          <div className="part-add-modal-body">
+            <div className="part-add-form-group">
+              <label className="part-add-form-label" htmlFor="part-name">
+                Part Name <span className="part-add-required">*</span>
               </label>
               <input
                 id="part-name"
                 type="text"
-                className="form-input"
+                className="part-add-form-input"
                 placeholder="Enter part name"
                 value={name}
                 onChange={(e) => setName(sanitizeInput(e.target.value))}
@@ -159,13 +159,13 @@ export default function PartAddModal({
               />
             </div>
 
-            <div className="form-group">
-              <label className="form-label" htmlFor="part-category">
-                Category <span className="required">*</span>
+            <div className="part-add-form-group">
+              <label className="part-add-form-label" htmlFor="part-category">
+                Category <span className="part-add-required">*</span>
               </label>
               <select
                 id="part-category"
-                className="form-input"
+                className="part-add-form-input"
                 value={category}
                 onChange={(e) => setCategory(e.target.value)}
                 disabled={submitting}
@@ -186,15 +186,15 @@ export default function PartAddModal({
               </select>
             </div>
 
-            <div className="form-group">
-              <label className="form-label" htmlFor="part-quantity">
-                Quantity <span className="required">*</span>
+            <div className="part-add-form-group">
+              <label className="part-add-form-label" htmlFor="part-quantity">
+                Quantity <span className="part-add-required">*</span>
               </label>
               <input
                 id="part-quantity"
                 type="number"
                 min="0"
-                className="form-input"
+                className="part-add-form-input"
                 placeholder="Enter quantity"
                 value={quantity}
                 onChange={(e) => setQuantity(Number(e.target.value))}
@@ -203,16 +203,16 @@ export default function PartAddModal({
               />
             </div>
 
-            <div className="form-group">
-              <label className="form-label" htmlFor="part-price">
-                Price <span className="required">*</span>
+            <div className="part-add-form-group">
+              <label className="part-add-form-label" htmlFor="part-price">
+                Price <span className="part-add-required">*</span>
               </label>
               <input
                 id="part-price"
                 type="number"
                 min="0"
                 step="0.01"
-                className="form-input"
+                className="part-add-form-input"
                 placeholder="Enter price"
                 value={price}
                 onChange={(e) => setPrice(Number(e.target.value))}
@@ -221,14 +221,14 @@ export default function PartAddModal({
               />
             </div>
 
-            <div className="form-group">
-              <label className="form-label" htmlFor="part-supplier">
-                Supplier <span className="required">*</span>
+            <div className="part-add-form-group">
+              <label className="part-add-form-label" htmlFor="part-supplier">
+                Supplier <span className="part-add-required">*</span>
               </label>
               <input
                 id="part-supplier"
                 type="text"
-                className="form-input"
+                className="part-add-form-input"
                 placeholder="Enter supplier name"
                 value={supplier}
                 onChange={(e) => setSupplier(sanitizeInput(e.target.value))}
@@ -237,56 +237,56 @@ export default function PartAddModal({
               />
             </div>
 
-            <div className="form-group">
-              <label className="form-label" htmlFor="part-low-threshold">
+            <div className="part-add-form-group">
+              <label className="part-add-form-label" htmlFor="part-low-threshold">
                 Low Stock Threshold
               </label>
               <input
                 id="part-low-threshold"
                 type="number"
                 min="0"
-                className="form-input"
+                className="part-add-form-input"
                 value={lowStockThreshold}
                 onChange={(e) => setLowStockThreshold(Number(e.target.value))}
                 disabled={submitting}
               />
             </div>
 
-            <div className="form-group">
-              <label className="form-label" htmlFor="part-out-threshold">
+            <div className="part-add-form-group">
+              <label className="part-add-form-label" htmlFor="part-out-threshold">
                 Out of Stock Threshold
               </label>
               <input
                 id="part-out-threshold"
                 type="number"
                 min="0"
-                className="form-input"
+                className="part-add-form-input"
                 value={outOfStockThreshold}
                 onChange={(e) => setOutOfStockThreshold(Number(e.target.value))}
                 disabled={submitting}
               />
             </div>
 
-            <div className="form-group">
-              <label className="form-label" htmlFor="part-high-threshold">
+            <div className="part-add-form-group">
+              <label className="part-add-form-label" htmlFor="part-high-threshold">
                 High Stock Threshold
               </label>
               <input
                 id="part-high-threshold"
                 type="number"
                 min="0"
-                className="form-input"
+                className="part-add-form-input"
                 value={highStockThreshold}
                 onChange={(e) => setHighStockThreshold(Number(e.target.value))}
                 disabled={submitting}
               />
             </div>
 
-            <div className="form-group">
-              <label className="form-label checkbox-label">
+            <div className="part-add-form-group">
+              <label className="part-add-form-label part-add-checkbox-label">
                 <input
                   type="checkbox"
-                  className="form-checkbox"
+                  className="part-add-form-checkbox"
                   checked={available}
                   onChange={(e) => setAvailable(e.target.checked)}
                   disabled={submitting}
@@ -295,34 +295,34 @@ export default function PartAddModal({
               </label>
             </div>
 
-            <div className="form-group">
-              <label className="form-label" htmlFor="part-image">
+            <div className="part-add-form-group">
+              <label className="part-add-form-label" htmlFor="part-image">
                 Image (optional)
               </label>
               <input
                 id="part-image"
                 type="file"
                 accept="image/*"
-                className="form-input"
+                className="part-add-form-input"
                 disabled={submitting}
                 onChange={handleFileChange}
               />
-              <p className="helper-text">
+              <p className="part-add-helper-text">
                 Maximum file size: {MAX_FILE_SIZE_MB} MB. Only image files allowed.
               </p>
             </div>
           </div>
 
-          <div className="modal-footer">
+          <div className="part-add-modal-footer">
             <button
               type="button"
-              className="btn-cancel"
+              className="part-add-btn-cancel"
               onClick={handleClose}
               disabled={submitting}
             >
               Cancel
             </button>
-            <button type="submit" className="btn-submit" disabled={submitting}>
+            <button type="submit" className="part-add-btn-submit" disabled={submitting}>
               {submitting ? 'Adding...' : 'Add Part'}
             </button>
           </div>

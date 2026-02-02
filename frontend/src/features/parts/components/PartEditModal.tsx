@@ -165,12 +165,12 @@ export default function PartEditModal({
   };
 
   return (
-    <div className="modal-overlay" onClick={handleClose}>
-      <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-        <div className="modal-header">
-          <h2 className="modal-title">Edit Part</h2>
+    <div className="part-edit-modal-overlay" onClick={handleClose}>
+      <div className="part-edit-modal-content" onClick={(e) => e.stopPropagation()}>
+        <div className="part-edit-modal-header">
+          <h2 className="part-edit-modal-title">Edit Part</h2>
           <button
-            className="modal-close"
+            className="part-edit-modal-close"
             onClick={handleClose}
             disabled={submitting}
             aria-label="Close modal"
@@ -180,15 +180,15 @@ export default function PartEditModal({
         </div>
 
         <form onSubmit={handleSubmit}>
-          <div className="modal-body">
-            <div className="form-group">
-              <label className="form-label" htmlFor="part-name">
-                Part Name <span className="required">*</span>
+          <div className="part-edit-modal-body">
+            <div className="part-edit-form-group">
+              <label className="part-edit-form-label" htmlFor="part-name">
+                Part Name <span className="part-edit-required">*</span>
               </label>
               <input
                 id="part-name"
                 type="text"
-                className="form-input"
+                className="part-edit-form-input"
                 placeholder="Enter part name"
                 value={name}
                 onChange={(e) => setName(sanitizeInput(e.target.value))}
@@ -197,13 +197,13 @@ export default function PartEditModal({
               />
             </div>
 
-            <div className="form-group">
-              <label className="form-label" htmlFor="part-category">
-                Category <span className="required">*</span>
+            <div className="part-edit-form-group">
+              <label className="part-edit-form-label" htmlFor="part-category">
+                Category <span className="part-edit-required">*</span>
               </label>
               <select
                 id="part-category"
-                className="form-input"
+                className="part-edit-form-input"
                 value={category}
                 onChange={(e) => setCategory(e.target.value)}
                 disabled={submitting}
@@ -224,15 +224,15 @@ export default function PartEditModal({
               </select>
             </div>
 
-            <div className="form-group">
-              <label className="form-label" htmlFor="part-quantity">
-                Quantity <span className="required">*</span>
+            <div className="part-edit-form-group">
+              <label className="part-edit-form-label" htmlFor="part-quantity">
+                Quantity <span className="part-edit-required">*</span>
               </label>
               <input
                 id="part-quantity"
                 type="number"
                 min="0"
-                className="form-input"
+                className="part-edit-form-input"
                 placeholder="Enter quantity"
                 value={quantity}
                 onChange={(e) => setQuantity(Number(e.target.value))}
@@ -241,16 +241,16 @@ export default function PartEditModal({
               />
             </div>
 
-            <div className="form-group">
-              <label className="form-label" htmlFor="part-price">
-                Price <span className="required">*</span>
+            <div className="part-edit-form-group">
+              <label className="part-edit-form-label" htmlFor="part-price">
+                Price <span className="part-edit-required">*</span>
               </label>
               <input
                 id="part-price"
                 type="number"
                 min="0"
                 step="0.01"
-                className="form-input"
+                className="part-edit-form-input"
                 placeholder="Enter price"
                 value={price}
                 onChange={(e) => setPrice(Number(e.target.value))}
@@ -259,14 +259,14 @@ export default function PartEditModal({
               />
             </div>
 
-            <div className="form-group">
-              <label className="form-label" htmlFor="part-supplier">
-                Supplier <span className="required">*</span>
+            <div className="part-edit-form-group">
+              <label className="part-edit-form-label" htmlFor="part-supplier">
+                Supplier <span className="part-edit-required">*</span>
               </label>
               <input
                 id="part-supplier"
                 type="text"
-                className="form-input"
+                className="part-edit-form-input"
                 placeholder="Enter supplier name"
                 value={supplier}
                 onChange={(e) => setSupplier(sanitizeInput(e.target.value))}
@@ -275,56 +275,56 @@ export default function PartEditModal({
               />
             </div>
 
-            <div className="form-group">
-              <label className="form-label" htmlFor="part-low-threshold">
+            <div className="part-edit-form-group">
+              <label className="part-edit-form-label" htmlFor="part-low-threshold">
                 Low Stock Threshold
               </label>
               <input
                 id="part-low-threshold"
                 type="number"
                 min="0"
-                className="form-input"
+                className="part-edit-form-input"
                 value={lowStockThreshold}
                 onChange={(e) => setLowStockThreshold(Number(e.target.value))}
                 disabled={submitting}
               />
             </div>
 
-            <div className="form-group">
-              <label className="form-label" htmlFor="part-out-threshold">
+            <div className="part-edit-form-group">
+              <label className="part-edit-form-label" htmlFor="part-out-threshold">
                 Out of Stock Threshold
               </label>
               <input
                 id="part-out-threshold"
                 type="number"
                 min="0"
-                className="form-input"
+                className="part-edit-form-input"
                 value={outOfStockThreshold}
                 onChange={(e) => setOutOfStockThreshold(Number(e.target.value))}
                 disabled={submitting}
               />
             </div>
 
-            <div className="form-group">
-              <label className="form-label" htmlFor="part-high-threshold">
+            <div className="part-edit-form-group">
+              <label className="part-edit-form-label" htmlFor="part-high-threshold">
                 High Stock Threshold
               </label>
               <input
                 id="part-high-threshold"
                 type="number"
                 min="0"
-                className="form-input"
+                className="part-edit-form-input"
                 value={highStockThreshold}
                 onChange={(e) => setHighStockThreshold(Number(e.target.value))}
                 disabled={submitting}
               />
             </div>
 
-            <div className="form-group">
-              <label className="form-label checkbox-label">
+            <div className="part-edit-form-group">
+              <label className="part-edit-form-label part-edit-checkbox-label">
                 <input
                   type="checkbox"
-                  className="form-checkbox"
+                  className="part-edit-form-checkbox"
                   checked={available}
                   onChange={(e) => setAvailable(e.target.checked)}
                   disabled={submitting}
@@ -333,24 +333,24 @@ export default function PartEditModal({
               </label>
             </div>
 
-            <div className="form-group">
-              <label className="form-label" htmlFor="part-image">
+            <div className="part-edit-form-group">
+              <label className="part-edit-form-label" htmlFor="part-image">
                 Replace Image (optional)
               </label>
               <input
                 id="part-image"
                 type="file"
                 accept="image/*"
-                className="form-input"
+                className="part-edit-form-input"
                 disabled={submitting || imageDeleteLoading}
                 onChange={handleFileChange}
               />
-              <p className="helper-text">
+              <p className="part-edit-helper-text">
                 Maximum file size: {MAX_FILE_SIZE_MB} MB. Only image files allowed.
               </p>
               {currentImageFileId && (
                 <div>
-                  <div className="image-preview-container">
+                  <div className="part-edit-image-preview-container">
                     <img
                       src={`${import.meta.env.VITE_BACKEND_URL}/files/${currentImageFileId}/download`}
                       alt="Current part image"
@@ -364,10 +364,10 @@ export default function PartEditModal({
                       }}
                     />
                   </div>
-                  <p className="helper-text">Upload a new image to replace it.</p>
+                  <p className="part-edit-helper-text">Upload a new image to replace it.</p>
                   <button
                     type="button"
-                    className="btn-delete-image"
+                    className="part-edit-btn-delete-image"
                     onClick={handleDeleteImage}
                     disabled={submitting || imageDeleteLoading}
                     aria-label="Delete current image"
@@ -380,16 +380,16 @@ export default function PartEditModal({
             </div>
           </div>
 
-          <div className="modal-footer">
+          <div className="part-edit-modal-footer">
             <button
               type="button"
-              className="btn-cancel"
+              className="part-edit-btn-cancel"
               onClick={handleClose}
               disabled={submitting}
             >
               Cancel
             </button>
-            <button type="submit" className="btn-submit" disabled={submitting}>
+            <button type="submit" className="part-edit-btn-submit" disabled={submitting}>
               {submitting ? 'Updating...' : 'Update Part'}
             </button>
           </div>

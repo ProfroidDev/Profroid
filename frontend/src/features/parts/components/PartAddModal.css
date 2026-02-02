@@ -1,5 +1,5 @@
 /* ===== Modal Overlay ===== */
-.modal-overlay {
+.part-add-modal-overlay {
   position: fixed;
   top: 0;
   left: 0;
@@ -23,7 +23,7 @@
 }
 
 /* ===== Modal Content ===== */
-.modal-content {
+.part-add-modal-content {
   background: #fff;
   border-radius: 16px;
   box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
@@ -34,6 +34,34 @@
   overflow-x: hidden;
   animation: slideUp 0.3s ease;
   box-sizing: border-box;
+}
+
+/* Modern Scrollbar */
+.part-add-modal-content {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(122, 9, 1, 0.3) transparent;
+}
+
+.part-add-modal-content::-webkit-scrollbar {
+  width: 6px;
+}
+
+.part-add-modal-content::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.part-add-modal-content::-webkit-scrollbar-thumb {
+  background: rgba(122, 9, 1, 0.2);
+  border-radius: 10px;
+  transition: background 0.2s ease;
+}
+
+.part-add-modal-content::-webkit-scrollbar-thumb:hover {
+  background: rgba(122, 9, 1, 0.4);
+}
+
+.part-add-modal-content:hover::-webkit-scrollbar-thumb {
+  background: rgba(122, 9, 1, 0.3);
 }
 
 @keyframes slideUp {
@@ -48,27 +76,28 @@
 }
 
 /* ===== Modal Header ===== */
-.modal-header {
+.part-add-modal-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
   padding: 24px;
-  border-bottom: 1px solid #f0ece7;
+  background: linear-gradient(135deg, #7a0901 0%, #5a0701 100%);
+  border-radius: 16px 16px 0 0;
   box-sizing: border-box;
 }
 
-.modal-title {
+.part-add-modal-title {
   font-size: 1.6rem;
   font-weight: 700;
-  color: #7a0901;
+  color: white;
   margin: 0;
 }
 
-.modal-close {
-  background: none;
-  border: none;
+.part-add-modal-close {
+  background: rgba(255, 255, 255, 0.15);
+  border: 2px solid rgba(255, 255, 255, 0.3);
   font-size: 1.8rem;
-  color: #7a0901;
+  color: white;
   cursor: pointer;
   padding: 0;
   width: 32px;
@@ -77,20 +106,26 @@
   align-items: center;
   justify-content: center;
   border-radius: 50%;
-  transition: background 0.2s;
+  transition: all 0.2s;
 }
 
-.modal-close:hover:not(:disabled) {
+.part-add-modal-close:hover {
+  background: rgba(255, 255, 255, 0.25);
+  border-color: rgba(255, 255, 255, 0.5);
+  transform: scale(1.1);
+}
+
+.part-add-modal-close:hover:not(:disabled) {
   background: #f0ece7;
 }
 
-.modal-close:disabled {
+.part-add-modal-close:disabled {
   opacity: 0.5;
   cursor: not-allowed;
 }
 
 /* ===== Modal Body ===== */
-.modal-body {
+.part-add-modal-body {
   padding: 24px;
   display: flex;
   flex-direction: column;
@@ -100,7 +135,7 @@
 }
 
 /* ===== Form Elements ===== */
-.form-group {
+.part-add-form-group {
   display: flex;
   flex-direction: column;
   gap: 8px;
@@ -108,17 +143,17 @@
   width: 100%;
 }
 
-.form-label {
+.part-add-form-label {
   font-weight: 600;
   color: #333;
   font-size: 0.95rem;
 }
 
-.required {
+.part-add-required {
   color: #7a0901;
 }
 
-.form-input {
+.part-add-form-input {
   width: 100%;
   max-width: 100%;
   padding: 12px 16px;
@@ -134,22 +169,28 @@
   box-sizing: border-box;
 }
 
-.form-input:focus {
+.part-add-form-input:focus {
   outline: none;
   border-color: #a32c1a;
   box-shadow: 0 2px 8px rgba(122, 9, 1, 0.12);
 }
 
-.form-input:disabled {
+.part-add-form-input:disabled {
   background: #f0ece7;
   cursor: not-allowed;
 }
 
-.form-input::placeholder {
+.part-add-form-input::placeholder {
   color: #999;
 }
 
-.checkbox-label {
+.part-add-helper-text {
+  margin: 6px 0 0 0;
+  font-size: 0.85rem;
+  color: #6b7280;
+}
+
+.part-add-checkbox-label {
   display: flex;
   align-items: center;
   gap: 10px;
@@ -157,19 +198,19 @@
   user-select: none;
 }
 
-.form-checkbox {
+.part-add-form-checkbox {
   width: 20px;
   height: 20px;
   cursor: pointer;
   accent-color: #7a0901;
 }
 
-.form-checkbox:disabled {
+.part-add-form-checkbox:disabled {
   cursor: not-allowed;
 }
 
 /* ===== Modal Footer ===== */
-.modal-footer {
+.part-add-modal-footer {
   padding: 20px 24px;
   border-top: 1px solid #f0ece7;
   display: flex;
@@ -178,7 +219,7 @@
   box-sizing: border-box;
 }
 
-.btn-cancel {
+.part-add-btn-cancel {
   background: #fff;
   color: #7a0901;
   border: 2px solid #7a0901;
@@ -192,17 +233,17 @@
     transform 0.2s;
 }
 
-.btn-cancel:hover:not(:disabled) {
+.part-add-btn-cancel:hover:not(:disabled) {
   background: #f0ece7;
   transform: translateY(-2px);
 }
 
-.btn-cancel:disabled {
+.part-add-btn-cancel:disabled {
   opacity: 0.5;
   cursor: not-allowed;
 }
 
-.btn-submit {
+.part-add-btn-submit {
   background: linear-gradient(90deg, #7a0901 60%, #a32c1a 100%);
   color: #fff;
   border: none;
@@ -218,13 +259,13 @@
     transform 0.2s;
 }
 
-.btn-submit:hover:not(:disabled) {
+.part-add-btn-submit:hover:not(:disabled) {
   background: linear-gradient(90deg, #a32c1a 60%, #7a0901 100%);
   box-shadow: 0 4px 12px rgba(122, 9, 1, 0.12);
   transform: translateY(-2px);
 }
 
-.btn-submit:disabled {
+.part-add-btn-submit:disabled {
   opacity: 0.6;
   cursor: not-allowed;
   transform: none;
@@ -232,30 +273,30 @@
 
 /* ===== Responsive ===== */
 @media (max-width: 480px) {
-  .modal-content {
+  .part-add-modal-content {
     width: 95%;
   }
 
-  .modal-header {
+  .part-add-modal-header {
     padding: 16px;
   }
 
-  .modal-body {
+  .part-add-modal-body {
     padding: 16px;
     gap: 16px;
   }
 
-  .modal-title {
+  .part-add-modal-title {
     font-size: 1.3rem;
   }
 
-  .modal-footer {
+  .part-add-modal-footer {
     padding: 16px;
     flex-direction: column;
   }
 
-  .btn-cancel,
-  .btn-submit {
+  .part-add-btn-cancel,
+  .part-add-btn-submit {
     width: 100%;
   }
 }

@@ -44,8 +44,9 @@ app.get("/health", (req: Request, res: Response) => {
   res.json({ status: "ok", timestamp: new Date().toISOString() });
 });
 
-// Custom auth routes - mount at / since DigitalOcean routes /auth/* to this service
-app.use("/", authRoutes);
+// Auth routes - mount at /auth and /api/auth for compatibility
+app.use("/auth", authRoutes);
+app.use("/api/auth", authRoutes);
 
 // Notification routes
 app.use("/api/notifications", notificationsRoutes);
@@ -65,19 +66,17 @@ app.use((err: Error, req: Request, res: Response) => {
 app.listen(port, () => {
   console.log(`✅ Auth Service running on http://localhost:${port}`);
   console.log(`📝 API Documentation:`);
-  console.log(`   POST   /api/auth/register - Register new user`);
-  console.log(`   POST   /api/auth/sign-in - Sign in user`);
-  console.log(`   POST   /api/auth/sign-out - Sign out user`);
-  console.log(`   GET    /api/auth/session - Get current session`);
-  console.log(`   GET    /api/auth/user - Get current user`);
-  console.log(`   PUT    /api/auth/user - Update user profile`);
-  console.log(`   POST   /api/auth/change-password - Change password`);
-  console.log(`   POST   /api/auth/verify-email - Verify email`);
-  console.log(
-    `   POST   /api/auth/resend-verification-email - Resend verification`,
-  );
-  console.log(`   GET    /api/auth/google - Initiate Google OAuth`);
-  console.log(`   GET    /api/auth/google/callback - Google OAuth callback`);
+  console.log(`   POST   /auth/register - Register new user`);
+  console.log(`   POST   /auth/sign-in - Sign in user`);
+  console.log(`   POST   /auth/sign-out - Sign out user`);
+  console.log(`   GET    /auth/user - Get current user`);
+  console.log(`   PUT    /auth/user - Update user profile`);
+  console.log(`   POST   /auth/change-password - Change password`);
+  console.log(`   POST   /auth/verify-email/:token - Verify email`);
+  console.log(`   POST   /auth/resend-verification - Resend verification`);
+  console.log(`   GET    /auth/google - Initiate Google OAuth`);
+  console.log(`   GET    /auth/google/callback - Google OAuth callback`);
+  console.log(`   (Also available at /api/auth/* for backward compatibility)`);
 });
 
 export default app;

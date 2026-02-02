@@ -22,35 +22,35 @@ export default function PartDetailModal({
     : `https://via.placeholder.com/300x300?text=${encodeURIComponent(part.name)}`;
 
   return (
-    <div className="modal-overlay" onClick={onClose}>
-      <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-        <div className="modal-header">
-          <h2 className="modal-title">{part.name}</h2>
-          <button className="modal-close" onClick={onClose}>
+    <div className="part-detail-modal-overlay" onClick={onClose}>
+      <div className="part-detail-modal-content" onClick={(e) => e.stopPropagation()}>
+        <div className="part-detail-modal-header">
+          <h2 className="part-detail-modal-title">{part.name}</h2>
+          <button className="part-detail-modal-close" onClick={onClose}>
             &#10005;
           </button>
         </div>
 
-        <div className="modal-body">
-          <div className="modal-image-container">
-            <img src={imageUrl} alt={part.name} className="modal-image" />
+        <div className="part-detail-modal-body">
+          <div className="part-detail-modal-image-container">
+            <img src={imageUrl} alt={part.name} className="part-detail-modal-image" />
           </div>
 
-          <div className="modal-details">
-            <div className="detail-row">
-              <span className="detail-label">Part ID:</span>
-              <span className="detail-value">{part.partId}</span>
+          <div className="part-detail-modal-details">
+            <div className="part-detail-detail-row">
+              <span className="part-detail-detail-label">Part ID:</span>
+              <span className="part-detail-detail-value">{part.partId}</span>
             </div>
 
-            <div className="detail-row">
-              <span className="detail-label">Name:</span>
-              <span className="detail-value">{part.name}</span>
+            <div className="part-detail-detail-row">
+              <span className="part-detail-detail-label">Name:</span>
+              <span className="part-detail-detail-value">{part.name}</span>
             </div>
 
-            <div className="detail-row">
-              <span className="detail-label">Availability:</span>
+            <div className="part-detail-detail-row">
+              <span className="part-detail-detail-label">Availability:</span>
               <span
-                className={`availability-badge ${part.available ? 'available' : 'unavailable'}`}
+                className={`part-detail-availability-badge ${part.available ? 'available' : 'unavailable'}`}
               >
                 {part.available ? 'Available' : 'Unavailable'}
               </span>
@@ -58,8 +58,8 @@ export default function PartDetailModal({
           </div>
         </div>
 
-        <div className="modal-footer">
-          <button className="btn-close-modal" onClick={onClose}>
+        <div className="part-detail-modal-footer">
+          <button className="part-detail-btn-close-modal" onClick={onClose}>
             Close
           </button>
         </div>
