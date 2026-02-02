@@ -1,0 +1,372 @@
+@startuml
+hide circle
+top to bottom direction
+scale 0.25
+
+!define ENTITY(entityName) class entityName << Entity >>
+!define ENUM(enumName) class enumName << Enum >>
+!define AGGREGATE(aggregateName) class aggregateName << Aggregate >>
+!define AGGREGATE_ROOT(aggregateRootName) class aggregateRootName << Aggregate Root >>
+!define VALUE_OBJECT(valueObjectName) class valueObjectName << Value Object >>
+
+skinparam dpi 350
+skinparam packageStyle rectangle
+skinparam rectangle {
+  BackgroundColor #f7f4eb
+  BorderColor Black
+}
+
+rectangle "Profroid Management System" as ProfroidContext #line.dashed {
+
+  ' ========================= CORE ENTITIES =========================
+  package "Customer Management Subdomain" as CustomerContext #LightBlue {
+    AGGREGATE_ROOT(Customer) #Violet {
+      firstName: String
+      lastName: String
+      userId: String
+      isActive: Boolean
+    }
+
+    VALUE_OBJECT(CustomerIdentifier) #Bisque {
+      customerId: String
+    }
+
+    VALUE_OBJECT(CustomerAddress) #Bisque {
+      streetAddress: String
+      city: String
+      province: String
+      country: String
+      postalCode: String
+    }
+
+    VALUE_OBJECT(CustomerPhoneNumber) #Bisque {
+      type: PhoneType
+      number: String
+    }
+
+    ENUM(PhoneType) #LightGray {
+      HOME
+      WORK
+      MOBILE
+    }
+
+    Customer "1" --> "1" CustomerIdentifier
+    Customer "1" *-- "1" CustomerAddress
+    Customer "1" *-- "0..*" CustomerPhoneNumber
+    CustomerPhoneNumber --> PhoneType
+  }
+
+  package "Employee Management Subdomain" as EmployeeContext #LightGreen {
+    AGGREGATE_ROOT(Employee) #LightPink {
+      firstName: String
+      lastName: String
+      userId: String
+      isActive: Boolean
+    }
+
+    VALUE_OBJECT(EmployeeIdentifier) #Bisque {
+      employeeId: String
+    }
+
+    VALUE_OBJECT(EmployeeAddress) #Bisque {
+      streetAddress: String
+      city: String
+      province: String
+      country: String
+      postalCode: String
+    }
+
+    VALUE_OBJECT(EmployeePhoneNumber) #Bisque {
+      type: EmployeePhoneType
+      number: String
+    }
+
+    VALUE_OBJECT(EmployeeRole) #Bisque {
+      employeeRoleType: EmployeeRoleType
+    }
+
+    ENTITY(Schedule) #LightPink {
+      specificDate: Date
+    }
+
+    VALUE_OBJECT(DayOfWeek) #Bisque {
+      dayOfWeek: DayOfWeekType
+    }
+
+    VALUE_OBJECT(TimeSlot) #Bisque {
+      timeslot: TimeSlotType
+    }
+
+    ENUM(EmployeeRoleType) #LightGray {
+      ADMIN
+      TECHNICIAN
+      SUPPORT
+      SALES
+    }
+
+    ENUM(EmployeePhoneType) #LightGray {
+      HOME
+      WORK
+      MOBILE
+    }
+
+    ENUM(DayOfWeekType) #LightGray {
+      MONDAY
+      TUESDAY
+      WEDNESDAY
+      THURSDAY
+      FRIDAY
+    }
+
+    ENUM(TimeSlotType) #LightGray {
+      NINE_AM
+      ELEVEN_AM
+      ONE_PM
+      THREE_PM
+      FIVE_PM
+    }
+
+    Employee "1" --> "1" EmployeeIdentifier
+    Employee "1" *-- "1" EmployeeAddress
+    Employee "1" *-- "0..*" EmployeePhoneNumber
+    Employee "1" *-- "1" EmployeeRole
+    EmployeeRole --> EmployeeRoleType
+    EmployeePhoneNumber --> EmployeePhoneType
+
+    Schedule "*" --> "1" Employee
+    Schedule "1" *-- "1" DayOfWeek
+    Schedule "1" *-- "1" TimeSlot
+    DayOfWeek --> DayOfWeekType
+    TimeSlot --> TimeSlotType
+  }
+
+  package "Cellar Management Subdomain" as CellarContext #LightGray {
+    AGGREGATE_ROOT(Cellar) #LightPink {
+      name: String
+      height: Double
+      width: Double
+      depth: Double
+      bottleCapacity: Integer
+      hasCoolingSystem: Boolean
+      hasHumidityControl: Boolean
+      hasAutoRegulation: Boolean
+      isActive: Boolean
+    }
+
+    VALUE_OBJECT(CellarIdentifier) #Bisque {
+      cellarId: String
+    }
+
+    ENUM(CellarType) #LightGray {
+      PRIVATE
+      COMMERCIAL
+      PROFESSIONAL
+      MODULAR
+    }
+
+    Cellar "1" --> "1" CellarIdentifier
+    Cellar --> CustomerIdentifier
+    Cellar --> CellarType
+  }
+
+  ' ====================== OPERATIONS & SERVICES ======================
+  package "Job Management Subdomain" as JobContext #Salmon {
+    AGGREGATE_ROOT(Job) #LightPink {
+      jobName: String
+      jobDescription: String
+      hourlyRate: Double
+      estimatedDurationMinutes: Integer
+      active: Boolean
+      imageFileId: UUID
+    }
+
+    VALUE_OBJECT(JobIdentifier) #Bisque {
+      jobId: String
+    }
+
+    ENUM(JobType) #LightGray {
+      QUOTATION
+      INSTALLATION
+      REPARATION
+      MAINTENANCE
+    }
+
+    Job "1" --> "1" JobIdentifier
+    Job --> JobType
+  }
+
+  package "Appointment Management Subdomain" as AppointmentContext #Khaki {
+    AGGREGATE_ROOT(Appointment) #LightPink {
+      description: String
+      appointmentDate: DateTime
+      createdByRole: String
+      isActive: Boolean
+    }
+
+    VALUE_OBJECT(AppointmentIdentifier) #Bisque {
+      appointmentId: String
+    }
+
+    VALUE_OBJECT(AppointmentAddress) #Bisque {
+      streetAddress: String
+      city: String
+      province: String
+      country: String
+      postalCode: String
+    }
+
+    VALUE_OBJECT(AppointmentStatus) #Bisque {
+      appointmentStatusType: AppointmentStatusType
+    }
+
+    ENUM(AppointmentStatusType) #LightGray {
+      SCHEDULED
+      COMPLETED
+      CANCELLED
+    }
+
+    Appointment "1" --> "1" AppointmentIdentifier
+    Appointment "1" *-- "1" AppointmentAddress
+    Appointment "1" *-- "0..1" AppointmentStatus
+    AppointmentStatus --> AppointmentStatusType
+
+    Appointment --> CustomerIdentifier
+    Appointment --> EmployeeIdentifier
+    Appointment --> JobIdentifier
+    Appointment --> CellarIdentifier
+    Appointment --> Schedule
+  }
+
+  package "Part Management Subdomain" as PartContext #LightYellow {
+    AGGREGATE_ROOT(Part) #LightPink {
+      name: String
+      category: String
+      quantity: Integer
+      price: Decimal
+      supplier: String
+      lowStockThreshold: Integer
+      outOfStockThreshold: Integer
+      highStockThreshold: Integer
+      available: Boolean
+      imageFileId: UUID
+    }
+
+    VALUE_OBJECT(PartIdentifier) #Bisque {
+      partId: String
+    }
+
+    Part "1" --> "1" PartIdentifier
+  }
+
+  ' ====================== FINANCE & REPORTING ======================
+  package "Report & Billing Subdomain" as ReportContext #Violet {
+    AGGREGATE_ROOT(Report) #LightPink {
+      hoursWorked: Decimal
+      frais: Decimal
+      fraisDeplacement: Decimal
+      subtotal: Decimal
+      tpsAmount: Decimal
+      tvqAmount: Decimal
+      total: Decimal
+      createdAt: DateTime
+      updatedAt: DateTime
+    }
+
+    VALUE_OBJECT(ReportIdentifier) #Bisque {
+      reportId: String
+    }
+
+    ENTITY(ReportPart) #LightPink {
+      quantity: Integer
+      price: Decimal
+      notes: String
+    }
+
+    ENTITY(Bill) #LightPink {
+      billId: String
+      amount: Decimal
+      status: BillStatus
+      createdAt: DateTime
+      updatedAt: DateTime
+      paidAt: DateTime
+      stripeCheckoutSessionId: String
+      stripePaymentIntentId: String
+    }
+
+    ENUM(BillStatus) #LightGray {
+      UNPAID
+      PAID
+    }
+
+    Report "1" --> "1" ReportIdentifier
+    Report "1" *-- "0..*" ReportPart
+    ReportPart --> PartIdentifier
+
+    Report --> AppointmentIdentifier
+    Bill --> ReportIdentifier
+    Bill --> CustomerIdentifier
+    Bill --> AppointmentIdentifier
+    Bill --> BillStatus
+  }
+
+  ' ===================== CUSTOMER FEEDBACK =====================
+  package "Review Management Subdomain" as ReviewContext #LightBlue {
+    AGGREGATE_ROOT(Review) #LightPink {
+      reviewId: String
+      rating: Integer
+      comment: String
+      customerName: String
+      customerId: String
+      reviewedBy: String
+      createdAt: Instant
+      updatedAt: Instant
+      reviewedAt: Instant
+    }
+
+    ENUM(ReviewStatus) #LightGray {
+      PENDING
+      APPROVED
+      REJECTED
+    }
+
+    Review --> ReviewStatus
+  }
+
+  ' ===================== SHARED FILES =====================
+  package "File Management Subdomain" as FileContext #Khaki {
+    AGGREGATE_ROOT(StoredFile) #LightPink {
+      id: UUID
+      bucket: String
+      objectKey: String
+      originalFilename: String
+      contentType: String
+      sizeBytes: long
+      ownerType: FileOwnerType
+      ownerId: String
+      category: FileCategory
+      createdAt: Instant
+      deletedAt: Instant
+    }
+
+    ENUM(FileOwnerType) #LightGray {
+      PART
+      APPOINTMENT
+      CUSTOMER
+      JOB
+      EMPLOYEE
+      SYSTEM
+      REPORT
+      BILL
+    }
+
+    ENUM(FileCategory) #LightGray {
+      IMAGE
+      REPORT
+      BILL
+    }
+
+    StoredFile --> FileOwnerType
+    StoredFile --> FileCategory
+  }
+}
+@enduml

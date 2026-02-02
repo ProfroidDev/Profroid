@@ -44,9 +44,7 @@ app.get("/health", (req: Request, res: Response) => {
   res.json({ status: "ok", timestamp: new Date().toISOString() });
 });
 
-// Auth routes - mount at /auth and /api/auth for compatibility
-app.use("/auth", authRoutes);
-app.use("/api/auth", authRoutes);
+app.use("/", authRoutes);
 
 // Notification routes
 app.use("/api/notifications", notificationsRoutes);
