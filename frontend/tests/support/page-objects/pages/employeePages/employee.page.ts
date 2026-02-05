@@ -12,7 +12,7 @@ export class EmployeePage {
   }
 
   async goto() {
-    await this.page.goto('http://localhost:5173/employees');
+    await this.page.goto('http://localhost:3000/employees');
   }
 
   async openCreateModal() {

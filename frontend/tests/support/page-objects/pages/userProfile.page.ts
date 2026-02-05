@@ -10,7 +10,7 @@ export class UserProfilePage {
     if (await profileNavLink.isVisible().catch(() => false)) {
       await profileNavLink.click();
     } else {
-      await this.page.goto('http://localhost:5173/profile');
+      await this.page.goto('http://localhost:3000/profile');
     }
   }
 

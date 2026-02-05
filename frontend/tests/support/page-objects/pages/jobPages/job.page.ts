@@ -14,7 +14,7 @@ export class JobPage {
   }
 
   async goto() {
-    await this.page.goto('http://localhost:5173/services');
+    await this.page.goto('http://localhost:3000/services');
   }
 
   // ============================================

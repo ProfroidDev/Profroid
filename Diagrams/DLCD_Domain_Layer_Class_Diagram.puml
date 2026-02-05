@@ -1,0 +1,410 @@
+@startuml DLCD_Domain_Layer_Class_Diagram
+hide circle
+top to bottom direction
+scale 0.18
+
+!define AGGREGATE_ROOT(aggregateName) class aggregateName << Aggregate Root >>
+!define ENTITY(entityName) class entityName << Entity >>
+!define ENUM(enumName) class enumName << Enum >>
+
+skinparam dpi 350
+skinparam classBackgroundColor #f7f4eb
+skinparam classBorderColor Black
+skinparam arrowColor Black
+
+rectangle "Profroid Management System - Domain Layer Class Diagram with Methods" as ProfroidContext #line.dashed {
+
+  ' ========================= CUSTOMER MANAGEMENT SUBDOMAIN =========================
+  package "Customer Management Subdomain" as CustomerContext #LightBlue {
+    AGGREGATE_ROOT(Customer) #Violet {
+      - id: Integer
+      - customerIdentifier: CustomerIdentifier
+      - firstName: String
+      - lastName: String
+      - phoneNumbers: List<CustomerPhoneNumber>
+      - customerAddress: CustomerAddress
+      - userId: String
+      - isActive: Boolean
+      - cellars: List<Cellar>
+      --
+      + getAllCustomers(): List<CustomerResponseModel>
+      + getCustomerById(String): CustomerResponseModel
+      + getCustomerByUserId(String): CustomerResponseModel
+      + updateCustomerByUserId(String, CustomerRequestModel): CustomerResponseModel
+      + createCustomer(CustomerRequestModel): CustomerResponseModel
+      + updateCustomer(String, CustomerRequestModel): CustomerResponseModel
+      + deleteCustomer(String): void
+    }
+
+    ENUM(PhoneType) #LightGray {
+      HOME
+      WORK
+      MOBILE
+    }
+
+    Customer --> PhoneType
+  }
+
+  ' ========================= EMPLOYEE MANAGEMENT SUBDOMAIN =========================
+  package "Employee Management Subdomain" as EmployeeContext #LightGreen {
+    AGGREGATE_ROOT(Employee) #LightPink {
+      - id: Integer
+      - employeeIdentifier: EmployeeIdentifier
+      - firstName: String
+      - lastName: String
+      - phoneNumbers: List<EmployeePhoneNumber>
+      - employeeAddress: EmployeeAddress
+      - employeeRole: EmployeeRole
+      - userId: String
+      - isActive: Boolean
+      --
+      + getAllEmployees(): List<EmployeeResponseModel>
+      + getEmployeeById(String): EmployeeResponseModel
+      + getEmployeeByUserId(String): EmployeeResponseModel
+      + addEmployee(EmployeeRequestModel): EmployeeResponseModel
+      + updateEmployee(String, EmployeeRequestModel): EmployeeResponseModel
+      + deactivateEmployee(String): EmployeeResponseModel
+      + reactivateEmployee(String): EmployeeResponseModel
+    }
+
+    ENTITY(Schedule) #LightPink {
+      - id: Integer
+      - employee: Employee
+      - specificDate: Date
+      --
+      + getEmployeeSchedule(String): List<EmployeeScheduleResponseModel>
+      + getEmployeeScheduleForDate(String, String): List<EmployeeScheduleResponseModel>
+      + addEmployeeSchedule(String, List<EmployeeScheduleRequestModel>): List<EmployeeScheduleResponseModel>
+      + updateEmployeeSchedule(String, List<EmployeeScheduleRequestModel>): List<EmployeeScheduleResponseModel>
+      + patchDateSchedule(String, String, EmployeeScheduleRequestModel): EmployeeScheduleResponseModel
+    }
+
+    ENUM(EmployeeRoleType) #LightGray {
+      ADMIN
+      TECHNICIAN
+      SUPPORT
+      SALES
+    }
+
+    ENUM(EmployeePhoneType) #LightGray {
+      HOME
+      WORK
+      MOBILE
+    }
+
+    ENUM(DayOfWeekType) #LightGray {
+      MONDAY
+      TUESDAY
+      WEDNESDAY
+      THURSDAY
+      FRIDAY
+    }
+
+    ENUM(TimeSlotType) #LightGray {
+      NINE_AM
+      ELEVEN_AM
+      ONE_PM
+      THREE_PM
+      FIVE_PM
+    }
+
+    Employee --> EmployeeRoleType
+    Employee --> EmployeePhoneType
+    Schedule --> Employee
+    Schedule --> DayOfWeekType
+    Schedule --> TimeSlotType
+  }
+
+  ' ========================= CELLAR MANAGEMENT SUBDOMAIN =========================
+  package "Cellar Management Subdomain" as CellarContext #LightGray {
+    AGGREGATE_ROOT(Cellar) #LightPink {
+      - id: Integer
+      - cellarIdentifier: CellarIdentifier
+      - ownerCustomerIdentifier: CustomerIdentifier
+      - ownerCustomer: Customer
+      - name: String
+      - height: double
+      - width: double
+      - depth: double
+      - bottleCapacity: Integer
+      - hasCoolingSystem: boolean
+      - hasHumidityControl: boolean
+      - hasAutoRegulation: boolean
+      - cellarType: CellarType
+      - isActive: Boolean
+      --
+      + getAllCellars(): List<CellarResponseModel>
+      + getCellarById(String): CellarResponseModel
+      + getAllCellars(String): List<CellarResponseModel>
+      + getAllCellarsForUser(String): List<CellarResponseModel>
+      + getCellarById(String, String): CellarResponseModel
+      + createCellar(String, CellarRequestModel): CellarResponseModel
+      + updateCellar(String, String, CellarRequestModel): CellarResponseModel
+      + deactivateCellar(String): CellarResponseModel
+      + reactivateCellar(String): CellarResponseModel
+    }
+
+    ENUM(CellarType) #LightGray {
+      PRIVATE
+      COMMERCIAL
+      PROFESSIONAL
+      MODULAR
+    }
+
+    Cellar --> CellarType
+    Cellar --> Customer
+  }
+
+  ' ========================= JOB MANAGEMENT SUBDOMAIN =========================
+  package "Job Management Subdomain" as JobContext #Salmon {
+    AGGREGATE_ROOT(Job) #LightPink {
+      - id: Integer
+      - jobIdentifier: JobIdentifier
+      - jobName: String
+      - jobDescription: String
+      - hourlyRate: Double
+      - estimatedDurationMinutes: Integer
+      - jobType: JobType
+      - active: boolean
+      - imageFileId: UUID
+      --
+      + getAllJobs(): List<JobResponseModel>
+      + getJobById(String): JobResponseModel
+      + createJob(JobRequestModel): JobResponseModel
+      + updateJob(String, JobRequestModel): JobResponseModel
+      + deactivateJob(String): JobResponseModel
+      + reactivateJob(String): JobResponseModel
+      + uploadJobImage(String, MultipartFile): JobResponseModel
+    }
+
+    ENUM(JobType) #LightGray {
+      QUOTATION
+      INSTALLATION
+      REPARATION
+      MAINTENANCE
+    }
+
+    Job --> JobType
+  }
+
+  ' ========================= APPOINTMENT MANAGEMENT SUBDOMAIN =========================
+  package "Appointment Management Subdomain" as AppointmentContext #Khaki {
+    AGGREGATE_ROOT(Appointment) #LightPink {
+      - id: Integer
+      - appointmentIdentifier: AppointmentIdentifier
+      - customer: Customer
+      - technician: Employee
+      - job: Job
+      - cellar: Cellar
+      - schedule: Schedule
+      - appointmentAddress: AppointmentAddress
+      - description: String
+      - appointmentDate: LocalDateTime
+      - appointmentStatus: AppointmentStatus
+      - createdByRole: String
+      - isActive: Boolean
+      --
+      + addAppointment(AppointmentRequestModel, String, String): AppointmentResponseModel
+      + getCustomerAppointments(String): List<AppointmentResponseModel>
+      + getTechnicianAppointments(String): List<AppointmentResponseModel>
+      + getAllAppointments(): List<AppointmentResponseModel>
+      + getAppointmentById(String, String, String): AppointmentResponseModel
+      + patchAppointmentStatus(String, AppointmentStatusChangeRequestModel, String, String): AppointmentResponseModel
+      + updateAppointment(String, AppointmentRequestModel, String, String): AppointmentResponseModel
+      + getTechnicianBookedSlots(String, LocalDate, String): TechnicianBookedSlotsResponseModel
+      + getAggregatedAvailability(LocalDate, String, String, String, String): TechnicianBookedSlotsResponseModel
+    }
+
+    ENUM(AppointmentStatusType) #LightGray {
+      SCHEDULED
+      COMPLETED
+      CANCELLED
+    }
+
+    Appointment --> AppointmentStatusType
+    Appointment --> Customer
+    Appointment --> Employee
+    Appointment --> Job
+    Appointment --> Cellar
+    Appointment --> Schedule
+  }
+
+  ' ========================= PART MANAGEMENT SUBDOMAIN =========================
+  package "Part Management Subdomain" as PartContext #LightYellow {
+    AGGREGATE_ROOT(Part) #LightPink {
+      - id: Integer
+      - partIdentifier: PartIdentifier
+      - name: String
+      - category: String
+      - quantity: Integer
+      - price: BigDecimal
+      - supplier: String
+      - lowStockThreshold: Integer
+      - outOfStockThreshold: Integer
+      - highStockThreshold: Integer
+      - available: Boolean
+      - imageFileId: UUID
+      --
+      + getAllParts(): List<PartResponseModel>
+      + getPartById(String): PartResponseModel
+      + createPart(PartRequestModel): PartResponseModel
+      + updatePart(String, PartRequestModel): PartResponseModel
+      + deletePart(String): void
+      + uploadPartImage(String, MultipartFile): PartResponseModel
+      + createPartWithImage(PartRequestModel, MultipartFile): PartResponseModel
+      + exportInventoryToPdf(): byte[]
+    }
+  }
+
+  ' ========================= REPORT & BILLING SUBDOMAIN =========================
+  package "Report & Billing Subdomain" as ReportContext #Violet {
+    AGGREGATE_ROOT(Report) #LightPink {
+      - id: Integer
+      - reportIdentifier: ReportIdentifier
+      - appointment: Appointment
+      - hoursWorked: BigDecimal
+      - frais: BigDecimal
+      - fraisDeplacement: BigDecimal
+      - reportParts: List<ReportPart>
+      - subtotal: BigDecimal
+      - tpsAmount: BigDecimal
+      - tvqAmount: BigDecimal
+      - total: BigDecimal
+      - createdAt: LocalDateTime
+      - updatedAt: LocalDateTime
+      --
+      + createReport(ReportRequestModel, String, String): ReportResponseModel
+      + getReportById(String, String, String): ReportResponseModel
+      + getReportByAppointmentId(String, String, String): ReportResponseModel
+      + getTechnicianReports(String, String, String): List<ReportResponseModel>
+      + getCustomerReports(String, String, String): List<ReportResponseModel>
+      + getAllReports(String, String): List<ReportResponseModel>
+      + updateReport(String, ReportRequestModel, String, String): ReportResponseModel
+      + deleteReport(String, String, String): void
+      + getReportPdf(String, String, String): byte[]
+    }
+
+    ENTITY(ReportPart) #LightPink {
+      - id: Integer
+      - report: Report
+      - partIdentifier: PartIdentifier
+      - quantity: Integer
+      - price: BigDecimal
+      - notes: String
+    }
+
+    ENTITY(Bill) #LightPink {
+      - id: Integer
+      - billId: String
+      - report: Report
+      - customer: Customer
+      - appointment: Appointment
+      - amount: BigDecimal
+      - status: BillStatus
+      - createdAt: LocalDateTime
+      - updatedAt: LocalDateTime
+      - paidAt: LocalDateTime
+      - stripeCheckoutSessionId: String
+      - stripePaymentIntentId: String
+      --
+      + getBillById(String, String, String): BillResponseModel
+      + getBillByReportId(Integer, String, String): BillResponseModel
+      + getCustomerBills(String, String, String): List<BillResponseModel>
+      + getAllBills(String, String): List<BillResponseModel>
+      + updateBillStatus(String, String, String, String): BillResponseModel
+      + getBillByAppointmentId(String, String, String): BillResponseModel
+      + getBillPdf(String, String, String): byte[]
+    }
+
+    ENUM(BillStatus) #LightGray {
+      UNPAID
+      PAID
+    }
+
+    Report --> Appointment
+    Report *-- ReportPart
+    ReportPart --> Part
+    Bill --> Report
+    Bill --> Customer
+    Bill --> Appointment
+    Bill --> BillStatus
+  }
+
+  ' ========================= REVIEW MANAGEMENT SUBDOMAIN =========================
+  package "Review Management Subdomain" as ReviewContext #LightBlue {
+    AGGREGATE_ROOT(Review) #LightPink {
+      - id: Long
+      - reviewId: String
+      - rating: Integer
+      - comment: String
+      - customerName: String
+      - customerId: String
+      - status: ReviewStatus
+      - reviewedBy: String
+      - createdAt: Instant
+      - updatedAt: Instant
+      - reviewedAt: Instant
+      --
+      + createReview(ReviewRequestModel): ReviewResponseModel
+      + getAllReviews(): List<ReviewResponseModel>
+      + getReviewsByStatus(ReviewStatus): List<ReviewResponseModel>
+      + getApprovedReviews(): List<ReviewResponseModel>
+      + getReviewById(String): ReviewResponseModel
+      + updateReviewStatus(String, ReviewStatus, String): ReviewResponseModel
+      + deleteReview(String): void
+    }
+
+    ENUM(ReviewStatus) #LightGray {
+      PENDING
+      APPROVED
+      REJECTED
+    }
+
+    Review --> ReviewStatus
+  }
+
+  ' ========================= FILE MANAGEMENT SUBDOMAIN =========================
+  package "File Management Subdomain" as FileContext #Khaki {
+    AGGREGATE_ROOT(StoredFile) #LightPink {
+      - id: UUID
+      - bucket: String
+      - objectKey: String
+      - originalFilename: String
+      - contentType: String
+      - sizeBytes: long
+      - ownerType: String
+      - ownerId: String
+      - category: String
+      - createdAt: Instant
+      - deletedAt: Instant
+      --
+      + upload(MultipartFile, FileOwnerType, String, FileCategory): StoredFile
+      + getOrThrow(UUID): StoredFile
+      + openStream(StoredFile): InputStream
+      + delete(UUID): void
+      + list(FileOwnerType, String, FileCategory): List<StoredFile>
+    }
+
+    ENUM(FileOwnerType) #LightGray {
+      PART
+      APPOINTMENT
+      CUSTOMER
+      JOB
+      EMPLOYEE
+      SYSTEM
+      REPORT
+      BILL
+    }
+
+    ENUM(FileCategory) #LightGray {
+      IMAGE
+      REPORT
+      BILL
+    }
+
+    StoredFile --> FileOwnerType
+    StoredFile --> FileCategory
+  }
+}
+
+@enduml

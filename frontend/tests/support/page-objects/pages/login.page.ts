@@ -8,11 +8,11 @@ export class LoginPage {
   // -------------------------
 
   public async goto() {
-    await this.page.goto('http://localhost:5173/login');
+    await this.page.goto('http://localhost:3000/auth/login');
   }
 
   public async waitForAuthURL() {
-    await this.page.waitForURL('http://localhost:5173/login');
+    await this.page.waitForURL('http://localhost:3000/auth/login');
   }
 
   // -------------------------
@@ -21,7 +21,8 @@ export class LoginPage {
 
   emailInput = () => this.page.getByLabel(/email/i);
   passwordInput = () => this.page.getByLabel(/password/i);
-  loginButton = () => this.page.locator('form').getByRole('button', { name: /sign in/i });
+  loginButton = () =>
+    this.page.locator('form').getByRole('button', { name: 'Sign In', exact: true });
   errorMessage = () => this.page.locator('[role="alert"]');
 
   // -------------------------
