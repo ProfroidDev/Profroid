@@ -1,0 +1,67 @@
+@startuml
+title DLSD - O-4 Manage Inventory - Update Minimum Quantity
+
+actor Owner
+participant "InventoryPage" as UI
+participant "PartsApi" as Api
+participant "PartController" as Controller
+participant "PartService" as Service
+participant "PartRepository" as Repo
+database "Parts DB" as DB
+
+Owner -> UI : Open Inventory
+UI -> Api : getAllParts()
+Api -> Controller : GET /v1/parts
+Controller -> Service : getAllParts()
+Service -> Repo : findAll()
+Repo -> DB : SELECT * FROM parts
+DB --> Repo : List<Part>
+Repo --> Service : List<Part>
+Service --> Controller : List<PartResponseModel>
+Controller --> Api : 200 OK (parts)
+Api --> UI : parts
+UI --> Owner : Display parts list
+
+Owner -> UI : Select part and edit thresholds
+Owner -> UI : Submit update
+UI -> Api : updatePart(partId, PartRequestModel)
+Api -> Controller : PUT /v1/parts/{partId}
+Controller -> Service : updatePart(partId, request)
+Service -> Repo : findPartByPartIdentifier_PartId(partId)
+Repo -> DB : SELECT * FROM parts WHERE part_id = ?
+DB --> Repo : Part
+Repo --> Service : Part
+Service -> Repo : findPartByName(name)
+Repo -> DB : SELECT * FROM parts WHERE name = ?
+DB --> Repo : Part?
+Repo --> Service : Part?
+Service -> Repo : save(updatedPart)
+Repo -> DB : UPDATE parts SET ...
+DB --> Repo : updated row
+Repo --> Service : Part
+Service --> Controller : PartResponseModel
+Controller --> Api : 200 OK (updated part)
+Api --> UI : updated part
+
+loop refresh list
+  UI -> Api : getAllParts()
+  Api -> Controller : GET /v1/parts
+  Controller -> Service : getAllParts()
+  Service -> Repo : findAll()
+  Repo -> DB : SELECT * FROM parts
+  DB --> Repo : List<Part>
+  Repo --> Service : List<Part>
+  Service --> Controller : List<PartResponseModel>
+  Controller --> Api : 200 OK (parts)
+  Api --> UI : parts
+end
+
+UI --> Owner : Show success toast
+
+alt update fails (validation or server error)
+  Controller --> Api : 4xx/5xx
+  Api --> UI : error
+  UI --> Owner : Show error toast
+end
+
+@enduml

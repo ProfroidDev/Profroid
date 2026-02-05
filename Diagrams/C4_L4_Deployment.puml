@@ -1,0 +1,88 @@
+@startuml
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Deployment.puml
+
+LAYOUT_WITH_LEGEND()
+
+title Deployment Diagram – Profroid System (Production-Ready Architecture)
+
+' =====================================================
+'   CLIENT TIER
+' =====================================================
+Deployment_Node(client_device, "Client Device", "Desktop / Tablet / Mobile") {
+    Deployment_Node(browser, "Web Browser", "Chrome / Firefox / Edge") {
+        Container(spa, "React SPA", "JavaScript / TypeScript", "Profroid Web Application")
+    }
+}
+
+' =====================================================
+'   FRONTEND SERVICE
+' =====================================================
+Deployment_Node(frontend_server, "Frontend Server", "Nginx / Vercel") {
+    Container(frontend_app, "Frontend Application", "React / TypeScript / Vite", "Single-page application")
+}
+
+' =====================================================
+'   BACKEND SERVICE
+' =====================================================
+Deployment_Node(backend_server, "Backend Server", "Docker / Kubernetes / Cloud") {
+    Container(spring_boot, "Spring Boot Application", "Java 17 / Spring Boot", "Core business logic with 9 subdomains")
+}
+
+' =====================================================
+'   AUTH SERVICE (Separate Microservice)
+' =====================================================
+Deployment_Node(auth_server, "Auth Service", "Docker / Kubernetes / Cloud") {
+    Container(auth_app, "Authentication Service", "Node.js / TypeScript", "JWT management, user validation")
+}
+
+' =====================================================
+'   DATA TIER
+' =====================================================
+Deployment_Node(data_server, "Database Server", "Docker / Cloud RDS") {
+    ContainerDb(mysql_db, "MySQL Database", "MySQL 8.x", "Customers, Employees, Appointments, Jobs, Parts, Reports, Bills, Reviews, Cellars, Schedules")
+}
+
+' =====================================================
+'   FILE STORAGE
+' =====================================================
+Deployment_Node(file_server, "File Storage", "MinIO / S3 / Cloud Storage") {
+    ContainerDb(file_storage, "Object Storage", "MinIO / S3", "Images, Reports, Bills, Attachments")
+}
+
+' =====================================================
+'   EXTERNAL SERVICES
+' =====================================================
+Deployment_Node(external, "External Cloud Services") {
+    Container(stripe_svc, "Stripe API", "SaaS", "Payment processing")
+    Container(minio_alt, "Alternative: AWS S3", "SaaS", "File storage option")
+}
+
+' =====================================================
+'   RELATIONSHIPS
+' =====================================================
+
+' Client → Frontend
+Rel(browser, frontend_app, "Serves SPA", "HTTPS")
+
+' SPA → Backend
+Rel(spa, spring_boot, "API Calls", "HTTPS / JSON / REST")
+
+' SPA → Auth
+Rel(spa, auth_app, "JWT Token Requests", "HTTPS / JSON")
+
+' Backend → Auth
+Rel(spring_boot, auth_app, "Validate JWT", "HTTPS / JSON")
+
+' Backend → Database
+Rel(spring_boot, mysql_db, "Read/Write Data", "JDBC / MySQL Protocol")
+
+' Backend → File Storage
+Rel(spring_boot, file_storage, "Upload/Download Files", "S3 API")
+
+' Backend → Stripe
+Rel(spring_boot, stripe_svc, "Process Payments", "HTTPS / REST API")
+
+' Alternative paths
+Rel(file_storage, minio_alt, "Alternative Storage", "S3 Compatible")
+
+@enduml

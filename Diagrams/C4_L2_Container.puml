@@ -1,0 +1,40 @@
+@startuml
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Container.puml
+
+LAYOUT_WITH_LEGEND()
+
+title C4 Level 2 - Container Diagram for Profroid Management System
+
+Person(customer, "Customer", "Books appointments and manages account")
+Person(technician, "Technician", "Manages jobs and creates reports")
+Person(admin, "Administrator", "Manages system data")
+
+System_Boundary(profroid, "Profroid Management System") {
+    
+    Container(frontend, "Frontend Web Application", "React / TypeScript / Vite", "Single-page application for customers, technicians, and administrators")
+    
+    Container(backend, "Backend API", "Spring Boot / Java 17", "Core business logic: customers, employees, appointments, jobs, parts, reports, billing, reviews")
+    
+    Container(auth_svc, "Auth Service", "Node.js / TypeScript", "User authentication, JWT token management, role-based access control")
+    
+    ContainerDb(db, "Primary Database", "MySQL 8.x", "Stores all business entities: customers, employees, appointments, jobs, parts, reports, bills, reviews")
+    
+    Container(file_svc, "File Storage", "MinIO / S3-compatible", "Stores images, reports, bills, and appointment documents")
+}
+
+System_Ext(stripe, "Stripe Payments", "Payment gateway and billing processor")
+' Relationships
+Rel(customer, frontend, "Uses web app")
+Rel(technician, frontend, "Uses technician portal")
+Rel(admin, frontend, "Uses admin dashboard")
+
+Rel(frontend, auth_svc, "Authenticate / authorize users")
+Rel(frontend, backend, "API calls for data operations")
+
+Rel(backend, db, "Read/write business data")
+Rel(backend, file_svc, "Store/retrieve files")
+Rel(backend, stripe, "Process payments, create invoices")
+Rel(backend, auth_svc, "Validate JWT tokens")
+
+SHOW_LEGEND()
+@enduml

@@ -1,0 +1,19 @@
+@startuml
+title Inventory Status - State Transition Diagram
+
+state "IN STOCK" as InStock
+state "LOW STOCK" as LowStock
+state "OUT OF STOCK" as OutOfStock
+
+[*] --> InStock : qty > lowStockThreshold
+[*] --> LowStock : outOfStockThreshold < qty <= lowStockThreshold
+[*] --> OutOfStock : qty <= outOfStockThreshold
+
+InStock --> LowStock : update qty/thresholds
+LowStock --> InStock : update qty/thresholds
+LowStock --> OutOfStock : update qty/thresholds
+OutOfStock --> LowStock : update qty/thresholds
+OutOfStock --> InStock : update qty/thresholds
+InStock --> OutOfStock : update qty/thresholds
+
+@enduml

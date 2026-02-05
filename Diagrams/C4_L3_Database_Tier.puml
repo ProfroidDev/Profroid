@@ -1,0 +1,143 @@
+@startuml
+!includeurl https://raw.githubusercontent.com/RicardoNiepel/C4-PlantUML/master/C4_Component.puml
+scale 0.65
+
+title C4 Level 3 - Data Tier (MySQL Database with Domain Tables)
+
+' =====================================================
+'   DATA TIER - MYSQL DATABASE
+' =====================================================
+Container_Boundary(db_tier, "MySQL Database (Single Instance - profroid_db)") {
+
+  ' ========== CUSTOMER SCHEMA ==========
+  Component(cust_tables, "Customer Domain Tables", "MySQL Tables", "customers | customer_phonenumbers | customer_addresses")
+  
+  ' ========== EMPLOYEE SCHEMA ==========
+  Component(emp_tables, "Employee Domain Tables", "MySQL Tables", "employees | employee_phonenumbers | employee_addresses | employee_roles")
+  
+  ' ========== EMPLOYEE SCHEDULE SCHEMA ==========
+  Component(schedule_tables, "Schedule Domain Tables", "MySQL Tables", "schedules | time_slots | days_of_week")
+  
+  ' ========== CELLAR SCHEMA ==========
+  Component(cellar_tables, "Cellar Domain Tables", "MySQL Tables", "cellars | cellar_types")
+  
+  ' ========== JOB SCHEMA ==========
+  Component(job_tables, "Job Domain Tables", "MySQL Tables", "jobs | job_types")
+  
+  ' ========== APPOINTMENT SCHEMA ==========
+  Component(appt_tables, "Appointment Domain Tables", "MySQL Tables", "appointments | appointment_addresses | appointment_statuses | appointment_status_types")
+  
+  ' ========== PART SCHEMA ==========
+  Component(part_tables, "Part Domain Tables", "MySQL Tables", "parts | part_identifiers")
+  
+  ' ========== REPORT SCHEMA ==========
+  Component(report_tables, "Report Domain Tables", "MySQL Tables", "reports | report_parts | report_identifiers")
+  
+  ' ========== BILL SCHEMA ==========
+  Component(bill_tables, "Bill Domain Tables", "MySQL Tables", "bills | bill_statuses | bill_identifiers")
+  
+  ' ========== REVIEW SCHEMA ==========
+  Component(review_tables, "Review Domain Tables", "MySQL Tables", "reviews | review_statuses")
+  
+  ' ========== FILE SCHEMA ==========
+  Component(file_tables, "File Domain Tables", "MySQL Tables", "files | file_owner_types | file_categories")
+}
+
+' =====================================================
+'   JPA REPOSITORIES (from Spring Backend)
+' =====================================================
+Component(cust_repo, "CustomerRepository", "JPA Repository", "Persistence for Customer entities")
+Component(emp_repo, "EmployeeRepository", "JPA Repository", "Persistence for Employee entities")
+Component(schedule_repo, "ScheduleRepository", "JPA Repository", "Persistence for Schedule entities")
+Component(cellar_repo, "CellarRepository", "JPA Repository", "Persistence for Cellar entities")
+Component(job_repo, "JobRepository", "JPA Repository", "Persistence for Job entities")
+Component(appt_repo, "AppointmentRepository", "JPA Repository", "Persistence for Appointment entities")
+Component(part_repo, "PartRepository", "JPA Repository", "Persistence for Part entities")
+Component(report_repo, "ReportRepository", "JPA Repository", "Persistence for Report entities")
+Component(bill_repo, "BillRepository", "JPA Repository", "Persistence for Bill entities")
+Component(review_repo, "ReviewRepository", "JPA Repository", "Persistence for Review entities")
+Component(file_repo, "StoredFileRepository", "JPA Repository", "Persistence for StoredFile entities")
+
+' =====================================================
+'   RELATIONSHIPS: Repositories → Database Tables
+' =====================================================
+Rel(cust_repo, cust_tables, "Reads/Writes via JDBC/JPA", "SQL Queries")
+Rel(emp_repo, emp_tables, "Reads/Writes via JDBC/JPA", "SQL Queries")
+Rel(schedule_repo, schedule_tables, "Reads/Writes via JDBC/JPA", "SQL Queries")
+Rel(cellar_repo, cellar_tables, "Reads/Writes via JDBC/JPA", "SQL Queries")
+Rel(job_repo, job_tables, "Reads/Writes via JDBC/JPA", "SQL Queries")
+Rel(appt_repo, appt_tables, "Reads/Writes via JDBC/JPA", "SQL Queries")
+Rel(part_repo, part_tables, "Reads/Writes via JDBC/JPA", "SQL Queries")
+Rel(report_repo, report_tables, "Reads/Writes via JDBC/JPA", "SQL Queries")
+Rel(bill_repo, bill_tables, "Reads/Writes via JDBC/JPA", "SQL Queries")
+Rel(review_repo, review_tables, "Reads/Writes via JDBC/JPA", "SQL Queries")
+Rel(file_repo, file_tables, "Reads/Writes via JDBC/JPA", "SQL Queries")
+
+' =====================================================
+'   DATABASE SCHEMA DOCUMENTATION
+' =====================================================
+
+note bottom of db_tier
+== Database Schema Overview ==
+
+**CUSTOMER DOMAIN**
+- customers (id, customer_id, firstName, lastName, userId, isActive)
+- customer_phonenumbers (customer_id, type, number)
+- customer_addresses (customer_id, streetAddress, city, province, country, postalCode)
+
+**EMPLOYEE DOMAIN**
+- employees (id, employee_id, firstName, lastName, userId, isActive)
+- employee_phonenumbers (employee_id, type, number)
+- employee_addresses (employee_id, streetAddress, city, province, country, postalCode)
+- employee_roles (employee_id, employeeRoleType) [ADMIN, TECHNICIAN, SUPPORT, SALES]
+
+**SCHEDULE DOMAIN**
+- schedules (id, employee_fk, day_of_week, time_slot, specific_date)
+- time_slots (id, timeslot) [NINE_AM, ELEVEN_AM, ONE_PM, THREE_PM, FIVE_PM]
+- days_of_week (id, dayOfWeek) [MONDAY - FRIDAY]
+
+**CELLAR DOMAIN**
+- cellars (id, cellar_id, owner_customer_id, name, height, width, depth, bottleCapacity, hasCoolingSystem, hasHumidityControl, hasAutoRegulation, cellarType, isActive)
+
+**JOB DOMAIN**
+- jobs (id, job_id, jobName, jobDescription, hourlyRate, estimatedDurationMinutes, jobType, active, image_file_id)
+
+**APPOINTMENT DOMAIN**
+- appointments (id, appointment_id, customer_id, technician_id, job_id, cellar_id, schedule_id, streetAddress, city, province, country, postalCode, description, appointmentDate, appointmentStatusType, createdByRole, isActive)
+
+**PART DOMAIN**
+- parts (id, part_id, name, category, quantity, price, supplier, low_stock_threshold, out_of_stock_threshold, high_stock_threshold, available, image_file_id)
+
+**REPORT DOMAIN**
+- reports (id, report_id, appointment_id, hours_worked, frais, frais_deplacement, subtotal, tps_amount, tvq_amount, total, created_at, updated_at)
+- report_parts (id, report_id, part_id, quantity, price, notes)
+
+**BILL DOMAIN**
+- bills (id, bill_id, report_id, customer_id, appointment_id, amount, status, created_at, updated_at, paid_at, stripe_checkout_session_id, stripe_payment_intent_id)
+
+**REVIEW DOMAIN**
+- reviews (id, review_id, rating, comment, customer_name, customer_id, status, reviewed_by, created_at, updated_at, reviewed_at)
+
+**FILE DOMAIN**
+- files (id, bucket, object_key, original_filename, content_type, size_bytes, owner_type, owner_id, category, created_at, deleted_at)
+
+**KEY INDEXES**
+- customers.customer_id (UNIQUE)
+- employees.employee_id (UNIQUE)
+- jobs.job_id (UNIQUE)
+- appointments.appointment_id (UNIQUE)
+- reports.report_id (UNIQUE)
+- bills.bill_id (UNIQUE)
+- reviews.review_id (UNIQUE)
+- files.id (PRIMARY KEY)
+- Foreign key: cellars.owner_customer_id → customers.customer_id
+- Foreign key: appointments.customer_id → customers.id
+- Foreign key: appointments.technician_id → employees.id
+- Foreign key: schedules.employee_fk → employees.id
+- Foreign key: report_parts.report_id → reports.id
+- Foreign key: report_parts.part_id → parts.id
+
+end note
+
+SHOW_LEGEND()
+@enduml

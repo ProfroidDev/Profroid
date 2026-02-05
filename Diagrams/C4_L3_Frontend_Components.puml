@@ -1,0 +1,113 @@
+@startuml
+!includeurl https://raw.githubusercontent.com/RicardoNiepel/C4-PlantUML/master/C4_Component.puml
+scale 0.65
+
+title C4 Level 3 - Frontend Component Diagram (React SPA)
+
+Person(customer, "Customer", "Requests services, manages appointments")
+Person(technician, "Technician", "Views assignments, creates reports")
+Person(admin, "Administrator", "Manages system and operations")
+
+' =====================================================
+'   FRONTEND CONTAINER (React SPA)
+' =====================================================
+Container_Boundary(frontend, "React Single-Page Application (TypeScript / Vite)") {
+
+  ' ========== AUTH LAYER ==========
+  Component(auth_pages, "Auth Pages", "React Components", "Login, logout, session management")
+  Component(auth_context, "AuthContext", "State Management", "Global authentication state and JWT handling")
+
+  ' ========== CUSTOMER FEATURES ==========
+  Component(customer_pages, "Customer Pages", "React Components", "Dashboard, profile, my appointments, reviews")
+  Component(appointment_booking, "Appointment Booking", "React Components", "Search, book, manage appointments")
+  Component(cellar_intake, "Cellar Intake Form", "React Components", "Submit cellar specifications")
+
+  ' ========== TECHNICIAN FEATURES ==========
+  Component(tech_dashboard, "Technician Dashboard", "React Components", "Assigned jobs, schedule, work updates")
+  Component(report_creation, "Report Creation", "React Components", "Create service reports with parts used")
+
+  ' ========== ADMIN FEATURES ==========
+  Component(admin_dashboard, "Admin Dashboard", "React Components", "Manage users, jobs, parts, pricing")
+  Component(customer_mgmt, "Customer Management", "React Components", "View, edit, delete customers")
+  Component(employee_mgmt, "Employee Management", "React Components", "Manage technicians and schedules")
+  Component(job_mgmt, "Job Management", "React Components", "Create and configure service jobs")
+  Component(part_inventory, "Part Inventory", "React Components", "Manage parts, stock levels, pricing")
+  Component(billing_mgmt, "Billing Management", "React Components", "View bills, payments, reports")
+
+  ' ========== SHARED COMPONENTS ==========
+  Component(common_ui, "Common UI Components", "React Components", "Buttons, modals, forms, tables, navigation")
+  Component(api_client, "API Client", "HTTP Module", "Axios/Fetch wrapper for backend API calls")
+  Component(i18n, "Internationalization", "i18n Library", "Language translation support")
+  Component(notification, "Notifications", "Toast/Alert", "User feedback and notifications")
+
+  ' ========== ROUTING & STATE ==========
+  Component(router, "React Router", "Routing", "Page navigation and URL management")
+  Component(state_mgmt, "State Management", "Context/Redux", "Global application state")
+}
+
+' =====================================================
+'   BACKEND API
+' =====================================================
+Container(backend_api, "Backend Spring Boot API", "Java / Spring Boot", "REST endpoints for all business operations")
+
+' =====================================================
+'   EXTERNAL SERVICES
+' =====================================================
+Container_Ext(stripe_js, "Stripe.js / Stripe", "Payment", "Client-side payment processing")
+Container_Ext(auth_service, "Auth Service", "Authentication", "JWT token validation and user info")
+
+' =====================================================
+'   USERS → PAGES
+' =====================================================
+Rel(customer, auth_pages, "Login")
+Rel(customer, customer_pages, "Browse dashboard")
+Rel(customer, appointment_booking, "Book appointments")
+Rel(customer, cellar_intake, "Submit cellar info")
+
+Rel(technician, auth_pages, "Login")
+Rel(technician, tech_dashboard, "View jobs")
+Rel(technician, report_creation, "Create reports")
+
+Rel(admin, auth_pages, "Login")
+Rel(admin, admin_dashboard, "Browse admin panel")
+Rel(admin, customer_mgmt, "Manage customers")
+Rel(admin, employee_mgmt, "Manage employees")
+Rel(admin, job_mgmt, "Manage jobs")
+Rel(admin, part_inventory, "Manage inventory")
+Rel(admin, billing_mgmt, "View billing")
+
+' =====================================================
+'   INTERNAL COMPONENT RELATIONSHIPS
+' =====================================================
+Rel(auth_pages, auth_context, "Updates")
+Rel(auth_context, state_mgmt, "Sync")
+Rel(customer_pages, state_mgmt, "Reads")
+Rel(admin_dashboard, state_mgmt, "Reads")
+Rel(appointment_booking, common_ui, "Uses")
+Rel(report_creation, common_ui, "Uses")
+Rel(billing_mgmt, stripe_js, "Payment UI")
+Rel(router, state_mgmt, "Uses")
+
+' =====================================================
+'   FRONTEND → BACKEND
+' =====================================================
+Rel(customer_pages, api_client, "Fetch customer data")
+Rel(appointment_booking, api_client, "Book appointments")
+Rel(tech_dashboard, api_client, "Fetch assigned jobs")
+Rel(report_creation, api_client, "Submit reports")
+Rel(customer_mgmt, api_client, "CRUD customers")
+Rel(employee_mgmt, api_client, "CRUD employees")
+Rel(job_mgmt, api_client, "CRUD jobs")
+Rel(part_inventory, api_client, "CRUD parts")
+Rel(billing_mgmt, api_client, "Fetch bills")
+
+Rel(api_client, backend_api, "HTTP REST JSON", "HTTPS")
+
+' =====================================================
+'   FRONTEND → EXTERNAL
+' =====================================================
+Rel(auth_pages, auth_service, "Authenticate / token refresh")
+Rel(billing_mgmt, stripe_js, "Payment processing")
+
+SHOW_LEGEND()
+@enduml

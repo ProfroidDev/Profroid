@@ -1,0 +1,264 @@
+@startuml
+!includeurl https://raw.githubusercontent.com/RicardoNiepel/C4-PlantUML/master/C4_Component.puml
+scale 0.65
+
+title C4 Level 3 - Backend Component Diagram (Spring Boot Microdomains)
+
+' ==========================================================
+'   BACKEND BOUNDARY
+' ==========================================================
+Container_Boundary(backend, "Spring Boot Backend (Monolith with Clear Subdomains)") {
+
+  ' ========== CUSTOMER SUBDOMAIN ==========
+  Component(cust_controller, "CustomerController", "REST Endpoint", "Manage customer profiles and details")
+  Component(cust_service, "CustomerService", "Business Logic", "Customer CRUD and validation")
+  Component(cust_repo, "CustomerRepository", "Data Access", "Persist customers, addresses, phone numbers")
+
+  ' ========== EMPLOYEE SUBDOMAIN ==========
+  Component(emp_controller, "EmployeeController", "REST Endpoint", "Manage employees and roles")
+  Component(emp_service, "EmployeeService", "Business Logic", "Employee management")
+  Component(emp_repo, "EmployeeRepository", "Data Access", "Employee, role, and address data")
+  
+  Component(schedule_controller, "EmployeeScheduleController", "REST Endpoint", "Manage technician schedules")
+  Component(schedule_service, "ScheduleService", "Business Logic", "Schedule and time slot management")
+  Component(schedule_repo, "ScheduleRepository", "Data Access", "Schedule and availability data")
+
+  ' ========== CELLAR SUBDOMAIN ==========
+  Component(cellar_controller, "CellarController", "REST Endpoint", "Manage customer cellars")
+  Component(cellar_service, "CellarService", "Business Logic", "Cellar properties and specifications")
+  Component(cellar_repo, "CellarRepository", "Data Access", "Cellar data storage")
+
+  ' ========== JOB SUBDOMAIN ==========
+  Component(job_controller, "JobController", "REST Endpoint", "Manage service jobs")
+  Component(job_service, "JobService", "Business Logic", "Job definitions and assignments")
+  Component(job_repo, "JobRepository", "Data Access", "Job data persistence")
+
+  ' ========== APPOINTMENT SUBDOMAIN ==========
+  Component(appt_controller, "AppointmentController", "REST Endpoint", "Book and manage appointments")
+  Component(appt_service, "AppointmentService", "Business Logic", "Appointment scheduling and validation")
+  Component(appt_repo, "AppointmentRepository", "Data Access", "Appointment storage")
+
+  ' ========== PART SUBDOMAIN ==========
+  Component(part_controller, "PartController", "REST Endpoint", "Manage inventory parts")
+  Component(part_service, "PartService", "Business Logic", "Part inventory and stock management")
+  Component(part_repo, "PartRepository", "Data Access", "Parts inventory data")
+
+  ' ========== REPORT SUBDOMAIN ==========
+  Component(report_controller, "ReportController", "REST Endpoint", "Create and manage service reports")
+  Component(report_service, "ReportService", "Business Logic", "Report generation and calculations")
+  Component(report_repo, "ReportRepository", "Data Access", "Report data storage")
+
+  ' ========== BILL SUBDOMAIN ==========
+  Component(bill_controller, "BillController", "REST Endpoint", "Manage invoices and billing")
+  Component(bill_service, "BillService", "Business Logic", "Invoice generation and payment tracking")
+  Component(bill_repo, "BillRepository", "Data Access", "Bill and payment data")
+
+  ' ========== REVIEW SUBDOMAIN ==========
+  Component(review_controller, "ReviewController", "REST Endpoint", "Customer reviews and ratings")
+  Component(review_service, "ReviewService", "Business Logic", "Review management with profanity filtering")
+  Component(review_repo, "ReviewRepository", "Data Access", "Review storage")
+
+  ' ========== FILE SUBDOMAIN ==========
+  Component(file_controller, "FileController", "REST Endpoint", "File upload/download operations")
+  Component(file_service, "FileService", "Business Logic", "File management and validation")
+  Component(file_repo, "FileRepository", "Data Access", "File metadata storage")
+
+  ' ========== AUTHENTICATION ==========
+  Component(auth_controller, "AuthController", "REST Endpoint", "Login callbacks and JWT validation")
+  Component(auth_service, "AuthService", "Business Logic", "JWT verification and user resolution")
+
+  ' ========== SHARED UTILITIES ==========
+  Component(exception_handler, "GlobalExceptionHandler", "Cross-cutting", "Centralized error handling")
+  Component(jwt_filter, "JwtAuthenticationFilter", "Cross-cutting", "JWT validation middleware")
+  Component(config, "Security & App Config", "Configuration", "Spring Security, CORS, Database config")
+}
+
+' ==========================================================
+'   DATABASE
+' ==========================================================
+ContainerDb(mysql, "MySQL Database", "MySQL 8.x", "Single database: customers, employees, appointments, jobs, parts, reports, bills, reviews, files, schedules, cellars")
+
+' ==========================================================
+'   EXTERNAL SYSTEMS
+' ==========================================================
+Container_Ext(stripe, "Stripe API", "Payment Gateway", "Payment processing and webhook handling")
+Container_Ext(file_storage, "MinIO/Cloud Storage", "File Storage", "Stores images, reports, bills, documents")
+
+' ==========================================================
+'   RELATIONSHIPS: Controllers → Services
+' ==========================================================
+Rel(cust_controller, cust_service, "Uses")
+Rel(emp_controller, emp_service, "Uses")
+Rel(schedule_controller, schedule_service, "Uses")
+Rel(cellar_controller, cellar_service, "Uses")
+Rel(job_controller, job_service, "Uses")
+Rel(appt_controller, appt_service, "Uses")
+Rel(part_controller, part_service, "Uses")
+Rel(report_controller, report_service, "Uses")
+Rel(bill_controller, bill_service, "Uses")
+Rel(review_controller, review_service, "Uses")
+Rel(file_controller, file_service, "Uses")
+Rel(auth_controller, auth_service, "Uses")
+
+' ==========================================================
+'   RELATIONSHIPS: Services → Repositories
+' ==========================================================
+Rel(cust_service, cust_repo, "Reads/Writes")
+Rel(emp_service, emp_repo, "Reads/Writes")
+Rel(schedule_service, schedule_repo, "Reads/Writes")
+Rel(cellar_service, cellar_repo, "Reads/Writes")
+Rel(job_service, job_repo, "Reads/Writes")
+Rel(appt_service, appt_repo, "Reads/Writes")
+Rel(part_service, part_repo, "Reads/Writes")
+Rel(report_service, report_repo, "Reads/Writes")
+Rel(bill_service, bill_repo, "Reads/Writes")
+Rel(review_service, review_repo, "Reads/Writes")
+Rel(file_service, file_repo, "Reads/Writes")
+
+' ==========================================================
+'   RELATIONSHIPS: Repositories → Database
+' ==========================================================
+Rel(cust_repo, mysql, "JDBC")
+Rel(emp_repo, mysql, "JDBC")
+Rel(schedule_repo, mysql, "JDBC")
+Rel(cellar_repo, mysql, "JDBC")
+Rel(job_repo, mysql, "JDBC")
+Rel(appt_repo, mysql, "JDBC")
+Rel(part_repo, mysql, "JDBC")
+Rel(report_repo, mysql, "JDBC")
+Rel(bill_repo, mysql, "JDBC")
+Rel(review_repo, mysql, "JDBC")
+Rel(file_repo, mysql, "JDBC")
+
+' ==========================================================
+'   EXTERNAL INTEGRATIONS
+' ==========================================================
+Rel(bill_service, stripe, "Create payment intents, webhooks")
+Rel(file_service, file_storage, "Upload/download files")
+
+' ==========================================================
+'   CROSS-CUTTING CONCERNS
+' ==========================================================
+Rel(jwt_filter, auth_service, "Validates JWT")
+Rel(exception_handler, config, "Uses")
+
+SHOW_LEGEND()
+
+' ==========================================================
+'   REST ENDPOINTS DOCUMENTATION
+' ==========================================================
+
+note bottom of backend
+== Backend REST API Endpoints ==
+
+**AUTH SERVICE**
+POST   /auth/login
+POST   /auth/logout
+GET    /auth/callback
+POST   /auth/refresh
+
+**CUSTOMER MANAGEMENT**
+GET    /customers
+GET    /customers/{id}
+POST   /customers
+PUT    /customers/{id}
+DELETE /customers/{id}
+GET    /customers/{id}/cellars
+POST   /customers/{customerId}/cellars
+
+**EMPLOYEE MANAGEMENT**
+GET    /employees
+GET    /employees/{id}
+POST   /employees
+PUT    /employees/{id}
+DELETE /employees/{id}
+GET    /employees/{id}/roles
+
+**EMPLOYEE SCHEDULE**
+GET    /schedules
+GET    /schedules/{employeeId}
+POST   /schedules
+PUT    /schedules/{id}
+DELETE /schedules/{id}
+GET    /schedules/available-slots
+POST   /schedules/{id}/timeslots
+
+**CELLAR MANAGEMENT**
+GET    /cellars
+GET    /cellars/{id}
+POST   /cellars
+PUT    /cellars/{id}
+DELETE /cellars/{id}
+GET    /cellars/{id}/properties
+
+**JOB MANAGEMENT**
+GET    /jobs
+GET    /jobs/{id}
+POST   /jobs
+PUT    /jobs/{id}
+DELETE /jobs/{id}
+GET    /jobs/by-type/{jobType}
+
+**APPOINTMENT MANAGEMENT**
+GET    /appointments
+GET    /appointments/{id}
+POST   /appointments
+PUT    /appointments/{id}
+DELETE /appointments/{id}
+PATCH  /appointments/{id}/status
+GET    /appointments/customer/{customerId}
+GET    /appointments/technician/{technicianId}
+
+**PART INVENTORY**
+GET    /parts
+GET    /parts/{id}
+POST   /parts
+PUT    /parts/{id}
+DELETE /parts/{id}
+GET    /parts/status
+POST   /parts/inventory/report
+
+**REPORT MANAGEMENT**
+GET    /reports
+GET    /reports/{id}
+POST   /reports
+PUT    /reports/{id}
+PATCH  /reports/{id}/calculate
+GET    /reports/appointment/{appointmentId}
+POST   /reports/{id}/pdf
+
+**BILL MANAGEMENT**
+GET    /bills
+GET    /bills/{id}
+POST   /bills
+PUT    /bills/{id}
+PATCH  /bills/{id}/status
+GET    /bills/customer/{customerId}
+POST   /bills/{id}/payment
+GET    /bills/{id}/pdf
+
+**BILL PAYMENT (STRIPE)**
+POST   /bills/{billId}/create-checkout-session
+POST   /bills/stripe-webhook
+GET    /bills/{billId}/payment-status
+
+**REVIEW MANAGEMENT**
+GET    /reviews
+GET    /reviews/{id}
+POST   /reviews
+PUT    /reviews/{id}
+DELETE /reviews/{id}
+PATCH  /reviews/{id}/status
+GET    /reviews/pending
+GET    /reviews/approved
+
+**FILE MANAGEMENT**
+GET    /files/{fileId}
+POST   /files/upload
+DELETE /files/{fileId}
+GET    /files/owner/{ownerType}/{ownerId}
+POST   /files/{fileId}/download
+
+end note
+
+@enduml

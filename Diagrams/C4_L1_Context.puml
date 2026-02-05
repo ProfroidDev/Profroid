@@ -1,0 +1,26 @@
+@startuml
+!includeurl https://raw.githubusercontent.com/RicardoNiepel/C4-PlantUML/master/C4_Context.puml
+
+title C4 Level 1 - System Context Diagram for Profroid Management System
+
+Person(customer, "Customer", "Books cellar services, views appointments, makes payments, leaves reviews")
+Person(technician, "Technician", "Manages appointments, creates reports, tracks work progress")
+Person(admin, "Owner", "Manages jobs, parts inventory, pricing, customers, employees")
+
+System(profroid, "Profroid Management System", "Comprehensive system for managing wine cellar services, appointments, technician jobs, parts inventory, billing, and customer reviews")
+
+System_Ext(stripe, "Stripe", "Processes secure payments and handles billing transactions")
+System_Ext(auth_service, "Auth Service", "Provides authentication, authorization, and user session management")
+System_Ext(storage, "MinIO / Cloud Storage", "Stores files: images, reports, bills, appointment attachments")
+
+' Relationships
+Rel(customer, profroid, "Book appointments, view status, make payments, leave reviews")
+Rel(technician, profroid, "Manage assignments, create reports, update job status")
+Rel(admin, profroid, "Manage jobs, inventory, pricing, users, appointments")
+
+Rel(profroid, stripe, "Process payments, create payment intents, handle webhooks")
+Rel(profroid, auth_service, "Authenticate users, validate JWT tokens")
+Rel(profroid, storage, "Upload/download files: images, reports, bills")
+
+SHOW_LEGEND()
+@enduml

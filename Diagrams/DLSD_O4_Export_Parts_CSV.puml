@@ -1,0 +1,32 @@
+@startuml
+title DLSD - O-4 Manage Inventory - Export Parts to CSV
+
+actor Owner
+participant "InventoryPage" as UI
+participant "PartsApi" as Api
+participant "PartController" as Controller
+participant "PartService" as Service
+participant "PartRepository" as Repo
+database "Parts DB" as DB
+participant "Browser" as Browser
+
+Owner -> UI : Open Inventory
+UI -> Api : getAllParts()
+Api -> Controller : GET /v1/parts
+Controller -> Service : getAllParts()
+Service -> Repo : findAll()
+Repo -> DB : SELECT * FROM parts
+DB --> Repo : List<Part>
+Repo --> Service : List<Part>
+Service --> Controller : List<PartResponseModel>
+Controller --> Api : 200 OK (parts)
+Api --> UI : parts
+UI --> Owner : Display parts list
+
+Owner -> UI : Click Export CSV
+UI -> UI : Build CSV from filtered parts
+UI -> Browser : Create Blob and trigger download
+Browser --> Owner : Download inventory_YYYY-MM-DD.csv
+UI --> Owner : Show success toast
+
+@enduml
