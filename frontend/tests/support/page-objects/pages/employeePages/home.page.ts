@@ -8,11 +8,11 @@ export class EmployeeHomePage {
   // -------------------------
 
   public async goto() {
-    await this.page.goto('http://localhost:5173');
+    await this.page.goto('http://localhost:3000');
   }
 
   public async waitForHomeURL() {
-    await this.page.waitForURL('http://localhost:5173');
+    await this.page.waitForURL('http://localhost:3000');
   }
 
   // -------------------------

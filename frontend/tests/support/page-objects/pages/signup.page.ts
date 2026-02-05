@@ -4,7 +4,7 @@ export class SignupPage {
   constructor(private page: Page) {}
 
   public async goto() {
-    await this.page.goto('http://localhost:5173/register');
+    await this.page.goto('http://localhost:3000/register');
   }
 
   emailInput = () => this.page.getByLabel('Email', { exact: true });
