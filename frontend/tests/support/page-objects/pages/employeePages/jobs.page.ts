@@ -86,7 +86,7 @@ export class JobsPage {
   }
 
   // Toast notification
-  toast = () => this.page.locator('[class*="toast"]');
+  toast = () => this.page.locator('div.toast').first();
 
   // Get status badge for a job
   async getJobStatusByCustomerName(firstName: string, lastName: string) {
