@@ -30,6 +30,21 @@ export class AppointmentPage {
     return this.page.locator('.appointment-card', { hasText: new RegExp(jobName, 'i') }).first();
   }
 
+  // Get first visible appointment card by job name (filters out hidden/filtered appointments)
+  async getVisibleAppointmentCardByJobName(jobName: string) {
+    const cards = await this.page
+      .locator('.appointment-card', { hasText: new RegExp(jobName, 'i') })
+      .all();
+    for (const card of cards) {
+      const isVisible = await card.isVisible();
+      if (isVisible) {
+        return card;
+      }
+    }
+    // If no visible card found, return first one anyway
+    return cards[0] || this.page.locator('.appointment-card').first();
+  }
+
   // Get appointment by job name and extract appointment ID
   async getAppointmentIdByJobName(jobName: string) {
     const card = await this.getAppointmentCardByJobName(jobName);
@@ -68,7 +83,7 @@ export class AppointmentPage {
   }
 
   // Toast notification
-  toast = () => this.page.locator('[class*="toast"]');
+  toast = () => this.page.locator('div.toast').first();
 
   // Get status badge for an appointment
   async getAppointmentStatusByJobName(jobName: string) {

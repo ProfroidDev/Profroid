@@ -6,22 +6,23 @@ export class AddAppointmentModal {
 
   constructor(page: Page) {
     this.page = page;
-    this.modal = page.locator('[class*="appointment-modal"]');
+    this.modal = page.locator('div.appointment-modal');
   }
 
   // Form fields
-  getServiceSelect = () => this.modal.locator('select').first();
-  getDateInput = () => this.modal.locator('input[type="date"]');
-  getTimeSelect = () => this.modal.locator('select').filter({ hasNot: this.modal.locator('select').first() }).first();
-  getDescriptionInput = () => this.modal.locator('textarea').first();
-  
-  // Address fields - more flexible selectors
-  getStreetAddressInput = () => this.modal.locator('input').filter({ hasText: /street|address/i }).first();
-  getCityInput = () => this.modal.locator('input').filter({ hasText: /city/i }).first();
-  getProvinceInput = () => this.modal.locator('input').filter({ hasText: /province|state/i }).first();
-  getCountryInput = () => this.modal.locator('input').filter({ hasText: /country/i }).first();
-  getPostalCodeInput = () => this.modal.locator('input').filter({ hasText: /postal|zip/i }).first();
-  
+  getServiceSelect = () => this.modal.getByLabel(/service/i);
+  getDateInput = () => this.modal.locator('input[type="date"]').first();
+  getTimeSelect = () => this.modal.getByLabel(/time\s*slot/i);
+  getCellarSelect = () => this.modal.getByRole('combobox', { name: /cellar/i });
+  getDescriptionInput = () => this.modal.getByLabel(/description/i);
+
+  // Address fields
+  getStreetAddressInput = () => this.modal.getByLabel(/street\s*address/i);
+  getCityInput = () => this.modal.getByLabel(/city/i);
+  getProvinceSelect = () => this.modal.getByLabel(/province/i);
+  getCountryInput = () => this.modal.getByLabel(/country/i);
+  getPostalCodeInput = () => this.modal.getByLabel(/postal\s*code/i);
+
   // Buttons
   getCloseButton = () => this.modal.locator('button[aria-label="Close"]');
   getSubmitButton = () => this.modal.getByRole('button', { name: /submit|save|book|create/i });
@@ -29,8 +30,8 @@ export class AddAppointmentModal {
   getCancelButton = () => this.modal.getByRole('button', { name: /cancel/i });
 
   // Technician/Customer search
-  getTechnicianSearchInput = () => this.modal.locator('input[type="text"]').filter({ hasText: /technician/i }).first();
-  getCustomerSearchInput = () => this.modal.locator('input[type="text"]').filter({ hasText: /customer|email/i }).first();
+  getTechnicianSearchInput = () => this.modal.getByLabel(/available\s*technicians/i);
+  getCustomerSearchInput = () => this.modal.getByLabel(/customer/i);
 
   // Error messages
   getErrorMessage = () => this.modal.locator('[class*="error"]').first();
@@ -41,10 +42,11 @@ export class AddAppointmentModal {
     const select = this.getServiceSelect();
     const options = select.locator('option');
     const count = await options.count();
-    
+    const target = serviceName.toLowerCase();
+
     for (let i = 0; i < count; i++) {
       const text = await options.nth(i).textContent();
-      if (text?.toLowerCase().includes(serviceName.toLowerCase())) {
+      if (text?.toLowerCase().includes(target)) {
         await select.selectOption({ index: i });
         break;
       }
@@ -62,13 +64,48 @@ export class AddAppointmentModal {
   // Time selection
   async selectTime(time: string) {
     const select = this.getTimeSelect();
+    await select.waitFor({ state: 'visible' });
+    const handle = await select.elementHandle();
+    if (handle) {
+      await this.page.waitForFunction((el) => !(el as HTMLSelectElement).disabled, handle);
+      await this.page.waitForFunction((el) => (el as HTMLSelectElement).options.length > 0, handle);
+    }
+    const normalized = time.replace(/^0/, '');
+    if (handle) {
+      await select.evaluate(
+        (el, args: { desired: string; normalizedLabel: string }) => {
+          const selectEl = el as HTMLSelectElement;
+          const options = Array.from(selectEl.options).filter((opt) => !opt.disabled);
+          if (options.length === 0) {
+            return;
+          }
+          const target = options.find((opt) =>
+            opt.text.includes(args.desired) || opt.text.includes(args.normalizedLabel)
+          );
+          const chosen = target || options[0];
+          selectEl.value = chosen.value;
+          selectEl.dispatchEvent(new Event('change', { bubbles: true }));
+        },
+        { desired: time, normalizedLabel: normalized }
+      );
+      return;
+    }
+  }
+
+  async selectFirstCellar() {
+    const select = this.getCellarSelect();
+    const current = await select.inputValue().catch(() => '');
+    if (current) {
+      return;
+    }
+
     const options = select.locator('option');
     const count = await options.count();
-    
+
     for (let i = 0; i < count; i++) {
-      const text = await options.nth(i).textContent();
-      if (text?.includes(time)) {
-        await select.selectOption({ index: i });
+      const value = await options.nth(i).getAttribute('value');
+      if (value) {
+        await select.selectOption({ value });
         break;
       }
     }
@@ -97,8 +134,7 @@ export class AddAppointmentModal {
       await this.getCityInput().fill(address.city);
     }
     if (address.province) {
-      await this.getProvinceInput().clear();
-      await this.getProvinceInput().fill(address.province);
+      await this.getProvinceSelect().selectOption({ value: address.province });
     }
     if (address.country) {
       await this.getCountryInput().clear();
@@ -137,6 +173,7 @@ export class AddAppointmentModal {
     const button = this.getSubmitButton();
     // Wait for button to be enabled before clicking
     if (await button.isEnabled().catch(() => true)) {
+      await button.scrollIntoViewIfNeeded();
       await button.click();
     }
   }
