@@ -106,7 +106,7 @@ function slotToTimeValue(slot: TimeSlotType): string {
 
 function getAvailableEndTimes(startTime: string, isTechnician: boolean): string[] {
   const startMinutes = parseTime(startTime);
-  
+
   const allTimes: Array<{ time: string; minutes: number }> = [
     { time: '09:00', minutes: 9 * 60 },
     { time: '11:00', minutes: 11 * 60 },
@@ -114,15 +114,15 @@ function getAvailableEndTimes(startTime: string, isTechnician: boolean): string[
     { time: '15:00', minutes: 15 * 60 },
     { time: '17:00', minutes: 17 * 60 },
   ];
-  
-  let validTimes = allTimes.filter(t => t.minutes > startMinutes);
-  
+
+  let validTimes = allTimes.filter((t) => t.minutes > startMinutes);
+
   if (!isTechnician) {
-    const maxEndMinutes = startMinutes + (8 * 60);
-    validTimes = validTimes.filter(t => t.minutes <= maxEndMinutes);
+    const maxEndMinutes = startMinutes + 8 * 60;
+    validTimes = validTimes.filter((t) => t.minutes <= maxEndMinutes);
   }
-  
-  return validTimes.map(t => t.time);
+
+  return validTimes.map((t) => t.time);
 }
 
 export default function UpdateDayScheduleModal({
@@ -380,7 +380,9 @@ export default function UpdateDayScheduleModal({
                     <option value="">{t('pages.employees.selectHour')}</option>
                     {getAvailableEndTimes(nonTechSlot.start, false)
                       .map((time) => ({ time, slot: timeStringToEnum(time) }))
-                      .filter((item): item is { time: string; slot: TimeSlotType } => item.slot !== null)
+                      .filter(
+                        (item): item is { time: string; slot: TimeSlotType } => item.slot !== null
+                      )
                       .map(({ time, slot }) => (
                         <option key={time} value={time}>
                           {t(SLOT_KEYS[slot])}

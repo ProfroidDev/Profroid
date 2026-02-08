@@ -102,7 +102,7 @@ export default function Navigation(): React.ReactElement {
           {isAuthenticated ? (
             <>
               <button className="nav-profile" onClick={handleProfile}>
-                <User className="icon" /> 
+                <User className="icon" />
                 <span className="nav-profile-content">
                   <span className="nav-profile-email">{user?.email || t('common.profile')}</span>
                   <span className="nav-profile-role">{getRoleDisplay()}</span>

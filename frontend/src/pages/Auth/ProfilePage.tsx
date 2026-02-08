@@ -604,12 +604,12 @@ export default function ProfilePage() {
       if (!response.ok) {
         const errorData = await response.json();
         let errorMessage = errorData.message || 'Failed to create cellar';
-        
+
         // Check for specific error types and show friendly messages
         if (errorMessage.toLowerCase().includes('already exists')) {
           errorMessage = t('pages.profile.notifications.cellarNameExists');
         }
-        
+
         throw new Error(errorMessage);
       }
 
@@ -720,12 +720,12 @@ export default function ProfilePage() {
       if (!response.ok) {
         const errorData = await response.json();
         let errorMessage = errorData.message || 'Failed to update cellar';
-        
+
         // Check for specific error types and show friendly messages
         if (errorMessage.toLowerCase().includes('already exists')) {
           errorMessage = t('pages.profile.notifications.cellarNameExists');
         }
-        
+
         throw new Error(errorMessage);
       }
 
@@ -792,11 +792,11 @@ export default function ProfilePage() {
 
       if (!response.ok) {
         let errorMessage = t('pages.profile.notifications.cellarDeleteFailed');
-        
+
         try {
           const errorData = await response.json();
           console.log('Error response:', errorData); // Log for debugging
-          
+
           if (errorData && errorData.message) {
             const messageText = errorData.message.toLowerCase();
             if (messageText.includes('scheduled appointment')) {
@@ -812,7 +812,7 @@ export default function ProfilePage() {
           console.log('Response text:', responseText);
           errorMessage = t('pages.profile.notifications.cellarDeleteFailed');
         }
-        
+
         throw new Error(errorMessage);
       }
 
@@ -832,7 +832,10 @@ export default function ProfilePage() {
         cellarName: null,
       });
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : t('pages.profile.notifications.cellarDeleteFailed');
+      const errorMessage =
+        error instanceof Error
+          ? error.message
+          : t('pages.profile.notifications.cellarDeleteFailed');
       setToast({
         message: errorMessage,
         type: 'error',

@@ -327,7 +327,9 @@ export default function EmployeeListPage(): React.ReactElement {
                   <td>{e.lastName}</td>
                   <td>{e.firstName}</td>
                   <td>
-                    <span className="employee-type-badge">{e.employeeRole?.employeeRoleType || 'N/A'}</span>
+                    <span className="employee-type-badge">
+                      {e.employeeRole?.employeeRoleType || 'N/A'}
+                    </span>
                   </td>
                   <td>
                     <button
