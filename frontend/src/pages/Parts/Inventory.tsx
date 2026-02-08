@@ -93,11 +93,18 @@ const Inventory = () => {
 
   const getCurrentFilterLabel = () => {
     const filters = [];
+    const findLabel = (value: string, type: 'category' | 'status') => {
+      const option = filterOptions.find((item) =>
+        type === 'category' ? item.category === value : item.status === value
+      );
+      return option ? t(option.label) : value;
+    };
+
     if (categoryFilter !== 'All') {
-      filters.push(categoryFilter);
+      filters.push(findLabel(categoryFilter, 'category'));
     }
     if (statusFilter !== 'All') {
-      filters.push(statusFilter);
+      filters.push(findLabel(statusFilter, 'status'));
     }
     if (filters.length === 0) {
       return t('pages.parts.inventory.filterAll');

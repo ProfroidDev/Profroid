@@ -140,7 +140,9 @@ const CustomerBills = () => {
   };
 
   const calculateTotalAmount = () => {
-    return filteredBills.reduce((sum, bill) => sum + bill.amount, 0);
+    return filteredBills
+      .filter((bill) => bill.status === 'PAID')
+      .reduce((sum, bill) => sum + bill.amount, 0);
   };
 
   const calculateUnpaidAmount = () => {
