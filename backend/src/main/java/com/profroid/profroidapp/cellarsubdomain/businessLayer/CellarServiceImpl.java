@@ -1,5 +1,6 @@
 package com.profroid.profroidapp.cellarsubdomain.businessLayer;
 
+import com.profroid.profroidapp.appointmentsubdomain.dataAccessLayer.AppointmentRepository;
 import com.profroid.profroidapp.cellarsubdomain.dataAccessLayer.Cellar;
 import com.profroid.profroidapp.cellarsubdomain.dataAccessLayer.CellarIdentifier;
 import com.profroid.profroidapp.cellarsubdomain.dataAccessLayer.CellarRepository;
@@ -24,15 +25,18 @@ public class CellarServiceImpl implements CellarService {
     private final CellarResponseMapper cellarResponseMapper;
     private final CellarRequestMapper cellarRequestMapper;
     private final CustomerRepository customerRepository;
+    private final AppointmentRepository appointmentRepository;
 
     public CellarServiceImpl(CellarRepository cellarRepository,
                              CellarResponseMapper cellarResponseMapper,
                              CellarRequestMapper cellarRequestMapper,
-                             CustomerRepository customerRepository) {
+                             CustomerRepository customerRepository,
+                             AppointmentRepository appointmentRepository) {
         this.cellarRepository = cellarRepository;
         this.cellarResponseMapper = cellarResponseMapper;
         this.cellarRequestMapper = cellarRequestMapper;
         this.customerRepository = customerRepository;
+        this.appointmentRepository = appointmentRepository;
     }
 
     @Override
@@ -72,7 +76,7 @@ public class CellarServiceImpl implements CellarService {
         }
 
         List<Cellar> cellars =
-                cellarRepository.findByOwnerCustomerIdentifier(customer.getCustomerIdentifier());
+                cellarRepository.findActiveByOwnerCustomerIdentifier(customer.getCustomerIdentifier());
 
         return cellarResponseMapper.toResponseModelList(cellars);
     }
@@ -88,7 +92,7 @@ public class CellarServiceImpl implements CellarService {
             throw new ResourceNotFoundException("Customer not found for user " + userId);
         }
 
-        List<Cellar> cellars = cellarRepository.findByOwnerCustomerIdentifier(customer.getCustomerIdentifier());
+        List<Cellar> cellars = cellarRepository.findActiveByOwnerCustomerIdentifier(customer.getCustomerIdentifier());
         return cellarResponseMapper.toResponseModelList(cellars);
     }
 
@@ -140,8 +144,8 @@ public class CellarServiceImpl implements CellarService {
             throw new EntityNotFoundException("Customer not found: " + ownerCustomerId);
         }
 
-        // 2. Check for duplicate cellar name for this owner
-        Cellar existingCellar = cellarRepository.findCellarByNameAndOwnerCustomerIdentifier_CustomerId(
+        // 2. Check for duplicate cellar name for this owner (excluding deleted cellars)
+        Cellar existingCellar = cellarRepository.findActiveCellarByNameAndOwnerCustomerIdentifier_CustomerId(
             cellarRequestModel.getName(), 
             ownerCustomerId
         );
@@ -196,9 +200,9 @@ public class CellarServiceImpl implements CellarService {
             );
         }
 
-        // 6. Check for duplicate cellar name (if name is being changed)
+        // 6. Check for duplicate cellar name (if name is being changed, excluding deleted cellars)
         if (!foundCellar.getName().equals(cellarRequestModel.getName())) {
-            Cellar existingCellar = cellarRepository.findCellarByNameAndOwnerCustomerIdentifier_CustomerId(
+            Cellar existingCellar = cellarRepository.findActiveCellarByNameAndOwnerCustomerIdentifier_CustomerId(
                 cellarRequestModel.getName(), 
                 ownerCustomerId
             );
@@ -226,7 +230,7 @@ public class CellarServiceImpl implements CellarService {
     }
 
     @Override
-    public CellarResponseModel deactivateCellar(String cellarId) {
+    public CellarResponseModel deleteCellar(String cellarId) {
         if (cellarId == null || cellarId.trim().length() != 36) {
             throw new InvalidIdentifierException("Cellar ID must be a 36-character UUID string.");
         }
@@ -237,14 +241,19 @@ public class CellarServiceImpl implements CellarService {
             throw new ResourceNotFoundException("Cellar " + cellarId + " not found.");
         }
 
-        if (!cellar.getIsActive()) {
-            throw new InvalidOperationException("Cellar " + cellarId + " is already deactivated.");
+        // Check if cellar has any SCHEDULED appointments - block deletion
+        List<?> scheduledAppointments = appointmentRepository.findScheduledAppointmentsByCellarId(cellarId);
+        if (!scheduledAppointments.isEmpty()) {
+            throw new InvalidOperationException(
+                "Cannot delete cellar '" + cellar.getName() + "' because it has scheduled appointments."
+            );
         }
 
-        cellar.setIsActive(false);
-        Cellar deactivatedCellar = cellarRepository.save(cellar);
+        // Soft delete: mark as deleted and hide all information
+        cellar.setIsDeleted(true);
+        Cellar deletedCellar = cellarRepository.save(cellar);
 
-        return cellarResponseMapper.toResponseModel(deactivatedCellar);
+        return cellarResponseMapper.toResponseModel(deletedCellar);
     }
 
     @Override

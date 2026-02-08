@@ -54,5 +54,7 @@ public class Cellar {
     private CellarType cellarType;
 
     private Boolean isActive = true;
+    
+    private Boolean isDeleted = false;
 }
 

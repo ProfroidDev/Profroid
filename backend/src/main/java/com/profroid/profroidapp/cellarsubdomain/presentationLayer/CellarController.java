@@ -83,12 +83,14 @@ public class CellarController {
         CellarResponseModel responseModel = cellarService.updateCellar(ownerCustomerId, cellarId, cellarRequestModel);
         return ResponseEntity.ok(responseModel);
     }
+
     @PreAuthorize("hasRole('CUSTOMER')")
-    @DeleteMapping("/{cellarId}/deactivate")
-    public ResponseEntity<CellarResponseModel> deactivateCellar(@PathVariable String cellarId) {
-        CellarResponseModel deactivated = cellarService.deactivateCellar(cellarId);
-        return ResponseEntity.status(HttpStatus.OK).body(deactivated);
+    @DeleteMapping("/{cellarId}")
+    public ResponseEntity<CellarResponseModel> deleteCellar(@PathVariable String cellarId) {
+        CellarResponseModel deleted = cellarService.deleteCellar(cellarId);
+        return ResponseEntity.status(HttpStatus.OK).body(deleted);
     }
+
     @PreAuthorize("hasRole('CUSTOMER')")
     @PatchMapping("/{cellarId}/reactivate")
     public ResponseEntity<CellarResponseModel> reactivateCellar(@PathVariable String cellarId) {

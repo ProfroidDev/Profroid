@@ -862,10 +862,14 @@
         "cellarCreated": "Cave créée avec succès!",
         "cellarCreateFailed": "Échec de la création de la cave",
         "cellarUpdated": "Cave mise à jour avec succès!",
-        "cellarUpdateFailed": "Échec de la mise à jour de la cave",
-        "cellarDeactivated": "Cave désactivée avec succès!",
-        "cellarDeactivateFailed": "Échec de la désactivation de la cave",
-        "passwordChanged": "Mot de passe modifié avec succès!"
+        "cellarUpdateFailed": "Echec de la mise a jour de la cave",
+        "cellarDeactivated": "Cave desactivee avec succes!",
+        "cellarDeactivateFailed": "Echec de la desactivation de la cave",
+        "cellarDeleted": "Votre cave a ete supprimee avec succes",
+        "cellarDeleteFailed": "Nous n'avons pas pu supprimer la cave. Veuillez reessayer",
+        "cellarDeleteWithAppointments": "Cette cave ne peut pas etre supprimee car elle a des rendez-vous programmes. Veuillez d'abord annuler ou completer tous les rendez-vous programmes",
+        "cellarNameExists": "Une cave avec ce nom existe deja. Veuillez utiliser un nom different",
+        "passwordChanged": "Mot de passe modifie avec succes!"
       },
       "mySchedule": "Mon Horaire",
       "selectDate": "Sélectionner une Date",

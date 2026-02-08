@@ -865,6 +865,10 @@
         "cellarUpdateFailed": "Failed to update cellar",
         "cellarDeactivated": "Cellar has been deactivated successfully!",
         "cellarDeactivateFailed": "Failed to deactivate cellar",
+        "cellarDeleted": "Your cellar has been deleted successfully",
+        "cellarDeleteFailed": "We could not delete the cellar. Please try again",
+        "cellarDeleteWithAppointments": "This cellar cannot be deleted because it has scheduled appointments. Please cancel or complete all scheduled appointments first",
+        "cellarNameExists": "A cellar with this name already exists. Please use a different name",
         "passwordChanged": "Password changed successfully!"
       },
       "mySchedule": "My Schedule",
