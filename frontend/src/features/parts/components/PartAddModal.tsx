@@ -30,6 +30,7 @@ export default function PartAddModal({
   const [available, setAvailable] = useState<boolean>(true);
   const [file, setFile] = useState<File | null>(null);
   const [submitting, setSubmitting] = useState<boolean>(false);
+  const [isOverlayMouseDown, setIsOverlayMouseDown] = useState<boolean>(false);
 
   const MAX_FILE_SIZE_MB = 10;
   const MAX_FILE_SIZE_BYTES = MAX_FILE_SIZE_MB * 1024 * 1024;
@@ -126,8 +127,25 @@ export default function PartAddModal({
     }
   };
 
+  const handleOverlayMouseDown = (e: React.MouseEvent) => {
+    if (e.target === e.currentTarget) {
+      setIsOverlayMouseDown(true);
+    }
+  };
+
+  const handleOverlayMouseUp = (e: React.MouseEvent) => {
+    if (isOverlayMouseDown && e.target === e.currentTarget) {
+      handleClose();
+    }
+    setIsOverlayMouseDown(false);
+  };
+
   return (
-    <div className="part-add-modal-overlay" onClick={handleClose}>
+    <div
+      className="part-add-modal-overlay"
+      onMouseDown={handleOverlayMouseDown}
+      onMouseUp={handleOverlayMouseUp}
+    >
       <div className="part-add-modal-content" onClick={(e) => e.stopPropagation()}>
         <div className="part-add-modal-header">
           <h2 className="part-add-modal-title">Add New Part</h2>
@@ -192,7 +210,7 @@ export default function PartAddModal({
               </label>
               <input
                 id="part-quantity"
-                type="number"
+                type="text"
                 min="0"
                 className="part-add-form-input"
                 placeholder="Enter quantity"
@@ -209,9 +227,8 @@ export default function PartAddModal({
               </label>
               <input
                 id="part-price"
-                type="number"
+                type="text"
                 min="0"
-                step="0.01"
                 className="part-add-form-input"
                 placeholder="Enter price"
                 value={price}
@@ -243,7 +260,7 @@ export default function PartAddModal({
               </label>
               <input
                 id="part-low-threshold"
-                type="number"
+                type="text"
                 min="0"
                 className="part-add-form-input"
                 value={lowStockThreshold}
@@ -258,7 +275,7 @@ export default function PartAddModal({
               </label>
               <input
                 id="part-out-threshold"
-                type="number"
+                type="text"
                 min="0"
                 className="part-add-form-input"
                 value={outOfStockThreshold}
@@ -273,7 +290,7 @@ export default function PartAddModal({
               </label>
               <input
                 id="part-high-threshold"
-                type="number"
+                type="text"
                 min="0"
                 className="part-add-form-input"
                 value={highStockThreshold}

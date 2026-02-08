@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Plus, Download, Edit2, Search, X } from 'lucide-react';
+import { Plus, Download, Edit2, Search, X, RotateCcw } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { sanitizeInput } from '../../utils/sanitizer';
 import { getAllParts } from '../../features/parts/api/getAllParts';
@@ -83,6 +83,26 @@ const Inventory = () => {
   const showToast = (text: string, type: 'success' | 'error') => {
     setToastMessage({ text, type });
     setTimeout(() => setToastMessage(null), 3000);
+  };
+
+  const resetFilters = () => {
+    setSearchQuery('');
+    setCategoryFilter('All');
+    setStatusFilter('All');
+  };
+
+  const getCurrentFilterLabel = () => {
+    const filters = [];
+    if (categoryFilter !== 'All') {
+      filters.push(categoryFilter);
+    }
+    if (statusFilter !== 'All') {
+      filters.push(statusFilter);
+    }
+    if (filters.length === 0) {
+      return t('pages.parts.inventory.filterAll');
+    }
+    return filters.join(' • ');
   };
 
   // Filtered parts
@@ -306,9 +326,23 @@ const Inventory = () => {
                 </option>
               ))}
             </select>
+            <div className="filter-indicator">
+              {getCurrentFilterLabel()}
+            </div>
           </div>
 
           <div className="filters-actions">
+            <motion.button
+              className="btn btn-outline btn-compact"
+              onClick={resetFilters}
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              title={t('pages.parts.inventory.buttons.resetFilters')}
+            >
+              <RotateCcw size={16} />
+              {t('pages.parts.inventory.buttons.resetFilters')}
+            </motion.button>
+
             <motion.button
               className="btn btn-primary btn-compact"
               onClick={() => setIsAddDialogOpen(true)}
