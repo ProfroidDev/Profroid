@@ -20,8 +20,50 @@ type NonTechSlot = { start: string; end: string };
 type TechSlot = TimeSlotType;
 
 const DAYS: DayOfWeekType[] = ['MONDAY', 'TUESDAY', 'WEDNESDAY', 'THURSDAY', 'FRIDAY'];
-// Do not offer 17h (FIVE_PM) for new technician schedules by default
-const AVAILABLE_SLOTS: TimeSlotType[] = ['NINE_AM', 'ELEVEN_AM', 'ONE_PM', 'THREE_PM'];
+
+const NON_TECH_SLOTS: TimeSlotType[] = ['NINE_AM', 'ELEVEN_AM', 'ONE_PM', 'THREE_PM'];
+
+function getAvailableSlots(isTechnician: boolean): TimeSlotType[] {
+  return isTechnician
+    ? ['NINE_AM', 'ELEVEN_AM', 'ONE_PM', 'THREE_PM']
+    : ['NINE_AM', 'ELEVEN_AM', 'ONE_PM', 'THREE_PM'];
+}
+
+function getAvailableEndTimes(startTime: string, isTechnician: boolean): string[] {
+  const startMinutes = parseTime(startTime);
+  
+  const allTimes: Array<{ time: string; minutes: number }> = [
+    { time: '09:00', minutes: 9 * 60 },
+    { time: '11:00', minutes: 11 * 60 },
+    { time: '13:00', minutes: 13 * 60 },
+    { time: '15:00', minutes: 15 * 60 },
+    { time: '17:00', minutes: 17 * 60 },
+  ];
+  
+  let validTimes = allTimes.filter(t => t.minutes > startMinutes);
+  
+  if (!isTechnician) {
+    const maxEndMinutes = startMinutes + (8 * 60);
+    validTimes = validTimes.filter(t => t.minutes <= maxEndMinutes);
+  }
+  
+  return validTimes.map(t => t.time);
+}
+
+function slotToTimeValue(slot: TimeSlotType): string {
+  switch (slot) {
+    case 'NINE_AM':
+      return '09:00';
+    case 'ELEVEN_AM':
+      return '11:00';
+    case 'ONE_PM':
+      return '13:00';
+    case 'THREE_PM':
+      return '15:00';
+    case 'FIVE_PM':
+      return '17:00';
+  }
+}
 
 const SLOT_KEYS: Record<TimeSlotType, string> = {
   NINE_AM: 'common.timeSlot.nineAm',
@@ -118,7 +160,7 @@ export default function AddScheduleModal({
           return t('error.schedule.dayAndEndTimesRequired', {
             day: t(`common.dayOfWeek.${day.toLowerCase()}`),
           });
-        if (slot.start !== '09:00') return t('error.schedule.nonTechnicianMustStartNineAm');
+
         const startMinutes = parseTime(slot.start);
         const endMinutes = parseTime(slot.end);
         if (startMinutes >= endMinutes)
@@ -233,12 +275,18 @@ export default function AddScheduleModal({
                 <div className="slot">
                   <label>
                     <span>{t('pages.employees.start')}</span>
-                    <input
-                      type="time"
+                    <select
                       value={nonTechSlots[day].start}
                       onChange={(e) => updateNonTechSlot(day, 'start', e.target.value)}
-                      disabled
-                    />
+                      className="hour-select"
+                    >
+                      <option value="">Select Start Time</option>
+                      {NON_TECH_SLOTS.map((slot) => (
+                        <option key={slot} value={slotToTimeValue(slot)}>
+                          {t(SLOT_KEYS[slot])}
+                        </option>
+                      ))}
+                    </select>
                   </label>
                   <label>
                     <span>{t('pages.employees.end')}</span>
@@ -248,10 +296,14 @@ export default function AddScheduleModal({
                       className="hour-select"
                     >
                       <option value="">{t('pages.employees.selectHour')}</option>
-                      <option value="11:00">{t('common.timeSlot.elevenAm')}</option>
-                      <option value="13:00">{t('common.timeSlot.onePm')}</option>
-                      <option value="15:00">{t('common.timeSlot.threePm')}</option>
-                      <option value="17:00">{t('common.timeSlot.fivePm')}</option>
+                      {getAvailableEndTimes(nonTechSlots[day].start, false)
+                        .map((time) => ({ time, slot: toTimeSlotEnum(time) }))
+                        .filter((item): item is { time: string; slot: TimeSlotType } => item.slot !== null)
+                        .map(({ time, slot }) => (
+                          <option key={time} value={time}>
+                            {t(SLOT_KEYS[slot])}
+                          </option>
+                        ))}
                     </select>
                   </label>
                 </div>
@@ -275,7 +327,7 @@ export default function AddScheduleModal({
                       );
                     })}
                   <div className="slot-add-controls">
-                    {AVAILABLE_SLOTS.map((slotType) => (
+                    {getAvailableSlots(true).map((slotType) => (
                       <button
                         key={slotType}
                         className="btn-slot-option"

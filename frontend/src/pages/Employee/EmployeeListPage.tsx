@@ -304,7 +304,7 @@ export default function EmployeeListPage(): React.ReactElement {
       <div className="employees-card-light">
         <div style={{ marginBottom: '20px' }}>
           <button className="btn-add-employee" onClick={() => setAssignModalOpen(true)}>
-            + {t('pages.employees.addEmployee')}
+            + {t('pages.employees.assignNewEmployee')}
           </button>
         </div>
 
@@ -316,6 +316,7 @@ export default function EmployeeListPage(): React.ReactElement {
               <tr>
                 <th>{t('pages.employees.name')}</th>
                 <th>{t('auth.firstName')}</th>
+                <th>{t('pages.employees.employeeType')}</th>
                 <th>{t('common.edit')}</th>
               </tr>
             </thead>
@@ -325,6 +326,9 @@ export default function EmployeeListPage(): React.ReactElement {
                 <tr key={idx} className={!e.isActive ? 'row-deactivated' : ''}>
                   <td>{e.lastName}</td>
                   <td>{e.firstName}</td>
+                  <td>
+                    <span className="employee-type-badge">{e.employeeRole?.employeeRoleType || 'N/A'}</span>
+                  </td>
                   <td>
                     <button
                       className="btn-view-light"
