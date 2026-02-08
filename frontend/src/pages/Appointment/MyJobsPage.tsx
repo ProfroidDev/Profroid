@@ -442,8 +442,14 @@ export default function MyJobsPage(): React.ReactElement {
                 <input
                   type="date"
                   value={startDateFilter}
+                  max={endDateFilter}
                   onChange={(e) => {
-                    setStartDateFilter(e.target.value);
+                    const newStartDate = e.target.value;
+                    setStartDateFilter(newStartDate);
+                    // If new start date is after end date, adjust end date
+                    if (endDateFilter && newStartDate > endDateFilter) {
+                      setEndDateFilter(newStartDate);
+                    }
                     setCurrentPage(1);
                   }}
                   className="filter-input"
@@ -455,8 +461,15 @@ export default function MyJobsPage(): React.ReactElement {
                 <input
                   type="date"
                   value={endDateFilter}
+                  min={startDateFilter}
                   onChange={(e) => {
-                    setEndDateFilter(e.target.value);
+                    const newEndDate = e.target.value;
+                    // Prevent end date from being earlier than start date
+                    if (startDateFilter && newEndDate < startDateFilter) {
+                      setEndDateFilter(startDateFilter);
+                    } else {
+                      setEndDateFilter(newEndDate);
+                    }
                     setCurrentPage(1);
                   }}
                   className="filter-input"

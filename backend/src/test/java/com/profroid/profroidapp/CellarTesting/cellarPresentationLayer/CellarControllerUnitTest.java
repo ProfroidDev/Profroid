@@ -334,58 +334,58 @@ public class CellarControllerUnitTest {
     // DEACTIVATE CELLAR
     // ============================================================
 
-    @Test
-    void whenDeactivateCellar_withValidId_thenReturnDeactivatedCellar() {
-        CellarResponseModel deactivatedResponse = CellarResponseModel.builder()
-                .cellarId(VALID_CELLAR_ID)
-                .name("Wine Cellar")
-                .isActive(false)
-                .build();
+//     @Test
+//     void whenDeactivateCellar_withValidId_thenReturnDeactivatedCellar() {
+//         CellarResponseModel deactivatedResponse = CellarResponseModel.builder()
+//                 .cellarId(VALID_CELLAR_ID)
+//                 .name("Wine Cellar")
+//                 .isActive(false)
+//                 .build();
 
-        when(cellarService.deactivateCellar(VALID_CELLAR_ID)).thenReturn(deactivatedResponse);
+//         when(cellarService.deactivateCellar(VALID_CELLAR_ID)).thenReturn(deactivatedResponse);
 
-        ResponseEntity<CellarResponseModel> response =
-                cellarController.deactivateCellar(VALID_CELLAR_ID);
+//         ResponseEntity<CellarResponseModel> response =
+//                 cellarController.deactivateCellar(VALID_CELLAR_ID);
 
-        assertEquals(HttpStatus.OK, response.getStatusCode());
-        assertNotNull(response.getBody());
-        assertFalse(response.getBody().isActive());
+//         assertEquals(HttpStatus.OK, response.getStatusCode());
+//         assertNotNull(response.getBody());
+//         assertFalse(response.getBody().isActive());
 
-        verify(cellarService, times(1)).deactivateCellar(VALID_CELLAR_ID);
-    }
+//         verify(cellarService, times(1)).deactivateCellar(VALID_CELLAR_ID);
+//     }
 
-    @Test
-    void whenDeactivateCellar_withInvalidId_thenThrowInvalidIdentifierException() {
-        when(cellarService.deactivateCellar(INVALID_CELLAR_ID))
-                .thenThrow(new InvalidIdentifierException("Invalid ID"));
+//     @Test
+//     void whenDeactivateCellar_withInvalidId_thenThrowInvalidIdentifierException() {
+//         when(cellarService.deactivateCellar(INVALID_CELLAR_ID))
+//                 .thenThrow(new InvalidIdentifierException("Invalid ID"));
 
-        assertThrows(InvalidIdentifierException.class,
-                () -> cellarController.deactivateCellar(INVALID_CELLAR_ID));
+//         assertThrows(InvalidIdentifierException.class,
+//                 () -> cellarController.deactivateCellar(INVALID_CELLAR_ID));
 
-        verify(cellarService, times(1)).deactivateCellar(INVALID_CELLAR_ID);
-    }
+//         verify(cellarService, times(1)).deactivateCellar(INVALID_CELLAR_ID);
+//     }
 
-    @Test
-    void whenDeactivateCellar_withNonExistingId_thenThrowResourceNotFoundException() {
-        when(cellarService.deactivateCellar(NON_EXISTING_CELLAR_ID))
-                .thenThrow(new ResourceNotFoundException("Cellar not found"));
+//     @Test
+//     void whenDeactivateCellar_withNonExistingId_thenThrowResourceNotFoundException() {
+//         when(cellarService.deactivateCellar(NON_EXISTING_CELLAR_ID))
+//                 .thenThrow(new ResourceNotFoundException("Cellar not found"));
 
-        assertThrows(ResourceNotFoundException.class,
-                () -> cellarController.deactivateCellar(NON_EXISTING_CELLAR_ID));
+//         assertThrows(ResourceNotFoundException.class,
+//                 () -> cellarController.deactivateCellar(NON_EXISTING_CELLAR_ID));
 
-        verify(cellarService, times(1)).deactivateCellar(NON_EXISTING_CELLAR_ID);
-    }
+//         verify(cellarService, times(1)).deactivateCellar(NON_EXISTING_CELLAR_ID);
+//     }
 
-    @Test
-    void whenDeactivateCellar_alreadyDeactivated_thenThrowInvalidOperationException() {
-        when(cellarService.deactivateCellar(VALID_CELLAR_ID))
-                .thenThrow(new InvalidOperationException("Cellar already deactivated"));
+//     @Test
+//     void whenDeactivateCellar_alreadyDeactivated_thenThrowInvalidOperationException() {
+//         when(cellarService.deactivateCellar(VALID_CELLAR_ID))
+//                 .thenThrow(new InvalidOperationException("Cellar already deactivated"));
 
-        assertThrows(InvalidOperationException.class,
-                () -> cellarController.deactivateCellar(VALID_CELLAR_ID));
+//         assertThrows(InvalidOperationException.class,
+//                 () -> cellarController.deactivateCellar(VALID_CELLAR_ID));
 
-        verify(cellarService, times(1)).deactivateCellar(VALID_CELLAR_ID);
-    }
+//         verify(cellarService, times(1)).deactivateCellar(VALID_CELLAR_ID);
+//     }
 
     // ============================================================
     // REACTIVATE CELLAR

@@ -22,20 +22,26 @@ public class GlobalControllerExceptionHandler{
 
     @ResponseStatus(HttpStatus.CONFLICT)
     @ExceptionHandler(ResourceAlreadyExistsException.class)
-    public String handleResourceAlreadyExistsException(ResourceAlreadyExistsException ex) {
-        return ex.getMessage();
+    public Map<String, String> handleResourceAlreadyExistsException(ResourceAlreadyExistsException ex) {
+        Map<String, String> response = new HashMap<>();
+        response.put("message", ex.getMessage());
+        return response;
     }
 
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     @ExceptionHandler(MissingDataException.class)
-    public String handleMissingDataException(MissingDataException ex) {
-        return ex.getMessage();
+    public Map<String, String> handleMissingDataException(MissingDataException ex) {
+        Map<String, String> response = new HashMap<>();
+        response.put("message", ex.getMessage());
+        return response;
     }
 
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     @ExceptionHandler(InvalidOperationException.class)
-    public String handleInvalidOperationException(InvalidOperationException ex) {
-        return ex.getMessage();
+    public Map<String, String> handleInvalidOperationException(InvalidOperationException ex) {
+        Map<String, String> response = new HashMap<>();
+        response.put("message", ex.getMessage());
+        return response;
     }
 
     @ResponseStatus(HttpStatus.BAD_REQUEST)
@@ -50,22 +56,28 @@ public class GlobalControllerExceptionHandler{
 
     @ResponseStatus(HttpStatus.UNPROCESSABLE_ENTITY)
     @ExceptionHandler(InvalidIdentifierException.class)
-    public String handleInvalidIdentifierException(InvalidIdentifierException ex) {
-        return ex.getMessage();
+    public Map<String, String> handleInvalidIdentifierException(InvalidIdentifierException ex) {
+        Map<String, String> response = new HashMap<>();
+        response.put("message", ex.getMessage());
+        return response;
     }
 
 
     @ResponseStatus(HttpStatus.NOT_FOUND)
     @ExceptionHandler(ResourceNotFoundException.class)
-    public String handleResourceNotFoundException(ResourceNotFoundException ex) {
-        return ex.getMessage();
+    public Map<String, String> handleResourceNotFoundException(ResourceNotFoundException ex) {
+        Map<String, String> response = new HashMap<>();
+        response.put("message", ex.getMessage());
+        return response;
     }
 
 
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     @ExceptionHandler(IllegalArgumentException.class)
-    public String handleIllegalArgumentException(IllegalArgumentException ex) {
-        return ex.getMessage();
+    public Map<String, String> handleIllegalArgumentException(IllegalArgumentException ex) {
+        Map<String, String> response = new HashMap<>();
+        response.put("message", ex.getMessage());
+        return response;
     }
 
 

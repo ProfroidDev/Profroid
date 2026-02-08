@@ -89,7 +89,9 @@ CREATE TABLE IF NOT EXISTS cellars (
                          has_humidity_control BOOLEAN NOT NULL,
                          has_auto_regulation BOOLEAN NOT NULL,
 
-                         cellar_type VARCHAR(50) NOT NULL                 -- Enum stored as string
+                         cellar_type VARCHAR(50) NOT NULL,                  -- Enum stored as string
+                         is_active BOOLEAN DEFAULT true,                     -- Soft delete flag
+                         is_deleted BOOLEAN DEFAULT false                    -- Hard/soft delete indicator
 );
 
 CREATE TABLE IF NOT EXISTS parts (
