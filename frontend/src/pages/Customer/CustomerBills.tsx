@@ -103,7 +103,7 @@ const CustomerBills = () => {
       const searchLower = searchQuery.toLowerCase();
       const formattedAppointmentDate = formatDate(bill.appointmentDate).toLowerCase();
       const formattedCreatedDate = bill.createdAt ? formatDate(bill.createdAt).toLowerCase() : '';
-      
+
       const matchesSearch =
         bill.billId.toLowerCase().includes(searchLower) ||
         bill.jobName.toLowerCase().includes(searchLower) ||

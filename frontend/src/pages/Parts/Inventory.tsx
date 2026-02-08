@@ -326,9 +326,7 @@ const Inventory = () => {
                 </option>
               ))}
             </select>
-            <div className="filter-indicator">
-              {getCurrentFilterLabel()}
-            </div>
+            <div className="filter-indicator">{getCurrentFilterLabel()}</div>
           </div>
 
           <div className="filters-actions">
