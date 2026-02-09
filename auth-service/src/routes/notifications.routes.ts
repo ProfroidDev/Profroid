@@ -12,8 +12,19 @@ import {
   type AppointmentDetails,
   type NotificationRecipient,
 } from "../services/appointmentNotification.service.js";
+import {
+  sendPaymentPaidNotification,
+  type PaymentDetails,
+  type PaymentNotificationRecipient,
+} from "../services/paymentNotification.service.js";
 
 const router = Router();
+
+type PaymentCustomerInput = {
+  userId?: string;
+  email?: string;
+  name: string;
+};
 
 /**
  * Helper function to convert userId to email
@@ -52,6 +63,42 @@ async function enrichRecipientsWithEmails(recipients: any[]): Promise<any[]> {
       return recipient;
     })
   );
+}
+
+/**
+ * Helper function to fetch admin recipients
+ */
+async function getAdminRecipients(): Promise<PaymentNotificationRecipient[]> {
+  try {
+    const adminProfiles = await prisma.userProfile.findMany({
+      where: {
+        role: "admin",
+        isActive: true,
+        user: {
+          email: { not: null },
+        },
+      },
+      select: {
+        user: {
+          select: {
+            email: true,
+          },
+        },
+      },
+    });
+
+    return adminProfiles
+      .map((profile) => profile.user?.email)
+      .filter((email): email is string => Boolean(email))
+      .map((email) => ({
+        email,
+        name: "Admin",
+        role: "admin",
+      }));
+  } catch (error) {
+    console.error("Failed to load admin recipients:", error);
+    return [];
+  }
 }
 
 /**
@@ -251,6 +298,85 @@ router.post("/appointment/reminder", async (req: Request, res: Response) => {
     });
   } catch (error) {
     console.error("Error sending appointment reminder notification:", error);
+    return res.status(500).json({
+      success: false,
+      error: error instanceof Error ? error.message : "Failed to send notification",
+    });
+  }
+});
+
+/**
+ * POST /api/notifications/payment/paid
+ * Send payment confirmation notifications to customer and admin
+ * Request body:
+ * {
+ *   customer: { userId, name, role: "customer" },
+ *   details: { billId, amount, status, paidAt, appointmentId, jobName, reportId, ... }
+ * }
+ */
+router.post("/payment/paid", async (req: Request, res: Response) => {
+  try {
+    const { customer, details } = req.body as {
+      customer: PaymentCustomerInput;
+      details: PaymentDetails;
+    };
+
+    if (!customer || !customer.name) {
+      return res.status(400).json({
+        success: false,
+        error: "Customer with name and either email or userId is required",
+      });
+    }
+
+    if (!customer.email && !customer.userId) {
+      return res.status(400).json({
+        success: false,
+        error: "Customer with email or userId is required",
+      });
+    }
+
+    if (!details || !details.billId) {
+      return res.status(400).json({
+        success: false,
+        error: "Payment details with billId are required",
+      });
+    }
+
+    let enrichedCustomer: PaymentNotificationRecipient = {
+      email: customer.email || "",
+      name: customer.name,
+      role: "customer",
+    };
+
+    if (!customer.email && customer.userId) {
+      const email = await getUserEmail(customer.userId);
+      enrichedCustomer = {
+        email: email || `user-${customer.userId}@example.com`,
+        name: customer.name,
+        role: "customer",
+      };
+    }
+
+    const adminRecipients = await getAdminRecipients();
+    const combinedRecipients = [enrichedCustomer, ...adminRecipients];
+    const uniqueRecipients = Array.from(
+      new Map(combinedRecipients.map((recipient) => [recipient.email, recipient])).values(),
+    );
+
+    const enrichedDetails: PaymentDetails = {
+      ...details,
+      customerName: details.customerName || customer.name,
+      customerEmail: details.customerEmail || enrichedCustomer.email,
+    };
+
+    await sendPaymentPaidNotification(uniqueRecipients, enrichedDetails);
+
+    return res.json({
+      success: true,
+      message: "Payment confirmation notifications sent successfully",
+    });
+  } catch (error) {
+    console.error("Error sending payment confirmation notification:", error);
     return res.status(500).json({
       success: false,
       error: error instanceof Error ? error.message : "Failed to send notification",
