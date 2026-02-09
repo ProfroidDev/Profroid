@@ -338,7 +338,7 @@
       "bills": {
         "title": "Service Bills",
         "subtitle": "View and manage your service bills",
-        "totalAmount": "Total Amount",
+        "totalAmount": "Paid Amount",
         "searchPlaceholder": "Search by bill ID, job name, or date...",
         "filters": {
           "all": "ALL",
@@ -539,7 +539,8 @@
           "add": "Add",
           "export": "Export",
           "pdf": "PDF",
-          "edit": "Edit"
+          "edit": "Edit",
+          "resetFilters": "Reset Filters"
         },
         "export": {
           "exportAll": "Export All ({{count}})",

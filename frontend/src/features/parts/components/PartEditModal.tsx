@@ -44,6 +44,7 @@ export default function PartEditModal({
   const [currentImageFileId, setCurrentImageFileId] = useState<string | null | undefined>(
     part?.imageFileId
   );
+  const [isOverlayMouseDown, setIsOverlayMouseDown] = useState<boolean>(false);
 
   const MAX_FILE_SIZE_MB = 10;
   const MAX_FILE_SIZE_BYTES = MAX_FILE_SIZE_MB * 1024 * 1024;
@@ -164,8 +165,25 @@ export default function PartEditModal({
     }
   };
 
+  const handleOverlayMouseDown = (e: React.MouseEvent) => {
+    if (e.target === e.currentTarget) {
+      setIsOverlayMouseDown(true);
+    }
+  };
+
+  const handleOverlayMouseUp = (e: React.MouseEvent) => {
+    if (isOverlayMouseDown && e.target === e.currentTarget) {
+      handleClose();
+    }
+    setIsOverlayMouseDown(false);
+  };
+
   return (
-    <div className="part-edit-modal-overlay" onClick={handleClose}>
+    <div
+      className="part-edit-modal-overlay"
+      onMouseDown={handleOverlayMouseDown}
+      onMouseUp={handleOverlayMouseUp}
+    >
       <div className="part-edit-modal-content" onClick={(e) => e.stopPropagation()}>
         <div className="part-edit-modal-header">
           <h2 className="part-edit-modal-title">Edit Part</h2>
@@ -230,7 +248,7 @@ export default function PartEditModal({
               </label>
               <input
                 id="part-quantity"
-                type="number"
+                type="text"
                 min="0"
                 className="part-edit-form-input"
                 placeholder="Enter quantity"
@@ -247,9 +265,8 @@ export default function PartEditModal({
               </label>
               <input
                 id="part-price"
-                type="number"
+                type="text"
                 min="0"
-                step="0.01"
                 className="part-edit-form-input"
                 placeholder="Enter price"
                 value={price}
@@ -281,7 +298,7 @@ export default function PartEditModal({
               </label>
               <input
                 id="part-low-threshold"
-                type="number"
+                type="text"
                 min="0"
                 className="part-edit-form-input"
                 value={lowStockThreshold}
@@ -296,7 +313,7 @@ export default function PartEditModal({
               </label>
               <input
                 id="part-out-threshold"
-                type="number"
+                type="text"
                 min="0"
                 className="part-edit-form-input"
                 value={outOfStockThreshold}
@@ -311,7 +328,7 @@ export default function PartEditModal({
               </label>
               <input
                 id="part-high-threshold"
-                type="number"
+                type="text"
                 min="0"
                 className="part-edit-form-input"
                 value={highStockThreshold}

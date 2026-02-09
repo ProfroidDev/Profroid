@@ -338,7 +338,7 @@
       "bills": {
         "title": "Factures de Service",
         "subtitle": "Consultez et gérez vos factures de service",
-        "totalAmount": "Montant Total",
+        "totalAmount": "Montant Payé",
         "searchPlaceholder": "Rechercher par ID de facture, nom du travail ou date...",
         "filters": {
           "all": "TOUS",
@@ -539,7 +539,8 @@
           "add": "Ajouter",
           "export": "Exporter",
           "pdf": "PDF",
-          "edit": "Modifier"
+          "edit": "Modifier",
+          "resetFilters": "Réinitialiser les Filtres"
         },
         "export": {
           "exportAll": "Tout Exporter ({{count}})",

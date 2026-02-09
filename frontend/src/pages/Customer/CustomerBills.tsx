@@ -89,14 +89,28 @@ const CustomerBills = () => {
     }
   };
 
+  const formatDate = (dateString: string) => {
+    return new Date(dateString).toLocaleDateString('en-CA', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric',
+    });
+  };
+
   // Filtered bills based on search and status
   const filteredBills = useMemo(() => {
     return bills.filter((bill) => {
       const searchLower = searchQuery.toLowerCase();
+      const formattedAppointmentDate = formatDate(bill.appointmentDate).toLowerCase();
+      const formattedCreatedDate = bill.createdAt ? formatDate(bill.createdAt).toLowerCase() : '';
+
       const matchesSearch =
         bill.billId.toLowerCase().includes(searchLower) ||
         bill.jobName.toLowerCase().includes(searchLower) ||
-        bill.appointmentDate.includes(searchQuery);
+        formattedAppointmentDate.includes(searchLower) ||
+        formattedCreatedDate.includes(searchLower) ||
+        bill.appointmentDate.toLowerCase().includes(searchLower) ||
+        (bill.createdAt && bill.createdAt.toLowerCase().includes(searchLower));
 
       if (filterStatus === 'ALL') return matchesSearch;
       return matchesSearch && bill.status === filterStatus;
@@ -121,20 +135,14 @@ const CustomerBills = () => {
     }).format(value);
   };
 
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('en-CA', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric',
-    });
-  };
-
   const getStatusBadgeClass = (status: string) => {
     return status === 'PAID' ? 'badge-paid' : 'badge-unpaid';
   };
 
   const calculateTotalAmount = () => {
-    return filteredBills.reduce((sum, bill) => sum + bill.amount, 0);
+    return filteredBills
+      .filter((bill) => bill.status === 'PAID')
+      .reduce((sum, bill) => sum + bill.amount, 0);
   };
 
   const calculateUnpaidAmount = () => {
