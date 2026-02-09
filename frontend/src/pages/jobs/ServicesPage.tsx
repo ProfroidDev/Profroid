@@ -830,7 +830,12 @@ export default function ServicesPage(): React.ReactElement {
               </button>
             </div>
 
-            {createError && <div className="error-message">{createError}</div>}
+            {createError && (
+              <div className="error-message">
+                <span className="error-icon">⚠️</span>
+                <span>{createError}</span>
+              </div>
+            )}
 
             <form
               className="create-job-form"
@@ -881,6 +886,7 @@ export default function ServicesPage(): React.ReactElement {
                     placeholder="0.00"
                     step="0.01"
                     disabled={createLoading}
+                    className="no-arrows"
                   />
                 </div>
 
@@ -896,6 +902,7 @@ export default function ServicesPage(): React.ReactElement {
                     onChange={handleFormChange}
                     placeholder="0"
                     disabled={createLoading}
+                    className="no-arrows"
                   />
                 </div>
               </div>
@@ -978,7 +985,12 @@ export default function ServicesPage(): React.ReactElement {
               </button>
             </div>
 
-            {updateError && <div className="error-message">{updateError}</div>}
+            {updateError && (
+              <div className="error-message">
+                <span className="error-icon">⚠️</span>
+                <span>{updateError}</span>
+              </div>
+            )}
 
             <form
               className="create-job-form"
@@ -1029,6 +1041,7 @@ export default function ServicesPage(): React.ReactElement {
                     placeholder="0.00"
                     step="0.01"
                     disabled={updateLoading}
+                    className="no-arrows"
                   />
                 </div>
 
@@ -1044,6 +1057,7 @@ export default function ServicesPage(): React.ReactElement {
                     onChange={handleUpdateFormChange}
                     placeholder="0"
                     disabled={updateLoading}
+                    className="no-arrows"
                   />
                 </div>
               </div>

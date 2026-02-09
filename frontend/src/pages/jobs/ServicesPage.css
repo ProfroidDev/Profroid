@@ -623,6 +623,23 @@
   padding: 12px;
   border-radius: 6px;
   font-size: 0.95rem;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: linear-gradient(135deg, #fee 0%, #fdd 100%);
+  border-left: 4px solid #b00020;
+  box-shadow: 0 2px 8px rgba(176, 0, 32, 0.15);
+}
+
+.error-message .error-icon {
+  font-size: 1.2rem;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+}
+
+.error-message span:last-child {
+  flex: 1;
 }
 
 .form-group {
@@ -655,6 +672,18 @@
   outline: none;
   border-color: #5a2a27;
   box-shadow: 0 0 0 3px rgba(90, 42, 39, 0.1);
+}
+
+/* Remove arrows from number inputs */
+.no-arrows {
+  appearance: textfield;
+  -moz-appearance: textfield;
+}
+
+.no-arrows::-webkit-outer-spin-button,
+.no-arrows::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
 }
 
 .form-group textarea {
