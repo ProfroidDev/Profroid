@@ -125,6 +125,26 @@
   background: #e0e0e0;
 }
 
+.nav-profile-content {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
+}
+
+.nav-profile-email {
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+.nav-profile-role {
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: #7a0901;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
 .nav-logout {
   background: #fee;
   color: #c33;

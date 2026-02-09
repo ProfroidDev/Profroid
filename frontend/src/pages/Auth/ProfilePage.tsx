@@ -603,7 +603,14 @@ export default function ProfilePage() {
 
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.message || 'Failed to create cellar');
+        let errorMessage = errorData.message || 'Failed to create cellar';
+
+        // Check for specific error types and show friendly messages
+        if (errorMessage.toLowerCase().includes('already exists')) {
+          errorMessage = t('pages.profile.notifications.cellarNameExists');
+        }
+
+        throw new Error(errorMessage);
       }
 
       // Reset form
@@ -712,7 +719,14 @@ export default function ProfilePage() {
 
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.message || 'Failed to update cellar');
+        let errorMessage = errorData.message || 'Failed to update cellar';
+
+        // Check for specific error types and show friendly messages
+        if (errorMessage.toLowerCase().includes('already exists')) {
+          errorMessage = t('pages.profile.notifications.cellarNameExists');
+        }
+
+        throw new Error(errorMessage);
       }
 
       // Reset form and close modal
@@ -758,7 +772,7 @@ export default function ProfilePage() {
     });
   };
 
-  const confirmCellarDeactivation = async () => {
+  const confirmCellarDeletion = async () => {
     if (!confirmationModal.cellarId) return;
 
     try {
@@ -766,7 +780,7 @@ export default function ProfilePage() {
       const token = localStorage.getItem('authToken');
 
       const response = await fetch(
-        `${import.meta.env.VITE_BACKEND_URL}/cellars/${confirmationModal.cellarId}/deactivate`,
+        `${import.meta.env.VITE_BACKEND_URL}/cellars/${confirmationModal.cellarId}`,
         {
           method: 'DELETE',
           headers: {
@@ -777,10 +791,29 @@ export default function ProfilePage() {
       );
 
       if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(
-          errorData.message || t('pages.profile.notifications.cellarDeactivateFailed')
-        );
+        let errorMessage = t('pages.profile.notifications.cellarDeleteFailed');
+
+        try {
+          const errorData = await response.json();
+          console.log('Error response:', errorData); // Log for debugging
+
+          if (errorData && errorData.message) {
+            const messageText = errorData.message.toLowerCase();
+            if (messageText.includes('scheduled appointment')) {
+              errorMessage = t('pages.profile.notifications.cellarDeleteWithAppointments');
+            } else {
+              errorMessage = errorData.message;
+            }
+          }
+        } catch (parseError) {
+          // Response is not JSON, try to get text
+          console.error('Failed to parse error response:', parseError);
+          const responseText = await response.text();
+          console.log('Response text:', responseText);
+          errorMessage = t('pages.profile.notifications.cellarDeleteFailed');
+        }
+
+        throw new Error(errorMessage);
       }
 
       // Refresh cellars list
@@ -788,7 +821,7 @@ export default function ProfilePage() {
 
       // Show success message
       setToast({
-        message: t('pages.profile.notifications.cellarDeactivated'),
+        message: t('pages.profile.notifications.cellarDeleted'),
         type: 'success',
       });
 
@@ -799,9 +832,12 @@ export default function ProfilePage() {
         cellarName: null,
       });
     } catch (error) {
-      console.error('Error deleting cellar:', error);
+      const errorMessage =
+        error instanceof Error
+          ? error.message
+          : t('pages.profile.notifications.cellarDeleteFailed');
       setToast({
-        message: t('pages.profile.notifications.cellarDeactivateFailed'),
+        message: errorMessage,
         type: 'error',
       });
     } finally {
@@ -1204,7 +1240,7 @@ export default function ProfilePage() {
                                 color: 'white',
                               }}
                             >
-                              {t('pages.profile.deactivate')}
+                              {t('pages.profile.delete')}
                             </button>
                           </div>
                           <hr
@@ -1782,7 +1818,7 @@ export default function ProfilePage() {
         cancelText={t('common.cancel')}
         isDanger={true}
         isLoading={cellarLoading}
-        onConfirm={confirmCellarDeactivation}
+        onConfirm={confirmCellarDeletion}
         onCancel={() =>
           setConfirmationModal({
             isOpen: false,

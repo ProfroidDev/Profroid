@@ -208,8 +208,8 @@ public class ScheduleServiceImpl implements ScheduleService {
                     throw new MissingDataException("Non-technician employees must provide exactly 2 time slots per day: start and end times.");
                 }
                 List<TimeSlotType> sorted = request.getTimeSlots().stream().sorted(Comparator.comparingInt(this::toMinutes)).toList();
-                if (sorted.get(0) != TimeSlotType.NINE_AM) {
-                    throw new MissingDataException("Non-technician employees must start at NINE_AM (9:00 AM).");
+                if (sorted.get(0) == TimeSlotType.FIVE_PM) {
+                    throw new MissingDataException("Non-technician employees cannot start at 5:00 PM. Maximum start time is 3:00 PM. Day: " + request.getDayOfWeek());
                 }
                 int startMinutes = toMinutes(sorted.get(0));
                 int endMinutes = toMinutes(sorted.get(1));
@@ -375,8 +375,8 @@ public class ScheduleServiceImpl implements ScheduleService {
                     throw new MissingDataException("Non-technician employees must provide exactly 2 time slots per day: start and end times.");
                 }
                 List<TimeSlotType> sorted = request.getTimeSlots().stream().sorted(Comparator.comparingInt(this::toMinutes)).toList();
-                if (sorted.get(0) != TimeSlotType.NINE_AM) {
-                    throw new MissingDataException("Non-technician employees must start at NINE_AM (9:00 AM).");
+                if (sorted.get(0) == TimeSlotType.FIVE_PM) {
+                    throw new MissingDataException("Non-technician employees cannot start at 5:00 PM. Maximum start time is 3:00 PM. Day: " + request.getDayOfWeek());
                 }
                 int startMinutes = toMinutes(sorted.get(0));
                 int endMinutes = toMinutes(sorted.get(1));
@@ -573,8 +573,8 @@ public class ScheduleServiceImpl implements ScheduleService {
                 throw new MissingDataException("Non-technician employees must provide exactly 2 time slots per day: start and end times.");
             }
             List<TimeSlotType> sorted = scheduleRequest.getTimeSlots().stream().sorted(Comparator.comparingInt(this::toMinutes)).toList();
-            if (sorted.get(0) != TimeSlotType.NINE_AM) {
-                throw new MissingDataException("Non-technician employees must start at NINE_AM (9:00 AM).");
+            if (sorted.get(0) == TimeSlotType.FIVE_PM) {
+                throw new MissingDataException("Non-technician employees cannot start at 5:00 PM. Maximum start time is 3:00 PM.");
             }
             int startMinutes = toMinutes(sorted.get(0));
             int endMinutes = toMinutes(sorted.get(1));

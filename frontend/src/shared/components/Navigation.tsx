@@ -37,6 +37,18 @@ export default function Navigation(): React.ReactElement {
   const isTechnician =
     user?.role?.toLowerCase() === 'employee' && user?.employeeType === 'TECHNICIAN';
 
+  // Get display role text
+  const getRoleDisplay = () => {
+    if (user?.role?.toLowerCase() === 'admin') {
+      return t('common.roleAdmin');
+    } else if (user?.role?.toLowerCase() === 'employee') {
+      return t('common.roleEmployee');
+    } else if (user?.role?.toLowerCase() === 'customer') {
+      return t('common.roleClient');
+    }
+    return '';
+  };
+
   return (
     <nav className="nav-container">
       <div className="nav-inner">
@@ -90,7 +102,11 @@ export default function Navigation(): React.ReactElement {
           {isAuthenticated ? (
             <>
               <button className="nav-profile" onClick={handleProfile}>
-                <User className="icon" /> {user?.email || t('common.profile')}
+                <User className="icon" />
+                <span className="nav-profile-content">
+                  <span className="nav-profile-email">{user?.email || t('common.profile')}</span>
+                  <span className="nav-profile-role">{getRoleDisplay()}</span>
+                </span>
               </button>
               <button className="nav-logout" onClick={handleLogout}>
                 <LogOut className="icon" /> {t('common.logout')}
@@ -241,7 +257,11 @@ export default function Navigation(): React.ReactElement {
           {isAuthenticated ? (
             <>
               <button className="nav-mobile-profile" onClick={handleProfile}>
-                <User className="icon" /> {user?.email || t('common.profile')}
+                <User className="icon" />
+                <span className="nav-profile-content">
+                  <span className="nav-profile-email">{user?.email || t('common.profile')}</span>
+                  <span className="nav-profile-role">{getRoleDisplay()}</span>
+                </span>
               </button>
               <button className="nav-mobile-logout" onClick={handleLogout}>
                 <LogOut className="icon" /> {t('common.logout')}

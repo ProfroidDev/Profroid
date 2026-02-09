@@ -162,5 +162,14 @@ public interface AppointmentRepository extends JpaRepository<Appointment, Intege
             @Param("start") LocalDateTime start,
             @Param("end") LocalDateTime end
     );
+
+    // Find all appointments by cellar (to check if cellar can be hard deleted)
+    @Query("SELECT a FROM Appointment a WHERE a.cellar.cellarIdentifier.cellarId = :cellarId")
+    List<Appointment> findAllByCellarId(@Param("cellarId") String cellarId);
+
+    // Find scheduled appointments by cellar (to check if cellar can be deleted)
+    @Query("SELECT a FROM Appointment a WHERE a.cellar.cellarIdentifier.cellarId = :cellarId " +
+           "AND a.appointmentStatus.appointmentStatusType = com.profroid.profroidapp.appointmentsubdomain.dataAccessLayer.AppointmentStatusType.SCHEDULED")
+    List<Appointment> findScheduledAppointmentsByCellarId(@Param("cellarId") String cellarId);
 }
 

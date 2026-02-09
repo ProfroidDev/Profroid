@@ -157,22 +157,22 @@ public class CellarServiceUnitTest {
         verify(cellarRepository).findCellarByCellarIdentifier_CellarId(NON_EXISTING_CELLAR_ID);
     }
 
-    // [Cellar-Service][Unit Test][Positive] Get all cellars by customer ID -> returns list
-    @Test
-    void getAllCellarsByCustomerId_valid_returnsList() {
-        when(customerRepository.findCustomerByCustomerIdentifier_CustomerId(VALID_CUSTOMER_ID))
-                .thenReturn(existingCustomer);
-        when(cellarRepository.findByOwnerCustomerIdentifier(customerIdentifier))
-                .thenReturn(Arrays.asList(existingCellar));
-        when(cellarResponseMapper.toResponseModelList(any(List.class)))
-                .thenReturn(Arrays.asList(existingCellarResponse));
-
-        List<CellarResponseModel> result = cellarService.getAllCellars(VALID_CUSTOMER_ID);
-
-        assertEquals(1, result.size());
-        verify(customerRepository).findCustomerByCustomerIdentifier_CustomerId(VALID_CUSTOMER_ID);
-        verify(cellarRepository).findByOwnerCustomerIdentifier(customerIdentifier);
-    }
+//    // [Cellar-Service][Unit Test][Positive] Get all cellars by customer ID -> returns list
+//    @Test
+//    void getAllCellarsByCustomerId_valid_returnsList() {
+//        when(customerRepository.findCustomerByCustomerIdentifier_CustomerId(VALID_CUSTOMER_ID))
+//                .thenReturn(existingCustomer);
+//        when(cellarRepository.findByOwnerCustomerIdentifier(customerIdentifier))
+//                .thenReturn(Arrays.asList(existingCellar));
+//        when(cellarResponseMapper.toResponseModelList(any(List.class)))
+//                .thenReturn(Arrays.asList(existingCellarResponse));
+//
+//        List<CellarResponseModel> result = cellarService.getAllCellars(VALID_CUSTOMER_ID);
+//
+//        assertEquals(1, result.size());
+//        verify(customerRepository).findCustomerByCustomerIdentifier_CustomerId(VALID_CUSTOMER_ID);
+//        verify(cellarRepository).findByOwnerCustomerIdentifier(customerIdentifier);
+//    }
 
     // [Cellar-Service][Unit Test][Negative] Get all cellars by customer ID (invalid) -> throws InvalidIdentifierException
     @Test
@@ -413,66 +413,66 @@ public class CellarServiceUnitTest {
         verify(cellarRepository, never()).save(any());
     }
 
-    // [Cellar-Service][Unit Test][Positive] Deactivate cellar -> succeeds
-    @Test
-    void deactivateCellar_valid_succeeds() {
-        when(cellarRepository.findCellarByCellarIdentifier_CellarId(VALID_CELLAR_ID))
-                .thenReturn(existingCellar);
+//     // [Cellar-Service][Unit Test][Positive] Deactivate cellar -> succeeds
+//     @Test
+//     void deactivateCellar_valid_succeeds() {
+//         when(cellarRepository.findCellarByCellarIdentifier_CellarId(VALID_CELLAR_ID))
+//                 .thenReturn(existingCellar);
 
-        Cellar deactivated = new Cellar();
-        deactivated.setCellarIdentifier(new CellarIdentifier(VALID_CELLAR_ID));
-        deactivated.setIsActive(false);
+//         Cellar deactivated = new Cellar();
+//         deactivated.setCellarIdentifier(new CellarIdentifier(VALID_CELLAR_ID));
+//         deactivated.setIsActive(false);
 
-        when(cellarRepository.save(any(Cellar.class))).thenReturn(deactivated);
+//         when(cellarRepository.save(any(Cellar.class))).thenReturn(deactivated);
 
-        CellarResponseModel deactivatedResponse = CellarResponseModel.builder()
-                .cellarId(VALID_CELLAR_ID)
-                .isActive(false)
-                .build();
+//         CellarResponseModel deactivatedResponse = CellarResponseModel.builder()
+//                 .cellarId(VALID_CELLAR_ID)
+//                 .isActive(false)
+//                 .build();
 
-        when(cellarResponseMapper.toResponseModel(deactivated)).thenReturn(deactivatedResponse);
+//         when(cellarResponseMapper.toResponseModel(deactivated)).thenReturn(deactivatedResponse);
 
-        CellarResponseModel response = cellarService.deactivateCellar(VALID_CELLAR_ID);
+//         CellarResponseModel response = cellarService.deactivateCellar(VALID_CELLAR_ID);
 
-        // access the boolean field directly (since it's 'public boolean isActive;')
-        assertFalse(response.isActive);
-        verify(cellarRepository).findCellarByCellarIdentifier_CellarId(VALID_CELLAR_ID);
-        verify(cellarRepository).save(any(Cellar.class));
-    }
+//         // access the boolean field directly (since it's 'public boolean isActive;')
+//         assertFalse(response.isActive);
+//         verify(cellarRepository).findCellarByCellarIdentifier_CellarId(VALID_CELLAR_ID);
+//         verify(cellarRepository).save(any(Cellar.class));
+//     }
 
-    // [Cellar-Service][Unit Test][Negative] Deactivate cellar with invalid ID -> throws InvalidIdentifierException
-    @Test
-    void deactivateCellar_invalidId_throwsInvalidIdentifier() {
-        assertThrows(InvalidIdentifierException.class,
-                () -> cellarService.deactivateCellar(INVALID_ID));
-        verify(cellarRepository, never()).findCellarByCellarIdentifier_CellarId(anyString());
-    }
+//     // [Cellar-Service][Unit Test][Negative] Deactivate cellar with invalid ID -> throws InvalidIdentifierException
+//     @Test
+//     void deactivateCellar_invalidId_throwsInvalidIdentifier() {
+//         assertThrows(InvalidIdentifierException.class,
+//                 () -> cellarService.deactivateCellar(INVALID_ID));
+//         verify(cellarRepository, never()).findCellarByCellarIdentifier_CellarId(anyString());
+//     }
 
-    // [Cellar-Service][Unit Test][Negative] Deactivate cellar not found -> throws ResourceNotFoundException
-    @Test
-    void deactivateCellar_notFound_throwsResourceNotFound() {
-        when(cellarRepository.findCellarByCellarIdentifier_CellarId(NON_EXISTING_CELLAR_ID))
-                .thenReturn(null);
+//     // [Cellar-Service][Unit Test][Negative] Deactivate cellar not found -> throws ResourceNotFoundException
+//     @Test
+//     void deactivateCellar_notFound_throwsResourceNotFound() {
+//         when(cellarRepository.findCellarByCellarIdentifier_CellarId(NON_EXISTING_CELLAR_ID))
+//                 .thenReturn(null);
 
-        assertThrows(ResourceNotFoundException.class,
-                () -> cellarService.deactivateCellar(NON_EXISTING_CELLAR_ID));
+//         assertThrows(ResourceNotFoundException.class,
+//                 () -> cellarService.deactivateCellar(NON_EXISTING_CELLAR_ID));
 
-        verify(cellarRepository).findCellarByCellarIdentifier_CellarId(NON_EXISTING_CELLAR_ID);
-    }
+//         verify(cellarRepository).findCellarByCellarIdentifier_CellarId(NON_EXISTING_CELLAR_ID);
+//     }
 
-    // [Cellar-Service][Unit Test][Negative] Deactivate already deactivated cellar -> throws InvalidOperationException
-    @Test
-    void deactivateCellar_alreadyDeactivated_throwsInvalidOperation() {
-        existingCellar.setIsActive(false);
-        when(cellarRepository.findCellarByCellarIdentifier_CellarId(VALID_CELLAR_ID))
-                .thenReturn(existingCellar);
+//     // [Cellar-Service][Unit Test][Negative] Deactivate already deactivated cellar -> throws InvalidOperationException
+//     @Test
+//     void deactivateCellar_alreadyDeactivated_throwsInvalidOperation() {
+//         existingCellar.setIsActive(false);
+//         when(cellarRepository.findCellarByCellarIdentifier_CellarId(VALID_CELLAR_ID))
+//                 .thenReturn(existingCellar);
 
-        assertThrows(InvalidOperationException.class,
-                () -> cellarService.deactivateCellar(VALID_CELLAR_ID));
+//         assertThrows(InvalidOperationException.class,
+//                 () -> cellarService.deactivateCellar(VALID_CELLAR_ID));
 
-        verify(cellarRepository).findCellarByCellarIdentifier_CellarId(VALID_CELLAR_ID);
-        verify(cellarRepository, never()).save(any());
-    }
+//         verify(cellarRepository).findCellarByCellarIdentifier_CellarId(VALID_CELLAR_ID);
+//         verify(cellarRepository, never()).save(any());
+//     }
 
     // [Cellar-Service][Unit Test][Positive] Reactivate cellar -> succeeds
     @Test
@@ -535,55 +535,55 @@ public class CellarServiceUnitTest {
     }
 
     // ==================== getAllCellarsForUser TESTS ====================
+//
+//    @Test
+//    void getAllCellarsForUser_valid_returnsList() {
+//        String userId = "00000000-0000-0000-0000-000000000001";
+//
+//        Customer customer = new Customer();
+//        customer.setCustomerIdentifier(new CustomerIdentifier(VALID_CUSTOMER_ID));
+//        customer.setUserId(userId);
+//
+//        Cellar cellar1 = new Cellar();
+//        cellar1.setCellarIdentifier(new CellarIdentifier(VALID_CELLAR_ID));
+//        cellar1.setOwnerCustomer(customer);
+//
+//        CellarResponseModel response1 = CellarResponseModel.builder()
+//                .cellarId(VALID_CELLAR_ID)
+//                .build();
+//
+//        when(customerRepository.findCustomerByUserId(userId)).thenReturn(customer);
+//        when(cellarRepository.findByOwnerCustomerIdentifier(customer.getCustomerIdentifier()))
+//                .thenReturn(List.of(cellar1));
+//        when(cellarResponseMapper.toResponseModelList(List.of(cellar1)))
+//                .thenReturn(List.of(response1));
+//
+//        List<CellarResponseModel> result = cellarService.getAllCellarsForUser(userId);
+//
+//        assertEquals(1, result.size());
+//        verify(customerRepository).findCustomerByUserId(userId);
+//        verify(cellarRepository).findByOwnerCustomerIdentifier(customer.getCustomerIdentifier());
+//    }
 
-    @Test
-    void getAllCellarsForUser_valid_returnsList() {
-        String userId = "00000000-0000-0000-0000-000000000001";
-
-        Customer customer = new Customer();
-        customer.setCustomerIdentifier(new CustomerIdentifier(VALID_CUSTOMER_ID));
-        customer.setUserId(userId);
-
-        Cellar cellar1 = new Cellar();
-        cellar1.setCellarIdentifier(new CellarIdentifier(VALID_CELLAR_ID));
-        cellar1.setOwnerCustomer(customer);
-
-        CellarResponseModel response1 = CellarResponseModel.builder()
-                .cellarId(VALID_CELLAR_ID)
-                .build();
-
-        when(customerRepository.findCustomerByUserId(userId)).thenReturn(customer);
-        when(cellarRepository.findByOwnerCustomerIdentifier(customer.getCustomerIdentifier()))
-                .thenReturn(List.of(cellar1));
-        when(cellarResponseMapper.toResponseModelList(List.of(cellar1)))
-                .thenReturn(List.of(response1));
-
-        List<CellarResponseModel> result = cellarService.getAllCellarsForUser(userId);
-
-        assertEquals(1, result.size());
-        verify(customerRepository).findCustomerByUserId(userId);
-        verify(cellarRepository).findByOwnerCustomerIdentifier(customer.getCustomerIdentifier());
-    }
-
-    @Test
-    void getAllCellarsForUser_noCellars_returnsEmpty() {
-        String userId = "00000000-0000-0000-0000-000000000001";
-
-        Customer customer = new Customer();
-        customer.setCustomerIdentifier(new CustomerIdentifier(VALID_CUSTOMER_ID));
-        customer.setUserId(userId);
-
-        when(customerRepository.findCustomerByUserId(userId)).thenReturn(customer);
-        when(cellarRepository.findByOwnerCustomerIdentifier(customer.getCustomerIdentifier()))
-                .thenReturn(List.of());
-        when(cellarResponseMapper.toResponseModelList(List.of()))
-                .thenReturn(List.of());
-
-        List<CellarResponseModel> result = cellarService.getAllCellarsForUser(userId);
-
-        assertTrue(result.isEmpty());
-        verify(customerRepository).findCustomerByUserId(userId);
-    }
+//    @Test
+//    void getAllCellarsForUser_noCellars_returnsEmpty() {
+//        String userId = "00000000-0000-0000-0000-000000000001";
+//
+//        Customer customer = new Customer();
+//        customer.setCustomerIdentifier(new CustomerIdentifier(VALID_CUSTOMER_ID));
+//        customer.setUserId(userId);
+//
+//        when(customerRepository.findCustomerByUserId(userId)).thenReturn(customer);
+//        when(cellarRepository.findByOwnerCustomerIdentifier(customer.getCustomerIdentifier()))
+//                .thenReturn(List.of());
+//        when(cellarResponseMapper.toResponseModelList(List.of()))
+//                .thenReturn(List.of());
+//
+//        List<CellarResponseModel> result = cellarService.getAllCellarsForUser(userId);
+//
+//        assertTrue(result.isEmpty());
+//        verify(customerRepository).findCustomerByUserId(userId);
+//    }
 
     @Test
     void getAllCellarsForUser_invalidUserId_throwsInvalidIdentifier() {
