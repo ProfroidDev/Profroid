@@ -211,9 +211,9 @@
   background: linear-gradient(90deg, #7a0901 60%, #a32c1a 100%);
   color: #fff;
   border: none;
-  padding: 8px 16px;
+  padding: 8px 14px;
   border-radius: 8px;
-  font-size: 0.95rem;
+  font-size: 0.8rem;
   font-weight: 600;
   cursor: pointer;
   box-shadow: 0 2px 8px rgba(122, 9, 1, 0.08);
@@ -224,12 +224,41 @@
     transform 0.2s;
   white-space: nowrap;
   min-width: fit-content;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+@media (min-width: 641px) {
+  .btn-view-light {
+    padding: 9px 16px;
+    font-size: 0.85rem;
+  }
+}
+
+@media (min-width: 1025px) {
+  .btn-view-light {
+    padding: 10px 18px;
+    font-size: 0.9rem;
+  }
 }
 
 .btn-view-light:hover {
   background: linear-gradient(90deg, #a32c1a 60%, #7a0901 100%);
   box-shadow: 0 4px 16px rgba(122, 9, 1, 0.12);
   transform: translateY(-2px) scale(1.04);
+}
+
+.btn-view-light:active {
+  transform: translateY(0) scale(0.98);
+}
+
+.btn-view-light:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  box-shadow: none;
+  transform: none;
 }
 
 /* ===== Modal (light) ===== */

@@ -24,18 +24,20 @@
 .add-schedule-modal {
   width: 100%;
   max-width: 420px;
-  max-height: 90vh;
+  max-height: 85vh;
   background: #fff;
   border-radius: 10px;
   box-shadow: 0 8px 30px rgba(0, 0, 0, 0.2);
   overflow: hidden;
   display: flex;
   flex-direction: column;
+  gap: 0;
 }
 
 @media (min-width: 641px) {
   .add-schedule-modal {
     max-width: 500px;
+    max-height: 80vh;
     border-radius: 11px;
   }
 }
@@ -43,6 +45,7 @@
 @media (min-width: 1025px) {
   .add-schedule-modal {
     max-width: 560px;
+    max-height: 80vh;
     border-radius: 12px;
   }
 }
@@ -116,15 +119,17 @@
   flex-direction: column;
   gap: 10px;
   overflow-y: auto;
-  max-height: calc(90vh - 100px);
+  max-height: calc(85vh - 145px);
   -webkit-overflow-scrolling: touch;
+  flex: 1;
+  min-height: 150px;
 }
 
 @media (min-width: 641px) {
   .content {
     padding: 14px 16px;
     gap: 12px;
-    max-height: calc(90vh - 110px);
+    max-height: calc(80vh - 155px);
   }
 }
 
@@ -132,7 +137,7 @@
   .content {
     padding: 16px 18px;
     gap: 14px;
-    max-height: calc(90vh - 120px);
+    max-height: calc(80vh - 170px);
   }
 }
 
@@ -320,7 +325,7 @@
     font-size: 0.95rem;
   }
 }
-}
+
 .slot select.hour-select {
   padding: 8px 10px;
   border: 1px solid #ddd;

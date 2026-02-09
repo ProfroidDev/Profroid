@@ -9,8 +9,15 @@ import java.util.List;
 
 public interface CellarRepository extends JpaRepository<Cellar, CellarIdentifier> {
     Cellar findCellarByCellarIdentifier_CellarId(String cellarIdentifier);
-    Cellar findCellarByName(String name);
-    Cellar findCellarByNameAndOwnerCustomerIdentifier_CustomerId(String name, String customerId);
+    
+    // Find active cellar by name (excludes deleted cellars)
+    @Query("SELECT c FROM Cellar c WHERE c.name = :name AND (c.isDeleted = false OR c.isDeleted IS NULL)")
+    Cellar findCellarByName(@Param("name") String name);
+    
+    // Find active cellar by name and owner (excludes deleted cellars)
+    @Query("SELECT c FROM Cellar c WHERE c.name = :name AND c.ownerCustomerIdentifier.customerId = :customerId AND (c.isDeleted = false OR c.isDeleted IS NULL)")
+    Cellar findCellarByNameAndOwnerCustomerIdentifier_CustomerId(@Param("name") String name, @Param("customerId") String customerId);
+    
     List<Cellar> findByOwnerCustomerIdentifier(CustomerIdentifier ownerCustomerIdentifier);
     
     // Find only active (not deleted) cellars by owner

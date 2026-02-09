@@ -514,11 +514,27 @@
 .service-actions-modern {
   display: flex;
   flex-direction: column;
-  gap: 8px;
-  padding: 20px 16px;
+  gap: 6px;
+  padding: 16px 12px;
   background: white;
   border-left: 2px solid #e6e3de;
-  min-width: 140px;
+  min-width: 120px;
+}
+
+@media (min-width: 641px) {
+  .service-actions-modern {
+    gap: 7px;
+    padding: 18px 14px;
+    min-width: 140px;
+  }
+}
+
+@media (min-width: 1025px) {
+  .service-actions-modern {
+    gap: 8px;
+    padding: 20px 16px;
+    min-width: 150px;
+  }
 }
 
 /* When actions section is empty (no buttons) */
@@ -535,22 +551,56 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 6px;
-  padding: 8px 12px;
+  gap: 5px;
+  padding: 7px 10px;
   border: 2px solid;
-  border-radius: 8px;
-  font-size: 0.8rem;
+  border-radius: 6px;
+  font-size: 0.75rem;
   font-weight: 600;
   cursor: pointer;
   transition: all 0.2s ease;
   background: white;
   white-space: nowrap;
+  min-width: fit-content;
+  flex-shrink: 0;
+}
+
+@media (min-width: 641px) {
+  .action-btn {
+    padding: 8px 12px;
+    border-radius: 7px;
+    font-size: 0.8rem;
+    gap: 6px;
+  }
+}
+
+@media (min-width: 1025px) {
+  .action-btn {
+    padding: 9px 14px;
+    border-radius: 8px;
+    font-size: 0.85rem;
+  }
 }
 
 .btn-icon-svg {
-  width: 18px;
-  height: 18px;
+  width: 16px;
+  height: 16px;
   stroke-width: 2.5;
+  flex-shrink: 0;
+}
+
+@media (min-width: 641px) {
+  .btn-icon-svg {
+    width: 18px;
+    height: 18px;
+  }
+}
+
+@media (min-width: 1025px) {
+  .btn-icon-svg {
+    width: 18px;
+    height: 18px;
+  }
 }
 
 .action-btn.primary {
