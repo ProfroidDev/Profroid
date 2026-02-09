@@ -221,7 +221,7 @@
 .service-card-modern {
   display: flex !important;
   flex-direction: column !important;
-  gap: 12px;
+  gap: 0;
   background: white;
   border: 2px solid #e6e3de;
   border-radius: 12px;
@@ -230,21 +230,23 @@
   box-shadow: 0 4px 16px rgba(58, 46, 42, 0.08);
   width: 100% !important;
   min-height: auto;
-  padding: 12px;
+  padding: 0;
+  margin: 0 auto;
 }
 
 @media (min-width: 641px) {
   .service-card-modern {
     flex-direction: row !important;
-    padding: 0;
     gap: 0;
     min-height: 160px;
+    max-width: 900px;
   }
 }
 
 @media (min-width: 1025px) {
   .service-card-modern {
     min-height: 180px;
+    max-width: 950px;
   }
 }
 
@@ -552,33 +554,36 @@
   align-items: center;
   justify-content: center;
   gap: 5px;
-  padding: 7px 10px;
+  padding: 8px 11px;
   border: 2px solid;
   border-radius: 6px;
-  font-size: 0.75rem;
+  font-size: 0.7rem;
   font-weight: 600;
   cursor: pointer;
   transition: all 0.2s ease;
   background: white;
   white-space: nowrap;
   min-width: fit-content;
-  flex-shrink: 0;
+  flex: 1;
+  min-height: 32px;
 }
 
 @media (min-width: 641px) {
   .action-btn {
-    padding: 8px 12px;
+    padding: 9px 13px;
     border-radius: 7px;
-    font-size: 0.8rem;
+    font-size: 0.75rem;
     gap: 6px;
+    flex: 0.5;
   }
 }
 
 @media (min-width: 1025px) {
   .action-btn {
-    padding: 9px 14px;
+    padding: 10px 14px;
     border-radius: 8px;
-    font-size: 0.85rem;
+    font-size: 0.8rem;
+    flex: initial;
   }
 }
 
@@ -665,98 +670,38 @@
   filter: grayscale(1);
 }
 
-/* RESPONSIVE */
-@media (max-width: 1024px) {
-  .service-card-modern {
-    flex-direction: column !important;
-  }
-
-  .service-image-container {
-    width: 100%;
-    min-height: 200px;
-    height: 200px;
-  }
-
-  .service-actions-modern {
-    flex-direction: row;
-    border-left: none;
-    border-top: 2px solid #e6e3de;
-    min-width: auto;
-    padding: 24px;
-  }
-
-  .action-btn {
-    flex: 1;
-    padding: 10px 16px;
-    font-size: 0.85rem;
-  }
+/* MOBILE LAYOUT - ACTION BUTTONS ON TOP */
+.service-actions-modern {
+  display: flex;
+  flex-direction: row;
+  gap: 6px;
+  padding: 12px 12px;
+  background: white;
+  border-top: 2px solid #e6e3de;
+  width: 100%;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-start;
 }
 
-@media (max-width: 768px) {
-  .services-page {
-    padding: 24px 16px;
-  }
-
-  .services-header {
+@media (min-width: 641px) {
+  .service-actions-modern {
     flex-direction: column;
-    align-items: flex-start;
-    gap: 20px;
-  }
-
-  .page-title {
-    font-size: 2rem;
-  }
-
-  .btn-add-service {
-    width: 100%;
+    gap: 7px;
+    padding: 14px 14px;
+    border-top: none;
+    border-left: 2px solid #e6e3de;
+    width: auto;
+    min-width: 120px;
     justify-content: center;
   }
-
-  .service-card-modern {
-    flex-direction: column !important;
-  }
-
-  .service-image-container {
-    width: 100%;
-    min-height: 180px;
-    height: 180px;
-  }
-
-  .service-info {
-    padding: 24px;
-  }
-
-  .service-header-row {
-    flex-direction: column;
-  }
-
-  .service-price {
-    align-self: flex-start;
-    align-items: flex-start;
-  }
-
-  .service-actions-modern {
-    flex-direction: row;
-    border-left: none;
-    border-top: 2px solid #e6e3de;
-    padding: 20px 24px;
-    min-width: auto;
-    width: 100%;
-  }
-
-  .action-btn {
-    flex: 1;
-  }
 }
 
-@media (max-width: 1024px) and (min-width: 769px) {
-  .service-image-container {
-    width: 220px;
-    min-width: 220px;
-  }
-
+@media (min-width: 1025px) {
   .service-actions-modern {
-    min-width: 160px;
+    gap: 8px;
+    padding: 16px 16px;
+    min-width: 140px;
   }
 }
 

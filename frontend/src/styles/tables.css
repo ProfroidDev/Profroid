@@ -422,44 +422,49 @@ table {
 /* STATUS BADGE */
 .status-badge {
   display: inline-block;
-  padding: 4px 8px;
-  border-radius: 4px;
+  padding: 6px 12px;
+  border-radius: 20px;
   font-size: 0.7rem;
   font-weight: 600;
   text-transform: uppercase;
+  letter-spacing: 0.5px;
+  white-space: nowrap;
+  vertical-align: middle;
 }
 
 @media (min-width: 641px) {
   .status-badge {
-    padding: 5px 10px;
+    padding: 7px 14px;
     font-size: 0.75rem;
+    border-radius: 22px;
   }
 }
 
 @media (min-width: 1025px) {
   .status-badge {
-    padding: 6px 12px;
+    padding: 8px 16px;
     font-size: 0.8rem;
+    border-radius: 24px;
   }
 }
 
 .status-active {
-  background: #efe;
-  color: #3c3;
+  background: #d4edda;
+  color: #155724;
 }
 
 .status-inactive {
-  background: #fee;
-  color: #c33;
+  background: #f8d7da;
+  color: #721c24;
 }
 
 .status-pending {
-  background: #fef3cd;
+  background: #fff3cd;
   color: #856404;
 }
 
 .status-completed {
-  background: #d4edda;
+  background: #c3e6cb;
   color: #155724;
 }
 
