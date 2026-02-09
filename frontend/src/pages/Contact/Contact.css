@@ -1,95 +1,255 @@
 .contact-page {
   background-color: #fdfbf7;
   min-height: 100vh;
-  padding-bottom: 60px;
+  padding-bottom: 40px;
 }
 
 .contact-hero {
   background: linear-gradient(135deg, #722f37 0%, #8b3a44 100%);
   color: white;
-  padding: 80px 20px;
+  padding: 40px 16px;
   text-align: center;
 }
 
+@media (min-width: 641px) {
+  .contact-hero {
+    padding: 60px 24px;
+  }
+}
+
+@media (min-width: 1025px) {
+  .contact-hero {
+    padding: 80px 32px;
+  }
+}
+
 .contact-hero h1 {
-  font-size: 48px;
-  margin: 0 0 20px 0;
+  font-size: 1.75rem;
+  margin: 0 0 12px 0;
   font-weight: bold;
-  font-family: 'Helvetica Neue', Arial, sans-serif;
+  font-family: 'Georgia', serif;
+}
+
+@media (min-width: 641px) {
+  .contact-hero h1 {
+    font-size: 2.2rem;
+    margin-bottom: 16px;
+  }
+}
+
+@media (min-width: 1025px) {
+  .contact-hero h1 {
+    font-size: 3rem;
+    margin-bottom: 20px;
+  }
 }
 
 .contact-subtitle {
-  font-size: 18px;
+  font-size: 0.95rem;
   max-width: 600px;
   margin: 0 auto;
   font-weight: 300;
 }
 
+@media (min-width: 641px) {
+  .contact-subtitle {
+    font-size: 1rem;
+  }
+}
+
+@media (min-width: 1025px) {
+  .contact-subtitle {
+    font-size: 1.1rem;
+  }
+}
+
 .contact-container {
   max-width: 1200px;
   margin: 0 auto;
-  padding: 60px 20px;
+  padding: 32px 16px;
   display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 60px;
+  grid-template-columns: 1fr;
+  gap: 32px;
+}
+
+@media (min-width: 641px) {
+  .contact-container {
+    padding: 40px 24px;
+    gap: 40px;
+  }
+}
+
+@media (min-width: 1025px) {
+  .contact-container {
+    padding: 60px 32px;
+    grid-template-columns: 1fr 1fr;
+    gap: 60px;
+  }
 }
 
 .contact-info {
   display: flex;
   flex-direction: column;
-  gap: 30px;
+  gap: 16px;
+}
+
+@media (min-width: 641px) {
+  .contact-info {
+    gap: 20px;
+  }
+}
+
+@media (min-width: 1025px) {
+  .contact-info {
+    gap: 30px;
+  }
 }
 
 .info-item {
   display: flex;
-  gap: 20px;
+  gap: 12px;
   align-items: flex-start;
   background: white;
-  padding: 30px;
+  padding: 16px;
   border-radius: 8px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+@media (min-width: 641px) {
+  .info-item {
+    gap: 16px;
+    padding: 20px;
+  }
+}
+
+@media (min-width: 1025px) {
+  .info-item {
+    gap: 20px;
+    padding: 30px;
+  }
 }
 
 .info-icon {
   color: #722f37;
-  width: 32px;
-  height: 32px;
+  width: 28px;
+  height: 28px;
   flex-shrink: 0;
-  margin-top: 5px;
+  margin-top: 2px;
+}
+
+@media (min-width: 641px) {
+  .info-icon {
+    width: 30px;
+    height: 30px;
+  }
+}
+
+@media (min-width: 1025px) {
+  .info-icon {
+    width: 32px;
+    height: 32px;
+    margin-top: 5px;
+  }
 }
 
 .info-item h3 {
-  margin: 0 0 8px 0;
-  font-size: 18px;
+  margin: 0 0 6px 0;
+  font-size: 0.95rem;
   color: #722f37;
   font-weight: bold;
+}
+
+@media (min-width: 641px) {
+  .info-item h3 {
+    font-size: 1rem;
+    margin-bottom: 8px;
+  }
+}
+
+@media (min-width: 1025px) {
+  .info-item h3 {
+    font-size: 1.1rem;
+  }
 }
 
 .info-item p {
   margin: 0;
   color: #666;
-  font-size: 14px;
+  font-size: 0.85rem;
+}
+
+@media (min-width: 641px) {
+  .info-item p {
+    font-size: 0.9rem;
+  }
+}
+
+@media (min-width: 1025px) {
+  .info-item p {
+    font-size: 0.95rem;
+  }
 }
 
 .contact-form {
   background: white;
-  padding: 40px;
+  padding: 20px 16px;
   border-radius: 8px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+@media (min-width: 641px) {
+  .contact-form {
+    padding: 28px 24px;
+  }
+}
+
+@media (min-width: 1025px) {
+  .contact-form {
+    padding: 40px;
+  }
 }
 
 .contact-form-group,
 .auth-form-group {
-  margin-bottom: 24px;
+  margin-bottom: 16px;
+}
+
+@media (min-width: 641px) {
+  .contact-form-group,
+  .auth-form-group {
+    margin-bottom: 18px;
+  }
+}
+
+@media (min-width: 1025px) {
+  .contact-form-group,
+  .auth-form-group {
+    margin-bottom: 24px;
+  }
 }
 
 .contact-form-group label,
 .auth-form-group label {
   display: block;
-  margin-bottom: 8px;
+  margin-bottom: 6px;
   font-weight: 500;
   color: #333;
-  font-size: 14px;
+  font-size: 0.85rem;
+}
+
+@media (min-width: 641px) {
+  .contact-form-group label,
+  .auth-form-group label {
+    font-size: 0.9rem;
+    margin-bottom: 8px;
+  }
+}
+
+@media (min-width: 1025px) {
+  .contact-form-group label,
+  .auth-form-group label {
+    font-size: 0.95rem;
+  }
 }
 
 .contact-form-group input,
@@ -97,41 +257,79 @@
 .auth-form-group input,
 .auth-form-group textarea {
   width: 100%;
-  padding: 12px;
+  padding: 10px 12px;
   border: 1px solid #ddd;
-  border-radius: 4px;
+  border-radius: 6px;
   font-family: inherit;
-  font-size: 14px;
+  font-size: 0.9rem;
   transition: border-color 0.3s;
   box-sizing: border-box;
 }
 
-.contact-form-group input:focus,
-.contact-form-group textarea:focus,
-.auth-form-group input:focus,
-.auth-form-group textarea:focus {
-  outline: none;
-  border-color: #722f37;
-  box-shadow: 0 0 0 3px rgba(114, 47, 55, 0.1);
+@media (min-width: 641px) {
+  .contact-form-group input,
+  .contact-form-group textarea,
+  .auth-form-group input,
+  .auth-form-group textarea {
+    padding: 11px 13px;
+    font-size: 0.95rem;
+  }
+}
+
+@media (min-width: 1025px) {
+  .contact-form-group input,
+  .contact-form-group textarea,
+  .auth-form-group input,
+  .auth-form-group textarea {
+    padding: 12px 14px;
+    font-size: 1rem;
+  }
 }
 
 .contact-form-group textarea,
 .auth-form-group textarea {
   resize: vertical;
-  min-height: 120px;
+  min-height: 100px;
+}
+
+@media (min-width: 641px) {
+  .contact-form-group textarea,
+  .auth-form-group textarea {
+    min-height: 110px;
+  }
+}
+
+@media (min-width: 1025px) {
+  .contact-form-group textarea,
+  .auth-form-group textarea {
+    min-height: 120px;
+  }
 }
 
 .submit-button {
   width: 100%;
-  padding: 12px 24px;
+  padding: 11px 20px;
   background-color: #722f37;
   color: white;
   border: none;
-  border-radius: 4px;
-  font-size: 16px;
-  font-weight: 500;
+  border-radius: 6px;
+  font-size: 0.95rem;
+  font-weight: 600;
   cursor: pointer;
   transition: background-color 0.3s;
+}
+
+@media (min-width: 641px) {
+  .submit-button {
+    padding: 12px 24px;
+    font-size: 1rem;
+  }
+}
+
+@media (min-width: 1025px) {
+  .submit-button {
+    padding: 12px 28px;
+  }
 }
 
 .submit-button:hover {

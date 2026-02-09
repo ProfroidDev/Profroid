@@ -1,0 +1,536 @@
+/* ============================================
+   MODAL & COMPONENT RESPONSIVE STYLES
+   Mobile-First Design
+   ============================================ */
+
+/* CONFIRMATION MODAL */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 16px;
+}
+
+@media (min-width: 641px) {
+  .modal-overlay {
+    padding: 24px;
+  }
+}
+
+.modal-overlay-light {
+  background: rgba(0, 0, 0, 0.3);
+}
+
+.modal-container {
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
+  width: 100%;
+  max-width: 400px;
+  max-height: 90vh;
+  overflow-y: auto;
+  animation: slideIn 0.3s ease-out;
+}
+
+@media (min-width: 641px) {
+  .modal-container {
+    max-width: 500px;
+  }
+}
+
+@media (min-width: 1025px) {
+  .modal-container {
+    max-width: 600px;
+  }
+}
+
+.modal-container-light {
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.08);
+}
+
+.employee-modal {
+  max-width: 450px;
+}
+
+@media (min-width: 641px) {
+  .employee-modal {
+    max-width: 550px;
+  }
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.modal-header {
+  padding: 16px 20px;
+  border-bottom: 1px solid #eee;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+@media (min-width: 641px) {
+  .modal-header {
+    padding: 18px 24px;
+  }
+}
+
+@media (min-width: 1025px) {
+  .modal-header {
+    padding: 20px 28px;
+  }
+}
+
+.modal-header-light {
+  border-bottom-color: #f0f0f0;
+}
+
+.modal-title {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #2c1810;
+  margin: 0;
+}
+
+@media (min-width: 641px) {
+  .modal-title {
+    font-size: 1.25rem;
+  }
+}
+
+@media (min-width: 1025px) {
+  .modal-title {
+    font-size: 1.4rem;
+  }
+}
+
+.modal-close {
+  background: none;
+  border: none;
+  font-size: 1.5rem;
+  cursor: pointer;
+  color: #666;
+  transition: color 0.2s;
+}
+
+.modal-close:hover {
+  color: #2c1810;
+}
+
+.modal-close-light {
+  background: none;
+  border: none;
+  font-size: 1.5rem;
+  cursor: pointer;
+  color: #999;
+  transition: color 0.2s;
+}
+
+.modal-close-light:hover {
+  color: #2c1810;
+}
+
+.modal-body {
+  padding: 16px 20px;
+}
+
+@media (min-width: 641px) {
+  .modal-body {
+    padding: 18px 24px;
+  }
+}
+
+@media (min-width: 1025px) {
+  .modal-body {
+    padding: 20px 28px;
+  }
+}
+
+.modal-footer {
+  padding: 12px 20px;
+  border-top: 1px solid #eee;
+  display: flex;
+  gap: 10px;
+  justify-content: flex-end;
+}
+
+@media (min-width: 641px) {
+  .modal-footer {
+    padding: 14px 24px;
+    gap: 12px;
+  }
+}
+
+@media (min-width: 1025px) {
+  .modal-footer {
+    padding: 16px 28px;
+    gap: 14px;
+  }
+}
+
+.modal-footer-light {
+  border-top-color: #f0f0f0;
+}
+
+/* MODAL FORMS */
+.modal-form {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+@media (min-width: 641px) {
+  .modal-form {
+    gap: 16px;
+  }
+}
+
+@media (min-width: 1025px) {
+  .modal-form {
+    gap: 18px;
+  }
+}
+
+.employee-form {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+@media (min-width: 641px) {
+  .employee-form {
+    gap: 16px;
+  }
+}
+
+@media (min-width: 1025px) {
+  .employee-form {
+    gap: 18px;
+  }
+}
+
+.form-input {
+  padding: 10px 12px;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  font-size: 0.9rem;
+  font-family: inherit;
+}
+
+@media (min-width: 641px) {
+  .form-input {
+    padding: 11px 13px;
+    font-size: 0.95rem;
+  }
+}
+
+@media (min-width: 1025px) {
+  .form-input {
+    padding: 12px 14px;
+    font-size: 1rem;
+  }
+}
+
+.form-input:focus {
+  outline: none;
+  border-color: #722f37;
+  box-shadow: 0 0 0 3px rgba(114, 47, 55, 0.1);
+}
+
+.form-error-message {
+  background-color: #fee;
+  color: #c33;
+  padding: 10px 12px;
+  border-radius: 6px;
+  font-size: 0.85rem;
+  border: 1px solid #fcc;
+}
+
+@media (min-width: 641px) {
+  .form-error-message {
+    padding: 11px 13px;
+    font-size: 0.9rem;
+  }
+}
+
+@media (min-width: 1025px) {
+  .form-error-message {
+    padding: 12px 14px;
+    font-size: 0.95rem;
+  }
+}
+
+/* BUTTONS IN MODALS */
+.modal-btn {
+  padding: 10px 16px;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  background: white;
+  color: #666;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 0.85rem;
+  transition: all 0.3s ease;
+}
+
+@media (min-width: 641px) {
+  .modal-btn {
+    padding: 11px 18px;
+    font-size: 0.9rem;
+  }
+}
+
+@media (min-width: 1025px) {
+  .modal-btn {
+    padding: 11px 20px;
+    font-size: 0.95rem;
+  }
+}
+
+.modal-btn:hover {
+  background: #f5f3f1;
+  border-color: #ccc;
+}
+
+.modal-btn-primary {
+  background: #722f37;
+  color: white;
+  border-color: #722f37;
+}
+
+.modal-btn-primary:hover {
+  background: #5a252b;
+  border-color: #5a252b;
+}
+
+.modal-btn-danger {
+  background: #c33;
+  color: white;
+  border-color: #c33;
+}
+
+.modal-btn-danger:hover {
+  background: #a22;
+  border-color: #a22;
+}
+
+/* SELECT FIELD IN MODAL */
+.form-select {
+  padding: 10px 12px;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  font-size: 0.9rem;
+  font-family: inherit;
+}
+
+@media (min-width: 641px) {
+  .form-select {
+    padding: 11px 13px;
+    font-size: 0.95rem;
+  }
+}
+
+@media (min-width: 1025px) {
+  .form-select {
+    padding: 12px 14px;
+    font-size: 1rem;
+  }
+}
+
+.form-select:focus {
+  outline: none;
+  border-color: #722f37;
+  box-shadow: 0 0 0 3px rgba(114, 47, 55, 0.1);
+}
+
+/* LABEL IN MODAL */
+.form-label {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #2c1810;
+}
+
+@media (min-width: 641px) {
+  .form-label {
+    font-size: 0.9rem;
+  }
+}
+
+@media (min-width: 1025px) {
+  .form-label {
+    font-size: 0.95rem;
+  }
+}
+
+/* CHECKBOX IN MODAL */
+.form-checkbox {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.form-checkbox input[type="checkbox"] {
+  width: 16px;
+  height: 16px;
+  cursor: pointer;
+}
+
+.form-checkbox label {
+  font-size: 0.85rem;
+  color: #666;
+  cursor: pointer;
+}
+
+@media (min-width: 641px) {
+  .form-checkbox label {
+    font-size: 0.9rem;
+  }
+}
+
+@media (min-width: 1025px) {
+  .form-checkbox label {
+    font-size: 0.95rem;
+  }
+}
+
+/* CONFIRMATION DIALOG */
+.confirmation-modal {
+  max-width: 350px;
+}
+
+@media (min-width: 641px) {
+  .confirmation-modal {
+    max-width: 420px;
+  }
+}
+
+.confirmation-message {
+  text-align: center;
+}
+
+.confirmation-title {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #2c1810;
+  margin: 0 0 12px;
+}
+
+@media (min-width: 641px) {
+  .confirmation-title {
+    font-size: 1.2rem;
+  }
+}
+
+@media (min-width: 1025px) {
+  .confirmation-title {
+    font-size: 1.3rem;
+    margin-bottom: 14px;
+  }
+}
+
+.confirmation-text {
+  font-size: 0.9rem;
+  color: #666;
+  line-height: 1.5;
+}
+
+@media (min-width: 641px) {
+  .confirmation-text {
+    font-size: 0.95rem;
+  }
+}
+
+@media (min-width: 1025px) {
+  .confirmation-text {
+    font-size: 1rem;
+  }
+}
+
+.confirmation-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 16px;
+}
+
+@media (min-width: 641px) {
+  .confirmation-buttons {
+    flex-direction: row;
+    gap: 10px;
+    margin-top: 18px;
+  }
+}
+
+@media (min-width: 1025px) {
+  .confirmation-buttons {
+    gap: 12px;
+    margin-top: 20px;
+  }
+}
+
+.confirmation-btn {
+  padding: 10px 16px;
+  border: none;
+  border-radius: 6px;
+  font-weight: 600;
+  cursor: pointer;
+  font-size: 0.85rem;
+  flex: 1;
+}
+
+@media (min-width: 641px) {
+  .confirmation-btn {
+    padding: 11px 18px;
+    font-size: 0.9rem;
+    flex: 0 1 auto;
+  }
+}
+
+@media (min-width: 1025px) {
+  .confirmation-btn {
+    padding: 11px 20px;
+    font-size: 0.95rem;
+  }
+}
+
+.confirmation-btn-primary {
+  background: #722f37;
+  color: white;
+}
+
+.confirmation-btn-primary:hover {
+  background: #5a252b;
+}
+
+.confirmation-btn-secondary {
+  background: #f5f3f1;
+  color: #666;
+}
+
+.confirmation-btn-secondary:hover {
+  background: #ede8e3;
+}
+
+.confirmation-btn-danger {
+  background: #c33;
+  color: white;
+}
+
+.confirmation-btn-danger:hover {
+  background: #a22;
+}

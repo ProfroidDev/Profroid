@@ -6,24 +6,67 @@
   background-color: #fdfbf7;
   font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
   color: #2c1810;
+  padding: 12px;
+}
+
+@media (min-width: 641px) {
+  .error-page {
+    padding: 16px;
+  }
+}
+
+@media (min-width: 1025px) {
+  .error-page {
+    padding: 20px;
+  }
 }
 
 .error-container {
   background: white;
-  border-radius: 8px;
+  border-radius: 6px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-  padding: 60px 40px;
+  padding: 24px 18px;
   text-align: center;
-  max-width: 500px;
-  width: 90%;
+  max-width: 100%;
+  width: 100%;
   border: 1px solid #e8e8e8;
 }
 
+@media (min-width: 641px) {
+  .error-container {
+    border-radius: 7px;
+    padding: 36px 28px;
+    max-width: 450px;
+  }
+}
+
+@media (min-width: 1025px) {
+  .error-container {
+    border-radius: 8px;
+    padding: 48px 36px;
+    max-width: 500px;
+  }
+}
+
 .error-icon {
-  font-size: 80px;
-  margin-bottom: 20px;
+  font-size: 48px;
+  margin-bottom: 12px;
   display: inline-block;
   animation: bounce 2s infinite;
+}
+
+@media (min-width: 641px) {
+  .error-icon {
+    font-size: 60px;
+    margin-bottom: 16px;
+  }
+}
+
+@media (min-width: 1025px) {
+  .error-icon {
+    font-size: 72px;
+    margin-bottom: 20px;
+  }
 }
 
 .error-icon.error-401 {
@@ -80,48 +123,121 @@
 
 .error-container h1 {
   color: #722f37;
-  margin: 20px 0 10px;
-  font-size: 28px;
+  margin: 12px 0 8px;
+  font-size: 1.5rem;
   font-weight: 700;
+}
+
+@media (min-width: 641px) {
+  .error-container h1 {
+    margin: 16px 0 10px;
+    font-size: 1.75rem;
+  }
+}
+
+@media (min-width: 1025px) {
+  .error-container h1 {
+    margin: 18px 0 10px;
+    font-size: 2rem;
+  }
 }
 
 .error-message {
   color: #666;
-  font-size: 16px;
+  font-size: 0.9rem;
   line-height: 1.6;
-  margin: 15px 0;
+  margin: 10px 0;
+}
+
+@media (min-width: 641px) {
+  .error-message {
+    font-size: 0.95rem;
+    margin: 12px 0;
+  }
+}
+
+@media (min-width: 1025px) {
+  .error-message {
+    font-size: 1rem;
+    margin: 14px 0;
+  }
 }
 
 .error-path {
   color: #999;
-  font-size: 12px;
+  font-size: 0.75rem;
   font-family: 'Courier New', monospace;
   background: #f9f9f9;
-  padding: 10px;
+  padding: 8px;
   border-radius: 4px;
   word-break: break-all;
-  margin: 15px 0;
+  margin: 12px 0;
   border: 1px solid #e8e8e8;
+}
+
+@media (min-width: 641px) {
+  .error-path {
+    font-size: 0.8rem;
+    padding: 10px;
+    margin: 14px 0;
+  }
+}
+
+@media (min-width: 1025px) {
+  .error-path {
+    font-size: 0.85rem;
+    padding: 12px;
+    margin: 16px 0;
+  }
 }
 
 .error-redirect {
   color: #722f37;
-  font-size: 14px;
-  margin: 10px 0;
+  font-size: 0.8rem;
+  margin: 8px 0;
+}
+
+@media (min-width: 641px) {
+  .error-redirect {
+    font-size: 0.85rem;
+    margin: 10px 0;
+  }
+}
+
+@media (min-width: 1025px) {
+  .error-redirect {
+    font-size: 0.9rem;
+    margin: 12px 0;
+  }
+}
   font-weight: 500;
 }
 
 .error-buttons {
   display: flex;
-  gap: 10px;
-  margin-top: 30px;
+  gap: 8px;
+  margin-top: 16px;
   justify-content: center;
   flex-wrap: wrap;
 }
 
+@media (min-width: 641px) {
+  .error-buttons {
+    gap: 12px;
+    margin-top: 20px;
+  }
+}
+
+@media (min-width: 1025px) {
+  .error-buttons {
+    gap: 14px;
+    margin-top: 24px;
+  }
+}
+
 .error-button {
-  padding: 12px 30px;
-  font-size: 16px;
+  padding: 10px 18px;
+  font-size: 0.85rem;
   border: none;
   border-radius: 4px;
   cursor: pointer;
@@ -129,6 +245,22 @@
   transition: all 0.3s ease;
   background-color: #722f37;
   color: white;
+}
+
+@media (min-width: 641px) {
+  .error-button {
+    padding: 11px 22px;
+    font-size: 0.9rem;
+    border-radius: 5px;
+  }
+}
+
+@media (min-width: 1025px) {
+  .error-button {
+    padding: 12px 28px;
+    font-size: 0.95rem;
+    border-radius: 6px;
+  }
 }
 
 .error-button:hover {

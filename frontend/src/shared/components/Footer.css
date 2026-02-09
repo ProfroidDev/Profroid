@@ -1,17 +1,47 @@
 .footer-container {
   background: #f4f1ec;
-  padding: 60px 0 30px 0;
+  padding: 40px 0 20px 0;
   border-top: 1px solid #e6e3de;
-  margin-top: 120px;
+  margin-top: 60px;
+}
+
+@media (min-width: 641px) {
+  .footer-container {
+    padding: 50px 0 30px 0;
+    margin-top: 80px;
+  }
+}
+
+@media (min-width: 1025px) {
+  .footer-container {
+    padding: 60px 0 30px 0;
+    margin-top: 120px;
+  }
 }
 
 .footer-inner {
   max-width: 1300px;
   margin: 0 auto;
-  padding: 0 32px;
+  padding: 0 16px;
   display: grid;
-  grid-template-columns: 2fr 1fr 1fr;
-  gap: 40px;
+  grid-template-columns: 1fr;
+  gap: 24px;
+}
+
+@media (min-width: 641px) {
+  .footer-inner {
+    padding: 0 24px;
+    grid-template-columns: 1.5fr 1fr 1fr;
+    gap: 32px;
+  }
+}
+
+@media (min-width: 1025px) {
+  .footer-inner {
+    padding: 0 32px;
+    grid-template-columns: 2fr 1fr 1fr;
+    gap: 40px;
+  }
 }
 
 /* Brand */
@@ -22,21 +52,55 @@
 }
 
 .footer-icon {
-  height: 34px;
-  width: 34px;
+  height: 28px;
+  width: 28px;
   color: #7a0901;
+}
+
+@media (min-width: 1025px) {
+  .footer-icon {
+    height: 34px;
+    width: 34px;
+  }
 }
 
 .footer-logo {
   font-family: 'Georgia', serif;
-  font-size: 2rem;
+  font-size: 1.5rem;
   font-weight: bold;
   color: #3a2e2a;
 }
 
+@media (min-width: 641px) {
+  .footer-logo {
+    font-size: 1.75rem;
+  }
+}
+
+@media (min-width: 1025px) {
+  .footer-logo {
+    font-size: 2rem;
+  }
+}
+
 .footer-desc {
-  max-width: 300px;
+  max-width: 100%;
   color: #5c504b;
+  font-size: 0.9rem;
+  line-height: 1.5;
+}
+
+@media (min-width: 641px) {
+  .footer-desc {
+    max-width: 300px;
+    font-size: 0.95rem;
+  }
+}
+
+@media (min-width: 1025px) {
+  .footer-desc {
+    font-size: 1rem;
+  }
 }
 
 /* Sections */
@@ -47,17 +111,43 @@
 }
 
 .footer-section h4 {
-  font-size: 1.1rem;
+  font-size: 0.95rem;
   font-weight: 600;
   color: #3a2e2a;
-  margin-bottom: 10px;
+  margin-bottom: 8px;
+}
+
+@media (min-width: 641px) {
+  .footer-section h4 {
+    font-size: 1rem;
+    margin-bottom: 10px;
+  }
+}
+
+@media (min-width: 1025px) {
+  .footer-section h4 {
+    font-size: 1.1rem;
+  }
 }
 
 .footer-section a {
   color: #6b615c;
-  font-size: 0.95rem;
+  font-size: 0.85rem;
   text-decoration: none;
   transition: 0.2s;
+}
+
+@media (min-width: 641px) {
+  .footer-section a {
+    font-size: 0.9rem;
+  }
+}
+
+@media (min-width: 1025px) {
+  .footer-section a {
+    font-size: 0.95rem;
+  }
+}
 }
 
 .footer-section a:hover {

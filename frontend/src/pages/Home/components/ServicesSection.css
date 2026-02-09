@@ -1,32 +1,32 @@
 .services-grid-home {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 2rem;
-  margin-top: 3rem;
+  grid-template-columns: 1fr;
+  gap: 1rem;
+  margin-top: 2rem;
 }
 
-@media (max-width: 1200px) {
+@media (min-width: 641px) {
   .services-grid-home {
     grid-template-columns: repeat(2, 1fr);
-    gap: 1.5rem;
+    gap: 1.25rem;
+    margin-top: 2.5rem;
   }
 }
 
-@media (max-width: 768px) {
+@media (min-width: 1025px) {
   .services-grid-home {
-    grid-template-columns: 1fr;
-    gap: 1.5rem;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 2rem;
+    margin-top: 3rem;
   }
 }
 
 .service-card {
   background-color: white;
-  padding: 2rem;
+  padding: 1.25rem;
   border-radius: 12px;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
-  transition:
-    transform 0.3s ease,
-    box-shadow 0.3s ease;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -34,15 +34,15 @@
   border: 1px solid #f0f0f0;
 }
 
-@media (max-width: 768px) {
+@media (min-width: 641px) {
   .service-card {
     padding: 1.5rem;
   }
 }
 
-@media (max-width: 480px) {
+@media (min-width: 1025px) {
   .service-card {
-    padding: 1.25rem;
+    padding: 2rem;
   }
 }
 
@@ -53,11 +53,33 @@
 
 .service-icon {
   color: #e63946;
-  margin-bottom: 1.5rem;
-  padding: 1rem;
+  margin-bottom: 1rem;
+  padding: 0.75rem;
   background-color: rgba(230, 57, 70, 0.08);
   border-radius: 50%;
   transition: background-color 0.3s ease;
+  height: 60px;
+  width: 60px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+@media (min-width: 641px) {
+  .service-icon {
+    margin-bottom: 1.2rem;
+    padding: 1rem;
+    height: 70px;
+    width: 70px;
+  }
+}
+
+@media (min-width: 1025px) {
+  .service-icon {
+    margin-bottom: 1.5rem;
+    height: 80px;
+    width: 80px;
+  }
 }
 
 .service-card:hover .service-icon {
@@ -65,75 +87,105 @@
 }
 
 .service-title {
-  font-size: 1.25rem;
+  font-size: 0.95rem;
   font-weight: 600;
-  margin-bottom: 12px;
+  margin-bottom: 8px;
   color: #2c1810;
   font-family: serif;
 }
 
-@media (max-width: 768px) {
+@media (min-width: 641px) {
   .service-title {
     font-size: 1.1rem;
     margin-bottom: 10px;
   }
 }
 
-@media (max-width: 480px) {
+@media (min-width: 1025px) {
   .service-title {
-    font-size: 1rem;
+    font-size: 1.25rem;
+    margin-bottom: 12px;
   }
 }
 
 .service-description {
   color: #666;
-  line-height: 1.5;
-  margin-bottom: 20px;
+  line-height: 1.4;
+  margin-bottom: 1rem;
   flex-grow: 1;
+  font-size: 0.9rem;
 }
 
-@media (max-width: 768px) {
+@media (min-width: 641px) {
   .service-description {
     font-size: 0.95rem;
-    margin-bottom: 15px;
+    margin-bottom: 1.2rem;
   }
 }
 
-@media (max-width: 480px) {
+@media (min-width: 1025px) {
   .service-description {
-    font-size: 0.9rem;
-    line-height: 1.4;
-    margin-bottom: 12px;
+    font-size: 1rem;
+    margin-bottom: 1.5rem;
   }
 }
 
 .service-price {
   font-weight: 700;
   color: #e63946;
-  font-size: 1.1rem;
+  font-size: 1rem;
+}
+
+@media (min-width: 641px) {
+  .service-price {
+    font-size: 1.05rem;
+  }
+}
+
+@media (min-width: 1025px) {
+  .service-price {
+    font-size: 1.1rem;
+  }
 }
 
 .services-action {
-  margin-top: 3rem;
+  margin-top: 2rem;
   text-align: center;
+}
+
+@media (min-width: 1025px) {
+  .services-action {
+    margin-top: 3rem;
+  }
 }
 
 .browse-services-btn {
   display: inline-flex;
   align-items: center;
-  padding: 0.75rem 2rem;
-  font-size: 1.1rem;
+  padding: 10px 16px;
+  font-size: 0.95rem;
   border-radius: 50px;
   box-shadow: 0 4px 10px rgba(230, 57, 70, 0.3);
-  transition:
-    transform 0.2s ease,
-    box-shadow 0.2s ease;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
   color: white;
   text-decoration: none !important;
 }
 
+@media (min-width: 641px) {
+  .browse-services-btn {
+    padding: 0.7rem 1.5rem;
+    font-size: 1rem;
+  }
+}
+
+@media (min-width: 1025px) {
+  .browse-services-btn {
+    padding: 0.75rem 2rem;
+    font-size: 1.1rem;
+  }
 .browse-services-btn:hover {
   transform: translateY(-2px);
   box-shadow: 0 6px 15px rgba(230, 57, 70, 0.4);
   color: white;
+}
 }

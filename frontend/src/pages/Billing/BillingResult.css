@@ -1,48 +1,117 @@
 /* ================================
-   Billing Result Pages
+   Billing Result Pages - RESPONSIVE
 ================================ */
 
 .billing-result-container {
-  max-width: 760px;
+  max-width: 600px;
   margin: 80px auto;
-  padding: 0 20px;
+  padding: 16px;
+}
+
+@media (min-width: 641px) {
+  .billing-result-container {
+    padding: 18px;
+  }
+}
+
+@media (min-width: 1025px) {
+  .billing-result-container {
+    max-width: 760px;
+    padding: 20px;
+  }
 }
 
 .billing-result-card {
   background: white;
   border-radius: 0.75rem;
-  padding: 2.5rem 2rem;
+  padding: 1.5rem 1.25rem;
   box-shadow: 0 15px 30px -10px rgba(0, 0, 0, 0.15);
   text-align: center;
   border: 1px solid #e5e7eb;
   word-break: break-word;
 }
 
-/* ---------- Headings ---------- */
+@media (min-width: 641px) {
+  .billing-result-card {
+    padding: 2rem 1.75rem;
+  }
+}
+
+@media (min-width: 1025px) {
+  .billing-result-card {
+    padding: 2.5rem 2rem;
+  }
+}
+
+/* Headings */
 
 .billing-result-title {
-  font-size: 2rem;
+  font-size: 1.5rem;
   font-weight: 700;
   color: #111827;
-  margin-bottom: 0.75rem;
+  margin-bottom: 0.5rem;
+}
+
+@media (min-width: 641px) {
+  .billing-result-title {
+    font-size: 1.75rem;
+    margin-bottom: 0.6rem;
+  }
+}
+
+@media (min-width: 1025px) {
+  .billing-result-title {
+    font-size: 2rem;
+    margin-bottom: 0.75rem;
+  }
 }
 
 .billing-result-subtitle {
-  font-size: 1rem;
+  font-size: 0.9rem;
   color: #6b7280;
-  margin-bottom: 2rem;
+  margin-bottom: 1.25rem;
 }
 
-/* ---------- Status Icons ---------- */
+@media (min-width: 641px) {
+  .billing-result-subtitle {
+    font-size: 0.95rem;
+    margin-bottom: 1.5rem;
+  }
+}
+
+@media (min-width: 1025px) {
+  .billing-result-subtitle {
+    font-size: 1rem;
+    margin-bottom: 2rem;
+  }
+}
+
+/* Status Icons */
 
 .billing-result-icon {
-  width: 64px;
-  height: 64px;
-  margin: 0 auto 1.5rem;
+  width: 48px;
+  height: 48px;
+  margin: 0 auto 1rem;
   display: flex;
   align-items: center;
   justify-content: center;
   border-radius: 9999px;
+}
+
+@media (min-width: 641px) {
+  .billing-result-icon {
+    width: 56px;
+    height: 56px;
+    margin-bottom: 1.25rem;
+  }
+}
+
+@media (min-width: 1025px) {
+  .billing-result-icon {
+    width: 64px;
+    height: 64px;
+    margin-bottom: 1.5rem;
+  }
 }
 
 .billing-result-icon.success {
@@ -55,21 +124,48 @@
   color: #991b1b;
 }
 
-/* ---------- Info Box ---------- */
+/* Info Box */
 
 .billing-result-info {
   background: #f9fafb;
   border-radius: 0.5rem;
-  padding: 1.25rem;
-  margin-bottom: 1.75rem;
+  padding: 1rem;
+  margin-bottom: 1.25rem;
   text-align: left;
   border: 1px dashed #d1d5db;
 }
 
+@media (min-width: 641px) {
+  .billing-result-info {
+    padding: 1.1rem;
+    margin-bottom: 1.5rem;
+  }
+}
+
+@media (min-width: 1025px) {
+  .billing-result-info {
+    padding: 1.25rem;
+    margin-bottom: 1.75rem;
+  }
+}
+
 .billing-result-info p {
-  margin: 0.25rem 0;
-  font-size: 0.9rem;
+  margin: 0.2rem 0;
+  font-size: 0.8rem;
   color: #374151;
+}
+
+@media (min-width: 641px) {
+  .billing-result-info p {
+    font-size: 0.85rem;
+    margin: 0.25rem 0;
+  }
+}
+
+@media (min-width: 1025px) {
+  .billing-result-info p {
+    font-size: 0.9rem;
+  }
 }
 
 /* ---------- Processing Notice ---------- */
