@@ -60,6 +60,7 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         // Public endpoints - no auth required
                         .requestMatchers(HttpMethod.POST, "/v1/customers").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/v1/contact/messages").permitAll()
                         .requestMatchers(HttpMethod.GET, "/v1/files/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/v1/jobs").permitAll()
                         .requestMatchers(HttpMethod.GET, "/v1/jobs/**").permitAll()

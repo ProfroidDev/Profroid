@@ -358,3 +358,42 @@
     padding: 20px;
   }
 }
+/* Response Message Styling */
+.response-message {
+  padding: 14px 16px;
+  border-radius: 8px;
+  margin-bottom: 16px;
+  font-size: 0.95rem;
+  font-weight: 500;
+  border-left: 4px solid;
+  animation: slideInDown 0.3s ease-out;
+}
+
+.response-message.response-success {
+  background-color: #e8f5e9;
+  border-left-color: #4caf50;
+  color: #2e7d32;
+}
+
+.response-message.response-error {
+  background-color: #ffebee;
+  border-left-color: #f44336;
+  color: #c62828;
+}
+
+@keyframes slideInDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Disable submit button while loading */
+.submit-button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}

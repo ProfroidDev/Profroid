@@ -41,11 +41,49 @@ export default function ContactPage() {
     }));
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const [isLoading, setIsLoading] = useState(false);
+  const [responseMessage, setResponseMessage] = useState('');
+  const [responseType, setResponseType] = useState<'success' | 'error' | ''>('');
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // In a real app, you would send this to a backend service
-    alert(t('pages.contact.messageSent'));
-    setFormData({ name: '', email: '', phone: '', subject: '', message: '' });
+    setIsLoading(true);
+    setResponseMessage('');
+    setResponseType('');
+
+    try {
+      const backendUrl = import.meta.env.VITE_BACKEND_URL || 'http://localhost:8080/api/v1';
+      const response = await fetch(`${backendUrl}/contact/messages`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(formData),
+      });
+
+      if (response.ok) {
+        setResponseMessage(t('pages.contact.messageSent'));
+        setResponseType('success');
+        setFormData({ name: '', email: '', phone: '', subject: '', message: '' });
+        // Auto-clear success message after 5 seconds
+        setTimeout(() => setResponseMessage(''), 5000);
+      } else if (response.status === 429) {
+        // Rate limit exceeded
+        const errorData = await response.json().catch(() => ({}));
+        setResponseMessage(errorData.message || 'Too many messages. Please wait before sending another message.');
+        setResponseType('error');
+      } else {
+        const errorData = await response.json().catch(() => ({}));
+        setResponseMessage(errorData.message || 'Failed to send message. Please try again.');
+        setResponseType('error');
+      }
+    } catch (error) {
+      console.error('Error sending contact message:', error);
+      setResponseMessage('Failed to send message. Please try again later.');
+      setResponseType('error');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -147,8 +185,14 @@ export default function ContactPage() {
             />
           </div>
 
-          <button type="submit" className="submit-button">
-            {t('pages.contact.formSubmit')}
+          {responseMessage && (
+            <div className={`response-message response-${responseType}`}>
+              {responseMessage}
+            </div>
+          )}
+
+          <button type="submit" className="submit-button" disabled={isLoading}>
+            {isLoading ? t('pages.contact.formSubmitting') || 'Sending...' : t('pages.contact.formSubmit')}
           </button>
         </form>
       </div>
