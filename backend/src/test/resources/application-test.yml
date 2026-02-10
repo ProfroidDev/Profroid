@@ -10,6 +10,7 @@ jwt:
 stripe:
   secret-key: sk_test_dummy
   webhook-secret: whsec_dummy
+
 spring:
   sql:
     init:
