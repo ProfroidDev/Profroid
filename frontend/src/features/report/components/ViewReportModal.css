@@ -326,7 +326,6 @@
 
 .info-item:hover {
   background: linear-gradient(135deg, #ffffff 0%, #f9fafb 100%);
-}
   border-color: #7a0901;
   transform: translateY(-2px);
   box-shadow: 0 4px 12px rgba(122, 9, 1, 0.1);
