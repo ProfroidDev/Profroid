@@ -199,8 +199,6 @@
     padding: 0 20px;
   }
 }
-  box-sizing: border-box;
-}
 
 /* ===== Part Card ===== */
 .part-card-light {
@@ -488,30 +486,168 @@
 
 @media (max-width: 480px) {
   .parts-page-light {
-    padding-top: 100px;
+    padding-top: 80px;
     padding-bottom: 40px;
+    padding-left: 16px;
+    padding-right: 16px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .page-header {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    align-items: stretch;
+    width: 100%;
+    max-width: 360px;
   }
 
   .parts-title-light {
-    font-size: 1.6rem;
-    margin-bottom: 24px;
+    font-size: 1.35rem;
+    margin-bottom: 8px;
+    font-weight: 700;
+  }
+
+  .search-container {
+    width: 100%;
+    max-width: 360px;
+  }
+
+  .search-bar {
+    width: 100%;
+    padding: 10px 12px;
+    font-size: 0.85rem;
+  }
+
+  .btn-add-part {
+    width: 100%;
+    padding: 10px 14px;
+    font-size: 0.85rem;
+    border-radius: 8px;
   }
 
   .parts-grid {
+    display: grid;
     grid-template-columns: 1fr;
-    gap: 16px;
-    width: 95%;
+    gap: 12px;
+    width: 100%;
+    max-width: 360px;
+    margin: 0 auto;
+    padding: 0;
+    box-sizing: border-box;
+  }
+
+  .part-card-light {
+    display: flex;
+    flex-direction: column;
+    overflow: visible;
   }
 
   .part-card-content {
-    padding: 16px;
+    padding: 12px;
+    flex: 1;
   }
 
   .part-image-container {
-    height: 180px;
+    height: 140px;
+    width: 100%;
+  }
+
+  .part-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
   }
 
   .part-card-title {
-    font-size: 1.1rem;
+    font-size: 0.95rem;
+    font-weight: 600;
+    margin: 0 0 6px 0;
+    line-height: 1.2;
+  }
+
+  .part-id {
+    font-size: 0.75rem;
+    margin: 0 0 6px 0;
+    color: #666;
+  }
+
+  .part-card-details {
+    margin-bottom: 8px;
+    flex: 1;
+  }
+
+  .part-card-details p {
+    font-size: 0.8rem;
+    margin: 3px 0;
+  }
+
+  .part-card-buttons {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    margin-top: 0;
+    width: 100%;
+  }
+
+  .btn-view-part {
+    padding: 8px 10px;
+    font-size: 0.75rem;
+    width: 100%;
+    background: linear-gradient(90deg, #7a0901 60%, #a32c1a 100%);
+    color: white;
+    border: none;
+    cursor: pointer;
+    border-radius: 6px;
+  }
+
+  .btn-edit-part,
+  .btn-delete-part {
+    padding: 8px 10px;
+    font-size: 0.75rem;
+    width: 100%;
+    background: white;
+    border: 2px solid #7a0901;
+    color: #7a0901;
+    cursor: pointer;
+    border-radius: 6px;
+  }
+
+  .btn-delete-part {
+    border-color: #c53030;
+    color: #c53030;
+  }
+
+  .parts-pagination {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-top: 24px;
+    width: 100%;
+  }
+
+  .pagination-info {
+    font-size: 0.8rem;
+    text-align: center;
+  }
+
+  .pagination-btn {
+    padding: 10px 12px;
+    font-size: 0.8rem;
+  }
+
+  .pagination-pages {
+    display: flex;
+    justify-content: center;
+    gap: 6px;
+    flex-wrap: wrap;
+  }
+
+  .pagination-page {
+    width: 36px;
+    height: 36px;
+    font-size: 0.8rem;
   }
 }

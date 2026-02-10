@@ -69,6 +69,22 @@
   position: relative;
   flex: 1;
   min-width: 120px;
+  max-width: 100%;
+}
+
+@media (max-width: 480px) {
+  .search-box-inventory {
+    min-width: 100px;
+    max-width: 100%;
+    flex: 0 1 100%;
+  }
+
+  .search-box-inventory input {
+    width: 100%;
+    max-width: 100%;
+    font-size: 0.85rem;
+    padding: 8px 10px;
+  }
 }
 
 @media (min-width: 641px) {
@@ -648,6 +664,236 @@ select.filter-select:focus {
   margin-top: 1rem;
   font-size: 0.875rem;
   color: #6b7280;
+}
+
+@media (max-width: 640px) {
+  .inventory-page {
+    padding-top: 60px;
+  }
+
+  .inventory-header {
+    position: sticky;
+    top: 60px;
+    padding: 10px 12px;
+    z-index: 50;
+  }
+
+  .filter-bar-inventory {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 12px;
+  }
+
+  .search-box-inventory {
+    flex: 0 1 100%;
+    min-width: 100%;
+    max-width: 100%;
+  }
+
+  .filter-controls {
+    flex: 1;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+
+  .filter-indicator {
+    padding: 6px 10px;
+    font-size: 0.7rem;
+    min-height: auto;
+  }
+
+  .filter-select,
+  .filter-select select {
+    font-size: 0.8rem;
+    padding: 6px 8px;
+    min-width: auto;
+    height: auto;
+  }
+
+  .table-container {
+    border: none;
+    box-shadow: none;
+    background: transparent;
+    padding: 8px;
+  }
+
+  .parts-table {
+    display: block;
+    border: none;
+    width: 100%;
+  }
+
+  .parts-table thead {
+    display: none;
+  }
+
+  .parts-table tbody,
+  .parts-table tr {
+    display: block;
+    width: 100%;
+    box-sizing: border-box;
+  }
+
+  .parts-table tbody tr {
+    background: #fff;
+    border: 1px solid #e5e7eb;
+    border-radius: 10px;
+    padding: 14px;
+    margin-bottom: 12px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+    display: block;
+    page-break-inside: avoid;
+  }
+
+  .parts-table tbody tr:hover {
+    background: #fff;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  }
+
+  .parts-table td {
+    display: block;
+    padding: 8px 0;
+    border-bottom: 1px solid #f3f4f6;
+    text-align: left;
+    word-break: break-word;
+    font-size: 0.85rem;
+    box-sizing: border-box;
+  }
+
+  .parts-table td:last-child {
+    border-bottom: none;
+    text-align: center;
+    padding-top: 10px;
+  }
+
+  .parts-table td:first-child {
+    font-weight: 600;
+    color: #2c1810;
+  }
+
+  .parts-table td.checkbox-col {
+    text-align: center;
+    padding: 4px 0 10px 0;
+  }
+
+  .parts-table td.actions-col {
+    text-align: center;
+    padding-top: 10px !important;
+  }
+
+  .parts-table td.text-right {
+    text-align: left;
+  }
+
+  .part-name {
+    font-weight: 700;
+    font-size: 0.95rem;
+    color: #1a1a1a;
+  }
+
+  .sku-code {
+    font-size: 0.75rem;
+    color: #7a0901;
+    font-weight: 500;
+  }
+
+  .status-badge-part {
+    font-size: 0.7rem;
+    padding: 4px 10px;
+    border-radius: 6px;
+    display: inline-block;
+    margin: 4px 0;
+  }
+
+  .icon-btn {
+    width: 36px;
+    height: 36px;
+    padding: 0;
+    margin: 0 4px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .icon-btn svg {
+    width: 16px;
+    height: 16px;
+  }
+
+  .pagination-controls {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 12px;
+    margin-top: 20px;
+    padding: 12px 8px;
+    background: #f9fafb;
+    border-radius: 8px;
+    margin-left: 8px;
+    margin-right: 8px;
+  }
+
+  .pagination-controls > div:first-child {
+    display: flex;
+    justify-content: space-between;
+    gap: 8px;
+  }
+
+  .pagination-btn,
+  .pagination-prev,
+  .pagination-next {
+    padding: 10px 12px;
+    font-size: 0.8rem;
+    flex: 1;
+    min-width: 0;
+    text-align: center;
+    background: linear-gradient(90deg, #7a0901 60%, #a32c1a 100%);
+    color: white;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: 500;
+  }
+
+  .pagination-btn:disabled,
+  .pagination-prev:disabled,
+  .pagination-next:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+  }
+
+  .pagination-pages {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    gap: 6px;
+    flex-wrap: wrap;
+  }
+
+  .page-btn,
+  .pagination-page {
+    width: 36px;
+    height: 36px;
+    padding: 0;
+    font-size: 0.8rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: white;
+    color: #7a0901;
+    border: 2px solid #e5e7eb;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: 600;
+  }
+
+  .page-btn.active,
+  .pagination-page.active {
+    background: linear-gradient(90deg, #7a0901 60%, #a32c1a 100%);
+    color: white;
+    border-color: #7a0901;
+  }
 }
 
 /* Modal */

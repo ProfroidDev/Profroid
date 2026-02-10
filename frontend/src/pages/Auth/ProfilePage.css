@@ -644,6 +644,21 @@
 }
 
 /* Calendar Styles - Constrained and Centered */
+.schedule-calendar-section {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.schedule-calendar-section .modal-label {
+  margin: 0;
+}
+
+.schedule-calendar-section .calendar-center {
+  justify-content: flex-start;
+  margin: 0;
+}
+
 .calendar-center {
   display: flex;
   justify-content: center;
