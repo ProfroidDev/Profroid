@@ -3,6 +3,8 @@ package com.profroid.profroidapp.reportsubdomain.businessLayer;
 import com.profroid.profroidapp.reportsubdomain.dataAccessLayer.Bill;
 import com.profroid.profroidapp.reportsubdomain.dataAccessLayer.BillRepository;
 import com.profroid.profroidapp.reportsubdomain.presentationLayer.CreateCheckoutSessionResponse;
+import com.profroid.profroidapp.reportsubdomain.utils.PaymentNotificationPayloadBuilder;
+import com.profroid.profroidapp.reportsubdomain.utils.PaymentNotificationUtil;
 import com.profroid.profroidapp.utils.exceptions.InvalidOperationException;
 import com.profroid.profroidapp.utils.exceptions.ResourceNotFoundException;
 import com.stripe.Stripe;
@@ -20,6 +22,7 @@ import java.time.LocalDateTime;
 public class StripePaymentServiceImpl implements StripePaymentService {
 
     private final BillRepository billRepository;
+    private final PaymentNotificationUtil paymentNotificationUtil;
 
     @Value("${stripe.secret-key}")
     private String stripeSecretKey;
@@ -27,8 +30,10 @@ public class StripePaymentServiceImpl implements StripePaymentService {
     @Value("${app.url}")
     private String appUrl;
 
-    public StripePaymentServiceImpl(BillRepository billRepository) {
+    public StripePaymentServiceImpl(BillRepository billRepository,
+                                    PaymentNotificationUtil paymentNotificationUtil) {
         this.billRepository = billRepository;
+        this.paymentNotificationUtil = paymentNotificationUtil;
     }
 
     @Override
@@ -106,7 +111,12 @@ public class StripePaymentServiceImpl implements StripePaymentService {
             bill.setStatus(Bill.BillStatus.PAID);
             bill.setPaidAt(LocalDateTime.now());
 
-            billRepository.save(bill);
+            Bill updatedBill = billRepository.save(bill);
+
+            paymentNotificationUtil.sendPaymentPaidNotification(
+                    PaymentNotificationPayloadBuilder.buildCustomerRecipient(updatedBill),
+                    PaymentNotificationPayloadBuilder.buildPaymentDetails(updatedBill)
+            );
         } catch (Exception e) {
             throw new RuntimeException("Failed to finalize payment", e);
         }

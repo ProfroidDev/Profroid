@@ -7,6 +7,8 @@ import com.profroid.profroidapp.reportsubdomain.presentationLayer.BillResponseMo
 import com.profroid.profroidapp.utils.exceptions.InvalidOperationException;
 import com.profroid.profroidapp.utils.exceptions.ResourceNotFoundException;
 import com.profroid.profroidapp.utils.generators.BillPdfGenerator;
+import com.profroid.profroidapp.reportsubdomain.utils.PaymentNotificationPayloadBuilder;
+import com.profroid.profroidapp.reportsubdomain.utils.PaymentNotificationUtil;
 import com.profroid.profroidapp.filesubdomain.businessLayer.FileService;
 import com.profroid.profroidapp.filesubdomain.dataAccessLayer.FileCategory;
 import com.profroid.profroidapp.filesubdomain.dataAccessLayer.FileOwnerType;
@@ -28,17 +30,20 @@ public class BillServiceImpl implements BillService {
     private final BillPdfGenerator billPdfGenerator;
     private final FileService fileService;
     private final StoredFileRepository storedFileRepository;
+    private final PaymentNotificationUtil paymentNotificationUtil;
     
     public BillServiceImpl(BillRepository billRepository,
                            BillResponseMapper billResponseMapper,
                            BillPdfGenerator billPdfGenerator,
                            FileService fileService,
-                           StoredFileRepository storedFileRepository) {
+                           StoredFileRepository storedFileRepository,
+                           PaymentNotificationUtil paymentNotificationUtil) {
         this.billRepository = billRepository;
         this.billResponseMapper = billResponseMapper;
         this.billPdfGenerator = billPdfGenerator;
         this.fileService = fileService;
         this.storedFileRepository = storedFileRepository;
+        this.paymentNotificationUtil = paymentNotificationUtil;
     }
     
     @Override
@@ -109,6 +114,7 @@ public class BillServiceImpl implements BillService {
                 .orElseThrow(() -> new ResourceNotFoundException("Bill not found: " + billId));
         
         try {
+            Bill.BillStatus previousStatus = bill.getStatus();
             Bill.BillStatus newStatus = Bill.BillStatus.valueOf(status.toUpperCase());
             bill.setStatus(newStatus);
             
@@ -120,6 +126,14 @@ public class BillServiceImpl implements BillService {
             }
             
             Bill updatedBill = billRepository.save(bill);
+
+            if (newStatus == Bill.BillStatus.PAID && previousStatus != Bill.BillStatus.PAID) {
+                paymentNotificationUtil.sendPaymentPaidNotification(
+                        PaymentNotificationPayloadBuilder.buildCustomerRecipient(updatedBill),
+                        PaymentNotificationPayloadBuilder.buildPaymentDetails(updatedBill)
+                );
+            }
+
             return billResponseMapper.toResponseModel(updatedBill);
         } catch (IllegalArgumentException e) {
             throw new InvalidOperationException("Invalid bill status: " + status);
