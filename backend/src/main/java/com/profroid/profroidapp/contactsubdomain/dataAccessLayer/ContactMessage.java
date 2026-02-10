@@ -10,7 +10,7 @@ import java.time.Instant;
 @Entity
 @Table(name = "contact_messages", indexes = {
     @Index(name = "idx_message_id", columnList = "messageId"),
-    @Index(name = "idx_status", columnList = "status"),
+    @Index(name = "idx_is_read", columnList = "isRead"),
     @Index(name = "idx_ip_address", columnList = "ipAddress"),
     @Index(name = "idx_created_at", columnList = "createdAt")
 })
@@ -42,9 +42,8 @@ public class ContactMessage {
     @Column(nullable = false)
     private String ipAddress;
     
-    @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private MessageStatus status = MessageStatus.UNREAD;
+    private Boolean isRead = false;
     
     @Column
     private String adminNotes;

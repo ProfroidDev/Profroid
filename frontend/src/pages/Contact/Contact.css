@@ -397,3 +397,78 @@
   opacity: 0.6;
   cursor: not-allowed;
 }
+
+/* Character Limit Counter */
+.char-limit {
+  display: inline-block;
+  margin-left: 8px;
+  font-size: 0.8rem;
+  color: #666;
+  font-weight: normal;
+}
+
+.char-limit.at-limit {
+  color: #d32f2f;
+  font-weight: 700;
+}
+
+/* Rate Limit Timer Display */
+.rate-limit-timer {
+  display: inline-block;
+  background-color: #fff3cd;
+  color: #856404;
+  padding: 6px 12px;
+  border-radius: 4px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  margin-left: 8px;
+  border: 1px solid #ffeaa7;
+  animation: pulse 1s infinite;
+}
+
+@keyframes pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.7;
+  }
+}
+
+/* Rate limit error message with timer */
+.response-message.rate-limit-warning {
+  background-color: #fff3cd;
+  border-left-color: #ffc107;
+  color: #856404;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.rate-limit-countdown {
+  font-weight: 700;
+  font-family: 'Courier New', monospace;
+  font-size: 1rem;
+}
+
+/* Input focus state */
+.contact-form-group input:focus,
+.contact-form-group textarea:focus,
+.auth-form-group input:focus,
+.auth-form-group textarea:focus {
+  outline: none;
+  border-color: #722f37;
+  box-shadow: 0 0 0 3px rgba(114, 47, 55, 0.1);
+}
+
+/* Character limit warnings */
+.char-limit.warning {
+  color: #f57c00;
+  font-weight: 600;
+}
+
+.char-limit.danger {
+  color: #d32f2f;
+  font-weight: 700;
+}

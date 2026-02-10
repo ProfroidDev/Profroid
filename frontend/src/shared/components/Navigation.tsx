@@ -135,9 +135,7 @@ export default function Navigation(): React.ReactElement {
               <a href="/admin/messages" className="nav-messages-link">
                 <Mail size={16} style={{ display: 'inline', marginRight: 4 }} />
                 Messages
-                {unreadCount > 0 && (
-                  <span className="nav-unread-badge">{unreadCount}</span>
-                )}
+                {unreadCount > 0 && <span className="nav-unread-badge">{unreadCount}</span>}
               </a>
             </>
           )}
@@ -282,12 +280,14 @@ export default function Navigation(): React.ReactElement {
               <a href="/services" onClick={closeMobileMenu}>
                 {t('navigation.services')}
               </a>
-              <a href="/admin/messages" onClick={closeMobileMenu} className="nav-messages-link-mobile">
+              <a
+                href="/admin/messages"
+                onClick={closeMobileMenu}
+                className="nav-messages-link-mobile"
+              >
                 <Mail size={16} style={{ display: 'inline', marginRight: 4 }} />
                 Messages
-                {unreadCount > 0 && (
-                  <span className="nav-unread-badge-mobile">{unreadCount}</span>
-                )}
+                {unreadCount > 0 && <span className="nav-unread-badge-mobile">{unreadCount}</span>}
               </a>
             </>
           )}

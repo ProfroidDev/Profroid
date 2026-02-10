@@ -21,7 +21,7 @@ public class ContactMessageResponseModel {
     private String phone;
     private String subject;
     private String message;
-    private String status;
+    private Boolean isRead;
     private String adminNotes;
     private String respondedBy;
     private Instant createdAt;

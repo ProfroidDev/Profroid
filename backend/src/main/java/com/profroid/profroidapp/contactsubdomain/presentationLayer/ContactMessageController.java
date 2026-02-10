@@ -2,7 +2,6 @@ package com.profroid.profroidapp.contactsubdomain.presentationLayer;
 
 import com.profroid.profroidapp.contactsubdomain.businessLayer.ContactMessageService;
 import com.profroid.profroidapp.contactsubdomain.businessLayer.RateLimitExceededException;
-import com.profroid.profroidapp.contactsubdomain.dataAccessLayer.MessageStatus;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import org.slf4j.Logger;
@@ -94,27 +93,18 @@ public class ContactMessageController {
     }
     
     /**
-     * Get contact messages by status (admin only)
-     * GET /api/v1/contact/messages/status/UNREAD?page=0&size=10
+     * Get unread contact messages (admin only)
+     * GET /api/v1/contact/messages/unread?page=0&size=10
      */
     @PreAuthorize("hasRole('ADMIN')")
-    @GetMapping("/messages/status/{status}")
-    public ResponseEntity<?> getMessagesByStatus(
-            @PathVariable String status,
+    @GetMapping("/messages/unread")
+    public ResponseEntity<Page<ContactMessageResponseModel>> getUnreadMessages(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size) {
-        log.info("Admin fetching messages with status: {}", status);
-        try {
-            MessageStatus messageStatus = MessageStatus.valueOf(status.toUpperCase());
-            Pageable pageable = PageRequest.of(page, size);
-            Page<ContactMessageResponseModel> messages = contactMessageService.getMessagesByStatus(messageStatus, pageable);
-            return ResponseEntity.ok(messages);
-        } catch (IllegalArgumentException e) {
-            Map<String, String> errorResponse = new HashMap<>();
-            errorResponse.put("error", "Invalid status");
-            errorResponse.put("message", "Status must be one of: UNREAD, READ, IN_PROGRESS, RESOLVED, ARCHIVED");
-            return ResponseEntity.badRequest().body(errorResponse);
-        }
+        log.info("Admin fetching unread contact messages");
+        Pageable pageable = PageRequest.of(page, size);
+        Page<ContactMessageResponseModel> messages = contactMessageService.getUnreadMessages(pageable);
+        return ResponseEntity.ok(messages);
     }
     
     /**
@@ -131,24 +121,17 @@ public class ContactMessageController {
     }
     
     /**
-     * Update message status (admin only)
-     * PATCH /api/v1/contact/messages/{messageId}/status
+     * Update message read status (admin only)
+     * PATCH /api/v1/contact/messages/{messageId}/read
      */
     @PreAuthorize("hasRole('ADMIN')")
-    @PatchMapping("/messages/{messageId}/status")
-    public ResponseEntity<?> updateMessageStatus(
+    @PatchMapping("/messages/{messageId}/read")
+    public ResponseEntity<?> updateMessageReadStatus(
             @PathVariable String messageId,
-            @RequestParam String status) {
-        log.info("Admin updating message {} status to: {}", messageId, status);
-        try {
-            MessageStatus messageStatus = MessageStatus.valueOf(status.toUpperCase());
-            ContactMessageResponseModel updated = contactMessageService.updateMessageStatus(messageId, messageStatus);
-            return ResponseEntity.ok(updated);
-        } catch (IllegalArgumentException e) {
-            Map<String, String> errorResponse = new HashMap<>();
-            errorResponse.put("error", "Invalid status");
-            return ResponseEntity.badRequest().body(errorResponse);
-        }
+            @RequestParam Boolean isRead) {
+        log.info("Admin updating message {} isRead to: {}", messageId, isRead);
+        ContactMessageResponseModel updated = contactMessageService.updateMessageReadStatus(messageId, isRead);
+        return ResponseEntity.ok(updated);
     }
     
     /**
@@ -166,6 +149,25 @@ public class ContactMessageController {
         String adminUserId = authentication.getName();
         ContactMessageResponseModel updated = contactMessageService.addAdminNotes(messageId, notes, adminUserId);
         return ResponseEntity.ok(updated);
+    }
+
+    /**
+     * Delete a contact message (admin only)
+     * DELETE /api/v1/contact/messages/{messageId}
+     */
+    @PreAuthorize("hasRole('ADMIN')")
+    @DeleteMapping("/messages/{messageId}")
+    public ResponseEntity<?> deleteMessage(@PathVariable String messageId) {
+        try {
+            log.info("Admin deleting contact message: {}", messageId);
+            contactMessageService.deleteMessage(messageId);
+            return ResponseEntity.noContent().build();
+        } catch (Exception e) {
+            log.error("Error deleting contact message", e);
+            Map<String, String> errorResponse = new HashMap<>();
+            errorResponse.put("error", "Failed to delete message");
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);
+        }
     }
     
     /**

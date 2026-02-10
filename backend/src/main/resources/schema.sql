@@ -135,3 +135,28 @@ CREATE TABLE IF NOT EXISTS appointments (
                                             FOREIGN KEY (schedule_id) REFERENCES schedules(id) ON DELETE CASCADE
 );
 
+-- Contact Messages Table
+CREATE TABLE IF NOT EXISTS contact_messages (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    message_id VARCHAR(36) NOT NULL UNIQUE,
+    name VARCHAR(255) NOT NULL,
+    email VARCHAR(255) NOT NULL,
+    phone VARCHAR(20),
+    subject VARCHAR(255) NOT NULL,
+    message LONGTEXT NOT NULL,
+    ip_address VARCHAR(45) NOT NULL,
+    is_read BOOLEAN NOT NULL DEFAULT FALSE,
+    admin_notes LONGTEXT,
+    responded_by VARCHAR(36),
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    responded_at TIMESTAMP NULL,
+    INDEX idx_message_id (message_id),
+    INDEX idx_is_read (is_read),
+    INDEX idx_ip_address (ip_address),
+    INDEX idx_created_at (created_at)
+);
+
+-- Ensure all existing records have is_read set to FALSE
+UPDATE contact_messages SET is_read = FALSE WHERE is_read IS NULL;
+

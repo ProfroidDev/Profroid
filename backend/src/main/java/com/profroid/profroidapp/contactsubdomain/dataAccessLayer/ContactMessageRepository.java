@@ -14,7 +14,8 @@ import java.util.Optional;
 @Repository
 public interface ContactMessageRepository extends JpaRepository<ContactMessage, Long> {
     Optional<ContactMessage> findByMessageId(String messageId);
-    Page<ContactMessage> findByStatus(MessageStatus status, Pageable pageable);
+    Page<ContactMessage> findByIsRead(Boolean isRead, Pageable pageable);
+    long countByIsRead(Boolean isRead);
     Page<ContactMessage> findAll(Pageable pageable);
     
     /**

@@ -4,7 +4,6 @@ import './App.css';
 import './styles/mobile.css';
 import './styles/modals.css';
 import './styles/tables.css';
-import './i18n/config';
 
 import CustomerListPage from './pages/Customer/CustomerListPage';
 import CustomerBills from './pages/Customer/CustomerBills';

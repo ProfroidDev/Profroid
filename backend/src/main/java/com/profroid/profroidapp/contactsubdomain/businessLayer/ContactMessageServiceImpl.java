@@ -2,7 +2,6 @@ package com.profroid.profroidapp.contactsubdomain.businessLayer;
 
 import com.profroid.profroidapp.contactsubdomain.dataAccessLayer.ContactMessage;
 import com.profroid.profroidapp.contactsubdomain.dataAccessLayer.ContactMessageRepository;
-import com.profroid.profroidapp.contactsubdomain.dataAccessLayer.MessageStatus;
 import com.profroid.profroidapp.contactsubdomain.mappingLayer.ContactMessageRequestMapper;
 import com.profroid.profroidapp.contactsubdomain.mappingLayer.ContactMessageResponseMapper;
 import com.profroid.profroidapp.contactsubdomain.presentationLayer.ContactMessageRequestModel;
@@ -47,7 +46,7 @@ public class ContactMessageServiceImpl implements ContactMessageService {
         checkRateLimit(ipAddress);
         
         ContactMessage message = requestMapper.toEntity(requestModel, ipAddress);
-        message.setStatus(MessageStatus.UNREAD);
+        message.setIsRead(false);
         
         ContactMessage savedMessage = contactMessageRepository.save(message);
         log.info("Contact message created with ID: {} from IP: {}", savedMessage.getMessageId(), ipAddress);
@@ -63,9 +62,9 @@ public class ContactMessageServiceImpl implements ContactMessageService {
     }
     
     @Override
-    public Page<ContactMessageResponseModel> getMessagesByStatus(MessageStatus status, Pageable pageable) {
-        log.info("Fetching contact messages with status: {}", status);
-        Page<ContactMessage> messages = contactMessageRepository.findByStatus(status, pageable);
+    public Page<ContactMessageResponseModel> getUnreadMessages(Pageable pageable) {
+        log.info("Fetching unread contact messages");
+        Page<ContactMessage> messages = contactMessageRepository.findByIsRead(false, pageable);
         return messages.map(responseMapper::toResponseModel);
     }
     
@@ -75,23 +74,19 @@ public class ContactMessageServiceImpl implements ContactMessageService {
         ContactMessage message = contactMessageRepository.findByMessageId(messageId)
                 .orElseThrow(() -> new ResourceNotFoundException("Contact message not found: " + messageId));
         
-        // Mark as read when admin views it
-        if (message.getStatus() == MessageStatus.UNREAD) {
-            message.setStatus(MessageStatus.READ);
-            contactMessageRepository.save(message);
-        }
+        // Don't automatically change status - let admin control it via the dropdown
         
         return responseMapper.toResponseModel(message);
     }
     
     @Override
     @Transactional
-    public ContactMessageResponseModel updateMessageStatus(String messageId, MessageStatus newStatus) {
-        log.info("Updating message {} status to: {}", messageId, newStatus);
+    public ContactMessageResponseModel updateMessageReadStatus(String messageId, Boolean isRead) {
+        log.info("Updating message {} isRead to: {}", messageId, isRead);
         ContactMessage message = contactMessageRepository.findByMessageId(messageId)
                 .orElseThrow(() -> new ResourceNotFoundException("Contact message not found: " + messageId));
         
-        message.setStatus(newStatus);
+        message.setIsRead(isRead);
         ContactMessage updatedMessage = contactMessageRepository.save(message);
         
         return responseMapper.toResponseModel(updatedMessage);
@@ -107,7 +102,7 @@ public class ContactMessageServiceImpl implements ContactMessageService {
         message.setAdminNotes(notes);
         message.setRespondedBy(adminUserId);
         message.setRespondedAt(Instant.now());
-        message.setStatus(MessageStatus.RESOLVED);
+        // Don't force status to RESOLVED - let admin control the status separately
         
         ContactMessage updatedMessage = contactMessageRepository.save(message);
         return responseMapper.toResponseModel(updatedMessage);
@@ -115,9 +110,20 @@ public class ContactMessageServiceImpl implements ContactMessageService {
     
     @Override
     public long getUnreadMessageCount() {
-        return contactMessageRepository.findByStatus(MessageStatus.UNREAD, Pageable.unpaged()).getTotalElements();
+        return contactMessageRepository.countByIsRead(false);
     }
     
+    @Override
+    @Transactional
+    public void deleteMessage(String messageId) {
+        log.info("Deleting contact message: {}", messageId);
+        ContactMessage message = contactMessageRepository.findByMessageId(messageId)
+                .orElseThrow(() -> new ResourceNotFoundException("Contact message not found: " + messageId));
+        
+        contactMessageRepository.delete(message);
+        log.info("Contact message deleted: {}", messageId);
+    }
+
     /**
      * Check if IP address has exceeded rate limit
      * Max 5 messages per 20 minutes per IP

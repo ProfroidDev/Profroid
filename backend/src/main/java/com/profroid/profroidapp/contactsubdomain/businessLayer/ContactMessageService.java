@@ -1,6 +1,5 @@
 package com.profroid.profroidapp.contactsubdomain.businessLayer;
 
-import com.profroid.profroidapp.contactsubdomain.dataAccessLayer.MessageStatus;
 import com.profroid.profroidapp.contactsubdomain.presentationLayer.ContactMessageRequestModel;
 import com.profroid.profroidapp.contactsubdomain.presentationLayer.ContactMessageResponseModel;
 import org.springframework.data.domain.Page;
@@ -19,9 +18,9 @@ public interface ContactMessageService {
     Page<ContactMessageResponseModel> getAllMessages(Pageable pageable);
     
     /**
-     * Get messages by status (admin only)
+     * Get unread messages (admin only)
      */
-    Page<ContactMessageResponseModel> getMessagesByStatus(MessageStatus status, Pageable pageable);
+    Page<ContactMessageResponseModel> getUnreadMessages(Pageable pageable);
     
     /**
      * Get a specific message by ID (admin only)
@@ -29,14 +28,19 @@ public interface ContactMessageService {
     ContactMessageResponseModel getMessageById(String messageId);
     
     /**
-     * Update message status (admin only)
+     * Update message read status (admin only)
      */
-    ContactMessageResponseModel updateMessageStatus(String messageId, MessageStatus newStatus);
+    ContactMessageResponseModel updateMessageReadStatus(String messageId, Boolean isRead);
     
     /**
      * Add admin notes to a message (admin only)
      */
     ContactMessageResponseModel addAdminNotes(String messageId, String notes, String adminUserId);
+    
+    /**
+     * Delete a message (admin only)
+     */
+    void deleteMessage(String messageId);
     
     /**
      * Get unread message count (admin only)

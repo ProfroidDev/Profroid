@@ -17,7 +17,7 @@ public class ContactMessageResponseMapper {
                 .phone(message.getPhone())
                 .subject(message.getSubject())
                 .message(message.getMessage())
-                .status(message.getStatus().toString())
+                .isRead(message.getIsRead() != null ? message.getIsRead() : false)
                 .adminNotes(message.getAdminNotes())
                 .respondedBy(message.getRespondedBy())
                 .createdAt(message.getCreatedAt())
