@@ -330,7 +330,9 @@
   border-radius: 12px;
   text-align: center;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  transition:
+    transform 0.3s ease,
+    box-shadow 0.3s ease;
   border-top: 4px solid #722f37;
 }
 
@@ -357,7 +359,9 @@
 
 /* Value Items Enhancement */
 .value-item {
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  transition:
+    transform 0.3s ease,
+    box-shadow 0.3s ease;
   animation: fadeInUp 0.6s ease-out both;
 }
 
@@ -490,7 +494,6 @@
 }
 
 @keyframes pulse {
-
   0%,
   100% {
     transform: scale(1);
