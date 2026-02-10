@@ -10,6 +10,7 @@ import com.profroid.profroidapp.filesubdomain.dataAccessLayer.FileCategory;
 import com.profroid.profroidapp.filesubdomain.dataAccessLayer.FileOwnerType;
 import com.profroid.profroidapp.filesubdomain.dataAccessLayer.StoredFile;
 import com.profroid.profroidapp.filesubdomain.dataAccessLayer.StoredFileRepository;
+import com.profroid.profroidapp.reportsubdomain.utils.PaymentNotificationUtil;
 import com.profroid.profroidapp.utils.exceptions.InvalidOperationException;
 import com.profroid.profroidapp.utils.exceptions.ResourceNotFoundException;
 import com.profroid.profroidapp.utils.generators.BillPdfGenerator;
@@ -20,6 +21,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.boot.test.mock.mockito.MockBean;
 
 import java.io.ByteArrayInputStream;
 import java.math.BigDecimal;
@@ -44,6 +46,8 @@ public class BillServiceUnitTest {
     private FileService fileService;
     @Mock
     private StoredFileRepository storedFileRepository;
+    @Mock
+    private PaymentNotificationUtil paymentNotificationUtil;
 
     @InjectMocks
     private BillServiceImpl billService;
