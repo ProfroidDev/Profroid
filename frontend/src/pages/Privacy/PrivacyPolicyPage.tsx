@@ -17,14 +17,30 @@ export default function PrivacyPolicyPage() {
         <div className="privacy-toc">
           <h3>{t('pages.privacy.tableOfContents')}</h3>
           <ul>
-            <li><a href="#intro">Introduction</a></li>
-            <li><a href="#data-collection">{t('pages.privacy.section1Title')}</a></li>
-            <li><a href="#types-data">{t('pages.privacy.section2Title')}</a></li>
-            <li><a href="#data-usage">{t('pages.privacy.section3Title')}</a></li>
-            <li><a href="#data-storage">{t('pages.privacy.section4Title')}</a></li>
-            <li><a href="#user-rights">{t('pages.privacy.section5Title')}</a></li>
-            <li><a href="#changes">{t('pages.privacy.section6Title')}</a></li>
-            <li><a href="#contact">{t('pages.privacy.section7Title')}</a></li>
+            <li>
+              <a href="#intro">Introduction</a>
+            </li>
+            <li>
+              <a href="#data-collection">{t('pages.privacy.section1Title')}</a>
+            </li>
+            <li>
+              <a href="#types-data">{t('pages.privacy.section2Title')}</a>
+            </li>
+            <li>
+              <a href="#data-usage">{t('pages.privacy.section3Title')}</a>
+            </li>
+            <li>
+              <a href="#data-storage">{t('pages.privacy.section4Title')}</a>
+            </li>
+            <li>
+              <a href="#user-rights">{t('pages.privacy.section5Title')}</a>
+            </li>
+            <li>
+              <a href="#changes">{t('pages.privacy.section6Title')}</a>
+            </li>
+            <li>
+              <a href="#contact">{t('pages.privacy.section7Title')}</a>
+            </li>
           </ul>
         </div>
 
@@ -48,7 +64,7 @@ export default function PrivacyPolicyPage() {
         <section id="types-data" className="privacy-section">
           <h2>{t('pages.privacy.section2Title')}</h2>
           <p>{t('pages.privacy.section2Text')}</p>
-          
+
           <div className="privacy-data-categories">
             <div className="data-category">
               <h4>{t('pages.privacy.category1Title')}</h4>
@@ -85,7 +101,7 @@ export default function PrivacyPolicyPage() {
         <section id="data-usage" className="privacy-section">
           <h2>{t('pages.privacy.section3Title')}</h2>
           <p>{t('pages.privacy.section3Text')}</p>
-          
+
           <div className="privacy-usage-list">
             <div className="usage-item">
               <h4>{t('pages.privacy.usage1Title')}</h4>
@@ -113,7 +129,7 @@ export default function PrivacyPolicyPage() {
         <section id="data-storage" className="privacy-section">
           <h2>{t('pages.privacy.section4Title')}</h2>
           <p>{t('pages.privacy.section4Text')}</p>
-          
+
           <div className="privacy-info-box">
             <h4>{t('pages.privacy.securityMeasures')}</h4>
             <ul>
@@ -132,7 +148,7 @@ export default function PrivacyPolicyPage() {
         <section id="user-rights" className="privacy-section">
           <h2>{t('pages.privacy.section5Title')}</h2>
           <p>{t('pages.privacy.section5Text')}</p>
-          
+
           <div className="privacy-rights-list">
             <div className="right-item">
               <h4>{t('pages.privacy.right1Title')}</h4>
@@ -166,7 +182,7 @@ export default function PrivacyPolicyPage() {
         <section id="contact" className="privacy-section">
           <h2>{t('pages.privacy.section7Title')}</h2>
           <p>{t('pages.privacy.section7Text')}</p>
-          
+
           <div className="privacy-contact-box">
             <div className="contact-method">
               <h4>{t('pages.privacy.contactEmail')}</h4>
@@ -179,7 +195,8 @@ export default function PrivacyPolicyPage() {
             <div className="contact-method">
               <h4>{t('pages.privacy.contactMail')}</h4>
               <p>
-                Profroid Inc.<br />
+                Profroid Inc.
+                <br />
                 {t('pages.privacy.contactAddress')}
               </p>
             </div>
