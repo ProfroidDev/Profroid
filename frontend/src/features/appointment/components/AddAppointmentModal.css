@@ -92,7 +92,7 @@
   margin: 4px 0;
   font-size: 1.25rem;
   color: #7a0901;
-  font-family: "Georgia", serif;
+  font-family: 'Georgia', serif;
   flex: 1;
   min-width: 200px;
 }
@@ -192,7 +192,9 @@
   font-size: 0.9rem;
   color: #2f2a28;
   background: #fff;
-  transition: border-color 0.2s, box-shadow 0.2s;
+  transition:
+    border-color 0.2s,
+    box-shadow 0.2s;
   box-sizing: border-box;
   line-height: 1.4;
 }

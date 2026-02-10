@@ -110,7 +110,9 @@
   font-size: 1.3rem;
   cursor: pointer;
   color: #7a0901;
-  transition: color 0.2s, transform 0.2s;
+  transition:
+    color 0.2s,
+    transform 0.2s;
   padding: 0;
   width: 24px;
   height: 24px;

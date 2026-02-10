@@ -791,7 +791,9 @@
   border-radius: 4px;
   color: #7a0901;
   cursor: pointer;
-  transition: background 0.2s, color 0.2s;
+  transition:
+    background 0.2s,
+    color 0.2s;
   background: transparent;
   border: none;
   font-size: 0.65rem;

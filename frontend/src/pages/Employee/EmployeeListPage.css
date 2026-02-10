@@ -40,7 +40,10 @@
   font-weight: 600;
   cursor: pointer;
   box-shadow: 0 2px 8px rgba(122, 9, 1, 0.08);
-  transition: background 0.2s, box-shadow 0.2s, transform 0.2s;
+  transition:
+    background 0.2s,
+    box-shadow 0.2s,
+    transform 0.2s;
 }
 
 @media (min-width: 641px) {
