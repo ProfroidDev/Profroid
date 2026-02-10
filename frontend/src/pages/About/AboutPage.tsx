@@ -99,7 +99,7 @@ export default function AboutPage() {
         <section className="cta-section">
           <h2>{t('pages.about.ctaTitle')}</h2>
           <p>{t('pages.about.ctaText')}</p>
-          <button className="cta-button" onClick={() => window.location.href = '/contact'}>
+          <button className="cta-button" onClick={() => (window.location.href = '/contact')}>
             {t('pages.about.ctaButton')}
           </button>
         </section>
