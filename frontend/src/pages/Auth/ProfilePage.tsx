@@ -255,9 +255,9 @@ export default function ProfilePage() {
     }
   }, [user?.id]);
 
-  // Load cellars when user is customer
+  // Load cellars when user is customer (not admin or employee)
   useEffect(() => {
-    if (user && !user?.employeeType) {
+    if (user && user.role === 'CUSTOMER') {
       fetchCellarsForCustomer();
     }
   }, [user, fetchCellarsForCustomer]);
@@ -1147,7 +1147,7 @@ export default function ProfilePage() {
             </button>
 
             {/* Cellar Intake Button - Only show for customers */}
-            {!user?.employeeType && (
+            {user?.role === 'CUSTOMER' && (
               <button
                 onClick={() => setAddCellarModalOpen(true)}
                 className="btn-secondary"
@@ -1158,7 +1158,7 @@ export default function ProfilePage() {
             )}
 
             {/* Persisted cellars list - Only show for customers */}
-            {!user?.employeeType && (
+            {user?.role === 'CUSTOMER' && (
               <div style={{ marginTop: '2rem' }}>
                 <div className="section-header">
                   <h2>{t('pages.profile.yourCellars')}</h2>
@@ -1261,7 +1261,7 @@ export default function ProfilePage() {
         )}
 
         {/* Cellar Intake Modal - Only show for customers */}
-        {!user?.employeeType && addCellarModalOpen && (
+        {user?.role === 'CUSTOMER' && addCellarModalOpen && (
           <div className="modal-overlay" role="dialog" aria-modal>
             <div className="modal">
               <div className="modal-header">
@@ -1462,7 +1462,7 @@ export default function ProfilePage() {
         )}
 
         {/* Edit Cellar Modal - Only show for customers */}
-        {!user?.employeeType && editCellarModalOpen && (
+        {user?.role === 'CUSTOMER' && editCellarModalOpen && (
           <div className="modal-overlay" role="dialog" aria-modal>
             <div className="modal">
               <div className="modal-header">

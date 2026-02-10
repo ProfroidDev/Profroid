@@ -1,80 +1,224 @@
 .about-page {
   background-color: #fdfbf7;
   min-height: 100vh;
-  padding-bottom: 60px;
+  padding-bottom: 40px;
 }
 
 .about-hero {
   background: linear-gradient(135deg, #722f37 0%, #8b3a44 100%);
   color: white;
-  padding: 80px 20px;
+  padding: 40px 16px;
   text-align: center;
 }
 
+@media (min-width: 641px) {
+  .about-hero {
+    padding: 60px 24px;
+  }
+}
+
+@media (min-width: 1025px) {
+  .about-hero {
+    padding: 80px 32px;
+  }
+}
+
 .about-hero h1 {
-  font-size: 48px;
-  margin: 0 0 20px 0;
+  font-size: 1.75rem;
+  margin: 0 0 12px 0;
   font-weight: bold;
-  font-family: 'Helvetica Neue', Arial, sans-serif;
+  font-family: 'Georgia', serif;
+}
+
+@media (min-width: 641px) {
+  .about-hero h1 {
+    font-size: 2.2rem;
+    margin-bottom: 16px;
+  }
+}
+
+@media (min-width: 1025px) {
+  .about-hero h1 {
+    font-size: 3rem;
+    margin-bottom: 20px;
+  }
 }
 
 .about-subtitle {
-  font-size: 18px;
+  font-size: 0.95rem;
   max-width: 600px;
   margin: 0 auto;
   font-weight: 300;
 }
 
+@media (min-width: 641px) {
+  .about-subtitle {
+    font-size: 1rem;
+  }
+}
+
+@media (min-width: 1025px) {
+  .about-subtitle {
+    font-size: 1.1rem;
+  }
+}
+
 .about-container {
   max-width: 1000px;
   margin: 0 auto;
-  padding: 60px 20px;
+  padding: 32px 16px;
+}
+
+@media (min-width: 641px) {
+  .about-container {
+    padding: 40px 24px;
+  }
+}
+
+@media (min-width: 1025px) {
+  .about-container {
+    padding: 60px 32px;
+  }
 }
 
 .about-section {
-  margin-bottom: 60px;
+  margin-bottom: 32px;
+}
+
+@media (min-width: 641px) {
+  .about-section {
+    margin-bottom: 40px;
+  }
+}
+
+@media (min-width: 1025px) {
+  .about-section {
+    margin-bottom: 60px;
+  }
 }
 
 .about-section h2 {
-  font-size: 32px;
+  font-size: 1.5rem;
   color: #722f37;
-  margin-bottom: 20px;
+  margin-bottom: 16px;
   font-weight: bold;
-  font-family: 'Helvetica Neue', Arial, sans-serif;
+  font-family: 'Georgia', serif;
+}
+
+@media (min-width: 641px) {
+  .about-section h2 {
+    font-size: 1.8rem;
+    margin-bottom: 18px;
+  }
+}
+
+@media (min-width: 1025px) {
+  .about-section h2 {
+    font-size: 2.2rem;
+    margin-bottom: 20px;
+  }
 }
 
 .about-section p {
-  font-size: 16px;
+  font-size: 0.9rem;
   line-height: 1.8;
   color: #333;
-  margin-bottom: 15px;
+  margin-bottom: 12px;
+}
+
+@media (min-width: 641px) {
+  .about-section p {
+    font-size: 0.95rem;
+    margin-bottom: 14px;
+  }
+}
+
+@media (min-width: 1025px) {
+  .about-section p {
+    font-size: 1rem;
+    margin-bottom: 16px;
+  }
 }
 
 .values-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-  gap: 30px;
-  margin-top: 30px;
+  grid-template-columns: 1fr;
+  gap: 16px;
+  margin-top: 20px;
+}
+
+@media (min-width: 641px) {
+  .values-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 18px;
+    margin-top: 24px;
+  }
+}
+
+@media (min-width: 1025px) {
+  .values-grid {
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 30px;
+    margin-top: 30px;
+  }
 }
 
 .value-item {
   background: white;
-  padding: 30px;
+  padding: 16px;
   border-radius: 8px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
   border-left: 4px solid #722f37;
 }
 
+@media (min-width: 641px) {
+  .value-item {
+    padding: 20px;
+  }
+}
+
+@media (min-width: 1025px) {
+  .value-item {
+    padding: 30px;
+  }
+}
+
 .value-item h3 {
-  font-size: 20px;
+  font-size: 0.95rem;
   color: #722f37;
-  margin: 0 0 15px 0;
+  margin: 0 0 10px 0;
   font-weight: bold;
+}
+
+@media (min-width: 641px) {
+  .value-item h3 {
+    font-size: 1.05rem;
+    margin-bottom: 12px;
+  }
+}
+
+@media (min-width: 1025px) {
+  .value-item h3 {
+    font-size: 1.2rem;
+    margin-bottom: 15px;
+  }
 }
 
 .value-item p {
   margin: 0;
-  font-size: 14px;
+  font-size: 0.85rem;
+}
+
+@media (min-width: 641px) {
+  .value-item p {
+    font-size: 0.9rem;
+  }
+}
+
+@media (min-width: 1025px) {
+  .value-item p {
+    font-size: 0.95rem;
+  }
 }
 
 .features-list {

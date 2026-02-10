@@ -1,7 +1,9 @@
 /* ===== Background (matches sections like Our Collections) ===== */
 .employees-page-light {
-  padding-top: 120px;
-  padding-bottom: 60px;
+  padding-top: 80px;
+  padding-bottom: 40px;
+  padding-left: 16px;
+  padding-right: 16px;
   min-height: 100vh;
   background: #f7f6f3;
   display: flex;
@@ -9,14 +11,32 @@
   align-items: center;
 }
 
+@media (min-width: 641px) {
+  .employees-page-light {
+    padding-top: 100px;
+    padding-bottom: 50px;
+    padding-left: 24px;
+    padding-right: 24px;
+  }
+}
+
+@media (min-width: 1025px) {
+  .employees-page-light {
+    padding-top: 120px;
+    padding-bottom: 60px;
+    padding-left: 32px;
+    padding-right: 32px;
+  }
+}
+
 /* Add Employee Button */
 .btn-add-employee {
   background: linear-gradient(90deg, #7a0901 60%, #a32c1a 100%);
   color: #fff;
   border: none;
-  padding: 11px 22px;
-  border-radius: 10px;
-  font-size: 1rem;
+  padding: 10px 16px;
+  border-radius: 8px;
+  font-size: 0.9rem;
   font-weight: 600;
   cursor: pointer;
   box-shadow: 0 2px 8px rgba(122, 9, 1, 0.08);
@@ -24,6 +44,20 @@
     background 0.2s,
     box-shadow 0.2s,
     transform 0.2s;
+}
+
+@media (min-width: 641px) {
+  .btn-add-employee {
+    padding: 10px 20px;
+    font-size: 0.95rem;
+  }
+}
+
+@media (min-width: 1025px) {
+  .btn-add-employee {
+    padding: 11px 22px;
+    font-size: 1rem;
+  }
 }
 
 .btn-add-employee:hover {
@@ -34,62 +68,133 @@
 
 /* ===== Title ===== */
 .employees-title-light {
-  font-size: 2.6rem;
+  font-size: 1.8rem;
   font-weight: 700;
   font-family: 'Georgia', serif;
   color: #7a0901;
-  margin-bottom: 28px;
-  letter-spacing: 1px;
+  margin-bottom: 20px;
+  letter-spacing: 0.5px;
+}
+
+@media (min-width: 641px) {
+  .employees-title-light {
+    font-size: 2rem;
+    margin-bottom: 24px;
+  }
+}
+
+@media (min-width: 1025px) {
+  .employees-title-light {
+    font-size: 2.6rem;
+    margin-bottom: 28px;
+    letter-spacing: 1px;
+  }
 }
 
 /* ===== Card ===== */
 .employees-card-light {
-  width: 90%;
-  max-width: 950px;
+  width: 100%;
+  max-width: 1000px;
   background: #fff;
   border: none;
-  border-radius: 24px;
-  padding: 28px 32px;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+  border-radius: 12px;
+  padding: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+}
+
+@media (min-width: 641px) {
+  .employees-card-light {
+    border-radius: 16px;
+    padding: 16px;
+  }
+}
+
+@media (min-width: 1025px) {
+  .employees-card-light {
+    border-radius: 20px;
+    padding: 20px 24px;
+  }
 }
 
 /* ===== Table ===== */
 .employees-table-light {
   width: 100%;
-  border-collapse: separate;
-  border-spacing: 0;
-  border-radius: 18px;
+  border-collapse: collapse;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
   overflow: hidden;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+  font-size: 0.75rem;
+  background: white;
+}
+
+@media (min-width: 641px) {
+  .employees-table-light {
+    border-radius: 10px;
+    font-size: 0.8rem;
+  }
+}
+
+@media (min-width: 1025px) {
+  .employees-table-light {
+    border-radius: 12px;
+    font-size: 0.85rem;
+  }
 }
 
 .employees-table-light th {
   background: #7a0901;
   color: #fff;
-  padding: 16px 10px;
+  padding: 8px 6px;
   text-align: left;
-  font-size: 1.08rem;
+  font-size: 0.7rem;
   font-weight: 700;
-  border-top-left-radius: 14px;
-  border-top-right-radius: 14px;
+  word-break: break-word;
+}
+
+@media (min-width: 641px) {
+  .employees-table-light th {
+    padding: 10px 8px;
+    font-size: 0.75rem;
+  }
+}
+
+@media (min-width: 1025px) {
+  .employees-table-light th {
+    padding: 12px 12px;
+    font-size: 0.85rem;
+  }
 }
 
 .employees-table-light td {
-  padding: 16px 10px;
+  padding: 8px 6px;
   border-bottom: 1px solid #f0ece7;
   background: #fff;
-  font-size: 1.04rem;
+  vertical-align: middle;
+}
+
+@media (min-width: 641px) {
+  .employees-table-light td {
+    padding: 10px 8px;
+  }
+}
+
+@media (min-width: 1025px) {
+  .employees-table-light td {
+    padding: 12px 12px;
+  }
 }
 
 .employees-table-light tr:hover td {
   background: #f8f4f2;
 }
+
 .employees-table-light tr:last-child td {
   border-bottom: none;
 }
 
 .employees-table-light tr.row-deactivated td {
   background: #ffcccc;
+  opacity: 0.7;
 }
 
 .employee-type-badge {
@@ -111,25 +216,81 @@
   background: linear-gradient(90deg, #7a0901 60%, #a32c1a 100%);
   color: #fff;
   border: none;
-  padding: 8px 16px;
-  border-radius: 8px;
-  font-size: 0.95rem;
+  padding: 6px 8px;
+  border-radius: 4px;
+  font-size: 0.65rem;
   font-weight: 600;
   cursor: pointer;
-  box-shadow: 0 2px 8px rgba(122, 9, 1, 0.08);
-  margin-bottom: 4px;
-  transition:
-    background 0.2s,
-    box-shadow 0.2s,
-    transform 0.2s;
+  box-shadow: 0 1px 4px rgba(122, 9, 1, 0.08);
+  transition: all 0.2s;
   white-space: nowrap;
-  min-width: fit-content;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  flex-shrink: 0;
+  min-height: 24px;
+  padding: 5px 8px;
+}
+
+@media (min-width: 641px) {
+  .btn-view-light {
+    padding: 7px 10px;
+    font-size: 0.7rem;
+    border-radius: 5px;
+    min-height: 28px;
+  }
+}
+
+@media (min-width: 1025px) {
+  .btn-view-light {
+    padding: 8px 12px;
+    font-size: 0.75rem;
+    border-radius: 6px;
+    min-height: 32px;
+  }
 }
 
 .btn-view-light:hover {
   background: linear-gradient(90deg, #a32c1a 60%, #7a0901 100%);
-  box-shadow: 0 4px 16px rgba(122, 9, 1, 0.12);
-  transform: translateY(-2px) scale(1.04);
+  box-shadow: 0 2px 8px rgba(122, 9, 1, 0.12);
+  transform: translateY(-1px);
+}
+
+.btn-view-light:active {
+  transform: translateY(0);
+}
+
+.btn-view-light:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  box-shadow: none;
+  transform: none;
+}
+
+/* Table Actions Cell - ensure buttons wrap properly */
+.employees-table-light td:last-child {
+  display: flex;
+  flex-direction: row;
+  gap: 4px;
+  align-items: center;
+  padding: 6px 4px;
+  flex-wrap: wrap;
+}
+
+@media (min-width: 641px) {
+  .employees-table-light td:last-child {
+    padding: 8px 6px;
+    gap: 5px;
+  }
+}
+
+@media (min-width: 1025px) {
+  .employees-table-light td:last-child {
+    padding: 10px 8px;
+    gap: 6px;
+    flex-direction: row;
+  }
 }
 
 /* ===== Modal (light) ===== */

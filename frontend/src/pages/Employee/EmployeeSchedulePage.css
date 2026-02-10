@@ -1,32 +1,80 @@
 /* ===== Background ===== */
 .schedule-page-light {
-  padding-top: 140px;
-  padding-bottom: 80px;
+  padding-top: 80px;
+  padding-bottom: 40px;
+  padding-left: 16px;
+  padding-right: 16px;
   min-height: 100vh;
-  background: #f4f1ec; /* warm cream */
+  background: #f4f1ec;
   display: flex;
   flex-direction: column;
   align-items: center;
 }
 
+@media (min-width: 641px) {
+  .schedule-page-light {
+    padding-top: 110px;
+    padding-bottom: 50px;
+    padding-left: 24px;
+    padding-right: 24px;
+  }
+}
+
+@media (min-width: 1025px) {
+  .schedule-page-light {
+    padding-top: 140px;
+    padding-bottom: 80px;
+    padding-left: 32px;
+    padding-right: 32px;
+  }
+}
+
 /* ===== Title ===== */
 .schedule-title-light {
-  font-size: 2.8rem;
+  font-size: 1.8rem;
   font-weight: 700;
   font-family: 'Georgia', serif;
   color: #5a2a27;
-  margin-bottom: 30px;
+  margin-bottom: 20px;
+}
+
+@media (min-width: 641px) {
+  .schedule-title-light {
+    font-size: 2.2rem;
+    margin-bottom: 24px;
+  }
+}
+
+@media (min-width: 1025px) {
+  .schedule-title-light {
+    font-size: 2.8rem;
+    margin-bottom: 30px;
+  }
 }
 
 /* ===== Card ===== */
 .schedule-card-light {
-  width: 85%;
-  max-width: 1000px;
+  width: 100%;
+  max-width: 900px;
   background: #ffffff;
   border: 1px solid #e5e3df;
-  border-radius: 22px;
-  padding: 32px;
+  border-radius: 12px;
+  padding: 16px;
   box-shadow: 0 6px 18px rgba(0, 0, 0, 0.06);
+}
+
+@media (min-width: 641px) {
+  .schedule-card-light {
+    border-radius: 16px;
+    padding: 20px 24px;
+  }
+}
+
+@media (min-width: 1025px) {
+  .schedule-card-light {
+    border-radius: 22px;
+    padding: 32px;
+  }
 }
 
 /* ===== Placeholder ===== */
@@ -34,8 +82,22 @@
   display: flex;
   justify-content: center;
   align-items: center;
-  min-height: 300px;
+  min-height: 250px;
   color: #7a0901;
-  font-size: 1.1rem;
+  font-size: 0.95rem;
   text-align: center;
+}
+
+@media (min-width: 641px) {
+  .schedule-placeholder {
+    min-height: 280px;
+    font-size: 1rem;
+  }
+}
+
+@media (min-width: 1025px) {
+  .schedule-placeholder {
+    min-height: 300px;
+    font-size: 1.1rem;
+  }
 }

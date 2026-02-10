@@ -3,8 +3,10 @@
 ================================= */
 
 .appointments-page-light {
-  padding-top: 140px;
-  padding-bottom: 80px;
+  padding-top: 80px;
+  padding-bottom: 40px;
+  padding-left: 16px;
+  padding-right: 16px;
   min-height: 100vh;
   background: #f7f6f3;
   display: flex;
@@ -12,31 +14,94 @@
   align-items: center;
 }
 
+@media (min-width: 641px) {
+  .appointments-page-light {
+    padding-top: 100px;
+    padding-bottom: 50px;
+    padding-left: 24px;
+    padding-right: 24px;
+  }
+}
+
+@media (min-width: 1025px) {
+  .appointments-page-light {
+    padding-top: 140px;
+    padding-bottom: 80px;
+    padding-left: 32px;
+    padding-right: 32px;
+  }
+}
+
 .appointments-header {
   text-align: center;
-  margin-bottom: 40px;
+  margin-bottom: 20px;
+  width: 100%;
+}
+
+@media (min-width: 641px) {
+  .appointments-header {
+    margin-bottom: 30px;
+  }
+}
+
+@media (min-width: 1025px) {
+  .appointments-header {
+    margin-bottom: 40px;
+  }
 }
 
 .header-actions {
-  margin-top: 16px;
+  margin-top: 12px;
   display: flex;
   justify-content: center;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+@media (min-width: 641px) {
+  .header-actions {
+    gap: 12px;
+    margin-top: 14px;
+  }
+}
+
+@media (min-width: 1025px) {
+  .header-actions {
+    gap: 16px;
+    margin-top: 16px;
+  }
 }
 
 .btn-primary {
   background: linear-gradient(90deg, #7a0901 60%, #a32c1a 100%);
   color: #fff;
   border: none;
-  padding: 12px 22px;
-  border-radius: 12px;
+  padding: 10px 14px;
+  border-radius: 8px;
   cursor: pointer;
-  font-size: 1rem;
-  font-weight: 700;
+  font-size: 0.85rem;
+  font-weight: 600;
   box-shadow: 0 6px 16px rgba(122, 9, 1, 0.18);
   transition:
     transform 0.2s ease,
     box-shadow 0.2s ease,
     background 0.2s ease;
+  white-space: nowrap;
+}
+
+@media (min-width: 641px) {
+  .btn-primary {
+    padding: 11px 18px;
+    font-size: 0.9rem;
+  }
+}
+
+@media (min-width: 1025px) {
+  .btn-primary {
+    padding: 12px 22px;
+    font-size: 1rem;
+    font-weight: 700;
+  }
 }
 
 .btn-primary:hover {
@@ -46,26 +111,69 @@
 }
 
 .appointments-title-light {
-  font-size: 2.6rem;
+  font-size: 1.6rem;
   font-weight: 700;
   font-family: 'Georgia', serif;
   color: #7a0901;
-  margin-bottom: 10px;
-  letter-spacing: 1px;
+  margin-bottom: 6px;
+  letter-spacing: 0.3px;
+}
+
+@media (min-width: 641px) {
+  .appointments-title-light {
+    font-size: 2rem;
+    margin-bottom: 8px;
+  }
+}
+
+@media (min-width: 1025px) {
+  .appointments-title-light {
+    font-size: 2.6rem;
+    margin-bottom: 10px;
+    letter-spacing: 1px;
+  }
 }
 
 .user-name-display {
-  font-size: 1.2rem;
+  font-size: 0.95rem;
   font-weight: 600;
   color: #5a2a27;
-  margin: 8px 0;
+  margin: 4px 0;
   font-style: italic;
 }
 
+@media (min-width: 641px) {
+  .user-name-display {
+    font-size: 1rem;
+    margin: 6px 0;
+  }
+}
+
+@media (min-width: 1025px) {
+  .user-name-display {
+    font-size: 1.2rem;
+    margin: 8px 0;
+  }
+}
+
 .appointments-subtitle {
-  font-size: 1.1rem;
+  font-size: 0.85rem;
   color: #7a6f5d;
-  margin-bottom: 20px;
+  margin-bottom: 12px;
+}
+
+@media (min-width: 641px) {
+  .appointments-subtitle {
+    font-size: 0.95rem;
+    margin-bottom: 16px;
+  }
+}
+
+@media (min-width: 1025px) {
+  .appointments-subtitle {
+    font-size: 1.1rem;
+    margin-bottom: 20px;
+  }
 }
 
 /* ===============================
@@ -76,9 +184,23 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 20px;
-  padding: 60px 20px;
-  color: #5a2a27;
+  gap: 16px;
+  padding: 40px 16px;
+}
+
+@media (min-width: 641px) {
+  .loading-container {
+    gap: 20px;
+    padding: 50px 24px;
+  }
+}
+
+@media (min-width: 1025px) {
+  .loading-container {
+    gap: 20px;
+    padding: 60px 32px;
+    color: #5a2a27;
+  }
 }
 
 .spinner {

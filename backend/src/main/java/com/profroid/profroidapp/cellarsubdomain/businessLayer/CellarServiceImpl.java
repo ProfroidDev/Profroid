@@ -42,7 +42,11 @@ public class CellarServiceImpl implements CellarService {
     @Override
     public List<CellarResponseModel> getAllCellars() {
         List<Cellar> cellars = cellarRepository.findAll();
-        return cellarResponseMapper.toResponseModelList(cellars);
+        // Filter out deleted cellars
+        List<Cellar> activeCellars = cellars.stream()
+                .filter(c -> c.getIsDeleted() == null || !c.getIsDeleted())
+                .toList();
+        return cellarResponseMapper.toResponseModelList(activeCellars);
     }
 
     @Override

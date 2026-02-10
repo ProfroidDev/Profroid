@@ -1,7 +1,9 @@
 /* ===== Background ===== */
 .parts-page-light {
-  padding-top: 120px;
-  padding-bottom: 60px;
+  padding-top: 80px;
+  padding-bottom: 40px;
+  padding-left: 16px;
+  padding-right: 16px;
   min-height: 100vh;
   background: #f7f6f3;
   display: flex;
@@ -11,26 +13,70 @@
   width: 100%;
 }
 
+@media (min-width: 641px) {
+  .parts-page-light {
+    padding-top: 100px;
+    padding-bottom: 50px;
+    padding-left: 24px;
+    padding-right: 24px;
+  }
+}
+
+@media (min-width: 1025px) {
+  .parts-page-light {
+    padding-top: 120px;
+    padding-bottom: 60px;
+    padding-left: 32px;
+    padding-right: 32px;
+  }
+}
+
 /* ===== Page Header ===== */
 .page-header {
-  width: 90%;
+  width: 100%;
   max-width: 1400px;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 40px;
+  margin-bottom: 24px;
   flex-wrap: wrap;
-  gap: 16px;
+  gap: 12px;
+}
+
+@media (min-width: 641px) {
+  .page-header {
+    margin-bottom: 30px;
+    gap: 16px;
+  }
+}
+
+@media (min-width: 1025px) {
+  .page-header {
+    margin-bottom: 40px;
+  }
 }
 
 /* ===== Title ===== */
 .parts-title-light {
-  font-size: 2.6rem;
+  font-size: 1.8rem;
   font-weight: 700;
   font-family: 'Georgia', serif;
   color: #7a0901;
   margin: 0;
-  letter-spacing: 1px;
+  letter-spacing: 0.5px;
+}
+
+@media (min-width: 641px) {
+  .parts-title-light {
+    font-size: 2.2rem;
+  }
+}
+
+@media (min-width: 1025px) {
+  .parts-title-light {
+    font-size: 2.6rem;
+    letter-spacing: 1px;
+  }
 }
 
 /* ===== Add Button ===== */
@@ -38,9 +84,9 @@
   background: linear-gradient(90deg, #7a0901 60%, #a32c1a 100%);
   color: #fff;
   border: none;
-  padding: 12px 24px;
-  border-radius: 10px;
-  font-size: 1rem;
+  padding: 10px 16px;
+  border-radius: 8px;
+  font-size: 0.9rem;
   font-weight: 600;
   cursor: pointer;
   box-shadow: 0 2px 8px rgba(122, 9, 1, 0.08);
@@ -51,6 +97,22 @@
   white-space: nowrap;
 }
 
+@media (min-width: 641px) {
+  .btn-add-part {
+    padding: 11px 20px;
+    font-size: 0.95rem;
+    border-radius: 9px;
+  }
+}
+
+@media (min-width: 1025px) {
+  .btn-add-part {
+    padding: 12px 24px;
+    font-size: 1rem;
+    border-radius: 10px;
+  }
+}
+
 .btn-add-part:hover {
   background: linear-gradient(90deg, #a32c1a 60%, #7a0901 100%);
   box-shadow: 0 4px 16px rgba(122, 9, 1, 0.12);
@@ -59,25 +121,52 @@
 
 /* ===== Search Bar ===== */
 .search-container {
-  width: 90%;
+  width: 100%;
   max-width: 1400px;
-  margin-bottom: 32px;
+  margin-bottom: 20px;
   box-sizing: border-box;
+}
+
+@media (min-width: 641px) {
+  .search-container {
+    margin-bottom: 24px;
+  }
+}
+
+@media (min-width: 1025px) {
+  .search-container {
+    margin-bottom: 32px;
+  }
 }
 
 .search-bar {
   width: 100%;
-  max-width: 100%;
-  padding: 12px 16px;
-  font-size: 1rem;
-  border: 2px solid #7a0901;
-  border-radius: 10px;
+  padding: 10px 14px;
+  font-size: 0.9rem;
+  border: 1.5px solid #7a0901;
+  border-radius: 8px;
   background: #fff;
   color: #333;
   transition:
     border-color 0.2s,
     box-shadow 0.2s;
   box-sizing: border-box;
+}
+
+@media (min-width: 641px) {
+  .search-bar {
+    padding: 11px 15px;
+    font-size: 0.95rem;
+    border-radius: 9px;
+  }
+}
+
+@media (min-width: 1025px) {
+  .search-bar {
+    padding: 12px 16px;
+    font-size: 1rem;
+    border-radius: 10px;
+  }
 }
 
 .search-bar::placeholder {
@@ -93,12 +182,27 @@
 /* ===== Grid Layout ===== */
 .parts-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-  gap: 28px;
-  width: 90%;
+  grid-template-columns: 1fr;
+  gap: 16px;
+  width: 100%;
   max-width: 1400px;
-  padding: 0 20px;
+  padding: 0;
   box-sizing: border-box;
+}
+
+@media (min-width: 641px) {
+  .parts-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 20px;
+  }
+}
+
+@media (min-width: 1025px) {
+  .parts-grid {
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 28px;
+    padding: 0 20px;
+  }
 }
 
 /* ===== Part Card ===== */
@@ -387,30 +491,168 @@
 
 @media (max-width: 480px) {
   .parts-page-light {
-    padding-top: 100px;
+    padding-top: 80px;
     padding-bottom: 40px;
+    padding-left: 16px;
+    padding-right: 16px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .page-header {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    align-items: stretch;
+    width: 100%;
+    max-width: 360px;
   }
 
   .parts-title-light {
-    font-size: 1.6rem;
-    margin-bottom: 24px;
+    font-size: 1.35rem;
+    margin-bottom: 8px;
+    font-weight: 700;
+  }
+
+  .search-container {
+    width: 100%;
+    max-width: 360px;
+  }
+
+  .search-bar {
+    width: 100%;
+    padding: 10px 12px;
+    font-size: 0.85rem;
+  }
+
+  .btn-add-part {
+    width: 100%;
+    padding: 10px 14px;
+    font-size: 0.85rem;
+    border-radius: 8px;
   }
 
   .parts-grid {
+    display: grid;
     grid-template-columns: 1fr;
-    gap: 16px;
-    width: 95%;
+    gap: 12px;
+    width: 100%;
+    max-width: 360px;
+    margin: 0 auto;
+    padding: 0;
+    box-sizing: border-box;
+  }
+
+  .part-card-light {
+    display: flex;
+    flex-direction: column;
+    overflow: visible;
   }
 
   .part-card-content {
-    padding: 16px;
+    padding: 12px;
+    flex: 1;
   }
 
   .part-image-container {
-    height: 180px;
+    height: 140px;
+    width: 100%;
+  }
+
+  .part-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
   }
 
   .part-card-title {
-    font-size: 1.1rem;
+    font-size: 0.95rem;
+    font-weight: 600;
+    margin: 0 0 6px 0;
+    line-height: 1.2;
+  }
+
+  .part-id {
+    font-size: 0.75rem;
+    margin: 0 0 6px 0;
+    color: #666;
+  }
+
+  .part-card-details {
+    margin-bottom: 8px;
+    flex: 1;
+  }
+
+  .part-card-details p {
+    font-size: 0.8rem;
+    margin: 3px 0;
+  }
+
+  .part-card-buttons {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    margin-top: 0;
+    width: 100%;
+  }
+
+  .btn-view-part {
+    padding: 8px 10px;
+    font-size: 0.75rem;
+    width: 100%;
+    background: linear-gradient(90deg, #7a0901 60%, #a32c1a 100%);
+    color: white;
+    border: none;
+    cursor: pointer;
+    border-radius: 6px;
+  }
+
+  .btn-edit-part,
+  .btn-delete-part {
+    padding: 8px 10px;
+    font-size: 0.75rem;
+    width: 100%;
+    background: white;
+    border: 2px solid #7a0901;
+    color: #7a0901;
+    cursor: pointer;
+    border-radius: 6px;
+  }
+
+  .btn-delete-part {
+    border-color: #c53030;
+    color: #c53030;
+  }
+
+  .parts-pagination {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-top: 24px;
+    width: 100%;
+  }
+
+  .pagination-info {
+    font-size: 0.8rem;
+    text-align: center;
+  }
+
+  .pagination-btn {
+    padding: 10px 12px;
+    font-size: 0.8rem;
+  }
+
+  .pagination-pages {
+    display: flex;
+    justify-content: center;
+    gap: 6px;
+    flex-wrap: wrap;
+  }
+
+  .pagination-page {
+    width: 36px;
+    height: 36px;
+    font-size: 0.8rem;
   }
 }
