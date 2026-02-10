@@ -10,3 +10,10 @@ jwt:
 stripe:
   secret-key: sk_test_dummy
   webhook-secret: whsec_dummy
+spring:
+  sql:
+    init:
+      mode: never
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
