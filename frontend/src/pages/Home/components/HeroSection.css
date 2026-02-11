@@ -111,8 +111,8 @@
 }
 
 .hero-btn {
-  background-color: #eebb4d;
-  color: #2c1810;
+  background-color: #722f37;
+  color: white;
   font-weight: 600;
   display: flex;
   align-items: center;
@@ -120,6 +120,14 @@
   width: 100%;
   max-width: 280px;
   padding: 10px 16px;
+  border: 2px solid transparent;
+  border-radius: 4px;
+  box-sizing: border-box;
+  line-height: 1.5;
+  height: auto;
+  text-decoration: none;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
 }
 
 @media (min-width: 641px) {
@@ -130,7 +138,7 @@
 }
 
 .hero-btn:hover {
-  background-color: #d4a030;
+  background-color: #5a252b;
 }
 
 .hero-btn-outline {
@@ -144,8 +152,13 @@
   width: 100%;
   max-width: 280px;
   padding: 10px 16px;
+  border-radius: 4px;
   cursor: pointer;
   transition: all 0.3s ease;
+  box-sizing: border-box;
+  line-height: 1.5;
+  height: auto;
+  text-decoration: none;
 }
 
 @media (min-width: 641px) {

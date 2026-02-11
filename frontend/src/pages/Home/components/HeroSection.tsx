@@ -35,10 +35,10 @@ const HeroSection: React.FC = () => {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8, delay: 0.4, ease: 'easeOut' }}
         >
-          <Link to="/services" className="btn-primary hero-btn">
+          <Link to="/services" className="hero-btn">
             {t('pages.home.hero.cta')} <ArrowRight size={18} style={{ marginLeft: 8 }} />
           </Link>
-          <Link to="/contact" className="btn-secondary hero-btn-outline">
+          <Link to="/contact" className="hero-btn-outline">
             {t('pages.home.contact.title')}
           </Link>
         </motion.div>

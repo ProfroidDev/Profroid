@@ -75,29 +75,20 @@
 }
 
 .faq-answer {
-  max-height: 0;
   overflow: hidden;
-  transition:
-    max-height 0.3s ease-out,
-    padding 0.3s ease;
   background-color: #fafafa;
-}
-
-.faq-answer.show {
-  max-height: 300px;
-  padding: 0 16px 16px;
   border-top: 1px solid #f0f0f0;
+  padding: 0 16px 16px;
 }
 
 @media (min-width: 641px) {
-  .faq-answer.show {
+  .faq-answer {
     padding: 0 20px 20px;
   }
 }
 
 @media (min-width: 1025px) {
-  .faq-answer.show {
-    max-height: 400px;
+  .faq-answer {
     padding: 0 25px 25px;
   }
 }
@@ -105,7 +96,7 @@
 .faq-answer p {
   margin: 0;
   color: #555;
-  line-height: 1.5;
+  line-height: 1.6;
   padding-top: 10px;
   font-size: 0.9rem;
 }
