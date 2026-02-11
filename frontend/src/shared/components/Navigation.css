@@ -746,3 +746,52 @@
     display: block;
   }
 }
+/* NOTIFICATION BADGE FOR MESSAGES */
+.nav-messages-link,
+.nav-messages-link-mobile {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.nav-unread-badge,
+.nav-unread-badge-mobile {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: #f44336;
+  color: white;
+  border-radius: 50%;
+  font-size: 0.65rem;
+  font-weight: 700;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 4px;
+  margin-left: 4px;
+  animation: pulse-badge 2s infinite;
+}
+
+@keyframes pulse-badge {
+  0% {
+    box-shadow: 0 0 0 0 rgba(244, 67, 54, 0.7);
+  }
+  70% {
+    box-shadow: 0 0 0 6px rgba(244, 67, 54, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(244, 67, 54, 0);
+  }
+}
+
+.nav-messages-link:hover {
+  color: #7a0901;
+}
+
+.nav-messages-link-mobile {
+  font-size: 0.95rem;
+}
+
+.nav-messages-link-mobile:hover {
+  color: #7a0901;
+}

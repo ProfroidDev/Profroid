@@ -4,7 +4,6 @@ import './App.css';
 import './styles/mobile.css';
 import './styles/modals.css';
 import './styles/tables.css';
-import './i18n/config';
 
 import CustomerListPage from './pages/Customer/CustomerListPage';
 import CustomerBills from './pages/Customer/CustomerBills';
@@ -24,6 +23,7 @@ import AboutPage from './pages/About/AboutPage';
 import ContactPage from './pages/Contact/ContactPage';
 import PrivacyPolicyPage from './pages/Privacy/PrivacyPolicyPage';
 import ReviewManagement from './pages/Review/ReviewManagement';
+import AdminMessages from './pages/Admin/Messages/AdminMessages';
 
 // Auth pages and components
 import LoginPage from './pages/Auth/LoginPage';
@@ -195,6 +195,17 @@ function AppRoutes(): React.ReactElement {
             </ProtectedRoute>
           }
         />
+
+        {/* Contact Messages - ADMIN only */}
+        <Route
+          path="/admin/messages"
+          element={
+            <ProtectedRoute requiredRoles={['ADMIN']}>
+              <AdminMessages />
+            </ProtectedRoute>
+          }
+        />
+
         {/* Employees - ADMIN only */}
         <Route
           path="/employees"

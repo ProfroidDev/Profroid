@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { Menu, X, LogIn, LogOut, User, Globe } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { Menu, X, LogIn, LogOut, User, Globe, Mail } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import useAuthStore from '../../features/authentication/store/authStore';
@@ -8,9 +8,46 @@ import './Navigation.css';
 export default function Navigation(): React.ReactElement {
   const [open, setOpen] = useState(false);
   const [languageOpen, setLanguageOpen] = useState(false);
+  const [unreadCount, setUnreadCount] = useState(0);
   const navigate = useNavigate();
   const { isAuthenticated, user, logout } = useAuthStore();
   const { t, i18n } = useTranslation();
+
+  const backendUrl = import.meta.env.VITE_BACKEND_URL || 'http://localhost:8080/api/v1';
+
+  // Fetch unread message count for admin
+  useEffect(() => {
+    if (!isAuthenticated || user?.role?.toLowerCase() !== 'admin') {
+      return;
+    }
+
+    const fetchUnreadCount = async () => {
+      try {
+        const token = localStorage.getItem('authToken');
+        if (!token) return;
+
+        const response = await fetch(`${backendUrl}/contact/unread-count`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+
+        if (response.ok) {
+          const data: { unreadCount: number } = await response.json();
+          setUnreadCount(data.unreadCount);
+        }
+      } catch (error) {
+        console.error('Error fetching unread count:', error);
+      }
+    };
+
+    // Fetch immediately
+    fetchUnreadCount();
+
+    // Refresh every 30 seconds
+    const interval = setInterval(fetchUnreadCount, 30000);
+    return () => clearInterval(interval);
+  }, [isAuthenticated, user?.role, backendUrl]);
 
   const handleLogout = async () => {
     await logout();
@@ -95,6 +132,11 @@ export default function Navigation(): React.ReactElement {
               <a href="/customers">{t('navigation.customers')}</a>
               <a href="/employees">{t('navigation.employees')}</a>
               <a href="/services">{t('navigation.services')}</a>
+              <a href="/admin/messages" className="nav-messages-link">
+                <Mail size={16} style={{ display: 'inline', marginRight: 4 }} />
+                Messages
+                {unreadCount > 0 && <span className="nav-unread-badge">{unreadCount}</span>}
+              </a>
             </>
           )}
 
@@ -237,6 +279,15 @@ export default function Navigation(): React.ReactElement {
               </a>
               <a href="/services" onClick={closeMobileMenu}>
                 {t('navigation.services')}
+              </a>
+              <a
+                href="/admin/messages"
+                onClick={closeMobileMenu}
+                className="nav-messages-link-mobile"
+              >
+                <Mail size={16} style={{ display: 'inline', marginRight: 4 }} />
+                Messages
+                {unreadCount > 0 && <span className="nav-unread-badge-mobile">{unreadCount}</span>}
               </a>
             </>
           )}
