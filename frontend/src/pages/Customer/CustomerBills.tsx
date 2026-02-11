@@ -13,7 +13,7 @@ import './CustomerBills.css';
 const ITEMS_PER_PAGE = 10;
 
 const CustomerBills = () => {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const { customerData } = useAuthStore();
 
   const [bills, setBills] = useState<BillResponseModel[]>([]);
@@ -80,7 +80,8 @@ const CustomerBills = () => {
     setPayingBillId(billId);
 
     try {
-      const { url } = await handlePayment(billId);
+      const locale = i18n.language === 'fr' ? 'fr' : 'en';
+      const { url } = await handlePayment(billId, locale);
       window.location.href = url; // redirect to Stripe hosted checkout
     } catch (error) {
       showToast(t('messages.failedToStartPayment'), 'error');

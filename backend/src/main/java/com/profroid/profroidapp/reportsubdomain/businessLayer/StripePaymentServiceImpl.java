@@ -38,7 +38,7 @@ public class StripePaymentServiceImpl implements StripePaymentService {
 
     @Override
     @Transactional
-    public CreateCheckoutSessionResponse createCheckoutSession(String billId, String userId, String userRole) {
+    public CreateCheckoutSessionResponse createCheckoutSession(String billId, String userId, String userRole, String locale) {
         Stripe.apiKey = stripeSecretKey;
 
         Bill bill = billRepository.findByBillId(billId)
@@ -61,8 +61,9 @@ public class StripePaymentServiceImpl implements StripePaymentService {
         try {
             SessionCreateParams params = SessionCreateParams.builder()
                     .setMode(SessionCreateParams.Mode.PAYMENT)
-                    .setSuccessUrl(appUrl + "/billing/success?billId=" + billId)
-                    .setCancelUrl(appUrl + "/billing/cancel?billId=" + billId)
+                    .setSuccessUrl(appUrl + "/billing/success?billId=" + billId + "&locale=" + locale)
+                    .setCancelUrl(appUrl + "/billing/cancel?billId=" + billId + "&locale=" + locale)
+                    .setLocale(mapLocaleToStripe(locale))
                     .putMetadata("billId", billId)
                     .addLineItem(
                             SessionCreateParams.LineItem.builder()
@@ -126,5 +127,12 @@ public class StripePaymentServiceImpl implements StripePaymentService {
         BigDecimal cents = amount.multiply(BigDecimal.valueOf(100))
                 .setScale(0, RoundingMode.HALF_UP);
         return cents.longValueExact();
+    }
+
+    private SessionCreateParams.Locale mapLocaleToStripe(String locale) {
+        if ("fr".equalsIgnoreCase(locale)) {
+            return SessionCreateParams.Locale.FR;
+        }
+        return SessionCreateParams.Locale.EN;
     }
 }

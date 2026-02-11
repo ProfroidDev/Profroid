@@ -257,7 +257,7 @@ export default function ProfilePage() {
 
   // Load cellars when user is customer (not admin or employee)
   useEffect(() => {
-    if (user && user.role === 'CUSTOMER') {
+    if (user && user.role === 'customer') {
       fetchCellarsForCustomer();
     }
   }, [user, fetchCellarsForCustomer]);
@@ -1138,27 +1138,21 @@ export default function ProfilePage() {
               </>
             )}
 
-            <button
-              onClick={() => setPasswordMode(true)}
-              className="btn-secondary"
-              style={{ marginTop: '1rem' }}
-            >
-              {t('pages.profile.changePassword')}
-            </button>
-
-            {/* Cellar Intake Button - Only show for customers */}
-            {user?.role === 'CUSTOMER' && (
-              <button
-                onClick={() => setAddCellarModalOpen(true)}
-                className="btn-secondary"
-                style={{ marginTop: '1rem', marginLeft: '0.5rem' }}
-              >
-                {t('pages.profile.addCellarIntake')}
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem', marginTop: '1rem' }}>
+              <button onClick={() => setPasswordMode(true)} className="btn-secondary">
+                {t('pages.profile.changePassword')}
               </button>
-            )}
+
+              {/* Cellar Intake Button - Only show for customers */}
+              {user?.role === 'customer' && (
+                <button onClick={() => setAddCellarModalOpen(true)} className="btn-secondary">
+                  {t('pages.profile.addCellarIntake')}
+                </button>
+              )}
+            </div>
 
             {/* Persisted cellars list - Only show for customers */}
-            {user?.role === 'CUSTOMER' && (
+            {user?.role === 'customer' && (
               <div style={{ marginTop: '2rem' }}>
                 <div className="section-header">
                   <h2>{t('pages.profile.yourCellars')}</h2>
@@ -1261,7 +1255,7 @@ export default function ProfilePage() {
         )}
 
         {/* Cellar Intake Modal - Only show for customers */}
-        {user?.role === 'CUSTOMER' && addCellarModalOpen && (
+        {user?.role === 'customer' && addCellarModalOpen && (
           <div className="modal-overlay" role="dialog" aria-modal>
             <div className="modal">
               <div className="modal-header">
@@ -1462,7 +1456,7 @@ export default function ProfilePage() {
         )}
 
         {/* Edit Cellar Modal - Only show for customers */}
-        {user?.role === 'CUSTOMER' && editCellarModalOpen && (
+        {user?.role === 'customer' && editCellarModalOpen && (
           <div className="modal-overlay" role="dialog" aria-modal>
             <div className="modal">
               <div className="modal-header">

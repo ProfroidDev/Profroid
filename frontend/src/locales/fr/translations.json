@@ -1072,6 +1072,25 @@
       "profileImageUpdated": "Image de profil mise à jour",
       "selectImage": "Choisir une image",
       "uploadProfileImage": "Téléverser l'image de profil"
+    },
+    "billing": {
+      "success": {
+        "title": "Paiement réussi",
+        "subtitle": "Merci! Votre paiement a été reçu.",
+        "loading": "Chargement de votre facture…",
+        "billLabel": "Facture",
+        "statusLabel": "Statut",
+        "processing": "Le paiement est en cours de traitement. Actualisez dans quelques secondes s'il affiche toujours impayé.",
+        "goToMyBills": "Aller à Mes Factures",
+        "home": "Accueil"
+      },
+      "cancel": {
+        "title": "Paiement annulé",
+        "subtitle": "Votre paiement n'a pas été complété. Aucun frais n'a été prélevé.",
+        "billLabel": "Facture",
+        "backToMyBills": "Retour à Mes Factures",
+        "goBack": "Retour"
+      }
     }
   },
   "validation": {
