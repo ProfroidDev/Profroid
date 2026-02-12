@@ -36,7 +36,7 @@ import type { CellarResponseModel } from '../../features/cellar/models/CellarRes
 
 export default function MyJobsPage(): React.ReactElement {
   const { t, i18n } = useTranslation();
-  
+
   // Language detection helper
   const isFrench = i18n.language === 'fr';
 
@@ -51,10 +51,10 @@ export default function MyJobsPage(): React.ReactElement {
   // Helper function to get localized job type
   const getJobType = (job: AppointmentResponseModel): string => {
     const typeMap: Record<string, string> = {
-      'QUOTATION': isFrench ? t('pages.services.quotation') : 'Quotation',
-      'INSTALLATION': isFrench ? t('pages.services.installation') : 'Installation',
-      'REPARATION': isFrench ? t('pages.services.reparation') : 'Reparation',
-      'MAINTENANCE': isFrench ? t('pages.services.maintenance') : 'Maintenance',
+      QUOTATION: isFrench ? t('pages.services.quotation') : 'Quotation',
+      INSTALLATION: isFrench ? t('pages.services.installation') : 'Installation',
+      REPARATION: isFrench ? t('pages.services.reparation') : 'Reparation',
+      MAINTENANCE: isFrench ? t('pages.services.maintenance') : 'Maintenance',
     };
     return typeMap[job.jobType] || job.jobType;
   };
@@ -650,10 +650,16 @@ export default function MyJobsPage(): React.ReactElement {
                       >
                         <FileText size={16} />
                         {reportCheckLoading === job.appointmentId
-                          ? (isFrench ? 'Chargement...' : 'Loading...')
+                          ? isFrench
+                            ? 'Chargement...'
+                            : 'Loading...'
                           : jobReports.has(job.appointmentId)
-                            ? (isFrench ? 'Modifier le Rapport' : 'Edit Report')
-                            : (isFrench ? 'Créer un Rapport' : 'Create Report')}
+                            ? isFrench
+                              ? 'Modifier le Rapport'
+                              : 'Edit Report'
+                            : isFrench
+                              ? 'Créer un Rapport'
+                              : 'Create Report'}
                       </button>
                       {jobReports.has(job.appointmentId) && (
                         <button
@@ -681,7 +687,8 @@ export default function MyJobsPage(): React.ReactElement {
                         try {
                           const reportId = jobReports.get(job.appointmentId)?.reportId;
                           if (!reportId) return;
-                          const blob = await exportReportPdf(reportId);
+                          const language = i18n.language === 'fr' ? 'fr' : 'en';
+                          const blob = await exportReportPdf(reportId, language);
                           const url = window.URL.createObjectURL(blob);
                           const link = document.createElement('a');
                           link.href = url;

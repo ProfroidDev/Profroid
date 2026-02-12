@@ -340,6 +340,7 @@
         "title": "Service Bills",
         "subtitle": "View and manage your service bills",
         "totalAmount": "Paid Amount",
+        "outstandingBalance": "Outstanding Balance",
         "searchPlaceholder": "Search by bill ID, job name, or date...",
         "filters": {
           "all": "ALL",
@@ -354,6 +355,7 @@
           "billId": "Bill ID",
           "jobName": "Job Name",
           "appointmentDate": "Appointment Date",
+          "amount": "Amount",
           "status": "Status",
           "createdDate": "Created Date",
           "actions": "Actions"
@@ -409,7 +411,9 @@
       "receivedLabel": "Received",
       "respondedLabel": "Responded",
       "closeButton": "Close",
-      "saveNotesButton": "Save Notes"
+      "saveNotesButton": "Save Notes",
+      "notesSavedSuccessfully": "Notes saved successfully",
+      "messageDeletedSuccessfully": "Message deleted successfully"
     },
     "employees": {
       "title": "Employees",
@@ -1003,6 +1007,37 @@
       "validationSubjectMax": "Subject must not exceed 75 characters.",
       "validationMessageMin": "Message must be at least 10 characters.",
       "validationMessageMax": "Message must not exceed 500 characters."
+    },
+    "serviceReports": {
+      "title": "Service Reports",
+      "subtitle": "View and manage all service reports",
+      "searchPlaceholder": "Search by client name, technician, or service...",
+      "pending": "Pending",
+      "table": {
+        "reportId": "Report ID",
+        "customer": "Client",
+        "service": "Service",
+        "technician": "Technician",
+        "date": "Date",
+        "status": "Status",
+        "billStatus": "Bill Status",
+        "total": "Total",
+        "actions": "Actions"
+      },
+      "actions": {
+        "viewDetails": "View Details",
+        "downloadPdf": "Download PDF",
+        "editReport": "Edit Report"
+      },
+      "summary": {
+        "totalReports": "Total Reports"
+      },
+      "pagination": {
+        "previous": "← Previous",
+        "next": "Next →",
+        "pageInfo": "Page {{current}} of {{total}}",
+        "showing": "Showing {{showing}} of {{total}} reports"
+      }
     },
     "privacy": {
       "title": "Privacy Policy",

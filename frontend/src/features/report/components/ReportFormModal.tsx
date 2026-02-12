@@ -33,7 +33,7 @@ export default function ReportFormModal({
   onError,
 }: ReportFormModalProps): React.ReactElement | null {
   const { i18n } = useTranslation();
-  
+
   // Language detection helper
   const isFrench = i18n.language === 'fr';
 
@@ -254,7 +254,15 @@ export default function ReportFormModal({
     <div className="modal-overlay" onClick={onClose}>
       <div className="modal-content report-modal" onClick={(e) => e.stopPropagation()}>
         <div className="modal-header">
-          <h2>{existingReport ? (isFrench ? 'Modifier le Rapport' : 'Edit Report') : (isFrench ? 'Créer un Rapport de Travail' : 'Create Work Report')}</h2>
+          <h2>
+            {existingReport
+              ? isFrench
+                ? 'Modifier le Rapport'
+                : 'Edit Report'
+              : isFrench
+                ? 'Créer un Rapport de Travail'
+                : 'Create Work Report'}
+          </h2>
           <button className="modal-close" onClick={onClose}>
             <X size={24} />
           </button>
@@ -277,7 +285,11 @@ export default function ReportFormModal({
               </div>
               <div className="info-item">
                 <label>{isFrench ? 'Date:' : 'Date:'}</label>
-                <span>{new Date(appointment.appointmentDate).toLocaleDateString(isFrench ? 'fr-FR' : 'en-US')}</span>
+                <span>
+                  {new Date(appointment.appointmentDate).toLocaleDateString(
+                    isFrench ? 'fr-FR' : 'en-US'
+                  )}
+                </span>
               </div>
               <div className="info-item">
                 <label>{isFrench ? 'Taux Horaire:' : 'Hourly Rate:'}</label>
@@ -291,7 +303,9 @@ export default function ReportFormModal({
             <h3>{isFrench ? 'Détails du Travail' : 'Work Details'}</h3>
             <div className="form-grid">
               <div className="form-group">
-                <label htmlFor="hoursWorked">{isFrench ? 'Heures Travaillées' : 'Hours Worked'} *</label>
+                <label htmlFor="hoursWorked">
+                  {isFrench ? 'Heures Travaillées' : 'Hours Worked'} *
+                </label>
                 <input
                   id="hoursWorked"
                   type="text"
@@ -318,7 +332,9 @@ export default function ReportFormModal({
                 />
               </div>
               <div className="form-group">
-                <label htmlFor="fraisDeplacement">{isFrench ? 'Frais de Déplacement ($)' : 'Travel Expenses ($)'} *</label>
+                <label htmlFor="fraisDeplacement">
+                  {isFrench ? 'Frais de Déplacement ($)' : 'Travel Expenses ($)'} *
+                </label>
                 <input
                   id="fraisDeplacement"
                   type="text"
@@ -363,9 +379,13 @@ export default function ReportFormModal({
                 </div>
                 <div className="part-search-results">
                   {loadingParts ? (
-                    <div className="search-loading">{isFrench ? 'Chargement des pièces...' : 'Loading parts...'}</div>
+                    <div className="search-loading">
+                      {isFrench ? 'Chargement des pièces...' : 'Loading parts...'}
+                    </div>
                   ) : filteredParts.length === 0 ? (
-                    <div className="search-empty">{isFrench ? 'Aucune pièce trouvée' : 'No parts found'}</div>
+                    <div className="search-empty">
+                      {isFrench ? 'Aucune pièce trouvée' : 'No parts found'}
+                    </div>
                   ) : (
                     filteredParts.map((part) => (
                       <div
@@ -384,7 +404,9 @@ export default function ReportFormModal({
 
             {/* Selected Parts */}
             {selectedParts.length === 0 ? (
-              <div className="empty-parts">{isFrench ? 'Aucune pièce ajoutée' : 'No parts added yet'}</div>
+              <div className="empty-parts">
+                {isFrench ? 'Aucune pièce ajoutée' : 'No parts added yet'}
+              </div>
             ) : (
               <div className="parts-list">
                 {selectedParts.map((part) => (
@@ -452,7 +474,8 @@ export default function ReportFormModal({
             <div className="totals-grid">
               <div className="total-row">
                 <span>
-                  {isFrench ? 'Coût de la Main-d\'œuvre' : 'Labor Cost'} ({hoursWorked}h × ${appointment.hourlyRate}/h):
+                  {isFrench ? "Coût de la Main-d'œuvre" : 'Labor Cost'} ({hoursWorked}h × $
+                  {appointment.hourlyRate}/h):
                 </span>
                 <span>${totals.laborCost.toFixed(2)}</span>
               </div>
@@ -493,7 +516,17 @@ export default function ReportFormModal({
               {isFrench ? 'Annuler' : 'Cancel'}
             </button>
             <button type="submit" className="btn-primary-report" disabled={loading}>
-              {loading ? (isFrench ? 'Enregistrement...' : 'Saving...') : existingReport ? (isFrench ? 'Mettre à jour le Rapport' : 'Update Report') : (isFrench ? 'Créer le Rapport' : 'Create Report')}
+              {loading
+                ? isFrench
+                  ? 'Enregistrement...'
+                  : 'Saving...'
+                : existingReport
+                  ? isFrench
+                    ? 'Mettre à jour le Rapport'
+                    : 'Update Report'
+                  : isFrench
+                    ? 'Créer le Rapport'
+                    : 'Create Report'}
             </button>
           </div>
         </form>

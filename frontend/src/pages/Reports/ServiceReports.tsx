@@ -16,7 +16,7 @@ import './ServiceReports.css';
 const ITEMS_PER_PAGE = 15;
 
 const ServiceReports = () => {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const [reports, setReports] = useState<ReportResponseModel[]>([]);
   const [bills, setBills] = useState<Map<string, BillResponseModel>>(new Map());
   const [loading, setLoading] = useState(false);
@@ -105,11 +105,19 @@ const ServiceReports = () => {
   };
 
   const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('en-CA', {
+    const locale = i18n.language === 'fr' ? 'fr-CA' : 'en-CA';
+    return new Date(dateString).toLocaleDateString(locale, {
       year: 'numeric',
       month: 'short',
       day: 'numeric',
     });
+  };
+
+  const getJobName = (report: ReportResponseModel): string => {
+    if (i18n.language === 'fr' && report.jobNameFr) {
+      return report.jobNameFr;
+    }
+    return report.jobName;
   };
 
   // Convert report to appointment format for editing
@@ -172,9 +180,13 @@ const ServiceReports = () => {
   const getBillStatusBadge = (reportId: string) => {
     const bill = bills.get(reportId);
     if (!bill) {
-      return <span className="bill-status-badge pending">Pending</span>;
+      return <span className="bill-status-badge pending">{t('pages.serviceReports.pending')}</span>;
     }
-    return <span className={`bill-status-badge ${bill.status.toLowerCase()}`}>{bill.status}</span>;
+    return (
+      <span className={`bill-status-badge ${bill.status.toLowerCase()}`}>
+        {t(`pages.customers.bills.status.${bill.status.toLowerCase()}`)}
+      </span>
+    );
   };
 
   return (
@@ -253,7 +265,7 @@ const ServiceReports = () => {
                     <td className="customer-name">
                       {report.customerFirstName} {report.customerLastName}
                     </td>
-                    <td>{report.jobName}</td>
+                    <td>{getJobName(report)}</td>
                     <td className="technician-name">
                       {report.technicianFirstName} {report.technicianLastName}
                     </td>
@@ -279,7 +291,8 @@ const ServiceReports = () => {
                         className="icon-btn"
                         onClick={async () => {
                           try {
-                            const blob = await exportReportPdf(report.reportId);
+                            const language = i18n.language === 'fr' ? 'fr' : 'en';
+                            const blob = await exportReportPdf(report.reportId, language);
                             const url = window.URL.createObjectURL(blob);
                             const link = document.createElement('a');
                             link.href = url;

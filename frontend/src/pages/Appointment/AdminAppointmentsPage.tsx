@@ -197,10 +197,10 @@ export default function AdminAppointmentsPage(): React.ReactElement {
 
   function getJobType(appointment: AppointmentResponseModel): string {
     const typeMap: Record<string, string> = {
-      'QUOTATION': isFrench ? t('pages.services.quotation') : 'Quotation',
-      'INSTALLATION': isFrench ? t('pages.services.installation') : 'Installation',
-      'REPARATION': isFrench ? t('pages.services.reparation') : 'Reparation',
-      'MAINTENANCE': isFrench ? t('pages.services.maintenance') : 'Maintenance',
+      QUOTATION: isFrench ? t('pages.services.quotation') : 'Quotation',
+      INSTALLATION: isFrench ? t('pages.services.installation') : 'Installation',
+      REPARATION: isFrench ? t('pages.services.reparation') : 'Reparation',
+      MAINTENANCE: isFrench ? t('pages.services.maintenance') : 'Maintenance',
     };
     return typeMap[appointment.jobType] || appointment.jobType;
   }

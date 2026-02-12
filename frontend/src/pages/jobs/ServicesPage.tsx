@@ -566,10 +566,10 @@ export default function ServicesPage(): React.ReactElement {
 
   function getJobType(job: JobResponseModel): string {
     const typeMap: Record<string, string> = {
-      'QUOTATION': isFrench ? t('pages.services.quotation') : 'Quotation',
-      'INSTALLATION': isFrench ? t('pages.services.installation') : 'Installation',
-      'REPARATION': isFrench ? t('pages.services.reparation') : 'Reparation',
-      'MAINTENANCE': isFrench ? t('pages.services.maintenance') : 'Maintenance',
+      QUOTATION: isFrench ? t('pages.services.quotation') : 'Quotation',
+      INSTALLATION: isFrench ? t('pages.services.installation') : 'Installation',
+      REPARATION: isFrench ? t('pages.services.reparation') : 'Reparation',
+      MAINTENANCE: isFrench ? t('pages.services.maintenance') : 'Maintenance',
     };
     return typeMap[job.jobType] || job.jobType;
   }
@@ -815,7 +815,8 @@ export default function ServicesPage(): React.ReactElement {
                   <strong>{t('pages.services.name')}:</strong> {getJobName(selectedJob)}
                 </p>
                 <p>
-                  <strong>{t('pages.services.description')}:</strong> {getJobDescription(selectedJob)}
+                  <strong>{t('pages.services.description')}:</strong>{' '}
+                  {getJobDescription(selectedJob)}
                 </p>
                 {isFrench && selectedJob.jobNameFr && (
                   <p>
@@ -824,7 +825,8 @@ export default function ServicesPage(): React.ReactElement {
                 )}
                 {isFrench && selectedJob.jobDescriptionFr && (
                   <p>
-                    <strong>{t('pages.services.descriptionFr')}:</strong> {selectedJob.jobDescriptionFr}
+                    <strong>{t('pages.services.descriptionFr')}:</strong>{' '}
+                    {selectedJob.jobDescriptionFr}
                   </p>
                 )}
                 <p>
@@ -984,10 +986,18 @@ export default function ServicesPage(): React.ReactElement {
                     onChange={handleFormChange}
                     disabled={createLoading}
                   >
-                    <option value="QUOTATION">{isFrench ? t('pages.services.quotation') : 'Quotation'}</option>
-                    <option value="INSTALLATION">{isFrench ? t('pages.services.installation') : 'Installation'}</option>
-                    <option value="REPARATION">{isFrench ? t('pages.services.reparation') : 'Reparation'}</option>
-                    <option value="MAINTENANCE">{isFrench ? t('pages.services.maintenance') : 'Maintenance'}</option>
+                    <option value="QUOTATION">
+                      {isFrench ? t('pages.services.quotation') : 'Quotation'}
+                    </option>
+                    <option value="INSTALLATION">
+                      {isFrench ? t('pages.services.installation') : 'Installation'}
+                    </option>
+                    <option value="REPARATION">
+                      {isFrench ? t('pages.services.reparation') : 'Reparation'}
+                    </option>
+                    <option value="MAINTENANCE">
+                      {isFrench ? t('pages.services.maintenance') : 'Maintenance'}
+                    </option>
                   </select>
                 </div>
 
@@ -1169,10 +1179,18 @@ export default function ServicesPage(): React.ReactElement {
                     onChange={handleUpdateFormChange}
                     disabled={updateLoading}
                   >
-                    <option value="QUOTATION">{isFrench ? t('pages.services.quotation') : 'Quotation'}</option>
-                    <option value="INSTALLATION">{isFrench ? t('pages.services.installation') : 'Installation'}</option>
-                    <option value="REPARATION">{isFrench ? t('pages.services.reparation') : 'Reparation'}</option>
-                    <option value="MAINTENANCE">{isFrench ? t('pages.services.maintenance') : 'Maintenance'}</option>
+                    <option value="QUOTATION">
+                      {isFrench ? t('pages.services.quotation') : 'Quotation'}
+                    </option>
+                    <option value="INSTALLATION">
+                      {isFrench ? t('pages.services.installation') : 'Installation'}
+                    </option>
+                    <option value="REPARATION">
+                      {isFrench ? t('pages.services.reparation') : 'Reparation'}
+                    </option>
+                    <option value="MAINTENANCE">
+                      {isFrench ? t('pages.services.maintenance') : 'Maintenance'}
+                    </option>
                   </select>
                 </div>
 

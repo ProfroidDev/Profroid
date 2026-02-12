@@ -239,10 +239,10 @@ export default function AddAppointmentModal({
   // Helper function to get localized job type
   const getJobType = (job: JobResponseModel): string => {
     const typeMap: Record<string, string> = {
-      'QUOTATION': isFrench ? t('pages.services.quotation') : 'Quotation',
-      'INSTALLATION': isFrench ? t('pages.services.installation') : 'Installation',
-      'REPARATION': isFrench ? t('pages.services.reparation') : 'Reparation',
-      'MAINTENANCE': isFrench ? t('pages.services.maintenance') : 'Maintenance',
+      QUOTATION: isFrench ? t('pages.services.quotation') : 'Quotation',
+      INSTALLATION: isFrench ? t('pages.services.installation') : 'Installation',
+      REPARATION: isFrench ? t('pages.services.reparation') : 'Reparation',
+      MAINTENANCE: isFrench ? t('pages.services.maintenance') : 'Maintenance',
     };
     return typeMap[job.jobType] || job.jobType;
   };
@@ -1413,7 +1413,9 @@ export default function AddAppointmentModal({
           <form className="appointment-form" onSubmit={handleSubmit}>
             <div className="grid two">
               <label className="field">
-                <span>{t('pages.appointments.service')} ({isFrench ? t('common.language') : 'English'})</span>
+                <span>
+                  {t('pages.appointments.service')} ({isFrench ? t('common.language') : 'English'})
+                </span>
                 <div className="input-with-icon">
                   <ClipboardList size={16} />
                   <select

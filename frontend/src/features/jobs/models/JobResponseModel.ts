@@ -12,7 +12,7 @@ export interface JobResponseModel {
   estimatedDurationMinutes: number;
 
   jobType: JobType;
-  
+
   active: boolean;
 
   imageFileId?: string;

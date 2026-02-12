@@ -483,6 +483,7 @@
         "title": "Factures de Service",
         "subtitle": "Consultez et gérez vos factures de service",
         "totalAmount": "Montant Payé",
+        "outstandingBalance": "Solde Impayé",
         "searchPlaceholder": "Rechercher par ID de facture, nom du travail ou date...",
         "filters": {
           "all": "TOUS",
@@ -497,6 +498,7 @@
           "billId": "ID Facture",
           "jobName": "Nom du Travail",
           "appointmentDate": "Date du Rendez-vous",
+          "amount": "Total",
           "status": "Statut",
           "createdDate": "Date de Création",
           "actions": "Actions"
@@ -552,7 +554,9 @@
       "receivedLabel": "Reçu",
       "respondedLabel": "Répondu",
       "closeButton": "Fermer",
-      "saveNotesButton": "Enregistrer les Notes"
+      "saveNotesButton": "Enregistrer les Notes",
+      "notesSavedSuccessfully": "Notes enregistrées avec succès",
+      "messageDeletedSuccessfully": "Message supprimé avec succès"
     },
     "employees": {
       "title": "Employés",
@@ -961,10 +965,12 @@
       "title": "Rapports de Service",
       "subtitle": "Consultez et gérez tous les rapports de service",
       "searchPlaceholder": "Rechercher par nom de client, technicien ou service...",
+      "pending": "En Attente",
       "table": {
         "reportId": "ID Rapport",
         "customer": "Client",
         "service": "Service",
+        "technician": "Technicien",
         "date": "Date",
         "status": "Statut",
         "billStatus": "Statut Facture",

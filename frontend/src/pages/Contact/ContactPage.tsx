@@ -65,7 +65,7 @@ export default function ContactPage() {
     intervalRef.current = setInterval(() => {
       setRateLimitTime((prev) => {
         const newTime = prev - 1;
-        
+
         if (newTime <= 0) {
           // Timer finished - clean up
           setResponseMessage('');
@@ -79,7 +79,7 @@ export default function ContactPage() {
           }
           return 0;
         }
-        
+
         // Update localStorage as timer counts down
         localStorage.setItem('rateLimitTime', newTime.toString());
         return newTime;
@@ -131,7 +131,7 @@ export default function ContactPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     // Check if user is rate limited - show message but don't send request
     if (rateLimitTime > 0) {
       const message = t('pages.contact.rateLimitExceeded');

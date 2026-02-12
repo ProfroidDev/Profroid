@@ -16,7 +16,7 @@ export default function ViewReportModal({
   report,
 }: ViewReportModalProps): React.ReactElement | null {
   const { i18n } = useTranslation();
-  
+
   // Language detection helper
   const isFrench = i18n.language === 'fr';
 
@@ -59,7 +59,9 @@ export default function ViewReportModal({
         <div className="report-modal-body">
           {/* Customer Info Section */}
           <div className="report-section">
-            <h3 className="section-title">{isFrench ? 'Informations du Client' : 'Customer Information'}</h3>
+            <h3 className="section-title">
+              {isFrench ? 'Informations du Client' : 'Customer Information'}
+            </h3>
             <div className="info-grid">
               <div className="info-item">
                 <User size={18} />
@@ -101,14 +103,20 @@ export default function ViewReportModal({
               <div className="info-item">
                 <Clock size={18} />
                 <div>
-                  <span className="info-label">{isFrench ? 'Heures Travaillées' : 'Hours Worked'}</span>
-                  <span className="info-value">{report.hoursWorked} {isFrench ? 'heures' : 'hours'}</span>
+                  <span className="info-label">
+                    {isFrench ? 'Heures Travaillées' : 'Hours Worked'}
+                  </span>
+                  <span className="info-value">
+                    {report.hoursWorked} {isFrench ? 'heures' : 'hours'}
+                  </span>
                 </div>
               </div>
               <div className="info-item">
                 <DollarSign size={18} />
                 <div>
-                  <span className="info-label">{isFrench ? 'Coût de la Main-d\'œuvre' : 'Labor Cost'}</span>
+                  <span className="info-label">
+                    {isFrench ? "Coût de la Main-d'œuvre" : 'Labor Cost'}
+                  </span>
                   <span className="info-value">{formatCurrency(report.laborCost)}</span>
                 </div>
               </div>
@@ -122,7 +130,9 @@ export default function ViewReportModal({
               <div className="info-item">
                 <DollarSign size={18} />
                 <div>
-                  <span className="info-label">{isFrench ? 'Frais de Déplacement' : 'Travel Expenses'}</span>
+                  <span className="info-label">
+                    {isFrench ? 'Frais de Déplacement' : 'Travel Expenses'}
+                  </span>
                   <span className="info-value">{formatCurrency(report.fraisDeplacement)}</span>
                 </div>
               </div>
@@ -144,9 +154,12 @@ export default function ViewReportModal({
                       <span className="part-price">{formatCurrency(part.price)}</span>
                     </div>
                     <div className="part-details">
-                      <span className="part-quantity">{isFrench ? 'Qtité:' : 'Quantity:'} {part.quantity}</span>
+                      <span className="part-quantity">
+                        {isFrench ? 'Qtité:' : 'Quantity:'} {part.quantity}
+                      </span>
                       <span className="part-total">
-                        {isFrench ? 'Total:' : 'Total:'} {formatCurrency(part.price * part.quantity)}
+                        {isFrench ? 'Total:' : 'Total:'}{' '}
+                        {formatCurrency(part.price * part.quantity)}
                       </span>
                     </div>
                     {part.notes && (
