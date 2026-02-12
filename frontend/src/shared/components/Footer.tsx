@@ -23,10 +23,7 @@ export default function Footer() {
 
         <div className="footer-section">
           <h4>Resources</h4>
-          <a href="#">Installation Guide</a>
           <a href="#">Warranty</a>
-          <a href="#">Maintenance</a>
-          <a href="#">FAQs</a>
         </div>
       </div>
 

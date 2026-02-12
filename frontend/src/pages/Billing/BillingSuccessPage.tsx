@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import type { AxiosError } from 'axios';
 import axiosInstance from '../../shared/api/axiosInstance';
 import './BillingResult.css';
@@ -17,8 +18,17 @@ type ApiErrorBody = {
 export default function BillingSuccessPage() {
   const [params] = useSearchParams();
   const navigate = useNavigate();
+  const { t, i18n } = useTranslation();
 
   const billId = useMemo(() => params.get('billId') ?? params.get('billd'), [params]);
+  const locale = useMemo(() => params.get('locale'), [params]);
+
+  // Restore language preference from URL
+  useEffect(() => {
+    if (locale && (locale === 'fr' || locale === 'en')) {
+      i18n.changeLanguage(locale);
+    }
+  }, [locale, i18n]);
 
   const [bill, setBill] = useState<BillResponseModel | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
@@ -65,10 +75,10 @@ export default function BillingSuccessPage() {
       <div className="billing-result-card">
         <div className="billing-result-icon success">✓</div>
 
-        <h1 className="billing-result-title">Payment successful</h1>
-        <p className="billing-result-subtitle">Thank you! Your payment has been received.</p>
+        <h1 className="billing-result-title">{t('pages.billing.success.title')}</h1>
+        <p className="billing-result-subtitle">{t('pages.billing.success.subtitle')}</p>
 
-        {loading && <p className="billing-result-subtitle">Loading your bill…</p>}
+        {loading && <p className="billing-result-subtitle">{t('pages.billing.success.loading')}</p>}
 
         {!loading && error && (
           <>
@@ -80,7 +90,7 @@ export default function BillingSuccessPage() {
                 className="billing-result-btn primary"
                 onClick={() => navigate('/my-bills')}
               >
-                Go to My Bills
+                {t('pages.billing.success.goToMyBills')}
               </button>
 
               <button
@@ -88,7 +98,7 @@ export default function BillingSuccessPage() {
                 className="billing-result-btn secondary"
                 onClick={() => navigate('/')}
               >
-                Home
+                {t('pages.billing.success.home')}
               </button>
             </div>
           </>
@@ -98,16 +108,14 @@ export default function BillingSuccessPage() {
           <>
             <div className="billing-result-info">
               <p>
-                <strong>Bill:</strong> {bill.billId}
+                <strong>{t('pages.billing.success.billLabel')}:</strong> {bill.billId}
               </p>
               <p>
-                <strong>Status:</strong> {bill.status}
+                <strong>{t('pages.billing.success.statusLabel')}:</strong> {bill.status}
               </p>
 
               {bill.status !== 'PAID' && (
-                <p className="billing-result-processing">
-                  Payment is processing. Refresh in a few seconds if it still shows unpaid.
-                </p>
+                <p className="billing-result-processing">{t('pages.billing.success.processing')}</p>
               )}
             </div>
 
@@ -117,7 +125,7 @@ export default function BillingSuccessPage() {
                 className="billing-result-btn primary"
                 onClick={() => navigate('/my-bills')}
               >
-                Go to My Bills
+                {t('pages.billing.success.goToMyBills')}
               </button>
 
               <button
@@ -125,7 +133,7 @@ export default function BillingSuccessPage() {
                 className="billing-result-btn secondary"
                 onClick={() => navigate('/')}
               >
-                Home
+                {t('pages.billing.success.home')}
               </button>
             </div>
           </>

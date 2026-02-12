@@ -18,6 +18,7 @@ public class BillPaymentController {
     @PostMapping("/{billId}/checkout-session")
     public ResponseEntity<CreateCheckoutSessionResponse> createCheckoutSession(
             @PathVariable String billId,
+            @RequestBody(required = false) CreateCheckoutSessionRequest request,
             Authentication authentication
     ) {
         String userId = authentication.getName(); // must match customer.userId
@@ -26,6 +27,8 @@ public class BillPaymentController {
                 .findFirst()
                 .orElse("CUSTOMER");
 
-        return ResponseEntity.ok(stripePaymentService.createCheckoutSession(billId, userId, userRole));
+        String locale = (request != null && request.getLocale() != null) ? request.getLocale() : "en";
+
+        return ResponseEntity.ok(stripePaymentService.createCheckoutSession(billId, userId, userRole, locale));
     }
 }

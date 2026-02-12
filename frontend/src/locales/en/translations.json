@@ -1077,6 +1077,25 @@
       "governingLaw": "Governing Law and Jurisdiction",
       "governingLawText": "This Privacy Policy is governed by and construed in accordance with the laws of Quebec, Canada, specifically including Law 25 (An Act respecting the protection of personal information in the private sector). Any disputes arising from this policy shall be subject to the exclusive jurisdiction of the courts of Quebec. Profroid's failure to enforce any right or provision of this policy does not constitute a waiver of those rights. If any provision is deemed invalid by a court, the remaining provisions shall remain in full effect.",
       "lastUpdated": "Last Updated: February 2026. Effective Date: February 1, 2026"
+    },
+    "billing": {
+      "success": {
+        "title": "Payment successful",
+        "subtitle": "Thank you! Your payment has been received.",
+        "loading": "Loading your bill…",
+        "billLabel": "Bill",
+        "statusLabel": "Status",
+        "processing": "Payment is processing. Refresh in a few seconds if it still shows unpaid.",
+        "goToMyBills": "Go to My Bills",
+        "home": "Home"
+      },
+      "cancel": {
+        "title": "Payment cancelled",
+        "subtitle": "Your payment was not completed. No charges were made.",
+        "billLabel": "Bill",
+        "backToMyBills": "Back to My Bills",
+        "goBack": "Go Back"
+      }
     }
   },
   "validation": {
