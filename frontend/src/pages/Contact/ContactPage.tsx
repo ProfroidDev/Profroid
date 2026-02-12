@@ -31,9 +31,15 @@ export default function ContactPage() {
     return (stored as 'success' | 'error' | '') || '';
   });
   const [rateLimitTime, setRateLimitTime] = useState(() => {
-    // Load rate limit time from localStorage on mount
-    const stored = localStorage.getItem('rateLimitTime');
-    return stored ? parseInt(stored, 10) : 0;
+    // Calculate remaining time based on server timestamp
+    const storedTimestamp = localStorage.getItem('rateLimitTimestamp');
+    if (!storedTimestamp) return 0;
+    
+    const limitEndTime = parseInt(storedTimestamp, 10);
+    const now = Date.now();
+    const remaining = Math.ceil((limitEndTime - now) / 1000);
+    
+    return remaining > 0 ? remaining : 0;
   }); // countdown in seconds
 
   // Character limits for fields
@@ -45,7 +51,7 @@ export default function ContactPage() {
     message: 500,
   };
 
-  // Rate limit countdown timer - use ref to maintain single interval
+  // Rate limit countdown timer - recalculate from server timestamp
   useEffect(() => {
     // Clean up any existing interval
     if (intervalRef.current) {
@@ -55,35 +61,40 @@ export default function ContactPage() {
 
     // Don't start interval if time is 0 or less
     if (rateLimitTime <= 0) {
-      localStorage.removeItem('rateLimitTime');
+      localStorage.removeItem('rateLimitTimestamp');
       localStorage.removeItem('responseMessage');
       localStorage.removeItem('responseType');
       return;
     }
 
-    // Start countdown interval
+    // Start countdown interval - calculate elapsed time from stored timestamp
     intervalRef.current = setInterval(() => {
-      setRateLimitTime((prev) => {
-        const newTime = prev - 1;
+      const storedTimestamp = localStorage.getItem('rateLimitTimestamp');
+      if (!storedTimestamp) {
+        setRateLimitTime(0);
+        return;
+      }
 
-        if (newTime <= 0) {
-          // Timer finished - clean up
-          setResponseMessage('');
-          setResponseType('');
-          localStorage.removeItem('rateLimitTime');
-          localStorage.removeItem('responseMessage');
-          localStorage.removeItem('responseType');
-          if (intervalRef.current) {
-            clearInterval(intervalRef.current);
-            intervalRef.current = null;
-          }
-          return 0;
+      const limitEndTime = parseInt(storedTimestamp, 10);
+      const now = Date.now();
+      const remaining = Math.ceil((limitEndTime - now) / 1000);
+
+      if (remaining <= 0) {
+        // Timer finished - clean up
+        setResponseMessage('');
+        setResponseType('');
+        localStorage.removeItem('rateLimitTimestamp');
+        localStorage.removeItem('responseMessage');
+        localStorage.removeItem('responseType');
+        setRateLimitTime(0);
+        if (intervalRef.current) {
+          clearInterval(intervalRef.current);
+          intervalRef.current = null;
         }
+        return;
+      }
 
-        // Update localStorage as timer counts down
-        localStorage.setItem('rateLimitTime', newTime.toString());
-        return newTime;
-      });
+      setRateLimitTime(remaining);
     }, 1000);
 
     // Cleanup function
@@ -223,12 +234,15 @@ export default function ContactPage() {
           localStorage.removeItem('responseType');
         }, 5000);
       } else if (response.status === 429) {
-        // Rate limit exceeded - set 20 minute countdown
+        // Rate limit exceeded - set 20 minute countdown using server timestamp
         const message = t('pages.contact.rateLimitExceeded');
         setResponseMessage(message);
         setResponseType('error');
+        
+        // Store the end time (current time + 20 minutes) instead of just seconds
+        const rateLimitEndTime = Date.now() + 20 * 60 * 1000; // 20 minutes
         setRateLimitTime(1200); // 20 minutes in seconds
-        localStorage.setItem('rateLimitTime', '1200');
+        localStorage.setItem('rateLimitTimestamp', rateLimitEndTime.toString());
         localStorage.setItem('responseMessage', message);
         localStorage.setItem('responseType', 'error');
       } else {
