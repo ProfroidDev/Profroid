@@ -36,6 +36,29 @@ import type { CellarResponseModel } from '../../features/cellar/models/CellarRes
 
 export default function MyJobsPage(): React.ReactElement {
   const { t, i18n } = useTranslation();
+  
+  // Language detection helper
+  const isFrench = i18n.language === 'fr';
+
+  // Helper function to get localized job name
+  const getJobName = (job: AppointmentResponseModel): string => {
+    if (isFrench && job.jobNameFr) {
+      return job.jobNameFr;
+    }
+    return job.jobName;
+  };
+
+  // Helper function to get localized job type
+  const getJobType = (job: AppointmentResponseModel): string => {
+    const typeMap: Record<string, string> = {
+      'QUOTATION': isFrench ? t('pages.services.quotation') : 'Quotation',
+      'INSTALLATION': isFrench ? t('pages.services.installation') : 'Installation',
+      'REPARATION': isFrench ? t('pages.services.reparation') : 'Reparation',
+      'MAINTENANCE': isFrench ? t('pages.services.maintenance') : 'Maintenance',
+    };
+    return typeMap[job.jobType] || job.jobType;
+  };
+
   const [jobs, setJobs] = useState<AppointmentResponseModel[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
   const [selectedJob, setSelectedJob] = useState<AppointmentResponseModel | null>(null);
@@ -521,8 +544,8 @@ export default function MyJobsPage(): React.ReactElement {
 
                 {/* Job Header */}
                 <div className="job-header-section">
-                  <h3 className="job-name">{job.jobName}</h3>
-                  <span className="job-type">{job.jobType}</span>
+                  <h3 className="job-name">{getJobName(job)}</h3>
+                  <span className="job-type">{getJobType(job)}</span>
                 </div>
 
                 {/* Date & Time */}
@@ -533,9 +556,9 @@ export default function MyJobsPage(): React.ReactElement {
                     {job.appointmentStartTime && job.appointmentEndTime && (
                       <>
                         {' | '}
-                        <strong>Start:</strong> {job.appointmentStartTime}
+                        <strong>{isFrench ? 'Début:' : 'Start:'}</strong> {job.appointmentStartTime}
                         {' | '}
-                        <strong>End:</strong> {job.appointmentEndTime}
+                        <strong>{isFrench ? 'Fin:' : 'End:'}</strong> {job.appointmentEndTime}
                       </>
                     )}
                   </span>
@@ -627,19 +650,19 @@ export default function MyJobsPage(): React.ReactElement {
                       >
                         <FileText size={16} />
                         {reportCheckLoading === job.appointmentId
-                          ? 'Loading...'
+                          ? (isFrench ? 'Chargement...' : 'Loading...')
                           : jobReports.has(job.appointmentId)
-                            ? 'Edit Report'
-                            : 'Create Report'}
+                            ? (isFrench ? 'Modifier le Rapport' : 'Edit Report')
+                            : (isFrench ? 'Créer un Rapport' : 'Create Report')}
                       </button>
                       {jobReports.has(job.appointmentId) && (
                         <button
                           className="btn-view-report"
                           onClick={() => handleViewReport(job.appointmentId)}
-                          title="View Report Details"
+                          title={isFrench ? 'Voir les Détails du Rapport' : 'View Report Details'}
                         >
                           <FileText size={16} />
-                          View Report
+                          {isFrench ? 'Voir le Rapport' : 'View Report'}
                         </button>
                       )}
                     </>
@@ -726,10 +749,15 @@ export default function MyJobsPage(): React.ReactElement {
               <div className="detail-section">
                 <h3>{t('pages.jobs.serviceInformation')}</h3>
                 <p>
-                  <strong>{t('pages.jobs.job')}:</strong> {selectedJob.jobName}
+                  <strong>{t('pages.jobs.job')} (English):</strong> {selectedJob.jobName}
                 </p>
+                {isFrench && selectedJob.jobNameFr && (
+                  <p>
+                    <strong>{t('pages.jobs.job')} (Français):</strong> {selectedJob.jobNameFr}
+                  </p>
+                )}
                 <p>
-                  <strong>{t('pages.jobs.type')}:</strong> {selectedJob.jobType}
+                  <strong>{t('pages.jobs.type')}:</strong> {getJobType(selectedJob)}
                 </p>
                 <p>
                   <strong>{t('pages.jobs.rate')}:</strong> ${selectedJob.hourlyRate.toFixed(2)}/hour

@@ -124,7 +124,14 @@ export default function LoginPage() {
             </Link>
           </div>
 
-          {(formError || error) && <div className="alert alert-error">{formError || error}</div>}
+          {(formError || error) && (
+            <div className="alert alert-error">
+              {formError || 
+               (error?.toLowerCase().includes('invalid') || error?.toLowerCase().includes('credentials') || error?.toLowerCase().includes('email') ? 
+                t('auth.invalidCredentials') : 
+                error)}
+            </div>
+          )}
 
           <button type="submit" disabled={isLoading} className="btn btn-primary">
             {isLoading ? t('common.loading') : t('auth.login')}

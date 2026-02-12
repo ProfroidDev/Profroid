@@ -1,4 +1,5 @@
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import { X, User, Briefcase, Calendar, Clock, DollarSign, Package } from 'lucide-react';
 import type { ReportResponseModel } from '../models/ReportResponseModel';
 import './ViewReportModal.css';
@@ -14,6 +15,19 @@ export default function ViewReportModal({
   onClose,
   report,
 }: ViewReportModalProps): React.ReactElement | null {
+  const { i18n } = useTranslation();
+  
+  // Language detection helper
+  const isFrench = i18n.language === 'fr';
+
+  // Helper function to get localized job name
+  const getJobName = (): string => {
+    if (isFrench && report.jobNameFr) {
+      return report.jobNameFr;
+    }
+    return report.jobName;
+  };
+
   if (!isOpen) return null;
 
   const formatCurrency = (value: number) => {
@@ -24,7 +38,7 @@ export default function ViewReportModal({
   };
 
   const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('en-CA', {
+    return new Date(dateString).toLocaleDateString(isFrench ? 'fr-FR' : 'en-CA', {
       weekday: 'long',
       year: 'numeric',
       month: 'long',
@@ -36,7 +50,7 @@ export default function ViewReportModal({
     <div className="report-modal-overlay" onClick={onClose}>
       <div className="report-modal-content" onClick={(e) => e.stopPropagation()}>
         <div className="report-modal-header">
-          <h2>Work Report Details</h2>
+          <h2>{isFrench ? 'Détails du Rapport de Travail' : 'Work Report Details'}</h2>
           <button className="close-button" onClick={onClose} aria-label="Close">
             <X size={24} />
           </button>
@@ -45,12 +59,12 @@ export default function ViewReportModal({
         <div className="report-modal-body">
           {/* Customer Info Section */}
           <div className="report-section">
-            <h3 className="section-title">Customer Information</h3>
+            <h3 className="section-title">{isFrench ? 'Informations du Client' : 'Customer Information'}</h3>
             <div className="info-grid">
               <div className="info-item">
                 <User size={18} />
                 <div>
-                  <span className="info-label">Customer</span>
+                  <span className="info-label">{isFrench ? 'Client' : 'Customer'}</span>
                   <span className="info-value">
                     {report.customerFirstName} {report.customerLastName}
                   </span>
@@ -59,21 +73,21 @@ export default function ViewReportModal({
               <div className="info-item">
                 <Briefcase size={18} />
                 <div>
-                  <span className="info-label">Service</span>
-                  <span className="info-value">{report.jobName}</span>
+                  <span className="info-label">{isFrench ? 'Service' : 'Service'}</span>
+                  <span className="info-value">{getJobName()}</span>
                 </div>
               </div>
               <div className="info-item">
                 <Calendar size={18} />
                 <div>
-                  <span className="info-label">Date</span>
+                  <span className="info-label">{isFrench ? 'Date' : 'Date'}</span>
                   <span className="info-value">{formatDate(report.appointmentDate)}</span>
                 </div>
               </div>
               <div className="info-item">
                 <DollarSign size={18} />
                 <div>
-                  <span className="info-label">Hourly Rate</span>
+                  <span className="info-label">{isFrench ? 'Taux Horaire' : 'Hourly Rate'}</span>
                   <span className="info-value">{formatCurrency(report.hourlyRate)}</span>
                 </div>
               </div>
@@ -82,33 +96,33 @@ export default function ViewReportModal({
 
           {/* Work Details Section */}
           <div className="report-section">
-            <h3 className="section-title">Work Details</h3>
+            <h3 className="section-title">{isFrench ? 'Détails du Travail' : 'Work Details'}</h3>
             <div className="info-grid">
               <div className="info-item">
                 <Clock size={18} />
                 <div>
-                  <span className="info-label">Hours Worked</span>
-                  <span className="info-value">{report.hoursWorked} hours</span>
+                  <span className="info-label">{isFrench ? 'Heures Travaillées' : 'Hours Worked'}</span>
+                  <span className="info-value">{report.hoursWorked} {isFrench ? 'heures' : 'hours'}</span>
                 </div>
               </div>
               <div className="info-item">
                 <DollarSign size={18} />
                 <div>
-                  <span className="info-label">Labor Cost</span>
+                  <span className="info-label">{isFrench ? 'Coût de la Main-d\'œuvre' : 'Labor Cost'}</span>
                   <span className="info-value">{formatCurrency(report.laborCost)}</span>
                 </div>
               </div>
               <div className="info-item">
                 <DollarSign size={18} />
                 <div>
-                  <span className="info-label">Other Costs</span>
+                  <span className="info-label">{isFrench ? 'Autres Frais' : 'Other Costs'}</span>
                   <span className="info-value">{formatCurrency(report.frais)}</span>
                 </div>
               </div>
               <div className="info-item">
                 <DollarSign size={18} />
                 <div>
-                  <span className="info-label">Travel Expenses</span>
+                  <span className="info-label">{isFrench ? 'Frais de Déplacement' : 'Travel Expenses'}</span>
                   <span className="info-value">{formatCurrency(report.fraisDeplacement)}</span>
                 </div>
               </div>
@@ -120,7 +134,7 @@ export default function ViewReportModal({
             <div className="report-section">
               <h3 className="section-title">
                 <Package size={20} />
-                Parts Used
+                {isFrench ? 'Pièces Utilisées' : 'Parts Used'}
               </h3>
               <div className="parts-list">
                 {report.parts.map((part) => (
@@ -130,14 +144,14 @@ export default function ViewReportModal({
                       <span className="part-price">{formatCurrency(part.price)}</span>
                     </div>
                     <div className="part-details">
-                      <span className="part-quantity">Quantity: {part.quantity}</span>
+                      <span className="part-quantity">{isFrench ? 'Qtité:' : 'Quantity:'} {part.quantity}</span>
                       <span className="part-total">
-                        Total: {formatCurrency(part.price * part.quantity)}
+                        {isFrench ? 'Total:' : 'Total:'} {formatCurrency(part.price * part.quantity)}
                       </span>
                     </div>
                     {part.notes && (
                       <div className="part-notes">
-                        <span className="notes-label">Notes:</span>
+                        <span className="notes-label">{isFrench ? 'Notes:' : 'Notes:'}</span>
                         <span className="notes-text">{part.notes}</span>
                       </div>
                     )}
@@ -145,7 +159,7 @@ export default function ViewReportModal({
                 ))}
               </div>
               <div className="parts-total">
-                <span>Total Parts Cost:</span>
+                <span>{isFrench ? 'Coût Total des Pièces:' : 'Total Parts Cost:'}</span>
                 <span className="parts-total-value">{formatCurrency(report.partsCost)}</span>
               </div>
             </div>
@@ -153,10 +167,10 @@ export default function ViewReportModal({
 
           {/* Totals Section */}
           <div className="report-section totals-section">
-            <h3 className="section-title">Summary</h3>
+            <h3 className="section-title">{isFrench ? 'Résumé' : 'Summary'}</h3>
             <div className="totals-grid">
               <div className="total-row">
-                <span>Subtotal</span>
+                <span>{isFrench ? 'Sous-total' : 'Subtotal'}</span>
                 <span>{formatCurrency(report.subtotal)}</span>
               </div>
               <div className="total-row">
@@ -168,7 +182,7 @@ export default function ViewReportModal({
                 <span>{formatCurrency(report.tvqAmount)}</span>
               </div>
               <div className="total-row grand-total">
-                <span>Grand Total</span>
+                <span>{isFrench ? 'Total' : 'Grand Total'}</span>
                 <span>{formatCurrency(report.total)}</span>
               </div>
             </div>
@@ -177,7 +191,7 @@ export default function ViewReportModal({
 
         <div className="report-modal-footer">
           <button className="btn-close" onClick={onClose}>
-            Close
+            {isFrench ? 'Fermer' : 'Close'}
           </button>
         </div>
       </div>

@@ -56,6 +56,7 @@ public class ReportResponseMapper {
                 .technicianFirstName(technician.getFirstName())
                 .technicianLastName(technician.getLastName())
                 .jobName(appointment.getJob().getJobName())
+                .jobNameFr(appointment.getJob().getJobNameFr())
                 .hourlyRate(hourlyRateBD)
                 .hoursWorked(report.getHoursWorked())
                 .frais(report.getFrais())

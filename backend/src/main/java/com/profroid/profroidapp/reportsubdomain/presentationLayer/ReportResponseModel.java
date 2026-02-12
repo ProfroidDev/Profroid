@@ -35,6 +35,7 @@ public class ReportResponseModel {
 
     // Job information
     private String jobName;
+    private String jobNameFr;
     private BigDecimal hourlyRate;
 
     // Work details

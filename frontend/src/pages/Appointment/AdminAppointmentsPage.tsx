@@ -25,6 +25,7 @@ import type { CellarResponseModel } from '../../features/cellar/models/CellarRes
 
 export default function AdminAppointmentsPage(): React.ReactElement {
   const { t, i18n } = useTranslation();
+  const isFrench = i18n.language === 'fr';
   const [appointments, setAppointments] = useState<AppointmentResponseModel[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
   const [selectedAppointment, setSelectedAppointment] = useState<AppointmentResponseModel | null>(
@@ -189,6 +190,20 @@ export default function AdminAppointmentsPage(): React.ReactElement {
 
   const goPrev = () => setCurrentPage((p) => Math.max(1, p - 1));
   const goNext = () => setCurrentPage((p) => Math.min(totalPages, p + 1));
+
+  function getJobName(appointment: AppointmentResponseModel): string {
+    return isFrench && appointment.jobNameFr ? appointment.jobNameFr : appointment.jobName;
+  }
+
+  function getJobType(appointment: AppointmentResponseModel): string {
+    const typeMap: Record<string, string> = {
+      'QUOTATION': isFrench ? t('pages.services.quotation') : 'Quotation',
+      'INSTALLATION': isFrench ? t('pages.services.installation') : 'Installation',
+      'REPARATION': isFrench ? t('pages.services.reparation') : 'Reparation',
+      'MAINTENANCE': isFrench ? t('pages.services.maintenance') : 'Maintenance',
+    };
+    return typeMap[appointment.jobType] || appointment.jobType;
+  }
 
   return (
     <div className="appointments-page-light">
@@ -371,8 +386,8 @@ export default function AdminAppointmentsPage(): React.ReactElement {
 
                 {/* Appointment Header */}
                 <div className="appointment-header-section">
-                  <h3 className="appointment-job-name">{appointment.jobName}</h3>
-                  <span className="appointment-job-type">{appointment.jobType}</span>
+                  <h3 className="appointment-job-name">{getJobName(appointment)}</h3>
+                  <span className="appointment-job-type">{getJobType(appointment)}</span>
                 </div>
 
                 {/* Date & Time */}
@@ -498,11 +513,16 @@ export default function AdminAppointmentsPage(): React.ReactElement {
               <div className="detail-section">
                 <h3>{t('pages.appointments.serviceInformation')}</h3>
                 <p>
-                  <strong>{t('pages.appointments.job')}:</strong> {selectedAppointment.jobName}
+                  <strong>{t('pages.appointments.job')}:</strong> {getJobName(selectedAppointment)}
                 </p>
                 <p>
-                  <strong>{t('pages.appointments.type')}:</strong> {selectedAppointment.jobType}
+                  <strong>{t('pages.appointments.type')}:</strong> {getJobType(selectedAppointment)}
                 </p>
+                {isFrench && selectedAppointment.jobNameFr && (
+                  <p>
+                    <strong>{t('pages.services.nameFr')}:</strong> {selectedAppointment.jobNameFr}
+                  </p>
+                )}
                 <p>
                   <strong>{t('pages.appointments.rate')}:</strong> $
                   {selectedAppointment.hourlyRate.toFixed(2)}

@@ -19,9 +19,10 @@ import useAuthStore from '../../features/authentication/store/authStore';
 import { fileDownloadUrl } from '../../shared/utils/fileUrl';
 
 export default function ServicesPage(): React.ReactElement {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const { user } = useAuthStore();
   const isAdmin = user?.role === 'admin';
+  const isFrench = i18n.language === 'fr';
   const [jobs, setJobs] = useState<JobResponseModel[]>([]);
   const [expandedDescriptions, setExpandedDescriptions] = useState<Set<string>>(new Set());
   const [loading, setLoading] = useState<boolean>(false);
@@ -38,6 +39,8 @@ export default function ServicesPage(): React.ReactElement {
   const [updateFormData, setUpdateFormData] = useState<JobRequestModel>({
     jobName: '',
     jobDescription: '',
+    jobNameFr: '',
+    jobDescriptionFr: '',
     hourlyRate: 0,
     estimatedDurationMinutes: 0,
     jobType: 'QUOTATION',
@@ -46,6 +49,8 @@ export default function ServicesPage(): React.ReactElement {
   const [formData, setFormData] = useState<JobRequestModel>({
     jobName: '',
     jobDescription: '',
+    jobNameFr: '',
+    jobDescriptionFr: '',
     hourlyRate: 0,
     estimatedDurationMinutes: 0,
     jobType: 'QUOTATION',
@@ -155,6 +160,8 @@ export default function ServicesPage(): React.ReactElement {
       setUpdateFormData({
         jobName: jobToUpdate.jobName,
         jobDescription: jobToUpdate.jobDescription,
+        jobNameFr: jobToUpdate.jobNameFr || '',
+        jobDescriptionFr: jobToUpdate.jobDescriptionFr || '',
         hourlyRate: jobToUpdate.hourlyRate,
         estimatedDurationMinutes: jobToUpdate.estimatedDurationMinutes,
         jobType: jobToUpdate.jobType,
@@ -172,6 +179,8 @@ export default function ServicesPage(): React.ReactElement {
     setUpdateFormData({
       jobName: '',
       jobDescription: '',
+      jobNameFr: '',
+      jobDescriptionFr: '',
       hourlyRate: 0,
       estimatedDurationMinutes: 0,
       jobType: 'QUOTATION',
@@ -547,6 +556,24 @@ export default function ServicesPage(): React.ReactElement {
     return url ?? `https://via.placeholder.com/300x200?text=${encodeURIComponent(job.jobName)}`;
   }
 
+  function getJobName(job: JobResponseModel): string {
+    return isFrench && job.jobNameFr ? job.jobNameFr : job.jobName;
+  }
+
+  function getJobDescription(job: JobResponseModel): string {
+    return isFrench && job.jobDescriptionFr ? job.jobDescriptionFr : job.jobDescription;
+  }
+
+  function getJobType(job: JobResponseModel): string {
+    const typeMap: Record<string, string> = {
+      'QUOTATION': isFrench ? t('pages.services.quotation') : 'Quotation',
+      'INSTALLATION': isFrench ? t('pages.services.installation') : 'Installation',
+      'REPARATION': isFrench ? t('pages.services.reparation') : 'Reparation',
+      'MAINTENANCE': isFrench ? t('pages.services.maintenance') : 'Maintenance',
+    };
+    return typeMap[job.jobType] || job.jobType;
+  }
+
   const DEFAULT_IMAGE_URL = '/assets/fallback.png';
 
   return (
@@ -617,11 +644,11 @@ export default function ServicesPage(): React.ReactElement {
               {/* Content in the Middle */}
               <div className="service-info">
                 <div className="service-header-row">
-                  <h3 className="service-title-modern">{j.jobName}</h3>
+                  <h3 className="service-title-modern">{getJobName(j)}</h3>
                   <div className="service-price">
-                    <span className="price-label">Prix</span>
+                    <span className="price-label">{isFrench ? 'Prix' : 'Price'}</span>
                     <span className="price-value">${j.hourlyRate?.toFixed(2)}</span>
-                    <span className="price-unit">/heure</span>
+                    <span className="price-unit">{isFrench ? '/heure' : '/hour'}</span>
                   </div>
                 </div>
 
@@ -647,7 +674,7 @@ export default function ServicesPage(): React.ReactElement {
                     >
                       <path d="M20 7h-3V4c0-1-1-2-2-2H9c-1 0-2 1-2 2v3H4c-1 0-2 1-2 2v11c0 1 1 2 2 2h16c1 0 2-1 2-2V9c0-1-1-2-2-2zM9 4h6v3H9V4z" />
                     </svg>
-                    <span>{j.jobType}</span>
+                    <span>{getJobType(j)}</span>
                   </div>
                 </div>
 
@@ -657,9 +684,9 @@ export default function ServicesPage(): React.ReactElement {
                       expandedDescriptions.has(j.jobId) ? 'expanded' : 'collapsed'
                     }`}
                   >
-                    {j.jobDescription}
+                    {getJobDescription(j)}
                   </p>
-                  {isDescriptionTruncated(j.jobDescription) && !isAdmin && (
+                  {isDescriptionTruncated(getJobDescription(j)) && !isAdmin && (
                     <button
                       className="description-toggle"
                       onClick={() => toggleDescriptionExpanded(j.jobId)}
@@ -785,11 +812,21 @@ export default function ServicesPage(): React.ReactElement {
                   <strong>{t('pages.services.jobId')}:</strong> {selectedJob.jobId}
                 </p>
                 <p>
-                  <strong>{t('pages.services.name')}:</strong> {selectedJob.jobName}
+                  <strong>{t('pages.services.name')}:</strong> {getJobName(selectedJob)}
                 </p>
                 <p>
-                  <strong>{t('pages.services.description')}:</strong> {selectedJob.jobDescription}
+                  <strong>{t('pages.services.description')}:</strong> {getJobDescription(selectedJob)}
                 </p>
+                {isFrench && selectedJob.jobNameFr && (
+                  <p>
+                    <strong>{t('pages.services.nameFr')}:</strong> {selectedJob.jobNameFr}
+                  </p>
+                )}
+                {isFrench && selectedJob.jobDescriptionFr && (
+                  <p>
+                    <strong>{t('pages.services.descriptionFr')}:</strong> {selectedJob.jobDescriptionFr}
+                  </p>
+                )}
                 <p>
                   <strong>{t('pages.services.hourlyRate')}:</strong> $
                   {selectedJob.hourlyRate?.toFixed(2)}
@@ -799,7 +836,7 @@ export default function ServicesPage(): React.ReactElement {
                   {selectedJob.estimatedDurationMinutes}
                 </p>
                 <p>
-                  <strong>{t('pages.services.type')}:</strong> {selectedJob.jobType}
+                  <strong>{t('pages.services.type')}:</strong> {getJobType(selectedJob)}
                 </p>
                 <p>
                   <strong>{t('common.active')}:</strong>{' '}
@@ -874,6 +911,36 @@ export default function ServicesPage(): React.ReactElement {
                 />
               </div>
 
+              <div className="form-group">
+                <label htmlFor="jobNameFr">{t('pages.services.nameFr')}</label>
+                <input
+                  id="jobNameFr"
+                  type="text"
+                  name="jobNameFr"
+                  value={formData.jobNameFr || ''}
+                  onChange={handleFormChange}
+                  placeholder={t('common.enterPlaceholder', {
+                    field: t('pages.services.nameFr'),
+                  })}
+                  disabled={createLoading}
+                />
+              </div>
+
+              <div className="form-group">
+                <label htmlFor="jobDescriptionFr">{t('pages.services.descriptionFr')}</label>
+                <textarea
+                  id="jobDescriptionFr"
+                  name="jobDescriptionFr"
+                  value={formData.jobDescriptionFr || ''}
+                  onChange={handleFormChange}
+                  placeholder={t('common.enterPlaceholder', {
+                    field: t('pages.services.descriptionFr'),
+                  })}
+                  disabled={createLoading}
+                  rows={3}
+                />
+              </div>
+
               <div className="form-row">
                 <div className="form-group">
                   <label htmlFor="hourlyRate">{t('pages.services.hourlyRate')} ($) *</label>
@@ -917,10 +984,10 @@ export default function ServicesPage(): React.ReactElement {
                     onChange={handleFormChange}
                     disabled={createLoading}
                   >
-                    <option value="QUOTATION">{t('pages.services.quotation')}</option>
-                    <option value="INSTALLATION">{t('pages.services.installation')}</option>
-                    <option value="REPARATION">{t('pages.services.reparation')}</option>
-                    <option value="MAINTENANCE">{t('pages.services.maintenance')}</option>
+                    <option value="QUOTATION">{isFrench ? t('pages.services.quotation') : 'Quotation'}</option>
+                    <option value="INSTALLATION">{isFrench ? t('pages.services.installation') : 'Installation'}</option>
+                    <option value="REPARATION">{isFrench ? t('pages.services.reparation') : 'Reparation'}</option>
+                    <option value="MAINTENANCE">{isFrench ? t('pages.services.maintenance') : 'Maintenance'}</option>
                   </select>
                 </div>
 
@@ -1029,6 +1096,36 @@ export default function ServicesPage(): React.ReactElement {
                 />
               </div>
 
+              <div className="form-group">
+                <label htmlFor="updateJobNameFr">{t('pages.services.nameFr')}</label>
+                <input
+                  id="updateJobNameFr"
+                  type="text"
+                  name="jobNameFr"
+                  value={updateFormData.jobNameFr || ''}
+                  onChange={handleUpdateFormChange}
+                  placeholder={t('common.enterPlaceholder', {
+                    field: t('pages.services.nameFr'),
+                  })}
+                  disabled={updateLoading}
+                />
+              </div>
+
+              <div className="form-group">
+                <label htmlFor="updateJobDescriptionFr">{t('pages.services.descriptionFr')}</label>
+                <textarea
+                  id="updateJobDescriptionFr"
+                  name="jobDescriptionFr"
+                  value={updateFormData.jobDescriptionFr || ''}
+                  onChange={handleUpdateFormChange}
+                  placeholder={t('common.enterPlaceholder', {
+                    field: t('pages.services.descriptionFr'),
+                  })}
+                  disabled={updateLoading}
+                  rows={3}
+                />
+              </div>
+
               <div className="form-row">
                 <div className="form-group">
                   <label htmlFor="updateHourlyRate">{t('pages.services.hourlyRate')} ($) *</label>
@@ -1072,10 +1169,10 @@ export default function ServicesPage(): React.ReactElement {
                     onChange={handleUpdateFormChange}
                     disabled={updateLoading}
                   >
-                    <option value="QUOTATION">{t('pages.services.quotation')}</option>
-                    <option value="INSTALLATION">{t('pages.services.installation')}</option>
-                    <option value="REPARATION">{t('pages.services.reparation')}</option>
-                    <option value="MAINTENANCE">{t('pages.services.maintenance')}</option>
+                    <option value="QUOTATION">{isFrench ? t('pages.services.quotation') : 'Quotation'}</option>
+                    <option value="INSTALLATION">{isFrench ? t('pages.services.installation') : 'Installation'}</option>
+                    <option value="REPARATION">{isFrench ? t('pages.services.reparation') : 'Reparation'}</option>
+                    <option value="MAINTENANCE">{isFrench ? t('pages.services.maintenance') : 'Maintenance'}</option>
                   </select>
                 </div>
 

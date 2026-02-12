@@ -27,6 +27,8 @@ CREATE TABLE IF NOT EXISTS jobs  (
                       job_id VARCHAR(50) NOT NULL UNIQUE,    -- from JobIdentifier
                       job_name VARCHAR(255) NOT NULL,
                       job_description VARCHAR(500),
+                      job_name_fr VARCHAR(255),
+                      job_description_fr VARCHAR(500),
 
                       hourly_rate DOUBLE NOT NULL,
                       estimated_duration_minutes INT NOT NULL,
