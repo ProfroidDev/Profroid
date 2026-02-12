@@ -582,7 +582,7 @@ export default function ServicesPage(): React.ReactElement {
         <div className="header-content">
           <h1 className="page-title">{t('pages.services.title')}</h1>
           <p className="page-subtitle">
-            {isAdmin ? 'Gérez vos services professionnels' : 'Découvrez nos services de cave à vin'}
+            {isAdmin ? t('pages.services.adminSubtitle') : t('pages.services.customerSubtitle')}
           </p>
         </div>
         {isAdmin && (

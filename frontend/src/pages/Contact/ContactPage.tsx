@@ -1,7 +1,7 @@
 import { useTranslation } from 'react-i18next';
 import { Mail, Phone, MapPin } from 'lucide-react';
 import './Contact.css';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import {
   sanitizeName,
   sanitizeEmail,
@@ -11,6 +11,7 @@ import {
 
 export default function ContactPage() {
   const { t } = useTranslation();
+  const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -20,8 +21,15 @@ export default function ContactPage() {
   });
 
   const [isLoading, setIsLoading] = useState(false);
-  const [responseMessage, setResponseMessage] = useState('');
-  const [responseType, setResponseType] = useState<'success' | 'error' | ''>('');
+  const [responseMessage, setResponseMessage] = useState(() => {
+    // Load response message from localStorage on mount
+    return localStorage.getItem('responseMessage') || '';
+  });
+  const [responseType, setResponseType] = useState<'success' | 'error' | ''>(() => {
+    // Load response type from localStorage on mount
+    const stored = localStorage.getItem('responseType');
+    return (stored as 'success' | 'error' | '') || '';
+  });
   const [rateLimitTime, setRateLimitTime] = useState(() => {
     // Load rate limit time from localStorage on mount
     const stored = localStorage.getItem('rateLimitTime');
@@ -37,31 +45,54 @@ export default function ContactPage() {
     message: 500,
   };
 
-  // Rate limit countdown timer
+  // Rate limit countdown timer - use ref to maintain single interval
   useEffect(() => {
+    // Clean up any existing interval
+    if (intervalRef.current) {
+      clearInterval(intervalRef.current);
+      intervalRef.current = null;
+    }
+
+    // Don't start interval if time is 0 or less
     if (rateLimitTime <= 0) {
       localStorage.removeItem('rateLimitTime');
+      localStorage.removeItem('responseMessage');
+      localStorage.removeItem('responseType');
       return;
     }
 
-    // Save to localStorage
-    localStorage.setItem('rateLimitTime', rateLimitTime.toString());
-
-    const interval = setInterval(() => {
+    // Start countdown interval
+    intervalRef.current = setInterval(() => {
       setRateLimitTime((prev) => {
-        if (prev <= 1) {
+        const newTime = prev - 1;
+        
+        if (newTime <= 0) {
+          // Timer finished - clean up
           setResponseMessage('');
           setResponseType('');
           localStorage.removeItem('rateLimitTime');
+          localStorage.removeItem('responseMessage');
+          localStorage.removeItem('responseType');
+          if (intervalRef.current) {
+            clearInterval(intervalRef.current);
+            intervalRef.current = null;
+          }
           return 0;
         }
-        const newTime = prev - 1;
+        
+        // Update localStorage as timer counts down
         localStorage.setItem('rateLimitTime', newTime.toString());
         return newTime;
       });
     }, 1000);
 
-    return () => clearInterval(interval);
+    // Cleanup function
+    return () => {
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current);
+        intervalRef.current = null;
+      }
+    };
   }, [rateLimitTime]);
 
   const formatTime = (seconds: number) => {
@@ -100,38 +131,67 @@ export default function ContactPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    // Check if user is rate limited - show message but don't send request
+    if (rateLimitTime > 0) {
+      const message = t('pages.contact.rateLimitExceeded');
+      setResponseMessage(message);
+      setResponseType('error');
+      localStorage.setItem('responseMessage', message);
+      localStorage.setItem('responseType', 'error');
+      return;
+    }
+
     setResponseMessage('');
     setResponseType('');
 
     // Validate form before submitting
     if (formData.name.length < 2) {
-      setResponseMessage(t('pages.contact.validationNameMin'));
+      const msg = t('pages.contact.validationNameMin');
+      setResponseMessage(msg);
       setResponseType('error');
+      localStorage.setItem('responseMessage', msg);
+      localStorage.setItem('responseType', 'error');
       return;
     }
     if (formData.name.length > LIMITS.name) {
-      setResponseMessage(t('pages.contact.validationNameMax'));
+      const msg = t('pages.contact.validationNameMax');
+      setResponseMessage(msg);
       setResponseType('error');
+      localStorage.setItem('responseMessage', msg);
+      localStorage.setItem('responseType', 'error');
       return;
     }
     if (formData.subject.length < 3) {
-      setResponseMessage(t('pages.contact.validationSubjectMin'));
+      const msg = t('pages.contact.validationSubjectMin');
+      setResponseMessage(msg);
       setResponseType('error');
+      localStorage.setItem('responseMessage', msg);
+      localStorage.setItem('responseType', 'error');
       return;
     }
     if (formData.subject.length > LIMITS.subject) {
-      setResponseMessage(t('pages.contact.validationSubjectMax'));
+      const msg = t('pages.contact.validationSubjectMax');
+      setResponseMessage(msg);
       setResponseType('error');
+      localStorage.setItem('responseMessage', msg);
+      localStorage.setItem('responseType', 'error');
       return;
     }
     if (formData.message.length < 10) {
-      setResponseMessage(t('pages.contact.validationMessageMin'));
+      const msg = t('pages.contact.validationMessageMin');
+      setResponseMessage(msg);
       setResponseType('error');
+      localStorage.setItem('responseMessage', msg);
+      localStorage.setItem('responseType', 'error');
       return;
     }
     if (formData.message.length > LIMITS.message) {
-      setResponseMessage(t('pages.contact.validationMessageMax'));
+      const msg = t('pages.contact.validationMessageMax');
+      setResponseMessage(msg);
       setResponseType('error');
+      localStorage.setItem('responseMessage', msg);
+      localStorage.setItem('responseType', 'error');
       return;
     }
 
@@ -150,23 +210,41 @@ export default function ContactPage() {
       if (response.ok) {
         setResponseMessage(t('pages.contact.messageSent'));
         setResponseType('success');
+        localStorage.setItem('responseMessage', t('pages.contact.messageSent'));
+        localStorage.setItem('responseType', 'success');
         setFormData({ name: '', email: '', phone: '', subject: '', message: '' });
         setRateLimitTime(0);
+        localStorage.removeItem('rateLimitTime');
         // Auto-clear success message after 5 seconds
-        setTimeout(() => setResponseMessage(''), 5000);
+        setTimeout(() => {
+          setResponseMessage('');
+          setResponseType('');
+          localStorage.removeItem('responseMessage');
+          localStorage.removeItem('responseType');
+        }, 5000);
       } else if (response.status === 429) {
         // Rate limit exceeded - set 20 minute countdown
-        setResponseMessage(t('pages.contact.rateLimitExceeded'));
+        const message = t('pages.contact.rateLimitExceeded');
+        setResponseMessage(message);
         setResponseType('error');
         setRateLimitTime(1200); // 20 minutes in seconds
+        localStorage.setItem('rateLimitTime', '1200');
+        localStorage.setItem('responseMessage', message);
+        localStorage.setItem('responseType', 'error');
       } else {
         const errorData = await response.json().catch(() => ({}));
-        setResponseMessage(errorData.message || t('pages.contact.failedToSend'));
+        const message = errorData.message || t('pages.contact.failedToSend');
+        setResponseMessage(message);
         setResponseType('error');
+        localStorage.setItem('responseMessage', message);
+        localStorage.setItem('responseType', 'error');
       }
     } catch (error) {
       console.error('Error sending contact message:', error);
-      setResponseMessage(t('pages.contact.failedToSend'));
+      const message = t('pages.contact.failedToSend');
+      setResponseMessage(message);
+      localStorage.setItem('responseMessage', message);
+      localStorage.setItem('responseType', 'error');
       setResponseType('error');
     } finally {
       setIsLoading(false);
@@ -327,7 +405,7 @@ export default function ContactPage() {
             </div>
           )}
 
-          <button type="submit" className="submit-button" disabled={isLoading || rateLimitTime > 0}>
+          <button type="submit" className="submit-button" disabled={isLoading}>
             {isLoading
               ? t('pages.contact.formSubmitting') || 'Sending...'
               : t('pages.contact.formSubmit')}

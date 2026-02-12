@@ -13,6 +13,26 @@ function preventDangerousPatterns(value: string): string {
   return value.replace(/<<|>>|--|';|DROP|DELETE|INSERT|UPDATE|SELECT/gi, '');
 }
 
+// Helper function to translate backend error messages
+function translateBackendError(error: string | undefined | null, t: (key: string) => string): string {
+  if (!error) return '';
+  
+  const errorLower = error.toLowerCase();
+  
+  // Check for invalid credentials errors (backend returns "Invalid credentials")
+  if (errorLower.includes('invalid') || errorLower.includes('credentials') || errorLower.includes('email')) {
+    return t('auth.invalidCredentials');
+  }
+  
+  // Check for email verification errors
+  if (errorLower.includes('verify') || errorLower.includes('verification')) {
+    return t('auth.emailNotVerified');
+  }
+  
+  // Default: return the original error
+  return error;
+}
+
 export default function LoginPage() {
   const { t } = useTranslation();
   const navigate = useNavigate();
@@ -126,10 +146,7 @@ export default function LoginPage() {
 
           {(formError || error) && (
             <div className="alert alert-error">
-              {formError || 
-               (error?.toLowerCase().includes('invalid') || error?.toLowerCase().includes('credentials') || error?.toLowerCase().includes('email') ? 
-                t('auth.invalidCredentials') : 
-                error)}
+              {formError || translateBackendError(error, t)}
             </div>
           )}
 

@@ -269,7 +269,7 @@ const CustomerBills = () => {
                     <td className="amount">{formatCurrency(bill.amount)}</td>
                     <td>
                       <span className={`badge ${getStatusBadgeClass(bill.status)}`}>
-                        {bill.status}
+                        {t(`pages.customers.bills.status.${bill.status.toLowerCase()}`)}
                       </span>
                     </td>
                     <td>{formatDate(bill.createdAt)}</td>
@@ -278,11 +278,11 @@ const CustomerBills = () => {
                         <button
                           onClick={() => handlePayBill(bill.billId)}
                           className="bill-pay-btn"
-                          title="Pay"
+                          title={t('pages.customers.bills.actions.pay')}
                           disabled={payingBillId === bill.billId}
                         >
                           <DollarSign size={16} />
-                          {payingBillId === bill.billId ? 'Paying...' : 'Pay'}
+                          {payingBillId === bill.billId ? t('pages.customers.bills.actions.paying') : t('pages.customers.bills.actions.pay')}
                         </button>
                       )}
 

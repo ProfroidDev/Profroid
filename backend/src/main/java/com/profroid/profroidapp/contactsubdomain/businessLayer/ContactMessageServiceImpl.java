@@ -136,7 +136,7 @@ public class ContactMessageServiceImpl implements ContactMessageService {
             log.warn("Rate limit exceeded for IP: {}. {} messages in last {} minutes",
                     ipAddress, recentMessages.size(), RATE_LIMIT_WINDOW_MINUTES);
             throw new RateLimitExceededException(
-                    "Too many messages from this IP address. Maximum " + MAX_MESSAGES_PER_IP + 
+                    "Too many messages. Maximum " + MAX_MESSAGES_PER_IP + 
                     " messages allowed per " + RATE_LIMIT_WINDOW_MINUTES + " minutes. Please try again later.");
         }
     }
