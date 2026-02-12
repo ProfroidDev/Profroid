@@ -122,11 +122,11 @@ public class BillControllerIntegrationTest {
 
     @Test
     void downloadBillPdf_returnsPdf() {
-        when(billService.getBillPdf(eq("BILL-2026-000001"), anyString(), anyString()))
+        when(billService.getBillPdf(eq("BILL-2026-000001"), anyString(), anyString(), anyString()))
                 .thenReturn(new byte[]{9, 9, 9});
 
         webTestClient.get()
-                .uri("/v1/bills/{id}/pdf", "BILL-2026-000001")
+                .uri("/v1/bills/{id}/pdf?lang=en", "BILL-2026-000001")
                 .exchange()
                 .expectStatus().isOk()
                 .expectHeader().contentType(MediaType.APPLICATION_PDF)

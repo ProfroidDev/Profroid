@@ -26,20 +26,21 @@ public class ReportController {
     }
 
     /**
-     * Download the report PDF (Admin and Technician only)
+     * Download the report PDF with language support (Admin and Technician only)
      */
     @PreAuthorize("hasAnyRole('ADMIN','TECHNICIAN')")
     @GetMapping(value = "/{reportId}/pdf", produces = MediaType.APPLICATION_PDF_VALUE)
     public ResponseEntity<byte[]> downloadReportPdf(
             @PathVariable String reportId,
+            @RequestParam(value = "lang", defaultValue = "en") String language,
             Authentication authentication) {
 
         String userId = authentication.getName();
         String role = extractRole(authentication);
         
-        logger.info("PDF Download Request - UserId: {}, Role: {}, ReportId: {}", userId, role, reportId);
+        logger.info("PDF Download Request - UserId: {}, Role: {}, ReportId: {}, Language: {}", userId, role, reportId, language);
 
-        byte[] pdf = reportService.getReportPdf(reportId, userId, role);
+        byte[] pdf = reportService.getReportPdf(reportId, userId, role, language);
         String filename = "report_" + reportId + ".pdf";
 
         return ResponseEntity.ok()

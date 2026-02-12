@@ -36,11 +36,11 @@ public class ReportControllerIntegrationTest {
 
     @Test
     void downloadReportPdf_returnsPdf() {
-        when(reportService.getReportPdf(eq("REP-123"), anyString(), anyString()))
+        when(reportService.getReportPdf(eq("REP-123"), anyString(), anyString(), anyString()))
                 .thenReturn(new byte[]{1, 2, 3});
 
         webTestClient.get()
-                .uri("/v1/reports/{id}/pdf", "REP-123")
+                .uri("/v1/reports/{id}/pdf?lang=en", "REP-123")
                 .exchange()
                 .expectStatus().isOk()
                 .expectHeader().contentType(MediaType.APPLICATION_PDF)

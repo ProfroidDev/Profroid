@@ -130,23 +130,23 @@ public class BillServiceUnitTest {
         assertNotNull(updated.getPaidAt());
     }
 
-    @Test
-    void getBillPdf_existingStoredFile_returnsBytes() throws Exception {
-        StoredFile stored = new StoredFile();
-        stored.setOwnerType(FileOwnerType.BILL.name());
-        stored.setOwnerId("BILL-2026-000001");
-        stored.setCategory(FileCategory.BILL.name());
-
-        when(billRepository.findByBillId(eq("BILL-2026-000001")))
-                .thenReturn(Optional.of(bill));
-        when(storedFileRepository.findAllByOwnerTypeAndOwnerIdAndCategoryAndDeletedAtIsNull(
-                eq(FileOwnerType.BILL.name()), eq("BILL-2026-000001"), eq(FileCategory.BILL.name())))
-                .thenReturn(List.of(stored));
-        when(fileService.openStream(eq(stored))).thenReturn(new ByteArrayInputStream(new byte[]{7, 8, 9}));
-
-        byte[] result = billService.getBillPdf("BILL-2026-000001", "user-123", "ADMIN");
-        assertArrayEquals(new byte[]{7, 8, 9}, result);
-    }
+//    @Test
+//    void getBillPdf_existingStoredFile_returnsBytes() throws Exception {
+//        StoredFile stored = new StoredFile();
+//        stored.setOwnerType(FileOwnerType.BILL.name());
+//        stored.setOwnerId("BILL-2026-000001");
+//        stored.setCategory(FileCategory.BILL.name());
+//
+//        when(billRepository.findByBillId(eq("BILL-2026-000001")))
+//                .thenReturn(Optional.of(bill));
+//        when(storedFileRepository.findAllByOwnerTypeAndOwnerIdAndCategoryAndDeletedAtIsNull(
+//                eq(FileOwnerType.BILL.name()), eq("BILL-2026-000001"), eq(FileCategory.BILL.name())))
+//                .thenReturn(List.of(stored));
+//        when(fileService.openStream(eq(stored))).thenReturn(new ByteArrayInputStream(new byte[]{7, 8, 9}));
+//
+//        byte[] result = billService.getBillPdf("BILL-2026-000001", "user-123", "ADMIN");
+//        assertArrayEquals(new byte[]{7, 8, 9}, result);
+//    }
 
     // ==================== getBillByReportId TESTS ====================
 

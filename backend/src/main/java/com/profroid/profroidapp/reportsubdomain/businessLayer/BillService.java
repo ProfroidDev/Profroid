@@ -37,8 +37,9 @@ public interface BillService {
     BillResponseModel getBillByAppointmentId(String appointmentId, String userId, String userRole);
     
     /**
-     * Generate and download bill PDF
+     * Generate and download bill PDF with language support
      * Customers can download their own bills, admins can download any bill
+     * @param language "en" for English or "fr" for French
      */
-    byte[] getBillPdf(String billId, String userId, String userRole);
+    byte[] getBillPdf(String billId, String userId, String userRole, String language);
 }

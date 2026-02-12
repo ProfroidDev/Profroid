@@ -113,20 +113,21 @@ public class BillController {
     }
     
     /**
-     * Download bill as PDF
+     * Download bill as PDF with language support
      * Customers can download their own bills, admins can download any bill
      */
     @GetMapping(value = "/{billId}/pdf", produces = MediaType.APPLICATION_PDF_VALUE)
     public ResponseEntity<byte[]> downloadBillPdf(
             @PathVariable String billId,
+            @RequestParam(value = "lang", defaultValue = "en") String language,
             Authentication authentication) {
         
         String userId = authentication.getName();
         String role = extractRole(authentication);
         
-        logger.info("PDF Download Request - UserId: {}, Role: {}, BillId: {}", userId, role, billId);
+        logger.info("PDF Download Request - UserId: {}, Role: {}, BillId: {}, Language: {}", userId, role, billId, language);
         
-        byte[] pdf = billService.getBillPdf(billId, userId, role);
+        byte[] pdf = billService.getBillPdf(billId, userId, role, language);
         String filename = "bill_" + billId + ".pdf";
         
         return ResponseEntity.ok()

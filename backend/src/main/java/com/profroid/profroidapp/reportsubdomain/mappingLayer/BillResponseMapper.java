@@ -22,6 +22,7 @@ public class BillResponseMapper {
                 .customerFirstName(bill.getCustomer().getFirstName())
                 .customerLastName(bill.getCustomer().getLastName())
                 .jobName(bill.getAppointment().getJob().getJobName())
+                .jobNameFr(bill.getAppointment().getJob().getJobNameFr())
                 .amount(bill.getAmount())
                 .status(bill.getStatus().toString())
                 .createdAt(bill.getCreatedAt())

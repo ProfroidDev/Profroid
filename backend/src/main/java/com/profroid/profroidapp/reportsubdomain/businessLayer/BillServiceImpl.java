@@ -154,7 +154,7 @@ public class BillServiceImpl implements BillService {
     }
     
     @Override
-    public byte[] getBillPdf(String billId, String userId, String userRole) {
+    public byte[] getBillPdf(String billId, String userId, String userRole, String language) {
         Bill bill = billRepository.findByBillId(billId)
                 .orElseThrow(() -> new ResourceNotFoundException("Bill not found: " + billId));
         
@@ -164,22 +164,28 @@ public class BillServiceImpl implements BillService {
         }
 
         try {
-                List<StoredFile> files = storedFileRepository.findAllByOwnerTypeAndOwnerIdAndCategoryAndDeletedAtIsNull(
+            // Always regenerate PDF to ensure language is respected
+            // Delete old cached file if it exists
+            List<StoredFile> files = storedFileRepository.findAllByOwnerTypeAndOwnerIdAndCategoryAndDeletedAtIsNull(
                     FileOwnerType.BILL.name(), billId, FileCategory.BILL.name());
-                StoredFile stored = files.isEmpty() ? null : files.get(0);
-
-            if (stored != null) {
-                try (InputStream is = fileService.openStream(stored)) {
-                    return is.readAllBytes();
-                }
+            if (!files.isEmpty()) {
+                StoredFile oldFile = files.get(0);
+                fileService.delete(oldFile.getId());
+                storedFileRepository.delete(oldFile);
             }
 
-            StoredFile created = billPdfGenerator.generateAndStoreBillPdf(bill, fileService);
+            // Generate on-demand with requested language and store, then return
+            StoredFile created = billPdfGenerator.generateAndStoreBillPdf(bill, fileService, language);
             try (InputStream is = fileService.openStream(created)) {
                 return is.readAllBytes();
             }
         } catch (Exception e) {
             throw new RuntimeException("Failed to fetch bill PDF", e);
         }
+    }
+
+    // Convenience overload for backward compatibility
+    public byte[] getBillPdf(String billId, String userId, String userRole) {
+        return getBillPdf(billId, userId, userRole, "en");
     }
 }

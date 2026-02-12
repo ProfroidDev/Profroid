@@ -28,22 +28,28 @@ import java.io.ByteArrayInputStream;
 import java.io.FileOutputStream;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
+import java.util.Locale;
 
 @Component
 public class BillPdfGenerator {
 
     private static final Logger log = LoggerFactory.getLogger(BillPdfGenerator.class);
 
-    public byte[] generateBillPdf(Bill bill) {
+    public byte[] generateBillPdf(Bill bill, String language) {
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
         try {
             PdfWriter writer = new PdfWriter(outputStream);
             PdfDocument pdfDocument = new PdfDocument(writer);
             Document document = new Document(pdfDocument);
 
+            boolean isFrench = "fr".equalsIgnoreCase(language);
+            Locale locale = isFrench ? Locale.FRANCE : Locale.US;
+
             // Title
-            Paragraph title = new Paragraph("INVOICE")
+            String titleText = isFrench ? "FACTURE" : "INVOICE";
+            Paragraph title = new Paragraph(titleText)
                     .setFontSize(24)
                     .setBold()
                     .setTextAlignment(TextAlignment.CENTER);
@@ -53,14 +59,19 @@ public class BillPdfGenerator {
             DeviceRgb statusColor = bill.getStatus() == Bill.BillStatus.PAID 
                     ? new DeviceRgb(34, 197, 94) // Green
                     : new DeviceRgb(239, 68, 68); // Red
+            
+            String statusLabel = isFrench ? "État: " : "Status: ";
+            String statusValue = isFrench ? 
+                (bill.getStatus() == Bill.BillStatus.PAID ? "PAYÉE" : "IMPAYÉE") :
+                bill.getStatus().toString();
                     
             Paragraph billInfo = new Paragraph()
                     .add(new Paragraph("Bill ID: " + bill.getBillId())
                             .setFontSize(12)
                             .setBold())
-                    .add(new Paragraph("\nStatus: ")
+                    .add(new Paragraph("\n" + statusLabel)
                             .setFontSize(12))
-                    .add(new Paragraph(bill.getStatus().toString())
+                    .add(new Paragraph(statusValue)
                             .setFontSize(12)
                             .setBold()
                             .setFontColor(statusColor))
@@ -68,8 +79,10 @@ public class BillPdfGenerator {
                     .setMarginBottom(15);
             document.add(billInfo);
 
-            String generatedDate = LocalDateTime.now().format(DateTimeFormatter.ofPattern("MMMM dd, yyyy"));
-            document.add(new Paragraph("Date: " + generatedDate)
+            String dateText = isFrench ? "Date: " : "Date: ";
+            String generatedDate = LocalDateTime.now(ZoneId.of("America/Toronto"))
+                .format(DateTimeFormatter.ofPattern("d MMMM yyyy", locale));
+            document.add(new Paragraph(dateText + generatedDate)
                     .setFontSize(10)
                     .setTextAlignment(TextAlignment.CENTER)
                     .setMarginBottom(20));
@@ -79,13 +92,15 @@ public class BillPdfGenerator {
                     .setFontSize(16)
                     .setBold()
                     .setMarginBottom(5));
-            document.add(new Paragraph("Refrigeration & HVAC Services")
+            String companySubtitle = isFrench ? "Services de Réfrigération et CVCA" : "Refrigeration & HVAC Services";
+            document.add(new Paragraph(companySubtitle)
                     .setFontSize(10)
                     .setMarginBottom(15));
 
             // Customer Information
             Report report = bill.getReport();
-            document.add(new Paragraph("BILL TO:")
+            String billToLabel = isFrench ? "FACTURÉ À:" : "BILL TO:";
+            document.add(new Paragraph(billToLabel)
                     .setFontSize(12)
                     .setBold()
                     .setMarginBottom(5));
@@ -111,7 +126,8 @@ public class BillPdfGenerator {
             document.add(new Paragraph("").setMarginBottom(15));
 
             // Service Details Header
-            document.add(new Paragraph("SERVICE DETAILS")
+            String serviceDetailsLabel = isFrench ? "DÉTAILS DU SERVICE" : "SERVICE DETAILS";
+            document.add(new Paragraph(serviceDetailsLabel)
                     .setFontSize(12)
                     .setBold()
                     .setMarginBottom(10));
@@ -120,11 +136,23 @@ public class BillPdfGenerator {
             Table infoTable = new Table(UnitValue.createPercentArray(new float[]{1.5f, 2.5f}))
                     .setWidth(UnitValue.createPercentValue(100))
                     .setMarginBottom(15);
-            addInfoRow(infoTable, "Appointment ID", bill.getAppointment().getAppointmentIdentifier().getAppointmentId());
-            addInfoRow(infoTable, "Appointment Date", bill.getAppointment().getAppointmentDate().format(DateTimeFormatter.ofPattern("MMMM dd, yyyy")));
-            addInfoRow(infoTable, "Service Type", report.getAppointment().getJob().getJobName());
-            addInfoRow(infoTable, "Report ID", report.getReportIdentifier().getReportId());
-            addInfoRow(infoTable, "Technician", report.getAppointment().getTechnician().getFirstName() + " " + report.getAppointment().getTechnician().getLastName());
+            
+            String appointmentIdLabel = isFrench ? "ID du Rendez-vous" : "Appointment ID";
+            String appointmentDateLabel = isFrench ? "Date du Rendez-vous" : "Appointment Date";
+            String serviceTypeLabel = isFrench ? "Type de Service" : "Service Type";
+            String reportIdLabel = isFrench ? "ID du Rapport" : "Report ID";
+            String technicianLabel = isFrench ? "Technicien" : "Technician";
+            
+            addInfoRow(infoTable, appointmentIdLabel, bill.getAppointment().getAppointmentIdentifier().getAppointmentId());
+            
+            String appointmentDateFormatted = bill.getAppointment().getAppointmentDate()
+                .format(DateTimeFormatter.ofPattern("d MMMM yyyy", locale));
+            addInfoRow(infoTable, appointmentDateLabel, appointmentDateFormatted);
+            
+            String jobName = report.getAppointment().getJob().getJobName();
+            addInfoRow(infoTable, serviceTypeLabel, jobName);
+            addInfoRow(infoTable, reportIdLabel, report.getReportIdentifier().getReportId());
+            addInfoRow(infoTable, technicianLabel, report.getAppointment().getTechnician().getFirstName() + " " + report.getAppointment().getTechnician().getLastName());
             document.add(infoTable);
 
             // Labor Charges
@@ -133,13 +161,22 @@ public class BillPdfGenerator {
                     .setMarginBottom(15);
             
             DeviceRgb headerBg = new DeviceRgb(156, 27, 27); // Profroid red
-            addSectionHeader(laborTable, "LABOR CHARGES", headerBg);
+            String laborChargesLabel = isFrench ? "FRAIS DE MAIN-D'ŒUVRE" : "LABOR CHARGES";
+            addSectionHeader(laborTable, laborChargesLabel, headerBg);
             
             BigDecimal hourlyRate = BigDecimal.valueOf(report.getAppointment().getJob().getHourlyRate());
             BigDecimal laborCost = report.getHoursWorked().multiply(hourlyRate);
-            addMoneyRow(laborTable, "Hourly Rate: $" + formatDecimal(hourlyRate) + " × " + formatDecimal(report.getHoursWorked()) + " hours", laborCost);
-            addMoneyRow(laborTable, "Additional Fees (Frais)", report.getFrais());
-            addMoneyRow(laborTable, "Travel Fees (Frais de Déplacement)", report.getFraisDeplacement());
+            
+            String hourlyRateLabel = isFrench ? "Taux horaire: $" : "Hourly Rate: $";
+            String hoursLabel = isFrench ? " heures" : " hours";
+            String hourlyRateText = hourlyRateLabel + formatDecimal(hourlyRate) + " × " + formatDecimal(report.getHoursWorked()) + hoursLabel;
+            
+            String additionalFeesLabel = isFrench ? "Frais supplémentaires (Frais)" : "Additional Fees (Frais)";
+            String travelFeesLabel = isFrench ? "Frais de Déplacement" : "Travel Fees (Frais de Déplacement)";
+            
+            addMoneyRow(laborTable, hourlyRateText, laborCost);
+            addMoneyRow(laborTable, additionalFeesLabel, report.getFrais());
+            addMoneyRow(laborTable, travelFeesLabel, report.getFraisDeplacement());
             document.add(laborTable);
 
             // Parts Used
@@ -148,22 +185,28 @@ public class BillPdfGenerator {
                         .setWidth(UnitValue.createPercentValue(100))
                         .setMarginBottom(15);
                 
-                addSectionHeader(partsTable, "PARTS USED", headerBg);
+                String partsUsedLabel = isFrench ? "PIÈCES UTILISÉES" : "PARTS USED";
+                addSectionHeader(partsTable, partsUsedLabel, headerBg);
                 
                 // Parts header row
                 DeviceRgb lightGray = new DeviceRgb(243, 244, 246);
-                partsTable.addCell(new Cell().add(new Paragraph("Part Name").setBold().setFontSize(10))
+                String partNameLabel = isFrench ? "Nom de la Pièce" : "Part Name";
+                String qtyLabel = isFrench ? "Qté" : "Qty";
+                String priceLabel = isFrench ? "Prix" : "Price";
+                String totalLabel = isFrench ? "Total" : "Total";
+                
+                partsTable.addCell(new Cell().add(new Paragraph(partNameLabel).setBold().setFontSize(10))
                         .setBackgroundColor(lightGray).setPadding(5));
-                partsTable.addCell(new Cell().add(new Paragraph("Qty").setBold().setFontSize(10))
+                partsTable.addCell(new Cell().add(new Paragraph(qtyLabel).setBold().setFontSize(10))
                         .setBackgroundColor(lightGray).setTextAlignment(TextAlignment.CENTER).setPadding(5));
-                partsTable.addCell(new Cell().add(new Paragraph("Price").setBold().setFontSize(10))
+                partsTable.addCell(new Cell().add(new Paragraph(priceLabel).setBold().setFontSize(10))
                         .setBackgroundColor(lightGray).setTextAlignment(TextAlignment.RIGHT).setPadding(5));
-                partsTable.addCell(new Cell().add(new Paragraph("Total").setBold().setFontSize(10))
+                partsTable.addCell(new Cell().add(new Paragraph(totalLabel).setBold().setFontSize(10))
                         .setBackgroundColor(lightGray).setTextAlignment(TextAlignment.RIGHT).setPadding(5));
 
                 var border = new SolidBorder(ColorConstants.LIGHT_GRAY, 1);
                 for (ReportPart part : report.getReportParts()) {
-                    String partName = part.getPart() != null ? part.getPart().getName() : "Unknown Part";
+                    String partName = part.getPart() != null ? part.getPart().getName() : (isFrench ? "Pièce Inconnue" : "Unknown Part");
                     BigDecimal price = part.getPart() != null ? part.getPart().getPrice() : BigDecimal.ZERO;
                     BigDecimal total = price.multiply(BigDecimal.valueOf(part.getQuantity()));
                     
@@ -187,7 +230,8 @@ public class BillPdfGenerator {
             
             var border = new SolidBorder(ColorConstants.LIGHT_GRAY, 1);
             
-            totalsTable.addCell(new Cell().add(new Paragraph("Subtotal").setFontSize(11))
+            String subtotalLabel = isFrench ? "Sous-total" : "Subtotal";
+            totalsTable.addCell(new Cell().add(new Paragraph(subtotalLabel).setFontSize(11))
                     .setBorder(border).setPadding(5));
             totalsTable.addCell(new Cell().add(new Paragraph(formatMoney(report.getSubtotal())).setFontSize(11))
                     .setTextAlignment(TextAlignment.RIGHT).setBorder(border).setPadding(5));
@@ -203,7 +247,8 @@ public class BillPdfGenerator {
                     .setTextAlignment(TextAlignment.RIGHT).setBorder(border).setPadding(5));
             
             DeviceRgb totalBg = new DeviceRgb(220, 220, 220);
-            totalsTable.addCell(new Cell().add(new Paragraph("TOTAL AMOUNT DUE").setBold().setFontSize(12))
+            String totalAmountDueLabel = isFrench ? "MONTANT TOTAL DÛ" : "TOTAL AMOUNT DUE";
+            totalsTable.addCell(new Cell().add(new Paragraph(totalAmountDueLabel).setBold().setFontSize(12))
                     .setBackgroundColor(totalBg).setBorder(border).setPadding(8));
             totalsTable.addCell(new Cell().add(new Paragraph(formatMoney(bill.getAmount())).setBold().setFontSize(12))
                     .setTextAlignment(TextAlignment.RIGHT).setBackgroundColor(totalBg).setBorder(border).setPadding(8));
@@ -213,18 +258,24 @@ public class BillPdfGenerator {
             // Payment Information
             if (bill.getStatus() == Bill.BillStatus.PAID && bill.getPaidAt() != null) {
                 DeviceRgb paidBg = new DeviceRgb(220, 252, 231); // Light green
+                String paidLabel = isFrench ? "✓ PAYÉE" : "✓ PAID";
+                String paymentReceivedLabel = isFrench ? "Paiement reçu le: " : "Payment received on: ";
+                String paidAtDate = bill.getPaidAt().format(DateTimeFormatter.ofPattern("d MMMM yyyy", locale));
+                
                 Paragraph paidInfo = new Paragraph()
-                        .add(new Paragraph("✓ PAID").setBold().setFontSize(14).setFontColor(new DeviceRgb(34, 197, 94)))
-                        .add(new Paragraph("\nPayment received on: " + bill.getPaidAt().format(DateTimeFormatter.ofPattern("MMMM dd, yyyy")))
+                        .add(new Paragraph(paidLabel).setBold().setFontSize(14).setFontColor(new DeviceRgb(34, 197, 94)))
+                        .add(new Paragraph("\n" + paymentReceivedLabel + paidAtDate)
                                 .setFontSize(10))
                         .setTextAlignment(TextAlignment.CENTER)
                         .setBackgroundColor(paidBg)
                         .setPadding(10)
                         .setMarginBottom(15);
+
                 document.add(paidInfo);
             } else {
                 DeviceRgb unpaidBg = new DeviceRgb(254, 226, 226); // Light red
-                Paragraph unpaidInfo = new Paragraph("PAYMENT DUE")
+                String paymentDueLabel = isFrench ? "PAIEMENT DÛ" : "PAYMENT DUE";
+                Paragraph unpaidInfo = new Paragraph(paymentDueLabel)
                         .setBold()
                         .setFontSize(12)
                         .setFontColor(new DeviceRgb(239, 68, 68))
@@ -237,16 +288,19 @@ public class BillPdfGenerator {
 
             // Footer
             document.add(new Paragraph("\n"));
-            document.add(new Paragraph("Thank you for your business!")
+            String thankYouLabel = isFrench ? "Merci de votre patronage!" : "Thank you for your business!";
+            document.add(new Paragraph(thankYouLabel)
                     .setFontSize(11)
                     .setBold()
                     .setTextAlignment(TextAlignment.CENTER)
                     .setMarginBottom(5));
-            document.add(new Paragraph("For questions about this invoice, please contact us.")
+            String questionsLabel = isFrench ? "Pour des questions concernant cette facture, veuillez nous contacter." : "For questions about this invoice, please contact us.";
+            document.add(new Paragraph(questionsLabel)
                     .setFontSize(9)
                     .setTextAlignment(TextAlignment.CENTER)
                     .setMarginBottom(10));
-            document.add(new Paragraph("This is a computer-generated invoice.")
+            String generatedLabel = isFrench ? "Cette facture a été générée automatiquement." : "This is a computer-generated invoice.";
+            document.add(new Paragraph(generatedLabel)
                     .setFontSize(8)
                     .setItalic()
                     .setTextAlignment(TextAlignment.CENTER)
@@ -260,11 +314,15 @@ public class BillPdfGenerator {
         }
     }
 
-        public StoredFile generateAndStoreBillPdf(Bill bill, FileService fileService) {
-                byte[] pdf = generateBillPdf(bill);
+        public StoredFile generateAndStoreBillPdf(Bill bill, FileService fileService, String language) {
+                byte[] pdf = generateBillPdf(bill, language);
                 String filename = "bill_" + bill.getBillId() + ".pdf";
                 MultipartFile mf = new InMemoryMultipartFile(filename, filename, "application/pdf", pdf);
                 return fileService.upload(mf, FileOwnerType.BILL, bill.getBillId(), FileCategory.BILL);
+        }
+        
+        public StoredFile generateAndStoreBillPdf(Bill bill, FileService fileService) {
+                return generateAndStoreBillPdf(bill, fileService, "en");
         }
 
     private void addInfoRow(Table t, String label, String value) {

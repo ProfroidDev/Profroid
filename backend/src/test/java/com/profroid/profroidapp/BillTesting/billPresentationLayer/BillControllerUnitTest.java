@@ -111,16 +111,16 @@ public class BillControllerUnitTest {
     @Test
     void downloadBillPdf_adminRole_returnsPdf() {
         byte[] pdfBytes = new byte[]{4, 5, 6};
-        when(billService.getBillPdf(eq("BILL-2026-000001"), eq("user-123"), eq("ADMIN")))
+        when(billService.getBillPdf(eq("BILL-2026-000001"), eq("user-123"), eq("ADMIN"), eq("en")))
                 .thenReturn(pdfBytes);
 
         Authentication authentication = new org.springframework.security.authentication.TestingAuthenticationToken(
             "user-123", "password", "ROLE_ADMIN");
-        ResponseEntity<byte[]> response = billController.downloadBillPdf("BILL-2026-000001", authentication);
+        ResponseEntity<byte[]> response = billController.downloadBillPdf("BILL-2026-000001", "en", authentication);
         assertEquals(HttpStatus.OK, response.getStatusCode());
         assertEquals(MediaType.APPLICATION_PDF, response.getHeaders().getContentType());
         assertArrayEquals(pdfBytes, response.getBody());
-        verify(billService).getBillPdf("BILL-2026-000001", "user-123", "ADMIN");
+        verify(billService).getBillPdf("BILL-2026-000001", "user-123", "ADMIN", "en");
     }
 
     @Test

@@ -307,7 +307,7 @@ public class ReportServiceImpl implements ReportService {
     }
 
     @Override
-    public byte[] getReportPdf(String reportId, String userId, String userRole) {
+    public byte[] getReportPdf(String reportId, String userId, String userRole, String language) {
         Report report = reportRepository.findReportByReportIdentifier_ReportId(reportId);
         if (report == null) {
             throw new ResourceNotFoundException("Report not found: " + reportId);
@@ -316,26 +316,31 @@ public class ReportServiceImpl implements ReportService {
         // Access check (technician owner or admin)
         validateReportAccess(report, userId, userRole);
 
-        // Try get existing stored file
-        var files = storedFileRepository.findAllByOwnerTypeAndOwnerIdAndCategoryAndDeletedAtIsNull(
-                FileOwnerType.REPORT.name(), reportId, FileCategory.REPORT.name());
-        StoredFile stored = files.isEmpty() ? null : files.get(0);
-
         try {
-            if (stored != null) {
-                try (InputStream is = fileService.openStream(stored)) {
-                    return is.readAllBytes();
-                }
+            // Always regenerate PDF to ensure language is respected
+            // Delete old cached file if it exists
+            var files = storedFileRepository.findAllByOwnerTypeAndOwnerIdAndCategoryAndDeletedAtIsNull(
+                    FileOwnerType.REPORT.name(), reportId, FileCategory.REPORT.name());
+            if (!files.isEmpty()) {
+                StoredFile oldFile = files.get(0);
+                fileService.delete(oldFile.getId());
+                storedFileRepository.delete(oldFile);
             }
-            // Generate on-demand and store, then return
+            
+            // Generate on-demand with requested language and store, then return
             ReportResponseModel response = responseMapper.toResponseModel(report);
-            StoredFile created = reportPdfGenerator.generateAndStoreReportPdf(response, fileService);
+            StoredFile created = reportPdfGenerator.generateAndStoreReportPdf(response, fileService, language);
             try (InputStream is = fileService.openStream(created)) {
                 return is.readAllBytes();
             }
         } catch (Exception e) {
             throw new RuntimeException("Failed to fetch report PDF", e);
         }
+    }
+
+    // Convenience overload for backward compatibility
+    public byte[] getReportPdf(String reportId, String userId, String userRole) {
+        return getReportPdf(reportId, userId, userRole, "en");
     }
 
     /**
