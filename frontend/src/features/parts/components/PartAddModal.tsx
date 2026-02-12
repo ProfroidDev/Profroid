@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { createPart } from '../api/createPart';
 import { createPartWithImage } from '../api/createPartWithImage';
 import { sanitizeInput } from '../../../utils/sanitizer';
@@ -19,6 +20,7 @@ export default function PartAddModal({
   onPartAdded,
   onError,
 }: PartAddModalProps): React.ReactElement | null {
+  const { t } = useTranslation();
   const [name, setName] = useState<string>('');
   const [category, setCategory] = useState<string>('General');
   const [quantity, setQuantity] = useState<number>(0);
@@ -41,12 +43,12 @@ export default function PartAddModal({
 
   const validateFile = (selectedFile: File): boolean => {
     if (!selectedFile.type.startsWith('image/')) {
-      onError('Only image files are allowed.');
+      onError(t('pages.parts.form.onlyImageFilesAllowed'));
       return false;
     }
     if (selectedFile.size > MAX_FILE_SIZE_BYTES) {
       const sizeMB = (selectedFile.size / (1024 * 1024)).toFixed(2);
-      onError(`File size (${sizeMB} MB) exceeds maximum allowed size (${MAX_FILE_SIZE_MB} MB).`);
+      onError(`${t('pages.parts.form.fileSizeExceeds')}: ${sizeMB} MB / ${MAX_FILE_SIZE_MB} MB`);
       return false;
     }
     return true;
@@ -65,7 +67,7 @@ export default function PartAddModal({
     e.preventDefault();
 
     if (!name.trim()) {
-      onError('Part name is required');
+      onError(t('pages.parts.form.partName') + ' ' + t('common.required'));
       return;
     }
 
@@ -105,7 +107,7 @@ export default function PartAddModal({
       onClose();
     } catch (error) {
       console.error('Error creating part:', error);
-      onError('Failed to create part. Please try again.');
+      onError(t('pages.parts.form.addButton') + ' ' + t('common.failed'));
     } finally {
       setSubmitting(false);
     }
@@ -148,7 +150,7 @@ export default function PartAddModal({
     >
       <div className="part-add-modal-content" onClick={(e) => e.stopPropagation()}>
         <div className="part-add-modal-header">
-          <h2 className="part-add-modal-title">Add New Part</h2>
+          <h2 className="part-add-modal-title">{t('pages.parts.addPart')}</h2>
           <button
             className="part-add-modal-close"
             onClick={handleClose}
@@ -163,13 +165,13 @@ export default function PartAddModal({
           <div className="part-add-modal-body">
             <div className="part-add-form-group">
               <label className="part-add-form-label" htmlFor="part-name">
-                Part Name <span className="part-add-required">*</span>
+                {t('pages.parts.form.partName')} <span className="part-add-required">*</span>
               </label>
               <input
                 id="part-name"
                 type="text"
                 className="part-add-form-input"
-                placeholder="Enter part name"
+                placeholder={t('pages.parts.form.enterPartName')}
                 value={name}
                 onChange={(e) => setName(sanitizeInput(e.target.value))}
                 disabled={submitting}
@@ -179,7 +181,7 @@ export default function PartAddModal({
 
             <div className="part-add-form-group">
               <label className="part-add-form-label" htmlFor="part-category">
-                Category <span className="part-add-required">*</span>
+                {t('pages.parts.form.category')} <span className="part-add-required">*</span>
               </label>
               <select
                 id="part-category"
@@ -206,14 +208,14 @@ export default function PartAddModal({
 
             <div className="part-add-form-group">
               <label className="part-add-form-label" htmlFor="part-quantity">
-                Quantity <span className="part-add-required">*</span>
+                {t('pages.parts.form.quantity')} <span className="part-add-required">*</span>
               </label>
               <input
                 id="part-quantity"
                 type="text"
                 min="0"
                 className="part-add-form-input"
-                placeholder="Enter quantity"
+                placeholder={t('pages.parts.form.quantity')}
                 value={quantity}
                 onChange={(e) => setQuantity(Number(e.target.value))}
                 disabled={submitting}
@@ -223,14 +225,14 @@ export default function PartAddModal({
 
             <div className="part-add-form-group">
               <label className="part-add-form-label" htmlFor="part-price">
-                Price <span className="part-add-required">*</span>
+                {t('pages.parts.form.price')} <span className="part-add-required">*</span>
               </label>
               <input
                 id="part-price"
                 type="text"
                 min="0"
                 className="part-add-form-input"
-                placeholder="Enter price"
+                placeholder={t('pages.parts.form.price')}
                 value={price}
                 onChange={(e) => setPrice(Number(e.target.value))}
                 disabled={submitting}
@@ -240,13 +242,13 @@ export default function PartAddModal({
 
             <div className="part-add-form-group">
               <label className="part-add-form-label" htmlFor="part-supplier">
-                Supplier <span className="part-add-required">*</span>
+                {t('pages.parts.form.supplier')} <span className="part-add-required">*</span>
               </label>
               <input
                 id="part-supplier"
                 type="text"
                 className="part-add-form-input"
-                placeholder="Enter supplier name"
+                placeholder={t('pages.parts.form.enterSupplierName')}
                 value={supplier}
                 onChange={(e) => setSupplier(sanitizeInput(e.target.value))}
                 disabled={submitting}
@@ -256,7 +258,7 @@ export default function PartAddModal({
 
             <div className="part-add-form-group">
               <label className="part-add-form-label" htmlFor="part-low-threshold">
-                Low Stock Threshold
+                {t('pages.parts.form.lowStockThreshold')}
               </label>
               <input
                 id="part-low-threshold"
@@ -271,7 +273,7 @@ export default function PartAddModal({
 
             <div className="part-add-form-group">
               <label className="part-add-form-label" htmlFor="part-out-threshold">
-                Out of Stock Threshold
+                {t('pages.parts.form.outOfStockThreshold')}
               </label>
               <input
                 id="part-out-threshold"
@@ -286,7 +288,7 @@ export default function PartAddModal({
 
             <div className="part-add-form-group">
               <label className="part-add-form-label" htmlFor="part-high-threshold">
-                High Stock Threshold
+                {t('pages.parts.form.highStockThreshold')}
               </label>
               <input
                 id="part-high-threshold"
@@ -308,13 +310,13 @@ export default function PartAddModal({
                   onChange={(e) => setAvailable(e.target.checked)}
                   disabled={submitting}
                 />
-                <span>Available</span>
+                <span>{t('pages.parts.form.available')}</span>
               </label>
             </div>
 
             <div className="part-add-form-group">
               <label className="part-add-form-label" htmlFor="part-image">
-                Image (optional)
+                {t('pages.parts.form.image')}
               </label>
               <input
                 id="part-image"
@@ -325,7 +327,8 @@ export default function PartAddModal({
                 onChange={handleFileChange}
               />
               <p className="part-add-helper-text">
-                Maximum file size: {MAX_FILE_SIZE_MB} MB. Only image files allowed.
+                {t('pages.parts.form.maximumFileSize')}: {MAX_FILE_SIZE_MB} MB.{' '}
+                {t('pages.parts.form.onlyImageFilesAllowed')}
               </p>
             </div>
           </div>
@@ -337,10 +340,10 @@ export default function PartAddModal({
               onClick={handleClose}
               disabled={submitting}
             >
-              Cancel
+              {t('pages.parts.form.cancelButton')}
             </button>
             <button type="submit" className="part-add-btn-submit" disabled={submitting}>
-              {submitting ? 'Adding...' : 'Add Part'}
+              {submitting ? t('common.loading') : t('pages.parts.form.addButton')}
             </button>
           </div>
         </form>

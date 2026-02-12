@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { updatePart } from '../api/updatePart';
 import { uploadPartImage } from '../api/uploadPartImage';
 import { deleteFile } from '../../files/api/deleteFile';
@@ -24,6 +25,7 @@ export default function PartEditModal({
   onPartUpdated,
   onError,
 }: PartEditModalProps): React.ReactElement | null {
+  const { t } = useTranslation();
   const [name, setName] = useState<string>(part?.name || '');
   const [category, setCategory] = useState<string>(part?.category || 'General');
   const [quantity, setQuantity] = useState<number>(part?.quantity || 0);
@@ -51,12 +53,12 @@ export default function PartEditModal({
 
   const validateFile = (selectedFile: File): boolean => {
     if (!selectedFile.type.startsWith('image/')) {
-      onError('Only image files are allowed.');
+      onError(t('pages.parts.form.onlyImageFilesAllowed'));
       return false;
     }
     if (selectedFile.size > MAX_FILE_SIZE_BYTES) {
       const sizeMB = (selectedFile.size / (1024 * 1024)).toFixed(2);
-      onError(`File size (${sizeMB} MB) exceeds maximum allowed size (${MAX_FILE_SIZE_MB} MB).`);
+      onError(`${t('pages.parts.form.fileSizeExceeds')}: ${sizeMB} MB / ${MAX_FILE_SIZE_MB} MB`);
       return false;
     }
     return true;
@@ -95,7 +97,7 @@ export default function PartEditModal({
     e.preventDefault();
 
     if (!name.trim()) {
-      onError('Part name is required');
+      onError(t('pages.parts.form.partName') + ' ' + t('common.required'));
       return;
     }
 
@@ -123,7 +125,7 @@ export default function PartEditModal({
       onClose();
     } catch (error) {
       console.error('Error updating part:', error);
-      onError('Failed to update part. Please try again.');
+      onError(t('pages.parts.form.updateButton') + ' ' + t('common.failed'));
     } finally {
       setSubmitting(false);
     }
@@ -152,7 +154,7 @@ export default function PartEditModal({
       onPartUpdated();
     } catch (error) {
       console.error('Error deleting image:', error);
-      onError('Failed to delete image. Please try again.');
+      onError(t('common.failed'));
     } finally {
       setImageDeleteLoading(false);
       setShowDeleteConfirmation(false);
@@ -186,7 +188,7 @@ export default function PartEditModal({
     >
       <div className="part-edit-modal-content" onClick={(e) => e.stopPropagation()}>
         <div className="part-edit-modal-header">
-          <h2 className="part-edit-modal-title">Edit Part</h2>
+          <h2 className="part-edit-modal-title">{t('pages.parts.editPart')}</h2>
           <button
             className="part-edit-modal-close"
             onClick={handleClose}
@@ -201,13 +203,13 @@ export default function PartEditModal({
           <div className="part-edit-modal-body">
             <div className="part-edit-form-group">
               <label className="part-edit-form-label" htmlFor="part-name">
-                Part Name <span className="part-edit-required">*</span>
+                {t('pages.parts.form.partName')} <span className="part-edit-required">*</span>
               </label>
               <input
                 id="part-name"
                 type="text"
                 className="part-edit-form-input"
-                placeholder="Enter part name"
+                placeholder={t('pages.parts.form.enterPartName')}
                 value={name}
                 onChange={(e) => setName(sanitizeInput(e.target.value))}
                 disabled={submitting}
@@ -217,7 +219,7 @@ export default function PartEditModal({
 
             <div className="part-edit-form-group">
               <label className="part-edit-form-label" htmlFor="part-category">
-                Category <span className="part-edit-required">*</span>
+                {t('pages.parts.form.category')} <span className="part-edit-required">*</span>
               </label>
               <select
                 id="part-category"
@@ -244,14 +246,14 @@ export default function PartEditModal({
 
             <div className="part-edit-form-group">
               <label className="part-edit-form-label" htmlFor="part-quantity">
-                Quantity <span className="part-edit-required">*</span>
+                {t('pages.parts.form.quantity')} <span className="part-edit-required">*</span>
               </label>
               <input
                 id="part-quantity"
                 type="text"
                 min="0"
                 className="part-edit-form-input"
-                placeholder="Enter quantity"
+                placeholder={t('pages.parts.form.quantity')}
                 value={quantity}
                 onChange={(e) => setQuantity(Number(e.target.value))}
                 disabled={submitting}
@@ -261,14 +263,14 @@ export default function PartEditModal({
 
             <div className="part-edit-form-group">
               <label className="part-edit-form-label" htmlFor="part-price">
-                Price <span className="part-edit-required">*</span>
+                {t('pages.parts.form.price')} <span className="part-edit-required">*</span>
               </label>
               <input
                 id="part-price"
                 type="text"
                 min="0"
                 className="part-edit-form-input"
-                placeholder="Enter price"
+                placeholder={t('pages.parts.form.price')}
                 value={price}
                 onChange={(e) => setPrice(Number(e.target.value))}
                 disabled={submitting}
@@ -278,13 +280,13 @@ export default function PartEditModal({
 
             <div className="part-edit-form-group">
               <label className="part-edit-form-label" htmlFor="part-supplier">
-                Supplier <span className="part-edit-required">*</span>
+                {t('pages.parts.form.supplier')} <span className="part-edit-required">*</span>
               </label>
               <input
                 id="part-supplier"
                 type="text"
                 className="part-edit-form-input"
-                placeholder="Enter supplier name"
+                placeholder={t('pages.parts.form.enterSupplierName')}
                 value={supplier}
                 onChange={(e) => setSupplier(sanitizeInput(e.target.value))}
                 disabled={submitting}
@@ -294,7 +296,7 @@ export default function PartEditModal({
 
             <div className="part-edit-form-group">
               <label className="part-edit-form-label" htmlFor="part-low-threshold">
-                Low Stock Threshold
+                {t('pages.parts.form.lowStockThreshold')}
               </label>
               <input
                 id="part-low-threshold"
@@ -309,7 +311,7 @@ export default function PartEditModal({
 
             <div className="part-edit-form-group">
               <label className="part-edit-form-label" htmlFor="part-out-threshold">
-                Out of Stock Threshold
+                {t('pages.parts.form.outOfStockThreshold')}
               </label>
               <input
                 id="part-out-threshold"
@@ -324,7 +326,7 @@ export default function PartEditModal({
 
             <div className="part-edit-form-group">
               <label className="part-edit-form-label" htmlFor="part-high-threshold">
-                High Stock Threshold
+                {t('pages.parts.form.highStockThreshold')}
               </label>
               <input
                 id="part-high-threshold"
@@ -346,13 +348,13 @@ export default function PartEditModal({
                   onChange={(e) => setAvailable(e.target.checked)}
                   disabled={submitting}
                 />
-                <span>Available</span>
+                <span>{t('pages.parts.form.available')}</span>
               </label>
             </div>
 
             <div className="part-edit-form-group">
               <label className="part-edit-form-label" htmlFor="part-image">
-                Replace Image (optional)
+                {t('pages.parts.form.image')}
               </label>
               <input
                 id="part-image"
@@ -363,7 +365,8 @@ export default function PartEditModal({
                 onChange={handleFileChange}
               />
               <p className="part-edit-helper-text">
-                Maximum file size: {MAX_FILE_SIZE_MB} MB. Only image files allowed.
+                {t('pages.parts.form.maximumFileSize')}: {MAX_FILE_SIZE_MB} MB.{' '}
+                {t('pages.parts.form.onlyImageFilesAllowed')}
               </p>
               {currentImageFileId && (
                 <div>
@@ -381,7 +384,9 @@ export default function PartEditModal({
                       }}
                     />
                   </div>
-                  <p className="part-edit-helper-text">Upload a new image to replace it.</p>
+                  <p className="part-edit-helper-text">
+                    {t('pages.parts.form.uploadNewImageToReplace')}
+                  </p>
                   <button
                     type="button"
                     className="part-edit-btn-delete-image"
@@ -390,7 +395,7 @@ export default function PartEditModal({
                     aria-label="Delete current image"
                   >
                     <Trash2 className="h-4 w-4" />
-                    Delete Current Image
+                    {t('pages.parts.form.deleteCurrentImage')}
                   </button>
                 </div>
               )}
@@ -404,10 +409,10 @@ export default function PartEditModal({
               onClick={handleClose}
               disabled={submitting}
             >
-              Cancel
+              {t('pages.parts.form.cancelButton')}
             </button>
             <button type="submit" className="part-edit-btn-submit" disabled={submitting}>
-              {submitting ? 'Updating...' : 'Update Part'}
+              {submitting ? t('common.loading') : t('pages.parts.form.updateButton')}
             </button>
           </div>
         </form>
@@ -415,10 +420,10 @@ export default function PartEditModal({
 
       <ConfirmationModal
         isOpen={showDeleteConfirmation}
-        title="Delete Image"
-        message="Are you sure you want to permanently delete this image?"
-        confirmText="Delete"
-        cancelText="Cancel"
+        title={t('pages.parts.form.deleteImage')}
+        message={t('pages.parts.form.deleteImageConfirmMessage')}
+        confirmText={t('pages.parts.form.deleteButton')}
+        cancelText={t('pages.parts.form.cancelButton')}
         isDanger={true}
         isLoading={imageDeleteLoading}
         onConfirm={confirmDeleteImage}

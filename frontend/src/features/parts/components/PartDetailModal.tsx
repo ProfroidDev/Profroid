@@ -1,4 +1,5 @@
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import type { PartResponseModel } from '../models/PartResponseModel';
 import './PartDetailModal.css';
 
@@ -13,6 +14,8 @@ export default function PartDetailModal({
   isOpen,
   onClose,
 }: PartDetailModalProps): React.ReactElement | null {
+  const { t } = useTranslation();
+
   if (!isOpen || !part) {
     return null;
   }
@@ -43,16 +46,18 @@ export default function PartDetailModal({
             </div>
 
             <div className="part-detail-detail-row">
-              <span className="part-detail-detail-label">Name:</span>
+              <span className="part-detail-detail-label">{t('pages.parts.form.partName')}:</span>
               <span className="part-detail-detail-value">{part.name}</span>
             </div>
 
             <div className="part-detail-detail-row">
-              <span className="part-detail-detail-label">Availability:</span>
+              <span className="part-detail-detail-label">{t('pages.parts.form.available')}:</span>
               <span
                 className={`part-detail-availability-badge ${part.available ? 'available' : 'unavailable'}`}
               >
-                {part.available ? 'Available' : 'Unavailable'}
+                {part.available
+                  ? t('pages.parts.form.available')
+                  : t('pages.parts.form.unavailable')}
               </span>
             </div>
           </div>
@@ -60,7 +65,7 @@ export default function PartDetailModal({
 
         <div className="part-detail-modal-footer">
           <button className="part-detail-btn-close-modal" onClick={onClose}>
-            Close
+            {t('pages.parts.form.closeButton')}
           </button>
         </div>
       </div>
