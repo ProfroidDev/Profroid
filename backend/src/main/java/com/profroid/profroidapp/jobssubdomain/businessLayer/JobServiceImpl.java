@@ -90,6 +90,8 @@ public class JobServiceImpl implements JobService {
         // Update all job fields
         foundJob.setJobName(requestModel.getJobName());
         foundJob.setJobDescription(requestModel.getJobDescription());
+        foundJob.setJobNameFr(requestModel.getJobNameFr());
+        foundJob.setJobDescriptionFr(requestModel.getJobDescriptionFr());
         foundJob.setHourlyRate(requestModel.getHourlyRate());
         foundJob.setEstimatedDurationMinutes(requestModel.getEstimatedDurationMinutes());
         foundJob.setJobType(requestModel.getJobType());

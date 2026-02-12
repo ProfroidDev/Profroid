@@ -22,6 +22,7 @@ export interface AppointmentResponseModel {
 
   // Job Information
   jobName: string;
+  jobNameFr?: string;
   jobType: string;
   hourlyRate: number;
 

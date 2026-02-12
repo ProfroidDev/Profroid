@@ -59,7 +59,8 @@ const CustomerBills = () => {
 
   const handleDownloadPdf = async (billId: string) => {
     try {
-      const blob = await downloadBillPdf(billId);
+      const language = i18n.language === 'fr' ? 'fr' : 'en';
+      const blob = await downloadBillPdf(billId, language);
       const url = window.URL.createObjectURL(blob);
       const link = document.createElement('a');
       link.href = url;
@@ -91,11 +92,19 @@ const CustomerBills = () => {
   };
 
   const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('en-CA', {
+    const locale = i18n.language === 'fr' ? 'fr-CA' : 'en-CA';
+    return new Date(dateString).toLocaleDateString(locale, {
       year: 'numeric',
       month: 'short',
       day: 'numeric',
     });
+  };
+
+  const getJobName = (bill: BillResponseModel): string => {
+    if (i18n.language === 'fr' && bill.jobNameFr) {
+      return bill.jobNameFr;
+    }
+    return bill.jobName;
   };
 
   // Filtered bills based on search and status
@@ -176,7 +185,7 @@ const CustomerBills = () => {
               <FileText size={24} />
             </div>
             <div className="card-content">
-              <div className="card-label">Outstanding Balance</div>
+              <div className="card-label">{t('pages.customers.bills.outstandingBalance')}</div>
               <div className="card-value">{formatCurrency(calculateUnpaidAmount())}</div>
             </div>
           </motion.div>
@@ -244,7 +253,7 @@ const CustomerBills = () => {
                 <th>{t('pages.customers.bills.table.billId')}</th>
                 <th>{t('pages.customers.bills.table.jobName')}</th>
                 <th>{t('pages.customers.bills.table.appointmentDate')}</th>
-                <th>Amount</th>
+                <th>{t('pages.customers.bills.table.amount')}</th>
                 <th>{t('pages.customers.bills.table.status')}</th>
                 <th>{t('pages.customers.bills.table.createdDate')}</th>
                 <th>{t('pages.customers.bills.table.actions')}</th>
@@ -264,12 +273,12 @@ const CustomerBills = () => {
                       <FileText size={16} className="icon" />
                       {bill.billId}
                     </td>
-                    <td>{bill.jobName}</td>
+                    <td>{getJobName(bill)}</td>
                     <td>{formatDate(bill.appointmentDate)}</td>
                     <td className="amount">{formatCurrency(bill.amount)}</td>
                     <td>
                       <span className={`badge ${getStatusBadgeClass(bill.status)}`}>
-                        {bill.status}
+                        {t(`pages.customers.bills.status.${bill.status.toLowerCase()}`)}
                       </span>
                     </td>
                     <td>{formatDate(bill.createdAt)}</td>
@@ -278,11 +287,13 @@ const CustomerBills = () => {
                         <button
                           onClick={() => handlePayBill(bill.billId)}
                           className="bill-pay-btn"
-                          title="Pay"
+                          title={t('pages.customers.bills.actions.pay')}
                           disabled={payingBillId === bill.billId}
                         >
                           <DollarSign size={16} />
-                          {payingBillId === bill.billId ? 'Paying...' : 'Pay'}
+                          {payingBillId === bill.billId
+                            ? t('pages.customers.bills.actions.paying')
+                            : t('pages.customers.bills.actions.pay')}
                         </button>
                       )}
 

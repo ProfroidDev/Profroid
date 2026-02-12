@@ -54,8 +54,9 @@ public interface ReportService {
     void deleteReport(String reportId, String userId, String userRole);
 
     /**
-     * Get (or generate if missing) the PDF for a report.
+     * Get (or generate if missing) the PDF for a report with language support.
      * Accessible by TECHNICIAN (owner) and ADMIN.
+     * @param language "en" for English or "fr" for French
      */
-    byte[] getReportPdf(String reportId, String userId, String userRole);
+    byte[] getReportPdf(String reportId, String userId, String userRole, String language);
 }

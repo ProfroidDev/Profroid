@@ -225,6 +225,28 @@ export default function AddAppointmentModal({
   const { t, i18n } = useTranslation();
   const { customerData } = useAuthStore();
 
+  // Language detection helper
+  const isFrench = i18n.language === 'fr';
+
+  // Helper function to get localized job name
+  const getJobName = (job: JobResponseModel): string => {
+    if (isFrench && job.jobNameFr) {
+      return job.jobNameFr;
+    }
+    return job.jobName;
+  };
+
+  // Helper function to get localized job type
+  const getJobType = (job: JobResponseModel): string => {
+    const typeMap: Record<string, string> = {
+      QUOTATION: isFrench ? t('pages.services.quotation') : 'Quotation',
+      INSTALLATION: isFrench ? t('pages.services.installation') : 'Installation',
+      REPARATION: isFrench ? t('pages.services.reparation') : 'Reparation',
+      MAINTENANCE: isFrench ? t('pages.services.maintenance') : 'Maintenance',
+    };
+    return typeMap[job.jobType] || job.jobType;
+  };
+
   // Determine if we're in edit mode
   const isEditMode = !!editAppointment;
 
@@ -1391,7 +1413,9 @@ export default function AddAppointmentModal({
           <form className="appointment-form" onSubmit={handleSubmit}>
             <div className="grid two">
               <label className="field">
-                <span>{t('pages.appointments.service')}</span>
+                <span>
+                  {t('pages.appointments.service')} ({isFrench ? t('common.language') : 'English'})
+                </span>
                 <div className="input-with-icon">
                   <ClipboardList size={16} />
                   <select
@@ -1405,7 +1429,7 @@ export default function AddAppointmentModal({
                     </option>
                     {jobOptions.map((job) => (
                       <option key={job.jobId} value={job.jobId}>
-                        {job.jobName} ({job.jobType})
+                        {getJobName(job)} ({getJobType(job)})
                       </option>
                     ))}
                   </select>

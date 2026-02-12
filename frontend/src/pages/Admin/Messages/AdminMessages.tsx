@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import './AdminMessages.css';
 import Toast from '../../../shared/components/Toast';
 import ConfirmationModal from '../../../components/ConfirmationModal';
+import { sanitizeInput } from '../../../utils/sanitizer';
 
 export interface ContactMessage {
   messageId: string;
@@ -137,6 +138,7 @@ export default function AdminMessages() {
 
     try {
       const token = localStorage.getItem('authToken');
+      const sanitizedNotes = sanitizeInput(adminNotes);
       const response = await fetch(
         `${backendUrl}/contact/messages/${selectedMessage.messageId}/notes`,
         {
@@ -145,13 +147,17 @@ export default function AdminMessages() {
             Authorization: `Bearer ${token}`,
             'Content-Type': 'application/json',
           },
-          body: JSON.stringify({ notes: adminNotes }),
+          body: JSON.stringify({ notes: sanitizedNotes }),
         }
       );
 
       if (response.ok) {
         setAdminNotes('');
         setShowModal(false);
+        setToast({
+          message: t('pages.adminMessages.notesSavedSuccessfully'),
+          type: 'success',
+        });
         fetchMessages();
       }
     } catch (error) {
@@ -182,14 +188,14 @@ export default function AdminMessages() {
 
       if (response.ok) {
         setShowModal(false);
-        setToast({ message: 'Message deleted successfully', type: 'success' });
+        setToast({ message: t('pages.adminMessages.messageDeletedSuccessfully'), type: 'success' });
         fetchMessages();
       } else {
-        setToast({ message: 'Failed to delete message', type: 'error' });
+        setToast({ message: t('pages.adminMessages.deleteButton') + ' failed', type: 'error' });
       }
     } catch (error) {
       console.error('Error deleting message:', error);
-      setToast({ message: 'Error deleting message', type: 'error' });
+      setToast({ message: t('common.error'), type: 'error' });
     } finally {
       setDeleteConfirmModal({ isOpen: false, messageId: null });
     }
@@ -374,7 +380,7 @@ export default function AdminMessages() {
                 <h3>{t('pages.adminMessages.adminNotesLabel')}</h3>
                 <textarea
                   value={adminNotes}
-                  onChange={(e) => setAdminNotes(e.target.value)}
+                  onChange={(e) => setAdminNotes(sanitizeInput(e.target.value))}
                   placeholder={t('pages.adminMessages.adminNotesPlaceholder')}
                   className="admin-notes-textarea"
                   rows={4}
@@ -419,7 +425,7 @@ export default function AdminMessages() {
 
       <ConfirmationModal
         isOpen={deleteConfirmModal.isOpen}
-        title="Delete Message"
+        title={t('pages.adminMessages.deleteButton')}
         message={t('pages.adminMessages.confirmDelete')}
         confirmText={t('pages.adminMessages.deleteButton')}
         cancelText={t('common.cancel')}

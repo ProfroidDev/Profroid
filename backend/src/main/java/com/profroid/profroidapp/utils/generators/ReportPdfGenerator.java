@@ -25,28 +25,36 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
+import java.util.Locale;
 
 @Component
 public class ReportPdfGenerator {
 
     private static final Logger log = LoggerFactory.getLogger(ReportPdfGenerator.class);
 
-    public byte[] generateReportPdf(ReportResponseModel report) {
+    public byte[] generateReportPdf(ReportResponseModel report, String language) {
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
         try {
             PdfWriter writer = new PdfWriter(outputStream);
             PdfDocument pdfDocument = new PdfDocument(writer);
             Document document = new Document(pdfDocument);
 
-            Paragraph title = new Paragraph("Service Report")
+            boolean isFrench = "fr".equalsIgnoreCase(language);
+            Locale locale = isFrench ? Locale.FRANCE : Locale.US;
+
+            String titleText = isFrench ? "Rapport de Service" : "Service Report";
+            Paragraph title = new Paragraph(titleText)
                     .setFontSize(20)
                     .setBold()
                     .setTextAlignment(TextAlignment.CENTER);
             document.add(title);
 
-            String generatedDate = LocalDateTime.now().format(DateTimeFormatter.ofPattern("MMMM dd, yyyy - HH:mm"));
-            document.add(new Paragraph("Generated on: " + generatedDate)
+            String generatedOnLabel = isFrench ? "Généré le: " : "Generated on: ";
+            String generatedDate = LocalDateTime.now(ZoneId.of("America/Toronto"))
+                .format(DateTimeFormatter.ofPattern("d MMMM yyyy - HH:mm", locale));
+            document.add(new Paragraph(generatedOnLabel + generatedDate)
                     .setFontSize(10)
                     .setTextAlignment(TextAlignment.CENTER)
                     .setMarginBottom(15));
@@ -55,31 +63,61 @@ public class ReportPdfGenerator {
             Table infoTable = new Table(UnitValue.createPercentArray(new float[]{1.2f, 2.8f}))
                     .setWidth(UnitValue.createPercentValue(100))
                     .setMarginBottom(10);
-            addInfoRow(infoTable, "Report ID", report.getReportId());
-            addInfoRow(infoTable, "Appointment", report.getAppointmentId());
-            addInfoRow(infoTable, "Date", report.getAppointmentDate());
-            addInfoRow(infoTable, "Status", report.getAppointmentStatus());
+            
+            String reportIdLabel = isFrench ? "ID du Rapport" : "Report ID";
+            String appointmentLabel = isFrench ? "Rendez-vous" : "Appointment";
+            String dateLabel = isFrench ? "Date" : "Date";
+            String statusLabel = isFrench ? "État" : "Status";
+            
+            // Translate appointment status
+            String statusValue = report.getAppointmentStatus();
+            if (isFrench && statusValue != null) {
+                statusValue = statusValue.equals("COMPLETED") ? "Complété" : 
+                             statusValue.equals("SCHEDULED") ? "Planifié" : 
+                             statusValue.equals("CANCELLED") ? "Annulé" : statusValue;
+            }
+            
+            addInfoRow(infoTable, reportIdLabel, report.getReportId());
+            addInfoRow(infoTable, appointmentLabel, report.getAppointmentId());
+            addInfoRow(infoTable, dateLabel, report.getAppointmentDate());
+            addInfoRow(infoTable, statusLabel, statusValue);
             document.add(infoTable);
 
             // Customer + Technician
             Table ctTable = new Table(UnitValue.createPercentArray(new float[]{1.2f, 2.8f}))
                     .setWidth(UnitValue.createPercentValue(100))
                     .setMarginBottom(10);
-            addInfoRow(ctTable, "Customer", report.getCustomerFirstName() + " " + report.getCustomerLastName());
-            addInfoRow(ctTable, "Phone", report.getCustomerPhone() != null ? report.getCustomerPhone() : "");
-            addInfoRow(ctTable, "Technician", report.getTechnicianFirstName() + " " + report.getTechnicianLastName());
-            addInfoRow(ctTable, "Job", report.getJobName());
+            
+            String customerLabel = isFrench ? "Client" : "Customer";
+            String phoneLabel = isFrench ? "Téléphone" : "Phone";
+            String technicianLabel = isFrench ? "Technicien" : "Technician";
+            String jobLabel = isFrench ? "Travail" : "Job";
+            
+            // Use French job name if available
+            String jobName = isFrench && report.getJobNameFr() != null ? report.getJobNameFr() : report.getJobName();
+            
+            addInfoRow(ctTable, customerLabel, report.getCustomerFirstName() + " " + report.getCustomerLastName());
+            addInfoRow(ctTable, phoneLabel, report.getCustomerPhone() != null ? report.getCustomerPhone() : "");
+            addInfoRow(ctTable, technicianLabel, report.getTechnicianFirstName() + " " + report.getTechnicianLastName());
+            addInfoRow(ctTable, jobLabel, jobName);
             document.add(ctTable);
 
             // Costs summary
             Table costTable = new Table(UnitValue.createPercentArray(new float[]{2f, 1f}))
                     .setWidth(UnitValue.createPercentValue(60))
                     .setMarginBottom(12);
-            addMoneyRow(costTable, "Hourly Rate", report.getHourlyRate());
-            addMoneyRow(costTable, "Hours Worked", report.getHoursWorked());
-            addMoneyRow(costTable, "Labor Cost", report.getLaborCost());
-            addMoneyRow(costTable, "Frais", report.getFrais());
-            addMoneyRow(costTable, "Travel", report.getFraisDeplacement());
+            
+            String hourlyRateLabel = isFrench ? "Taux horaire" : "Hourly Rate";
+            String hoursWorkedLabel = isFrench ? "Heures travaillées" : "Hours Worked";
+            String laborCostLabel = isFrench ? "Coût du travail" : "Labor Cost";
+            String fraisLabel = isFrench ? "Frais" : "Frais";
+            String travelLabel = isFrench ? "Déplacement" : "Travel";
+            
+            addMoneyRow(costTable, hourlyRateLabel, report.getHourlyRate());
+            addMoneyRow(costTable, hoursWorkedLabel, report.getHoursWorked());
+            addMoneyRow(costTable, laborCostLabel, report.getLaborCost());
+            addMoneyRow(costTable, fraisLabel, report.getFrais());
+            addMoneyRow(costTable, travelLabel, report.getFraisDeplacement());
             document.add(costTable);
 
             // Parts table
@@ -89,11 +127,18 @@ public class ReportPdfGenerator {
                         .setWidth(UnitValue.createPercentValue(100))
                         .setMarginBottom(12);
                 DeviceRgb headerBg = new DeviceRgb(156, 27, 27);
-                addHeader(parts, "Part ID", headerBg);
-                addHeader(parts, "Name", headerBg);
-                addHeader(parts, "Qty", headerBg);
-                addHeader(parts, "Price", headerBg);
-                addHeader(parts, "Total", headerBg);
+                
+                String partIdLabel = isFrench ? "ID Pièce" : "Part ID";
+                String partNameLabel = isFrench ? "Nom" : "Name";
+                String qtyLabel = isFrench ? "Qté" : "Qty";
+                String priceLabel = isFrench ? "Prix" : "Price";
+                String totalLabel = isFrench ? "Total" : "Total";
+                
+                addHeader(parts, partIdLabel, headerBg);
+                addHeader(parts, partNameLabel, headerBg);
+                addHeader(parts, qtyLabel, headerBg);
+                addHeader(parts, priceLabel, headerBg);
+                addHeader(parts, totalLabel, headerBg);
 
                 var border = new SolidBorder(ColorConstants.LIGHT_GRAY, 1);
                 for (ReportResponseModel.ReportPartResponseModel p : report.getParts()) {
@@ -109,13 +154,18 @@ public class ReportPdfGenerator {
             // Totals
             Table totals = new Table(UnitValue.createPercentArray(new float[]{2f, 1f}))
                     .setWidth(UnitValue.createPercentValue(60));
-            addMoneyRow(totals, "Subtotal", report.getSubtotal());
+            
+            String subtotalLabel = isFrench ? "Sous-total" : "Subtotal";
+            String totalLabel = isFrench ? "Total" : "Total";
+            
+            addMoneyRow(totals, subtotalLabel, report.getSubtotal());
             addMoneyRow(totals, "TPS (5%)", report.getTpsAmount());
             addMoneyRow(totals, "TVQ (9.975%)", report.getTvqAmount());
-            addMoneyRow(totals, "Total", report.getTotal());
+            addMoneyRow(totals, totalLabel, report.getTotal());
             document.add(totals);
 
-            document.add(new Paragraph("\nNotes: This report was generated automatically.").setFontSize(9));
+            String notesLabel = isFrench ? "Notes: Ce rapport a été généré automatiquement." : "Notes: This report was generated automatically.";
+            document.add(new Paragraph("\n" + notesLabel).setFontSize(9));
 
             document.close();
             return outputStream.toByteArray();
@@ -124,13 +174,17 @@ public class ReportPdfGenerator {
         }
     }
 
-    public StoredFile generateAndStoreReportPdf(ReportResponseModel report, FileService fileService) {
-        byte[] pdf = generateReportPdf(report);
+    public StoredFile generateAndStoreReportPdf(ReportResponseModel report, FileService fileService, String language) {
+        byte[] pdf = generateReportPdf(report, language);
         String filename = "report_" + report.getReportId() + ".pdf";
         MultipartFile mf = new InMemoryMultipartFile(
             filename, filename, "application/pdf", pdf
         );
         return fileService.upload(mf, FileOwnerType.REPORT, report.getReportId(), FileCategory.REPORT);
+    }
+    
+    public StoredFile generateAndStoreReportPdf(ReportResponseModel report, FileService fileService) {
+        return generateAndStoreReportPdf(report, fileService, "en");
     }
 
     private void addInfoRow(Table t, String label, String value) {

@@ -15,6 +15,8 @@ public interface JobRequestMapper {
             @Mapping(source = "jobIdentifier", target = "jobIdentifier"),
             @Mapping(source = "requestModel.jobName", target = "jobName"),
             @Mapping(source = "requestModel.jobDescription", target = "jobDescription"),
+            @Mapping(source = "requestModel.jobNameFr", target = "jobNameFr"),
+            @Mapping(source = "requestModel.jobDescriptionFr", target = "jobDescriptionFr"),
             @Mapping(source = "requestModel.hourlyRate", target = "hourlyRate"),
             @Mapping(source = "requestModel.estimatedDurationMinutes", target = "estimatedDurationMinutes"),
             @Mapping(source = "requestModel.jobType", target = "jobType"),

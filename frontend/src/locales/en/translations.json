@@ -340,23 +340,31 @@
         "title": "Service Bills",
         "subtitle": "View and manage your service bills",
         "totalAmount": "Paid Amount",
+        "outstandingBalance": "Outstanding Balance",
         "searchPlaceholder": "Search by bill ID, job name, or date...",
         "filters": {
           "all": "ALL",
           "unpaid": "UNPAID",
           "paid": "PAID"
         },
+        "status": {
+          "paid": "PAID",
+          "unpaid": "UNPAID"
+        },
         "table": {
           "billId": "Bill ID",
           "jobName": "Job Name",
           "appointmentDate": "Appointment Date",
+          "amount": "Amount",
           "status": "Status",
           "createdDate": "Created Date",
           "actions": "Actions"
         },
         "actions": {
           "downloadPdf": "Download PDF",
-          "viewDetails": "View Details"
+          "viewDetails": "View Details",
+          "pay": "Pay",
+          "paying": "Paying..."
         },
         "noResults": "No bills found matching your filters",
         "pagination": {
@@ -403,7 +411,9 @@
       "receivedLabel": "Received",
       "respondedLabel": "Responded",
       "closeButton": "Close",
-      "saveNotesButton": "Save Notes"
+      "saveNotesButton": "Save Notes",
+      "notesSavedSuccessfully": "Notes saved successfully",
+      "messageDeletedSuccessfully": "Message deleted successfully"
     },
     "employees": {
       "title": "Employees",
@@ -487,12 +497,16 @@
     },
     "services": {
       "title": "Services",
+      "adminSubtitle": "Manage your professional services",
+      "customerSubtitle": "Discover our wine cellar services",
       "ourServices": "Our Services",
       "addService": "Add Service",
       "editService": "Edit Service",
       "deleteService": "Delete Service",
       "name": "Service Name",
+      "nameFr": "Service Name (French)",
       "description": "Description",
+      "descriptionFr": "Description (French)",
       "price": "Price",
       "duration": "Duration",
       "minutes": "minutes",
@@ -505,6 +519,7 @@
       "estimatedDuration": "Estimated Duration",
       "durationMins": "Duration (mins)",
       "type": "Service Type",
+      "typeFr": "Service Type (French)",
       "jobType": "Job Type",
       "quotation": "Quotation",
       "installation": "Installation",
@@ -983,7 +998,7 @@
       "formSubmit": "Send Message",
       "formSubmitting": "Sending...",
       "messageSent": "Thank you! Your message has been sent successfully. We will get back to you soon.",
-      "rateLimitExceeded": "Too many messages from this IP address. Maximum 5 messages allowed per 20 minutes.",
+      "rateLimitExceeded": "Too many messages. Maximum 5 messages allowed per 20 minutes.",
       "waitMessage": "Time remaining:",
       "failedToSend": "Failed to send message. Please try again.",
       "validationNameMin": "Full Name must be at least 2 characters.",
@@ -992,6 +1007,37 @@
       "validationSubjectMax": "Subject must not exceed 75 characters.",
       "validationMessageMin": "Message must be at least 10 characters.",
       "validationMessageMax": "Message must not exceed 500 characters."
+    },
+    "serviceReports": {
+      "title": "Service Reports",
+      "subtitle": "View and manage all service reports",
+      "searchPlaceholder": "Search by client name, technician, or service...",
+      "pending": "Pending",
+      "table": {
+        "reportId": "Report ID",
+        "customer": "Client",
+        "service": "Service",
+        "technician": "Technician",
+        "date": "Date",
+        "status": "Status",
+        "billStatus": "Bill Status",
+        "total": "Total",
+        "actions": "Actions"
+      },
+      "actions": {
+        "viewDetails": "View Details",
+        "downloadPdf": "Download PDF",
+        "editReport": "Edit Report"
+      },
+      "summary": {
+        "totalReports": "Total Reports"
+      },
+      "pagination": {
+        "previous": "← Previous",
+        "next": "Next →",
+        "pageInfo": "Page {{current}} of {{total}}",
+        "showing": "Showing {{showing}} of {{total}} reports"
+      }
     },
     "privacy": {
       "title": "Privacy Policy",

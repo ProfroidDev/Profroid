@@ -5,11 +5,14 @@ export interface JobResponseModel {
 
   jobName: string;
   jobDescription: string;
+  jobNameFr?: string;
+  jobDescriptionFr?: string;
 
   hourlyRate: number;
   estimatedDurationMinutes: number;
 
   jobType: JobType;
+
   active: boolean;
 
   imageFileId?: string;

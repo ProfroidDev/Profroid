@@ -32,7 +32,18 @@ export default function ReportFormModal({
   onSuccess,
   onError,
 }: ReportFormModalProps): React.ReactElement | null {
-  const { t } = useTranslation();
+  const { i18n } = useTranslation();
+
+  // Language detection helper
+  const isFrench = i18n.language === 'fr';
+
+  // Helper function to get localized job name
+  const getJobName = (): string => {
+    if (isFrench && appointment.jobNameFr) {
+      return appointment.jobNameFr;
+    }
+    return appointment.jobName;
+  };
   const [loading, setLoading] = useState(false);
   const [hoursWorked, setHoursWorked] = useState('');
   const [frais, setFrais] = useState('');
@@ -243,7 +254,15 @@ export default function ReportFormModal({
     <div className="modal-overlay" onClick={onClose}>
       <div className="modal-content report-modal" onClick={(e) => e.stopPropagation()}>
         <div className="modal-header">
-          <h2>{existingReport ? t('common.edit') + ' Report' : 'Create Work Report'}</h2>
+          <h2>
+            {existingReport
+              ? isFrench
+                ? 'Modifier le Rapport'
+                : 'Edit Report'
+              : isFrench
+                ? 'Créer un Rapport de Travail'
+                : 'Create Work Report'}
+          </h2>
           <button className="modal-close" onClick={onClose}>
             <X size={24} />
           </button>
@@ -252,24 +271,28 @@ export default function ReportFormModal({
         <form onSubmit={handleSubmit} className="report-form">
           {/* Customer Information (Read-only) */}
           <div className="form-section">
-            <h3>Customer Information</h3>
+            <h3>{isFrench ? 'Informations du Client' : 'Customer Information'}</h3>
             <div className="info-grid">
               <div className="info-item">
-                <label>Customer Name:</label>
+                <label>{isFrench ? 'Nom du Client:' : 'Customer Name:'}</label>
                 <span>
                   {appointment.customerFirstName} {appointment.customerLastName}
                 </span>
               </div>
               <div className="info-item">
-                <label>Job:</label>
-                <span>{appointment.jobName}</span>
+                <label>{isFrench ? 'Service:' : 'Job:'}</label>
+                <span>{getJobName()}</span>
               </div>
               <div className="info-item">
-                <label>Date:</label>
-                <span>{new Date(appointment.appointmentDate).toLocaleDateString()}</span>
+                <label>{isFrench ? 'Date:' : 'Date:'}</label>
+                <span>
+                  {new Date(appointment.appointmentDate).toLocaleDateString(
+                    isFrench ? 'fr-FR' : 'en-US'
+                  )}
+                </span>
               </div>
               <div className="info-item">
-                <label>Hourly Rate:</label>
+                <label>{isFrench ? 'Taux Horaire:' : 'Hourly Rate:'}</label>
                 <span>${appointment.hourlyRate.toFixed(2)}/hr</span>
               </div>
             </div>
@@ -277,10 +300,12 @@ export default function ReportFormModal({
 
           {/* Work Details */}
           <div className="form-section">
-            <h3>Work Details</h3>
+            <h3>{isFrench ? 'Détails du Travail' : 'Work Details'}</h3>
             <div className="form-grid">
               <div className="form-group">
-                <label htmlFor="hoursWorked">Hours Worked *</label>
+                <label htmlFor="hoursWorked">
+                  {isFrench ? 'Heures Travaillées' : 'Hours Worked'} *
+                </label>
                 <input
                   id="hoursWorked"
                   type="text"
@@ -293,7 +318,7 @@ export default function ReportFormModal({
                 />
               </div>
               <div className="form-group">
-                <label htmlFor="frais">Other Costs ($) *</label>
+                <label htmlFor="frais">{isFrench ? 'Autres Frais ($)' : 'Other Costs ($)'} *</label>
                 <input
                   id="frais"
                   type="text"
@@ -307,7 +332,9 @@ export default function ReportFormModal({
                 />
               </div>
               <div className="form-group">
-                <label htmlFor="fraisDeplacement">Travel Expenses ($) *</label>
+                <label htmlFor="fraisDeplacement">
+                  {isFrench ? 'Frais de Déplacement ($)' : 'Travel Expenses ($)'} *
+                </label>
                 <input
                   id="fraisDeplacement"
                   type="text"
@@ -326,14 +353,14 @@ export default function ReportFormModal({
           {/* Parts Section */}
           <div className="form-section">
             <div className="section-header">
-              <h3>Parts Used</h3>
+              <h3>{isFrench ? 'Pièces Utilisées' : 'Parts Used'}</h3>
               <button
                 type="button"
                 className="btn-secondary"
                 onClick={() => setShowPartSearch(!showPartSearch)}
               >
                 <Plus size={16} />
-                Add Part
+                {isFrench ? 'Ajouter une Pièce' : 'Add Part'}
               </button>
             </div>
 
@@ -344,7 +371,7 @@ export default function ReportFormModal({
                   <Search size={18} />
                   <input
                     type="text"
-                    placeholder="Search parts..."
+                    placeholder={isFrench ? 'Rechercher des pièces...' : 'Search parts...'}
                     value={partSearchTerm}
                     onChange={(e) => setPartSearchTerm(sanitizeInput(e.target.value))}
                     autoFocus
@@ -352,9 +379,13 @@ export default function ReportFormModal({
                 </div>
                 <div className="part-search-results">
                   {loadingParts ? (
-                    <div className="search-loading">Loading parts...</div>
+                    <div className="search-loading">
+                      {isFrench ? 'Chargement des pièces...' : 'Loading parts...'}
+                    </div>
                   ) : filteredParts.length === 0 ? (
-                    <div className="search-empty">No parts found</div>
+                    <div className="search-empty">
+                      {isFrench ? 'Aucune pièce trouvée' : 'No parts found'}
+                    </div>
                   ) : (
                     filteredParts.map((part) => (
                       <div
@@ -373,7 +404,9 @@ export default function ReportFormModal({
 
             {/* Selected Parts */}
             {selectedParts.length === 0 ? (
-              <div className="empty-parts">No parts added yet</div>
+              <div className="empty-parts">
+                {isFrench ? 'Aucune pièce ajoutée' : 'No parts added yet'}
+              </div>
             ) : (
               <div className="parts-list">
                 {selectedParts.map((part) => (
@@ -390,7 +423,7 @@ export default function ReportFormModal({
                     </div>
                     <div className="part-item-inputs">
                       <div className="form-group-inline">
-                        <label>Qty:</label>
+                        <label>{isFrench ? 'Qtité:' : 'Qty:'}</label>
                         <input
                           type="number"
                           min="1"
@@ -401,7 +434,7 @@ export default function ReportFormModal({
                         />
                       </div>
                       <div className="form-group-inline">
-                        <label>Price ($):</label>
+                        <label>{isFrench ? 'Prix ($):' : 'Price ($):'}</label>
                         <input
                           type="number"
                           step="0.01"
@@ -415,14 +448,14 @@ export default function ReportFormModal({
                         />
                       </div>
                       <div className="form-group-inline total">
-                        <label>Total:</label>
+                        <label>{isFrench ? 'Total:' : 'Total:'}</label>
                         <span>${(part.quantity * part.price).toFixed(2)}</span>
                       </div>
                     </div>
                     <div className="form-group">
                       <input
                         type="text"
-                        placeholder="Notes (optional)"
+                        placeholder={isFrench ? 'Notes (optionnel)' : 'Notes (optional)'}
                         value={part.notes}
                         onChange={(e) =>
                           handlePartChange(part.partId, 'notes', sanitizeInput(e.target.value))
@@ -437,40 +470,41 @@ export default function ReportFormModal({
 
           {/* Totals Section */}
           <div className="form-section totals-section">
-            <h3>Summary</h3>
+            <h3>{isFrench ? 'Résumé' : 'Summary'}</h3>
             <div className="totals-grid">
               <div className="total-row">
                 <span>
-                  Labor Cost ({hoursWorked}h × ${appointment.hourlyRate}/h):
+                  {isFrench ? "Coût de la Main-d'œuvre" : 'Labor Cost'} ({hoursWorked}h × $
+                  {appointment.hourlyRate}/h):
                 </span>
                 <span>${totals.laborCost.toFixed(2)}</span>
               </div>
               <div className="total-row">
-                <span>Other Costs:</span>
+                <span>{isFrench ? 'Autres Frais:' : 'Other Costs:'}</span>
                 <span>${parseFloat(frais || '0').toFixed(2)}</span>
               </div>
               <div className="total-row">
-                <span>Travel Expenses:</span>
+                <span>{isFrench ? 'Frais de Déplacement:' : 'Travel Expenses:'}</span>
                 <span>${parseFloat(fraisDeplacement || '0').toFixed(2)}</span>
               </div>
               <div className="total-row">
-                <span>Parts Cost:</span>
+                <span>{isFrench ? 'Coût des Pièces:' : 'Parts Cost:'}</span>
                 <span>${totals.partsCost.toFixed(2)}</span>
               </div>
               <div className="total-row subtotal">
-                <span>Subtotal:</span>
+                <span>{isFrench ? 'Sous-total:' : 'Subtotal:'}</span>
                 <span>${totals.subtotal.toFixed(2)}</span>
               </div>
               <div className="total-row tax">
-                <span>TPS (5%):</span>
+                <span>{isFrench ? 'TPS (5%):' : 'TPS (5%):'}</span>
                 <span>${totals.tpsAmount.toFixed(2)}</span>
               </div>
               <div className="total-row tax">
-                <span>TVQ (9.975%):</span>
+                <span>{isFrench ? 'TVQ (9,975%):' : 'TVQ (9.975%):'}</span>
                 <span>${totals.tvqAmount.toFixed(2)}</span>
               </div>
               <div className="total-row grand-total">
-                <span>Grand Total:</span>
+                <span>{isFrench ? 'Total:' : 'Grand Total:'}</span>
                 <span>${totals.total.toFixed(2)}</span>
               </div>
             </div>
@@ -479,10 +513,20 @@ export default function ReportFormModal({
           {/* Actions */}
           <div className="modal-actions">
             <button type="button" className="btn-secondary" onClick={onClose}>
-              Cancel
+              {isFrench ? 'Annuler' : 'Cancel'}
             </button>
             <button type="submit" className="btn-primary-report" disabled={loading}>
-              {loading ? 'Saving...' : existingReport ? 'Update Report' : 'Create Report'}
+              {loading
+                ? isFrench
+                  ? 'Enregistrement...'
+                  : 'Saving...'
+                : existingReport
+                  ? isFrench
+                    ? 'Mettre à jour le Rapport'
+                    : 'Update Report'
+                  : isFrench
+                    ? 'Créer le Rapport'
+                    : 'Create Report'}
             </button>
           </div>
         </form>

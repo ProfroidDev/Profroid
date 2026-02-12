@@ -63,16 +63,16 @@ public class ReportControllerUnitTest {
     @Test
     void downloadReportPdf_adminRole_returnsPdf() {
         byte[] pdfBytes = new byte[]{1, 2, 3};
-        when(reportService.getReportPdf(eq("REP-123"), eq("user-123"), eq("ADMIN"))).thenReturn(pdfBytes);
+        when(reportService.getReportPdf(eq("REP-123"), eq("user-123"), eq("ADMIN"), eq("en"))).thenReturn(pdfBytes);
 
         Authentication authentication = new org.springframework.security.authentication.TestingAuthenticationToken(
             "user-123", "password", "ROLE_ADMIN");
-        ResponseEntity<byte[]> response = reportController.downloadReportPdf("REP-123", authentication);
+        ResponseEntity<byte[]> response = reportController.downloadReportPdf("REP-123", "en", authentication);
 
         assertEquals(HttpStatus.OK, response.getStatusCode());
         assertEquals(MediaType.APPLICATION_PDF, response.getHeaders().getContentType());
         assertArrayEquals(pdfBytes, response.getBody());
-        verify(reportService).getReportPdf("REP-123", "user-123", "ADMIN");
+        verify(reportService).getReportPdf("REP-123", "user-123", "ADMIN", "en");
     }
 
     @Test

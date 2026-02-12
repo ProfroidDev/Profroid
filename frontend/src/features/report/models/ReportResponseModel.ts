@@ -17,6 +17,8 @@ export interface ReportResponseModel {
 
   // Job info
   jobName: string;
+  jobNameFr?: string;
+  jobType: string;
   hourlyRate: number;
 
   // Work details

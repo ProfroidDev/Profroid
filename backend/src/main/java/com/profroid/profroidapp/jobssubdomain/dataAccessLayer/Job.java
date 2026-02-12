@@ -28,6 +28,12 @@ public class Job {
     @Column(nullable = false)
     private String jobDescription;
 
+    @Column(name = "job_name_fr")
+    private String jobNameFr;
+
+    @Column(name = "job_description_fr")
+    private String jobDescriptionFr;
+
     @NotNull
     @Column(nullable = false)
     private Double hourlyRate;

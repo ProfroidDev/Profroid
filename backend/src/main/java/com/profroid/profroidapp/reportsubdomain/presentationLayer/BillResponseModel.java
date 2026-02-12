@@ -32,6 +32,7 @@ public class BillResponseModel {
     
     // Job information
     private String jobName;
+    private String jobNameFr;
     
     // Bill details
     private BigDecimal amount;

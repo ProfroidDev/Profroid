@@ -34,6 +34,7 @@ public class AppointmentResponseModel {
 
     // Job Information
     private String jobName;
+    private String jobNameFr;
     private String jobType;
     private Double hourlyRate;
 

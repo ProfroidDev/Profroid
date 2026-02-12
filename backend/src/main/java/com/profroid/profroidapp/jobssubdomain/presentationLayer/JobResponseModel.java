@@ -14,6 +14,8 @@ public class JobResponseModel {
 
     private String jobName;
     private String jobDescription;
+    private String jobNameFr;
+    private String jobDescriptionFr;
 
     private Double hourlyRate;
     private Integer estimatedDurationMinutes;

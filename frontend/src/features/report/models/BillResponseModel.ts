@@ -8,6 +8,7 @@ export interface BillResponseModel {
   customerFirstName: string;
   customerLastName: string;
   jobName: string;
+  jobNameFr?: string;
   amount: number;
   status: 'UNPAID' | 'PAID';
   createdAt: string;

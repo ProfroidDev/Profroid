@@ -345,7 +345,7 @@
       "formSubmit": "Envoyer le Message",
       "formSubmitting": "Envoi en cours...",
       "messageSent": "Merci! Votre message a été envoyé avec succès. Nous vous répondrons bientôt.",
-      "rateLimitExceeded": "Trop de messages de cette adresse IP. Maximum 5 messages autorisés par 20 minutes.",
+      "rateLimitExceeded": "Trop de messages. Maximum 5 messages autorisés par 20 minutes.",
       "waitMessage": "Temps restant:",
       "failedToSend": "Impossible d'envoyer le message. Veuillez réessayer.",
       "validationNameMin": "Le Nom Complet doit contenir au moins 2 caractères.",
@@ -483,23 +483,31 @@
         "title": "Factures de Service",
         "subtitle": "Consultez et gérez vos factures de service",
         "totalAmount": "Montant Payé",
+        "outstandingBalance": "Solde Impayé",
         "searchPlaceholder": "Rechercher par ID de facture, nom du travail ou date...",
         "filters": {
           "all": "TOUS",
           "unpaid": "IMPAYÉ",
           "paid": "PAYÉ"
         },
+        "status": {
+          "paid": "PAYÉ",
+          "unpaid": "IMPAYÉ"
+        },
         "table": {
           "billId": "ID Facture",
           "jobName": "Nom du Travail",
           "appointmentDate": "Date du Rendez-vous",
+          "amount": "Total",
           "status": "Statut",
           "createdDate": "Date de Création",
           "actions": "Actions"
         },
         "actions": {
           "downloadPdf": "Télécharger PDF",
-          "viewDetails": "Voir Détails"
+          "viewDetails": "Voir Détails",
+          "pay": "Payer",
+          "paying": "Paiement en cours..."
         },
         "noResults": "Aucune facture trouvée correspondant à vos filtres",
         "pagination": {
@@ -546,7 +554,9 @@
       "receivedLabel": "Reçu",
       "respondedLabel": "Répondu",
       "closeButton": "Fermer",
-      "saveNotesButton": "Enregistrer les Notes"
+      "saveNotesButton": "Enregistrer les Notes",
+      "notesSavedSuccessfully": "Notes enregistrées avec succès",
+      "messageDeletedSuccessfully": "Message supprimé avec succès"
     },
     "employees": {
       "title": "Employés",
@@ -630,12 +640,16 @@
     },
     "services": {
       "title": "Services",
+      "adminSubtitle": "Gérez vos services professionnels",
+      "customerSubtitle": "Découvrez nos services de cave à vin",
       "ourServices": "Nos Services",
       "addService": "Ajouter un service",
       "editService": "Modifier le service",
       "deleteService": "Supprimer le service",
       "name": "Nom du service",
+      "nameFr": "Nom du service (Français)",
       "description": "Description",
+      "descriptionFr": "Description (Français)",
       "price": "Prix",
       "duration": "Durée",
       "minutes": "minutes",
@@ -648,6 +662,7 @@
       "estimatedDuration": "Durée estimée",
       "durationMins": "Durée (mins)",
       "type": "Type de service",
+      "typeFr": "Type de service (Français)",
       "jobType": "Type de Travail",
       "quotation": "Devis",
       "installation": "Installation",
@@ -950,10 +965,12 @@
       "title": "Rapports de Service",
       "subtitle": "Consultez et gérez tous les rapports de service",
       "searchPlaceholder": "Rechercher par nom de client, technicien ou service...",
+      "pending": "En Attente",
       "table": {
         "reportId": "ID Rapport",
         "customer": "Client",
         "service": "Service",
+        "technician": "Technicien",
         "date": "Date",
         "status": "Statut",
         "billStatus": "Statut Facture",
