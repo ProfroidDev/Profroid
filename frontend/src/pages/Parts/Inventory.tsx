@@ -9,6 +9,14 @@ import { updatePart } from '../../features/parts/api/updatePart';
 import { exportInventoryPdf } from '../../features/parts/api/exportInventoryPdf';
 import type { PartResponseModel } from '../../features/parts/models/PartResponseModel';
 import type { PartRequestModel } from '../../features/parts/models/PartRequestModel';
+import {
+  CATEGORY_OPTIONS,
+  STATUS_OPTIONS,
+  getCategoryLabel,
+  getStatusLabel,
+  normalizeCategory,
+  normalizeStatus,
+} from '../../features/parts/utils/partLocalization';
 import './Inventory.css';
 
 const ITEMS_PER_PAGE = 15;
@@ -22,17 +30,17 @@ interface FilterOption {
 const filterOptions: FilterOption[] = [
   { label: 'pages.parts.inventory.filterAll', category: 'All', status: 'All' },
   { label: 'pages.parts.inventory.categoriesLabel', category: '', status: '' },
-  { label: 'pages.parts.inventory.categories.compressors', category: 'Compressors', status: '' },
-  { label: 'pages.parts.inventory.categories.sensors', category: 'Sensors', status: '' },
-  { label: 'pages.parts.inventory.categories.coils', category: 'Coils', status: '' },
-  { label: 'pages.parts.inventory.categories.motors', category: 'Motors', status: '' },
-  { label: 'pages.parts.inventory.categories.refrigerants', category: 'Refrigerants', status: '' },
-  { label: 'pages.parts.inventory.categories.electronics', category: 'Electronics', status: '' },
-  { label: 'pages.parts.inventory.categories.accessories', category: 'Accessories', status: '' },
+  ...CATEGORY_OPTIONS.map((option) => ({
+    label: option.labelKey,
+    category: option.value,
+    status: '',
+  })),
   { label: 'pages.parts.inventory.statusLabel', category: '', status: '' },
-  { label: 'pages.parts.inventory.status.inStock', category: '', status: 'In Stock' },
-  { label: 'pages.parts.inventory.status.lowStock', category: '', status: 'Low Stock' },
-  { label: 'pages.parts.inventory.status.outOfStock', category: '', status: 'Out of Stock' },
+  ...STATUS_OPTIONS.map((option) => ({
+    label: option.labelKey,
+    category: '',
+    status: option.value,
+  })),
 ];
 
 const Inventory = () => {
@@ -52,7 +60,7 @@ const Inventory = () => {
   } | null>(null);
   const [newPart, setNewPart] = useState<Partial<PartRequestModel>>({
     name: '',
-    category: 'Compressors',
+    category: 'General',
     quantity: 0,
     price: 0,
     supplier: '',
@@ -113,8 +121,16 @@ const Inventory = () => {
   };
 
   // Filtered parts
+  const normalizedParts = useMemo(() => {
+    return parts.map((part) => ({
+      ...part,
+      category: normalizeCategory(part.category),
+      status: normalizeStatus(part.status),
+    }));
+  }, [parts]);
+
   const filteredParts = useMemo(() => {
-    return parts.filter((part) => {
+    return normalizedParts.filter((part) => {
       const matchesSearch =
         part.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
         part.supplier.toLowerCase().includes(searchQuery.toLowerCase());
@@ -122,7 +138,7 @@ const Inventory = () => {
       const matchesStatus = statusFilter === 'All' || part.status === statusFilter;
       return matchesSearch && matchesCategory && matchesStatus;
     });
-  }, [parts, searchQuery, categoryFilter, statusFilter]);
+  }, [normalizedParts, searchQuery, categoryFilter, statusFilter]);
 
   // Calculate pagination
   const totalPages = Math.ceil(filteredParts.length / ITEMS_PER_PAGE);
@@ -227,7 +243,7 @@ const Inventory = () => {
       loadParts();
       setNewPart({
         name: '',
-        category: 'Compressors',
+        category: 'General',
         quantity: 0,
         price: 0,
         supplier: '',
@@ -444,13 +460,13 @@ const Inventory = () => {
                     </td>
                     <td className="part-name">{part.name}</td>
                     <td className="sku-code">{part.partId}</td>
-                    <td>{part.category}</td>
+                    <td>{getCategoryLabel(t, part.category)}</td>
                     <td className="text-right qty-col">{part.quantity}</td>
                     <td className="text-right price-col">${part.price.toFixed(2)}</td>
                     <td>{part.supplier}</td>
                     <td className="status-col">
                       <span className={`status-badge-part ${getStatusColor(part.status)}`}>
-                        {part.status}
+                        {getStatusLabel(t, part.status)}
                       </span>
                     </td>
                     <td className="actions-col">
@@ -618,23 +634,15 @@ const Inventory = () => {
                     <select
                       id="add-category"
                       className="form-input"
-                      value={newPart.category || 'Compressors'}
+                      value={newPart.category || 'General'}
                       onChange={(e: React.ChangeEvent<HTMLSelectElement>) =>
                         setNewPart((p) => ({ ...p, category: e.target.value }))
                       }
                       required
                     >
-                      {[
-                        'Compressors',
-                        'Sensors',
-                        'Coils',
-                        'Motors',
-                        'Refrigerants',
-                        'Electronics',
-                        'Accessories',
-                      ].map((cat) => (
-                        <option key={cat} value={cat}>
-                          {t(`pages.parts.inventory.categories.${cat.toLowerCase()}`)}
+                      {CATEGORY_OPTIONS.map((option) => (
+                        <option key={option.value} value={option.value}>
+                          {t(option.labelKey)}
                         </option>
                       ))}
                     </select>
@@ -834,23 +842,15 @@ const Inventory = () => {
                     <select
                       id="edit-category"
                       className="form-input"
-                      value={editingPart?.category || 'Compressors'}
+                      value={editingPart?.category || 'General'}
                       onChange={(e: React.ChangeEvent<HTMLSelectElement>) =>
                         setEditingPart((p) => (p ? { ...p, category: e.target.value } : null))
                       }
                       required
                     >
-                      {[
-                        'Compressors',
-                        'Sensors',
-                        'Coils',
-                        'Motors',
-                        'Refrigerants',
-                        'Electronics',
-                        'Accessories',
-                      ].map((cat) => (
-                        <option key={cat} value={cat}>
-                          {t(`pages.parts.inventory.categories.${cat.toLowerCase()}`)}
+                      {CATEGORY_OPTIONS.map((option) => (
+                        <option key={option.value} value={option.value}>
+                          {t(option.labelKey)}
                         </option>
                       ))}
                     </select>

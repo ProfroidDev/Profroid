@@ -608,13 +608,24 @@
         "categoriesLabel": "--- Categories ---",
         "statusLabel": "--- Status ---",
         "categories": {
+          "general": "General",
+          "heating": "Heating",
+          "cooling": "Cooling",
           "compressors": "Compressors",
           "sensors": "Sensors",
           "coils": "Coils",
           "motors": "Motors",
           "refrigerants": "Refrigerants",
           "electronics": "Electronics",
-          "accessories": "Accessories"
+          "accessories": "Accessories",
+          "filtration": "Filtration",
+          "hardware": "Hardware",
+          "shelving": "Shelving",
+          "packaging": "Packaging",
+          "fluidControl": "Fluid Control",
+          "doorsSeals": "Doors & Seals",
+          "electrical": "Electrical",
+          "fasteners": "Fasteners"
         },
         "status": {
           "inStock": "In Stock",

@@ -293,11 +293,12 @@
   display: flex;
   gap: 8px;
   width: 100%;
+  flex-wrap: wrap;
 }
 
 /* ===== Buttons ===== */
 .btn-view-part {
-  flex: 1;
+  flex: 1 1 calc(50% - 8px);
   background: linear-gradient(90deg, #7a0901 60%, #a32c1a 100%);
   color: #fff;
   border: none;
@@ -321,7 +322,7 @@
 }
 
 .btn-edit-part {
-  flex: 1;
+  flex: 1 1 calc(50% - 8px);
   background: #fff;
   color: #7a0901;
   border: 2px solid #7a0901;
@@ -344,7 +345,7 @@
 }
 
 .btn-delete-part {
-  flex: 1;
+  flex: 1 1 100%;
   background: #fff;
   color: #c53030;
   border: 2px solid #c53030;

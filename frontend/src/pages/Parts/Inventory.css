@@ -90,14 +90,15 @@
 @media (min-width: 641px) {
   .search-box-inventory {
     min-width: 160px;
-    flex: 0 0 35%;
+    flex: 0 0 28%;
   }
 }
 
 @media (min-width: 1025px) {
   .search-box-inventory {
     min-width: 180px;
-    flex: 0 0 40%;
+    flex: 0 0 24%;
+    max-width: 320px;
   }
 }
 

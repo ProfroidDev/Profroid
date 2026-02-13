@@ -6,9 +6,11 @@ import { deleteFile } from '../../files/api/deleteFile';
 import { sanitizeInput } from '../../../utils/sanitizer';
 import type { PartRequestModel } from '../models/PartRequestModel';
 import type { PartResponseModel } from '../models/PartResponseModel';
+import { CATEGORY_OPTIONS, normalizeCategory } from '../utils/partLocalization';
 import './PartEditModal.css';
 import { X, Trash2 } from 'lucide-react';
 import ConfirmationModal from '../../../components/ConfirmationModal';
+import { useTranslation } from 'react-i18next';
 
 interface PartEditModalProps {
   part: PartResponseModel | null;
@@ -27,7 +29,9 @@ export default function PartEditModal({
 }: PartEditModalProps): React.ReactElement | null {
   const { t } = useTranslation();
   const [name, setName] = useState<string>(part?.name || '');
-  const [category, setCategory] = useState<string>(part?.category || 'General');
+  const [category, setCategory] = useState<string>(
+    normalizeCategory(part?.category || 'General')
+  );
   const [quantity, setQuantity] = useState<number>(part?.quantity || 0);
   const [price, setPrice] = useState<number>(part?.price || 0);
   const [supplier, setSupplier] = useState<string>(part?.supplier || '');
@@ -76,7 +80,7 @@ export default function PartEditModal({
   React.useEffect(() => {
     if (part) {
       setName(part.name);
-      setCategory(part.category || 'General');
+      setCategory(normalizeCategory(part.category || 'General'));
       setQuantity(part.quantity || 0);
       setPrice(part.price || 0);
       setSupplier(part.supplier || '');
@@ -229,18 +233,11 @@ export default function PartEditModal({
                 disabled={submitting}
                 required
               >
-                <option value="General">General</option>
-                <option value="Heating">Heating</option>
-                <option value="Cooling">Cooling</option>
-                <option value="Electronics">Electronics</option>
-                <option value="Filtration">Filtration</option>
-                <option value="Hardware">Hardware</option>
-                <option value="Shelving">Shelving</option>
-                <option value="Packaging">Packaging</option>
-                <option value="Sensors">Sensors</option>
-                <option value="Fluid Control">Fluid Control</option>
-                <option value="Doors & Seals">Doors & Seals</option>
-                <option value="Electrical">Electrical</option>
+                {CATEGORY_OPTIONS.map((option) => (
+                  <option key={option.value} value={option.value}>
+                    {t(option.labelKey)}
+                  </option>
+                ))}
               </select>
             </div>
 
