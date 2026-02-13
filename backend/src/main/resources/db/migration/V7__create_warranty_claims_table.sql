@@ -1,0 +1,27 @@
+-- Warranty Claims Table
+CREATE TABLE IF NOT EXISTS warranty_claims (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    claim_id VARCHAR(255) NOT NULL UNIQUE,
+    customer_name VARCHAR(255) NOT NULL,
+    customer_email VARCHAR(255) NOT NULL,
+    customer_phone VARCHAR(255) NOT NULL,
+    customer_address VARCHAR(500),
+    product_name VARCHAR(255) NOT NULL,
+    product_serial_number VARCHAR(255),
+    purchase_date DATE NOT NULL,
+    issue_description TEXT NOT NULL,
+    preferred_contact_method VARCHAR(50),
+    status VARCHAR(50) NOT NULL DEFAULT 'PENDING',
+    assigned_to VARCHAR(255),
+    admin_notes TEXT,
+    resolution_details TEXT,
+    reviewed_by VARCHAR(255),
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    reviewed_at TIMESTAMP,
+    resolved_at TIMESTAMP,
+    INDEX idx_claim_id (claim_id),
+    INDEX idx_status (status),
+    INDEX idx_customer_email (customer_email),
+    INDEX idx_created_at (created_at)
+);

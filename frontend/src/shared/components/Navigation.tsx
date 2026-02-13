@@ -137,6 +137,7 @@ export default function Navigation(): React.ReactElement {
                 Messages
                 {unreadCount > 0 && <span className="nav-unread-badge">{unreadCount}</span>}
               </a>
+              <a href="/admin/warranty-claims">{t('navigation.warrantyClaims')}</a>
             </>
           )}
 
