@@ -29,9 +29,7 @@ export default function PartEditModal({
 }: PartEditModalProps): React.ReactElement | null {
   const { t } = useTranslation();
   const [name, setName] = useState<string>(part?.name || '');
-  const [category, setCategory] = useState<string>(
-    normalizeCategory(part?.category || 'General')
-  );
+  const [category, setCategory] = useState<string>(normalizeCategory(part?.category || 'General'));
   const [quantity, setQuantity] = useState<number>(part?.quantity || 0);
   const [price, setPrice] = useState<number>(part?.price || 0);
   const [supplier, setSupplier] = useState<string>(part?.supplier || '');

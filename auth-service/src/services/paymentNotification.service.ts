@@ -55,7 +55,10 @@ function buildRow(label: string, value?: string | number): string {
   `;
 }
 
-function formatPaymentDetails(details: PaymentDetails, amountLabel = "Amount Paid"): string {
+function formatPaymentDetails(
+  details: PaymentDetails,
+  amountLabel = "Amount Paid",
+): string {
   return `
     <table style="width: 100%; border-collapse: collapse; margin: 20px 0; background-color: #ffffff; border-radius: 6px; overflow: hidden;">
       ${buildRow("Bill ID", details.billId)}
