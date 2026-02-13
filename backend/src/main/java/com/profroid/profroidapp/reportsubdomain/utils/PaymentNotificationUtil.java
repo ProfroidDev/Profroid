@@ -48,6 +48,23 @@ public class PaymentNotificationUtil {
         }
     }
 
+    public void sendPaymentDueNotification(Map<String, String> customerRecipient, Map<String, Object> details) {
+        try {
+            if (customerRecipient == null || customerRecipient.get("userId") == null) {
+                logger.log(Level.WARNING, "Missing customer recipient userId for payment notification");
+                return;
+            }
+
+            Map<String, Object> payload = new HashMap<>();
+            payload.put("customer", customerRecipient);
+            payload.put("details", details);
+
+            sendNotification("/api/notifications/payment/due", payload);
+        } catch (Exception e) {
+            logger.log(Level.WARNING, "Failed to send payment due notification", e);
+        }
+    }
+
     private void sendNotification(String endpoint, Map<String, Object> payload) throws Exception {
         String url = authServiceUrl + endpoint;
         String jsonPayload = objectMapper.writeValueAsString(payload);

@@ -13,6 +13,7 @@ import {
   type NotificationRecipient,
 } from "../services/appointmentNotification.service.js";
 import {
+  sendPaymentDueNotification,
   sendPaymentPaidNotification,
   type PaymentDetails,
   type PaymentNotificationRecipient,
@@ -341,6 +342,79 @@ router.post("/appointment/reminder", async (req: Request, res: Response) => {
     });
   } catch (error) {
     console.error("Error sending appointment reminder notification:", error);
+    return res.status(500).json({
+      success: false,
+      error: error instanceof Error ? error.message : "Failed to send notification",
+    });
+  }
+});
+
+/**
+ * POST /api/notifications/payment/due
+ * Send payment due notification to customer
+ * Request body:
+ * {
+ *   customer: { userId, name, role: "customer" },
+ *   details: { billId, amount, status, appointmentId, jobName, reportId, ... }
+ * }
+ */
+router.post("/payment/due", async (req: Request, res: Response) => {
+  try {
+    const { customer, details } = req.body as {
+      customer: PaymentCustomerInput;
+      details: PaymentDetails;
+    };
+
+    if (!customer || !customer.name) {
+      return res.status(400).json({
+        success: false,
+        error: "Customer with name and either email or userId is required",
+      });
+    }
+
+    if (!customer.email && !customer.userId) {
+      return res.status(400).json({
+        success: false,
+        error: "Customer with email or userId is required",
+      });
+    }
+
+    if (!details || !details.billId) {
+      return res.status(400).json({
+        success: false,
+        error: "Payment details with billId are required",
+      });
+    }
+
+    let enrichedCustomer: PaymentNotificationRecipient = {
+      email: customer.email || "",
+      name: customer.name,
+      role: "customer",
+    };
+
+    if (!customer.email && customer.userId) {
+      const email = await getUserEmail(customer.userId);
+      enrichedCustomer = {
+        email: email || `user-${customer.userId}@example.com`,
+        name: customer.name,
+        role: "customer",
+      };
+    }
+
+    const enrichedDetails: PaymentDetails = {
+      ...details,
+      customerName: details.customerName || customer.name,
+      customerEmail: details.customerEmail || enrichedCustomer.email,
+    };
+
+    await sendPaymentDueNotification([enrichedCustomer], enrichedDetails);
+
+    return res.json({
+      success: true,
+      message: "Payment due notification sent successfully",
+    });
+  } catch (error) {
+    console.error("Error sending payment due notification:", error);
     return res.status(500).json({
       success: false,
       error: error instanceof Error ? error.message : "Failed to send notification",
