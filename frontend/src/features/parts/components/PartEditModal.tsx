@@ -10,7 +10,6 @@ import { CATEGORY_OPTIONS, normalizeCategory } from '../utils/partLocalization';
 import './PartEditModal.css';
 import { X, Trash2 } from 'lucide-react';
 import ConfirmationModal from '../../../components/ConfirmationModal';
-import { useTranslation } from 'react-i18next';
 
 interface PartEditModalProps {
   part: PartResponseModel | null;

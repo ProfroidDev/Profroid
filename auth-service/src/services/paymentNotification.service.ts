@@ -29,6 +29,7 @@ export interface PaymentNotificationRecipient {
   email: string;
   name: string;
   role: "customer" | "admin";
+  preferredLanguage?: "en" | "fr";
 }
 
 function createTransporter() {
@@ -55,26 +56,80 @@ function buildRow(label: string, value?: string | number): string {
   `;
 }
 
+function translatePaymentStatus(status?: string, language: "en" | "fr" = "en"): string | undefined {
+  if (!status) return status;
+  if (language !== "fr") return status;
+  switch (status.toUpperCase()) {
+    case "UNPAID":
+      return "IMPAYE";
+    case "PAID":
+      return "PAYE";
+    case "PARTIALLY_PAID":
+      return "PARTIELLEMENT PAYE";
+    case "OVERDUE":
+      return "EN RETARD";
+    default:
+      return status;
+  }
+}
+
+function formatAppointmentDate(
+  appointmentDate?: string,
+  language: "en" | "fr" = "en",
+): string | undefined {
+  if (!appointmentDate) return appointmentDate;
+  const parsed = new Date(appointmentDate);
+  if (Number.isNaN(parsed.getTime())) {
+    return appointmentDate;
+  }
+  const locale = language === "fr" ? "fr-CA" : "en-CA";
+  return new Intl.DateTimeFormat(locale, {
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+  }).format(parsed);
+}
+
+type PaymentDetailLabels = {
+  billId: string;
+  status: string;
+  amount: string;
+  paidAt: string;
+  jobName: string;
+  appointmentId: string;
+  appointmentDate: string;
+  reportId: string;
+  reportInternalId: string;
+  customerName: string;
+  customerEmail: string;
+  customerId: string;
+  paymentIntentId: string;
+  stripeSessionId: string;
+};
+
 function formatPaymentDetails(
   details: PaymentDetails,
   amountLabel = "Amount Paid",
+  labels: Partial<PaymentDetailLabels> = {},
 ): string {
   return `
     <table style="width: 100%; border-collapse: collapse; margin: 20px 0; background-color: #ffffff; border-radius: 6px; overflow: hidden;">
-      ${buildRow("Bill ID", details.billId)}
-      ${buildRow("Status", details.status)}
+      ${buildRow(labels.billId || "Bill ID", details.billId)}
+      ${buildRow(labels.status || "Status", details.status)}
       ${buildRow(amountLabel, details.amount)}
-      ${buildRow("Paid At", details.paidAt)}
-      ${buildRow("Job", details.jobName)}
-      ${buildRow("Appointment ID", details.appointmentId)}
-      ${buildRow("Appointment Date", details.appointmentDate)}
-      ${buildRow("Report ID", details.reportId)}
-      ${buildRow("Report Internal ID", details.reportInternalId)}
-      ${buildRow("Customer", details.customerName)}
-      ${buildRow("Customer Email", details.customerEmail)}
-      ${buildRow("Customer ID", details.customerId)}
-      ${buildRow("Payment Intent", details.paymentIntentId)}
-      ${buildRow("Stripe Session", details.stripeSessionId)}
+      ${buildRow(labels.paidAt || "Paid At", details.paidAt)}
+      ${buildRow(labels.jobName || "Job", details.jobName)}
+      ${buildRow(labels.appointmentId || "Appointment ID", details.appointmentId)}
+      ${buildRow(labels.appointmentDate || "Appointment Date", details.appointmentDate)}
+      ${buildRow(labels.reportId || "Report ID", details.reportId)}
+      ${buildRow(labels.reportInternalId || "Report Internal ID", details.reportInternalId)}
+      ${buildRow(labels.customerName || "Customer", details.customerName)}
+      ${buildRow(labels.customerEmail || "Customer Email", details.customerEmail)}
+      ${buildRow(labels.customerId || "Customer ID", details.customerId)}
+      ${buildRow(labels.paymentIntentId || "Payment Intent", details.paymentIntentId)}
+      ${buildRow(labels.stripeSessionId || "Stripe Session", details.stripeSessionId)}
     </table>
   `;
 }
@@ -257,16 +312,45 @@ export async function sendPaymentDueNotification(
   const transporter = createTransporter();
 
   for (const recipient of recipients) {
-    const title = "Payment Due";
-    const intro =
-      "Your service report is complete and payment is now due. Please review your bill details.";
+    const language = recipient.preferredLanguage || "en";
+    const isFrench = language === "fr";
+    const title = isFrench ? "Paiement du" : "Payment Due";
+    const intro = isFrench
+      ? "Votre rapport de service est termine et le paiement est maintenant du. Veuillez consulter les details de votre facture."
+      : "Your service report is complete and payment is now due. Please review your bill details.";
     const actionUrl = `${FRONTEND_URL}/my-bills`;
-    const actionLabel = "View My Bills";
+    const actionLabel = isFrench ? "Voir mes factures" : "View My Bills";
+    const headerSubtitle = isFrench ? "Paiement du" : "Payment Due";
+    const greeting = isFrench ? "Bonjour" : "Hello";
+    const amountLabel = isFrench ? "Montant du" : "Amount Due";
+    const billLabel = isFrench ? "Facture" : "Bill";
+    const localizedDetails: PaymentDetails = {
+      ...details,
+      status: translatePaymentStatus(details.status, language),
+      appointmentDate: formatAppointmentDate(details.appointmentDate, language),
+    };
+    const labelOverrides: Partial<PaymentDetailLabels> = isFrench
+      ? {
+          billId: "ID de facture",
+          status: "Statut",
+          paidAt: "Payee le",
+          jobName: "Service",
+          appointmentId: "ID du rendez-vous",
+          appointmentDate: "Date du rendez-vous",
+          reportId: "ID du rapport",
+          reportInternalId: "ID interne du rapport",
+          customerName: "Client",
+          customerEmail: "Courriel du client",
+          customerId: "ID du client",
+          paymentIntentId: "Intent de paiement",
+          stripeSessionId: "Session Stripe",
+        }
+      : {};
 
     const mailOptions = {
       from: SMTP_FROM,
       to: recipient.email,
-      subject: `${title} - Bill ${details.billId}`,
+      subject: `${title} - ${billLabel} ${details.billId}`,
       html: `
         <!DOCTYPE html>
         <html>
@@ -370,13 +454,13 @@ export async function sendPaymentDueNotification(
             <div class="email-wrapper">
               <div class="header">
                 <div class="logo">PROFROID</div>
-                <div class="header-subtitle">Payment Due</div>
+                <div class="header-subtitle">${headerSubtitle}</div>
               </div>
               <div class="content">
-                <p class="greeting">Hello ${recipient.name || "there"},</p>
+                <p class="greeting">${greeting} ${recipient.name || "there"},</p>
                 <p class="message">${intro}</p>
-                <div class="highlight">${title} for bill ${details.billId}.</div>
-                ${formatPaymentDetails(details, "Amount Due")}
+                <div class="highlight">${isFrench ? `${title} pour la facture ${details.billId}.` : `${title} for bill ${details.billId}.`}</div>
+                ${formatPaymentDetails(localizedDetails, amountLabel, labelOverrides)}
                 <div class="button-container">
                   <a href="${actionUrl}" class="button">${actionLabel}</a>
                 </div>
@@ -394,17 +478,17 @@ ${title}
 
 ${intro}
 
-Bill ID: ${details.billId}
-Status: ${details.status || ""}
-Amount Due: ${details.amount || ""}
-Job: ${details.jobName || ""}
-Appointment ID: ${details.appointmentId || ""}
-Appointment Date: ${details.appointmentDate || ""}
-Report ID: ${details.reportId || ""}
-Report Internal ID: ${details.reportInternalId || ""}
-Customer: ${details.customerName || ""}
-Customer Email: ${details.customerEmail || ""}
-Customer ID: ${details.customerId || ""}
+${isFrench ? "ID de facture" : "Bill ID"}: ${details.billId}
+${isFrench ? "Statut" : "Status"}: ${localizedDetails.status || ""}
+${amountLabel}: ${details.amount || ""}
+${isFrench ? "Service" : "Job"}: ${details.jobName || ""}
+${isFrench ? "ID du rendez-vous" : "Appointment ID"}: ${details.appointmentId || ""}
+${isFrench ? "Date du rendez-vous" : "Appointment Date"}: ${localizedDetails.appointmentDate || ""}
+${isFrench ? "ID du rapport" : "Report ID"}: ${details.reportId || ""}
+${isFrench ? "ID interne du rapport" : "Report Internal ID"}: ${details.reportInternalId || ""}
+${isFrench ? "Client" : "Customer"}: ${details.customerName || ""}
+${isFrench ? "Courriel du client" : "Customer Email"}: ${details.customerEmail || ""}
+${isFrench ? "ID du client" : "Customer ID"}: ${details.customerId || ""}
 
 ${actionLabel}: ${actionUrl}
       `.trim(),

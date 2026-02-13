@@ -7,7 +7,6 @@ import type { PartRequestModel } from '../models/PartRequestModel';
 import { CATEGORY_OPTIONS } from '../utils/partLocalization';
 import './PartAddModal.css';
 import { X } from 'lucide-react';
-import { useTranslation } from 'react-i18next';
 
 interface PartAddModalProps {
   isOpen: boolean;

@@ -78,7 +78,14 @@ async function enrichRecipientsWithEmails(recipients: any[]): Promise<any[]> {
         const email = await getUserEmail(recipient.userId);
         enriched.email = email || `user-${recipient.userId}@example.com`;
       }
-      return recipient;
+
+      // Add language preference when available
+      if (recipient.userId && !enriched.preferredLanguage) {
+        const language = await getUserLanguagePreference(recipient.userId);
+        enriched.preferredLanguage = language;
+      }
+
+      return enriched;
     }),
   );
 }
@@ -420,6 +427,14 @@ router.post("/payment/due", async (req: Request, res: Response) => {
         email: email || `user-${customer.userId}@example.com`,
         name: customer.name,
         role: "customer",
+      };
+    }
+
+    if (customer.userId) {
+      const language = await getUserLanguagePreference(customer.userId);
+      enrichedCustomer = {
+        ...enrichedCustomer,
+        preferredLanguage: language,
       };
     }
 
