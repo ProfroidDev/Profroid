@@ -75,6 +75,7 @@ export default function RegisterPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
+  const [preferredLanguage, setPreferredLanguage] = useState<'en' | 'fr'>('en');
 
   // Step 2: Customer Data
   const [customerData, setCustomerData] = useState({
@@ -166,7 +167,12 @@ export default function RegisterPage() {
 
     setSubmitting(true);
     try {
-      const response = await authClient.register(sanitizedEmail, password);
+      const response = await authClient.register(
+        sanitizedEmail,
+        password,
+        undefined,
+        preferredLanguage
+      );
       if (response.success) {
         // Redirect to email verification page
         navigate('/auth/verify-email', {
@@ -407,6 +413,19 @@ export default function RegisterPage() {
                 disabled={isLoading}
                 required
               />
+            </div>
+
+            <div className="form-group">
+              <label htmlFor="preferredLanguage">{t('common.language') || 'Language'}</label>
+              <select
+                id="preferredLanguage"
+                value={preferredLanguage}
+                onChange={(e) => setPreferredLanguage(e.target.value as 'en' | 'fr')}
+                disabled={isLoading}
+              >
+                <option value="en">English</option>
+                <option value="fr">Français (French)</option>
+              </select>
             </div>
 
             {(formError || error) && (

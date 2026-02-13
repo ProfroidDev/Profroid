@@ -570,6 +570,36 @@
       "price": "Unit Price",
       "description": "Description",
       "noParts": "No parts found",
+      "form": {
+        "partName": "Part Name",
+        "category": "Category",
+        "quantity": "Quantity",
+        "price": "Price",
+        "supplier": "Supplier",
+        "lowStockThreshold": "Low Stock Threshold",
+        "outOfStockThreshold": "Out of Stock Threshold",
+        "highStockThreshold": "High Stock Threshold",
+        "available": "Available",
+        "unavailable": "Unavailable",
+        "image": "Image (optional)",
+        "enterPartName": "Enter part name",
+        "enterSupplierName": "Enter supplier name",
+        "selectCategory": "Select a category",
+        "addButton": "Add Part",
+        "updateButton": "Update Part",
+        "cancelButton": "Cancel",
+        "closeButton": "Close",
+        "deleteButton": "Delete",
+        "deleteImage": "Delete Image",
+        "deleteImageConfirmMessage": "Are you sure you want to permanently delete this image?",
+        "deleteCurrentImage": "Delete Current Image",
+        "uploadNewImageToReplace": "Upload a new image to replace it.",
+        "maximumFileSize": "Maximum file size",
+        "chooseFile": "Choose File",
+        "noFileChosen": "No file chosen",
+        "onlyImageFilesAllowed": "Only image files are allowed.",
+        "fileSizeExceeds": "File size exceeds maximum allowed size"
+      },
       "inventory": {
         "title": "Parts Inventory",
         "subtitle": "Manage your repair parts and supplies",
@@ -660,6 +690,45 @@
         "viewDetails": "View Details",
         "edit": "Edit",
         "delete": "Delete"
+      }
+    },
+    "reviews": {
+      "title": "Review Management",
+      "subtitle": "Manage customer reviews and testimonials",
+      "filters": {
+        "all": "All",
+        "pending": "Pending",
+        "approved": "Approved",
+        "rejected": "Rejected"
+      },
+      "statusBadges": {
+        "pending": "Pending",
+        "approved": "Approved",
+        "rejected": "Rejected"
+      },
+      "labels": {
+        "id": "ID",
+        "submitted": "Submitted",
+        "reviewed": "Reviewed",
+        "loading": "Loading reviews...",
+        "noReviews": "No reviews found"
+      },
+      "actions": {
+        "approve": "Approve",
+        "reject": "Reject",
+        "revokeApproval": "Revoke Approval",
+        "delete": "Delete"
+      },
+      "messages": {
+        "approveSuccess": "Review approved successfully",
+        "approveFailed": "Failed to approve review",
+        "rejectSuccess": "Review rejected successfully",
+        "rejectFailed": "Failed to reject review",
+        "deleteSuccess": "Review deleted successfully",
+        "deleteFailed": "Failed to delete review",
+        "loadFailed": "Failed to load reviews",
+        "deleteConfirmTitle": "Delete Review",
+        "deleteConfirmMessage": "Are you sure you want to permanently delete this review? This action cannot be undone."
       }
     },
     "appointments": {

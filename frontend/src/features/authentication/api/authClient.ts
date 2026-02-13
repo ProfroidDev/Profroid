@@ -79,12 +79,18 @@ class AuthAPI {
   /**
    * Register a new user
    */
-  async register(email: string, password: string, name?: string): Promise<AuthResponse> {
+  async register(
+    email: string,
+    password: string,
+    name?: string,
+    preferredLanguage?: 'en' | 'fr'
+  ): Promise<AuthResponse> {
     try {
       const response = await this.client.post<AuthResponse>('/register', {
         email,
         password,
         name: name || '',
+        preferredLanguage: preferredLanguage || 'en',
       });
 
       // Don't store token yet - user must complete customer registration first

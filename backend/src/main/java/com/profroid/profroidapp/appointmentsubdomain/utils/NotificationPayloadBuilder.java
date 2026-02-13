@@ -37,6 +37,11 @@ public class NotificationPayloadBuilder {
             appointment.getJob().getJobName() : 
             "Not specified");
         
+        details.put("jobNameFr", 
+            appointment.getJob() != null && appointment.getJob().getJobNameFr() != null ? 
+            appointment.getJob().getJobNameFr() : 
+            null);
+        
         details.put("technicianName", 
             appointment.getTechnician() != null ? 
             formatPersonName(appointment.getTechnician().getFirstName(), appointment.getTechnician().getLastName()) : 

@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Star, Check, X, Trash2, Clock, CheckCircle, XCircle } from 'lucide-react';
 import { getAllReviews } from '../../features/review/api/getAllReviews';
 import { updateReviewStatus } from '../../features/review/api/updateReviewStatus';
@@ -10,6 +11,7 @@ import useAuthStore from '../../features/authentication/store/authStore';
 import './ReviewManagement.css';
 
 export default function ReviewManagement(): React.ReactElement {
+  const { t } = useTranslation();
   const { user } = useAuthStore();
   const [reviews, setReviews] = useState<ReviewResponseModel[]>([]);
   const [loading, setLoading] = useState(true);
@@ -37,7 +39,7 @@ export default function ReviewManagement(): React.ReactElement {
     } catch (error) {
       console.error('Failed to fetch reviews:', error);
       setToast({
-        message: 'Failed to load reviews',
+        message: t('pages.reviews.messages.loadFailed'),
         type: 'error',
       });
     } finally {
@@ -52,14 +54,14 @@ export default function ReviewManagement(): React.ReactElement {
         reviewedBy: user?.id,
       });
       setToast({
-        message: 'Review approved successfully',
+        message: t('pages.reviews.messages.approveSuccess'),
         type: 'success',
       });
       fetchReviews();
     } catch (error) {
       console.error('Failed to approve review:', error);
       setToast({
-        message: 'Failed to approve review',
+        message: t('pages.reviews.messages.approveFailed'),
         type: 'error',
       });
     }
@@ -72,14 +74,14 @@ export default function ReviewManagement(): React.ReactElement {
         reviewedBy: user?.id,
       });
       setToast({
-        message: 'Review rejected successfully',
+        message: t('pages.reviews.messages.rejectSuccess'),
         type: 'success',
       });
       fetchReviews();
     } catch (error) {
       console.error('Failed to reject review:', error);
       setToast({
-        message: 'Failed to reject review',
+        message: t('pages.reviews.messages.rejectFailed'),
         type: 'error',
       });
     }
@@ -88,21 +90,20 @@ export default function ReviewManagement(): React.ReactElement {
   async function handleDelete(reviewId: string) {
     setConfirmModal({
       isOpen: true,
-      title: 'Delete Review',
-      message:
-        'Are you sure you want to permanently delete this review? This action cannot be undone.',
+      title: t('pages.reviews.messages.deleteConfirmTitle'),
+      message: t('pages.reviews.messages.deleteConfirmMessage'),
       onConfirm: async () => {
         try {
           await deleteReview(reviewId);
           setToast({
-            message: 'Review deleted successfully',
+            message: t('pages.reviews.messages.deleteSuccess'),
             type: 'success',
           });
           fetchReviews();
         } catch (error) {
           console.error('Failed to delete review:', error);
           setToast({
-            message: 'Failed to delete review',
+            message: t('pages.reviews.messages.deleteFailed'),
             type: 'error',
           });
         } finally {
@@ -123,21 +124,21 @@ export default function ReviewManagement(): React.ReactElement {
         return (
           <span className="status-badge status-pending">
             <Clock size={14} />
-            Pending
+            {t('pages.reviews.statusBadges.pending')}
           </span>
         );
       case 'APPROVED':
         return (
           <span className="status-badge status-approved">
             <CheckCircle size={14} />
-            Approved
+            {t('pages.reviews.statusBadges.approved')}
           </span>
         );
       case 'REJECTED':
         return (
           <span className="status-badge status-rejected">
             <XCircle size={14} />
-            Rejected
+            {t('pages.reviews.statusBadges.rejected')}
           </span>
         );
       default:
@@ -159,8 +160,8 @@ export default function ReviewManagement(): React.ReactElement {
   return (
     <div className="review-management-page">
       <div className="review-management-header">
-        <h1 className="page-title">Review Management</h1>
-        <p className="page-subtitle">Manage customer reviews and testimonials</p>
+        <h1 className="page-title">{t('pages.reviews.title')}</h1>
+        <p className="page-subtitle">{t('pages.reviews.subtitle')}</p>
       </div>
 
       <div className="review-filters">
@@ -168,36 +169,39 @@ export default function ReviewManagement(): React.ReactElement {
           className={`filter-btn ${filter === 'ALL' ? 'active' : ''}`}
           onClick={() => setFilter('ALL')}
         >
-          All ({reviews.length})
+          {t('pages.reviews.filters.all')} ({reviews.length})
         </button>
         <button
           className={`filter-btn ${filter === 'PENDING' ? 'active' : ''}`}
           onClick={() => setFilter('PENDING')}
         >
-          Pending ({reviews.filter((r) => r.status === 'PENDING').length})
+          {t('pages.reviews.filters.pending')} (
+          {reviews.filter((r) => r.status === 'PENDING').length})
         </button>
         <button
           className={`filter-btn ${filter === 'APPROVED' ? 'active' : ''}`}
           onClick={() => setFilter('APPROVED')}
         >
-          Approved ({reviews.filter((r) => r.status === 'APPROVED').length})
+          {t('pages.reviews.filters.approved')} (
+          {reviews.filter((r) => r.status === 'APPROVED').length})
         </button>
         <button
           className={`filter-btn ${filter === 'REJECTED' ? 'active' : ''}`}
           onClick={() => setFilter('REJECTED')}
         >
-          Rejected ({reviews.filter((r) => r.status === 'REJECTED').length})
+          {t('pages.reviews.filters.rejected')} (
+          {reviews.filter((r) => r.status === 'REJECTED').length})
         </button>
       </div>
 
       {loading ? (
         <div className="loading-container">
           <div className="loading-spinner"></div>
-          <p>Loading reviews...</p>
+          <p>{t('pages.reviews.labels.loading')}</p>
         </div>
       ) : filteredReviews.length === 0 ? (
         <div className="empty-state">
-          <p>No reviews found</p>
+          <p>{t('pages.reviews.labels.noReviews')}</p>
         </div>
       ) : (
         <div className="reviews-grid">
@@ -205,7 +209,7 @@ export default function ReviewManagement(): React.ReactElement {
             <div key={review.reviewId} className="review-card">
               <div className="review-card-header">
                 <div className="review-id">
-                  <strong>ID:</strong> {review.reviewId}
+                  <strong>{t('pages.reviews.labels.id')}:</strong> {review.reviewId}
                 </div>
                 {getStatusBadge(review.status)}
               </div>
@@ -231,11 +235,13 @@ export default function ReviewManagement(): React.ReactElement {
 
               <div className="review-meta">
                 <div className="meta-item">
-                  <strong>Submitted:</strong> {formatDate(review.createdAt)}
+                  <strong>{t('pages.reviews.labels.submitted')}:</strong>{' '}
+                  {formatDate(review.createdAt)}
                 </div>
                 {review.reviewedAt && (
                   <div className="meta-item">
-                    <strong>Reviewed:</strong> {formatDate(review.reviewedAt)}
+                    <strong>{t('pages.reviews.labels.reviewed')}:</strong>{' '}
+                    {formatDate(review.reviewedAt)}
                   </div>
                 )}
               </div>
@@ -248,14 +254,14 @@ export default function ReviewManagement(): React.ReactElement {
                       onClick={() => handleApprove(review.reviewId)}
                     >
                       <Check size={16} />
-                      Approve
+                      {t('pages.reviews.actions.approve')}
                     </button>
                     <button
                       className="action-btn reject-btn"
                       onClick={() => handleReject(review.reviewId)}
                     >
                       <X size={16} />
-                      Reject
+                      {t('pages.reviews.actions.reject')}
                     </button>
                   </>
                 )}
@@ -265,7 +271,7 @@ export default function ReviewManagement(): React.ReactElement {
                     onClick={() => handleReject(review.reviewId)}
                   >
                     <X size={16} />
-                    Revoke Approval
+                    {t('pages.reviews.actions.revokeApproval')}
                   </button>
                 )}
                 {review.status === 'REJECTED' && (
@@ -274,7 +280,7 @@ export default function ReviewManagement(): React.ReactElement {
                     onClick={() => handleApprove(review.reviewId)}
                   >
                     <Check size={16} />
-                    Approve
+                    {t('pages.reviews.actions.approve')}
                   </button>
                 )}
                 <button
@@ -282,7 +288,7 @@ export default function ReviewManagement(): React.ReactElement {
                   onClick={() => handleDelete(review.reviewId)}
                 >
                   <Trash2 size={16} />
-                  Delete
+                  {t('pages.reviews.actions.delete')}
                 </button>
               </div>
             </div>

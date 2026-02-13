@@ -20,6 +20,7 @@ const emailRegex = /^[a-z0-9+\-._]+@[a-z0-9+\-._]+\.[a-z]{2,6}$/i;
  * - Email: Sanitized, lowercase, validated against strict regex
  * - Password: NOT sanitized (must match login password exactly), min 8 chars with uppercase and number
  * - Name: Optional, sanitized
+ * - PreferredLanguage: Optional, defaults to 'en', must be 'en' or 'fr'
  */
 export const RegisterSchema = z
   .object({
@@ -44,6 +45,10 @@ export const RegisterSchema = z
       .string()
       .optional()
       .transform((val) => (val ? sanitizeString(val) : undefined)),
+    preferredLanguage: z
+      .enum(["en", "fr"])
+      .optional()
+      .default("en"),
   })
   .strict();
 

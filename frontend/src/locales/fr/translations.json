@@ -713,6 +713,36 @@
       "price": "Prix unitaire",
       "description": "Description",
       "noParts": "Aucune pièce trouvée",
+      "form": {
+        "partName": "Nom de la pièce",
+        "category": "Catégorie",
+        "quantity": "Quantité",
+        "price": "Prix",
+        "supplier": "Fournisseur",
+        "lowStockThreshold": "Seuil de Stock Faible",
+        "outOfStockThreshold": "Seuil de Rupture de Stock",
+        "highStockThreshold": "Seuil de Stock Élevé",
+        "available": "Disponible",
+        "unavailable": "Non disponible",
+        "image": "Image (optionnelle)",
+        "enterPartName": "Entrez le nom de la pièce",
+        "enterSupplierName": "Entrez le nom du fournisseur",
+        "selectCategory": "Sélectionnez une catégorie",
+        "addButton": "Ajouter une pièce",
+        "updateButton": "Mettre à jour la pièce",
+        "cancelButton": "Annuler",
+        "closeButton": "Fermer",
+        "deleteButton": "Supprimer",
+        "deleteImage": "Supprimer l'image",
+        "deleteImageConfirmMessage": "Êtes-vous sûr de vouloir supprimer définitivement cette image?",
+        "deleteCurrentImage": "Supprimer l'image actuelle",
+        "uploadNewImageToReplace": "Téléversez une nouvelle image pour la remplacer.",
+        "maximumFileSize": "Taille maximale du fichier",
+        "chooseFile": "Choisir un fichier",
+        "noFileChosen": "Aucun fichier choisi",
+        "onlyImageFilesAllowed": "Seuls les fichiers image sont autorisés.",
+        "fileSizeExceeds": "La taille du fichier dépasse la taille maximale autorisée"
+      },
       "inventory": {
         "title": "Inventaire des Pièces",
         "subtitle": "Gérez vos pièces de réparation et fournitures",
@@ -803,6 +833,45 @@
         "viewDetails": "Voir Détails",
         "edit": "Modifier",
         "delete": "Supprimer"
+      }
+    },
+    "reviews": {
+      "title": "Gestion des Avis",
+      "subtitle": "Gérer les avis et témoignages des clients",
+      "filters": {
+        "all": "Tous",
+        "pending": "En attente",
+        "approved": "Approuvés",
+        "rejected": "Rejetés"
+      },
+      "statusBadges": {
+        "pending": "En attente",
+        "approved": "Approuvé",
+        "rejected": "Rejeté"
+      },
+      "labels": {
+        "id": "ID",
+        "submitted": "Soumis",
+        "reviewed": "Examiné",
+        "loading": "Chargement des avis...",
+        "noReviews": "Aucun avis trouvé"
+      },
+      "actions": {
+        "approve": "Approuver",
+        "reject": "Rejeter",
+        "revokeApproval": "Révoquer l'approbation",
+        "delete": "Supprimer"
+      },
+      "messages": {
+        "approveSuccess": "Avis approuvé avec succès",
+        "approveFailed": "Impossible d'approuver l'avis",
+        "rejectSuccess": "Avis rejeté avec succès",
+        "rejectFailed": "Impossible de rejeter l'avis",
+        "deleteSuccess": "Avis supprimé avec succès",
+        "deleteFailed": "Impossible de supprimer l'avis",
+        "loadFailed": "Impossible de charger les avis",
+        "deleteConfirmTitle": "Supprimer l'avis",
+        "deleteConfirmMessage": "Êtes-vous sûr de vouloir supprimer définitivement cet avis? Cette action ne peut pas être annulée."
       }
     },
     "appointments": {

@@ -83,6 +83,35 @@ const useAuthStore = create<AuthStore>((set, get) => ({
             // Fetch customer/employee profile data immediately after login so Profile page has data without manual refresh
             const state = get();
             await state.fetchCustomerData();
+
+            // Fetch user language preference and sync with i18n
+            try {
+              const token = localStorage.getItem('authToken');
+              const preferencesResponse = await fetch(
+                `${import.meta.env.VITE_API_URL}/user-preferences`,
+                {
+                  method: 'GET',
+                  headers: {
+                    Authorization: `Bearer ${token}`,
+                    'Content-Type': 'application/json',
+                  },
+                }
+              );
+
+              if (preferencesResponse.ok) {
+                const preferences = await preferencesResponse.json();
+                if (preferences.preferredLanguage) {
+                  // Dynamically import and use i18n
+                  const { default: i18n } = await import('../../../i18n/config');
+                  i18n.changeLanguage(preferences.preferredLanguage);
+                  // Also store in localStorage for persistence
+                  localStorage.setItem('i18nextLng', preferences.preferredLanguage);
+                }
+              }
+            } catch {
+              // Continue with default language if fetch fails
+            }
+
             set({ isLoading: false });
           } else {
             // Fallback to initial user if fetch fails
@@ -122,6 +151,10 @@ const useAuthStore = create<AuthStore>((set, get) => ({
     set({ isLoading: true });
     try {
       await authClient.signOut();
+      // Reset language to English on logout
+      const { default: i18n } = await import('../../../i18n/config');
+      i18n.changeLanguage('en');
+      localStorage.setItem('i18nextLng', 'en');
       set({
         isLoading: false,
         token: null,
@@ -159,7 +192,7 @@ const useAuthStore = create<AuthStore>((set, get) => ({
           isAuthenticated: true,
         });
 
-        // Fetch customer data after user is set
+        // Fetch customer data and user preferences after user is set
         const token = localStorage.getItem('authToken');
         const endpoint = user.employeeType
           ? `/employees/by-user/${user.id}`
@@ -200,6 +233,34 @@ const useAuthStore = create<AuthStore>((set, get) => ({
           }
         } catch {
           set({ isLoading: false });
+        }
+
+        // Fetch user language preference and sync with i18n
+        try {
+          const preferencesResponse = await fetch(
+            `${import.meta.env.VITE_API_URL}/user-preferences`,
+            {
+              method: 'GET',
+              headers: {
+                Authorization: `Bearer ${token}`,
+                'Content-Type': 'application/json',
+              },
+            }
+          );
+
+          if (preferencesResponse.ok) {
+            const preferences = await preferencesResponse.json();
+            if (preferences.preferredLanguage) {
+              // Dynamically import and use i18n
+              const { default: i18n } = await import('../../../i18n/config');
+              i18n.changeLanguage(preferences.preferredLanguage);
+              // Also store in localStorage for persistence
+              localStorage.setItem('i18nextLng', preferences.preferredLanguage);
+            }
+          }
+        } catch (error) {
+          console.error('Failed to fetch user preferences:', error);
+          // Continue with default language if fetch fails
         }
       } else {
         set({
