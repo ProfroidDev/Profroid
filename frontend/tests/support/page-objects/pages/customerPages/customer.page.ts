@@ -12,7 +12,7 @@ export class CustomerPage {
   }
 
   async goto() {
-    await this.page.goto('http://localhost:5173/customers');
+    await this.page.goto('http://localhost:3000/customers');
   }
 
   async openCreateModal() {
