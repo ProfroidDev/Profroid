@@ -14,15 +14,17 @@ export default function WarrantyPage() {
     productSerialNumber: '',
     purchaseDate: '',
     issueDescription: '',
-    preferredContactMethod: 'EMAIL'
+    preferredContactMethod: 'EMAIL',
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitSuccess, setSubmitSuccess] = useState(false);
   const [submitError, setSubmitError] = useState('');
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
+  const handleInputChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
+  ) => {
     const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
+    setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -43,7 +45,7 @@ export default function WarrantyPage() {
         productSerialNumber: '',
         purchaseDate: '',
         issueDescription: '',
-        preferredContactMethod: 'EMAIL'
+        preferredContactMethod: 'EMAIL',
       });
 
       // Scroll to top to show success message
@@ -76,13 +78,27 @@ export default function WarrantyPage() {
         <div className="warranty-toc">
           <h3>{t('pages.warranty.tableOfContents')}</h3>
           <ul>
-            <li><a href="#overview">{t('pages.warranty.overview')}</a></li>
-            <li><a href="#coverage">{t('pages.warranty.coverageTitle')}</a></li>
-            <li><a href="#duration">{t('pages.warranty.durationTitle')}</a></li>
-            <li><a href="#exclusions">{t('pages.warranty.exclusionsTitle')}</a></li>
-            <li><a href="#claim-process">{t('pages.warranty.claimProcessTitle')}</a></li>
-            <li><a href="#contact">{t('pages.warranty.contactTitle')}</a></li>
-            <li><a href="#claim-form">{t('pages.warranty.form.title')}</a></li>
+            <li>
+              <a href="#overview">{t('pages.warranty.overview')}</a>
+            </li>
+            <li>
+              <a href="#coverage">{t('pages.warranty.coverageTitle')}</a>
+            </li>
+            <li>
+              <a href="#duration">{t('pages.warranty.durationTitle')}</a>
+            </li>
+            <li>
+              <a href="#exclusions">{t('pages.warranty.exclusionsTitle')}</a>
+            </li>
+            <li>
+              <a href="#claim-process">{t('pages.warranty.claimProcessTitle')}</a>
+            </li>
+            <li>
+              <a href="#contact">{t('pages.warranty.contactTitle')}</a>
+            </li>
+            <li>
+              <a href="#claim-form">{t('pages.warranty.form.title')}</a>
+            </li>
           </ul>
         </div>
 
@@ -97,7 +113,7 @@ export default function WarrantyPage() {
         <section id="coverage" className="warranty-section">
           <h2>{t('pages.warranty.coverageTitle')}</h2>
           <p>{t('pages.warranty.coverageText')}</p>
-          
+
           <div className="warranty-coverage-list">
             <div className="coverage-item">
               <h4>✓ {t('pages.warranty.coverage1Title')}</h4>
@@ -121,7 +137,7 @@ export default function WarrantyPage() {
         <section id="duration" className="warranty-section">
           <h2>{t('pages.warranty.durationTitle')}</h2>
           <p>{t('pages.warranty.durationText')}</p>
-          
+
           <div className="warranty-info-box">
             <h4>{t('pages.warranty.durationDetailsTitle')}</h4>
             <ul>
@@ -135,7 +151,7 @@ export default function WarrantyPage() {
         <section id="exclusions" className="warranty-section">
           <h2>{t('pages.warranty.exclusionsTitle')}</h2>
           <p>{t('pages.warranty.exclusionsText')}</p>
-          
+
           <div className="warranty-warning-box">
             <h4>{t('pages.warranty.exclusionsWarning')}</h4>
             <ul>
@@ -151,7 +167,7 @@ export default function WarrantyPage() {
         <section id="claim-process" className="warranty-section">
           <h2>{t('pages.warranty.claimProcessTitle')}</h2>
           <p>{t('pages.warranty.claimProcessText')}</p>
-          
+
           <div className="warranty-process-steps">
             <div className="process-step">
               <div className="step-number">1</div>
@@ -179,7 +195,7 @@ export default function WarrantyPage() {
         <section id="contact" className="warranty-section">
           <h2>{t('pages.warranty.contactTitle')}</h2>
           <p>{t('pages.warranty.contactText')}</p>
-          
+
           <div className="warranty-contact-box">
             <div className="contact-method">
               <h4>{t('pages.warranty.contactEmailTitle')}</h4>
@@ -253,7 +269,9 @@ export default function WarrantyPage() {
               </div>
 
               <div className="form-group">
-                <label htmlFor="preferredContactMethod">{t('pages.warranty.form.contactMethod')} *</label>
+                <label htmlFor="preferredContactMethod">
+                  {t('pages.warranty.form.contactMethod')} *
+                </label>
                 <select
                   id="preferredContactMethod"
                   name="preferredContactMethod"

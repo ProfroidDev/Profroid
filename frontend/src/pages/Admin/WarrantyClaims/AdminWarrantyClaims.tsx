@@ -1,6 +1,9 @@
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { getAllWarrantyClaims, updateWarrantyClaimStatus } from '../../../features/warranty/api/warrantyClaimApi';
+import {
+  getAllWarrantyClaims,
+  updateWarrantyClaimStatus,
+} from '../../../features/warranty/api/warrantyClaimApi';
 import type { WarrantyClaimResponseModel } from '../../../features/warranty/models/WarrantyModels';
 import './AdminWarrantyClaims.css';
 
@@ -14,7 +17,7 @@ export default function AdminWarrantyClaims() {
   const [updateData, setUpdateData] = useState({
     status: '',
     adminNotes: '',
-    resolutionDetails: ''
+    resolutionDetails: '',
   });
 
   useEffect(() => {
@@ -37,7 +40,7 @@ export default function AdminWarrantyClaims() {
     setUpdateData({
       status: claim.status,
       adminNotes: claim.adminNotes || '',
-      resolutionDetails: claim.resolutionDetails || ''
+      resolutionDetails: claim.resolutionDetails || '',
     });
     setShowModal(true);
   };
@@ -70,14 +73,13 @@ export default function AdminWarrantyClaims() {
       IN_REVIEW: '#17a2b8',
       APPROVED: '#28a745',
       REJECTED: '#dc3545',
-      RESOLVED: '#6c757d'
+      RESOLVED: '#6c757d',
     };
     return colors[status] || '#6c757d';
   };
 
-  const filteredClaims = filterStatus === 'ALL' 
-    ? claims 
-    : claims.filter(claim => claim.status === filterStatus);
+  const filteredClaims =
+    filterStatus === 'ALL' ? claims : claims.filter((claim) => claim.status === filterStatus);
 
   if (loading) {
     return (
@@ -97,15 +99,21 @@ export default function AdminWarrantyClaims() {
             <span className="stat-label">{t('pages.adminWarranty.totalClaims')}</span>
           </div>
           <div className="stat-card">
-            <span className="stat-number">{claims.filter(c => c.status === 'PENDING').length}</span>
+            <span className="stat-number">
+              {claims.filter((c) => c.status === 'PENDING').length}
+            </span>
             <span className="stat-label">{t('pages.adminWarranty.pending')}</span>
           </div>
           <div className="stat-card">
-            <span className="stat-number">{claims.filter(c => c.status === 'IN_REVIEW').length}</span>
+            <span className="stat-number">
+              {claims.filter((c) => c.status === 'IN_REVIEW').length}
+            </span>
             <span className="stat-label">{t('pages.adminWarranty.inReview')}</span>
           </div>
           <div className="stat-card">
-            <span className="stat-number">{claims.filter(c => c.status === 'RESOLVED').length}</span>
+            <span className="stat-number">
+              {claims.filter((c) => c.status === 'RESOLVED').length}
+            </span>
             <span className="stat-label">{t('pages.adminWarranty.resolved')}</span>
           </div>
         </div>
@@ -144,7 +152,7 @@ export default function AdminWarrantyClaims() {
                 </td>
               </tr>
             ) : (
-              filteredClaims.map(claim => (
+              filteredClaims.map((claim) => (
                 <tr key={claim.claimId}>
                   <td className="claim-id">{claim.claimId.substring(0, 8)}</td>
                   <td>
@@ -156,8 +164,8 @@ export default function AdminWarrantyClaims() {
                   <td>{claim.productName}</td>
                   <td>{new Date(claim.purchaseDate).toLocaleDateString()}</td>
                   <td>
-                    <span 
-                      className="status-badge" 
+                    <span
+                      className="status-badge"
                       style={{ backgroundColor: getStatusColor(claim.status) }}
                     >
                       {claim.status}
@@ -166,16 +174,10 @@ export default function AdminWarrantyClaims() {
                   <td>{new Date(claim.createdAt).toLocaleDateString()}</td>
                   <td>
                     <div className="action-buttons">
-                      <button 
-                        className="btn-view" 
-                        onClick={() => handleViewClaim(claim)}
-                      >
+                      <button className="btn-view" onClick={() => handleViewClaim(claim)}>
                         {t('pages.adminWarranty.view')}
                       </button>
-                      <button 
-                        className="btn-contact" 
-                        onClick={() => handleContactCustomer(claim)}
-                      >
+                      <button className="btn-contact" onClick={() => handleContactCustomer(claim)}>
                         {t('pages.adminWarranty.contact')}
                       </button>
                     </div>
@@ -192,7 +194,9 @@ export default function AdminWarrantyClaims() {
           <div className="modal-content" onClick={(e) => e.stopPropagation()}>
             <div className="modal-header">
               <h2>{t('pages.adminWarranty.claimDetails')}</h2>
-              <button className="modal-close" onClick={() => setShowModal(false)}>×</button>
+              <button className="modal-close" onClick={() => setShowModal(false)}>
+                ×
+              </button>
             </div>
 
             <div className="modal-body">
@@ -210,11 +214,13 @@ export default function AdminWarrantyClaims() {
                   </div>
                   {selectedClaim.customerAddress && (
                     <div className="detail-item">
-                      <strong>{t('pages.adminWarranty.address')}:</strong> {selectedClaim.customerAddress}
+                      <strong>{t('pages.adminWarranty.address')}:</strong>{' '}
+                      {selectedClaim.customerAddress}
                     </div>
                   )}
                   <div className="detail-item">
-                    <strong>{t('pages.adminWarranty.preferredContact')}:</strong> {selectedClaim.preferredContactMethod}
+                    <strong>{t('pages.adminWarranty.preferredContact')}:</strong>{' '}
+                    {selectedClaim.preferredContactMethod}
                   </div>
                 </div>
 
@@ -225,11 +231,13 @@ export default function AdminWarrantyClaims() {
                   </div>
                   {selectedClaim.productSerialNumber && (
                     <div className="detail-item">
-                      <strong>{t('pages.adminWarranty.serialNumber')}:</strong> {selectedClaim.productSerialNumber}
+                      <strong>{t('pages.adminWarranty.serialNumber')}:</strong>{' '}
+                      {selectedClaim.productSerialNumber}
                     </div>
                   )}
                   <div className="detail-item">
-                    <strong>{t('pages.adminWarranty.purchaseDate')}:</strong> {new Date(selectedClaim.purchaseDate).toLocaleDateString()}
+                    <strong>{t('pages.adminWarranty.purchaseDate')}:</strong>{' '}
+                    {new Date(selectedClaim.purchaseDate).toLocaleDateString()}
                   </div>
                 </div>
               </div>
@@ -241,12 +249,12 @@ export default function AdminWarrantyClaims() {
 
               <div className="detail-section full-width">
                 <h3>{t('pages.adminWarranty.updateClaim')}</h3>
-                
+
                 <div className="form-group">
                   <label>{t('pages.adminWarranty.status')}</label>
-                  <select 
-                    value={updateData.status} 
-                    onChange={(e) => setUpdateData({...updateData, status: e.target.value})}
+                  <select
+                    value={updateData.status}
+                    onChange={(e) => setUpdateData({ ...updateData, status: e.target.value })}
                   >
                     <option value="PENDING">PENDING</option>
                     <option value="IN_REVIEW">IN_REVIEW</option>
@@ -258,9 +266,9 @@ export default function AdminWarrantyClaims() {
 
                 <div className="form-group">
                   <label>{t('pages.adminWarranty.adminNotes')}</label>
-                  <textarea 
+                  <textarea
                     value={updateData.adminNotes}
-                    onChange={(e) => setUpdateData({...updateData, adminNotes: e.target.value})}
+                    onChange={(e) => setUpdateData({ ...updateData, adminNotes: e.target.value })}
                     rows={4}
                     placeholder={t('pages.adminWarranty.adminNotesPlaceholder')}
                   />
@@ -268,9 +276,11 @@ export default function AdminWarrantyClaims() {
 
                 <div className="form-group">
                   <label>{t('pages.adminWarranty.resolutionDetails')}</label>
-                  <textarea 
+                  <textarea
                     value={updateData.resolutionDetails}
-                    onChange={(e) => setUpdateData({...updateData, resolutionDetails: e.target.value})}
+                    onChange={(e) =>
+                      setUpdateData({ ...updateData, resolutionDetails: e.target.value })
+                    }
                     rows={4}
                     placeholder={t('pages.adminWarranty.resolutionDetailsPlaceholder')}
                   />

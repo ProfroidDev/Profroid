@@ -12,8 +12,12 @@ export async function getAllWarrantyClaims(): Promise<WarrantyClaimResponseModel
 /**
  * Get warranty claims by status (admin only)
  */
-export async function getWarrantyClaimsByStatus(status: string): Promise<WarrantyClaimResponseModel[]> {
-  const response = await axiosInstance.get<WarrantyClaimResponseModel[]>(`/warranty-claims/status/${status}`);
+export async function getWarrantyClaimsByStatus(
+  status: string
+): Promise<WarrantyClaimResponseModel[]> {
+  const response = await axiosInstance.get<WarrantyClaimResponseModel[]>(
+    `/warranty-claims/status/${status}`
+  );
   return response.data;
 }
 
