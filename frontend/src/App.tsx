@@ -22,8 +22,10 @@ import ForbiddenPage from './pages/Error/ForbiddenPage';
 import AboutPage from './pages/About/AboutPage';
 import ContactPage from './pages/Contact/ContactPage';
 import PrivacyPolicyPage from './pages/Privacy/PrivacyPolicyPage';
+import WarrantyPage from './pages/Warranty/WarrantyPage';
 import ReviewManagement from './pages/Review/ReviewManagement';
 import AdminMessages from './pages/Admin/Messages/AdminMessages';
+import AdminWarrantyClaims from './pages/Admin/WarrantyClaims/AdminWarrantyClaims';
 
 // Auth pages and components
 import LoginPage from './pages/Auth/LoginPage';
@@ -118,6 +120,7 @@ function AppRoutes(): React.ReactElement {
         <Route path="/about" element={<AboutPage />} />
         <Route path="/contact" element={<ContactPage />} />
         <Route path="/privacy" element={<PrivacyPolicyPage />} />
+        <Route path="/warranty" element={<WarrantyPage />} />
 
         {/* Payment return pages (Stripe hosted checkout redirects here) */}
         <Route
@@ -202,6 +205,16 @@ function AppRoutes(): React.ReactElement {
           element={
             <ProtectedRoute requiredRoles={['ADMIN']}>
               <AdminMessages />
+            </ProtectedRoute>
+          }
+        />
+
+        {/* Warranty Claims - ADMIN only */}
+        <Route
+          path="/admin/warranty-claims"
+          element={
+            <ProtectedRoute requiredRoles={['ADMIN']}>
+              <AdminWarrantyClaims />
             </ProtectedRoute>
           }
         />
