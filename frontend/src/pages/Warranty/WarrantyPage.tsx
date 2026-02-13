@@ -183,15 +183,19 @@ export default function WarrantyPage() {
           <div className="warranty-contact-box">
             <div className="contact-method">
               <h4>{t('pages.warranty.contactEmailTitle')}</h4>
-              <p>warranty@profroid.com</p>
+              <a href="mailto:profroid@hotmail.com">{t('pages.warranty.contactEmailValue')}</a>
             </div>
             <div className="contact-method">
               <h4>{t('pages.warranty.contactPhoneTitle')}</h4>
-              <p>1-800-PROFROID</p>
+              <a href="tel:+15145853298">{t('pages.warranty.contactPhoneValue')}</a>
             </div>
             <div className="contact-method">
-              <h4>{t('pages.warranty.contactHoursTitle')}</h4>
-              <p>{t('pages.warranty.contactHoursText')}</p>
+              <h4>{t('pages.warranty.contactMailTitle')}</h4>
+              <p>
+                Profroid Inc.
+                <br />
+                {t('pages.warranty.contactAddress')}
+              </p>
             </div>
           </div>
         </section>
