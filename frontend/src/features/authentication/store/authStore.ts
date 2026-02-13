@@ -87,13 +87,16 @@ const useAuthStore = create<AuthStore>((set, get) => ({
             // Fetch user language preference and sync with i18n
             try {
               const token = localStorage.getItem('authToken');
-              const preferencesResponse = await fetch(`${import.meta.env.VITE_API_URL}/user-preferences`, {
-                method: 'GET',
-                headers: {
-                  Authorization: `Bearer ${token}`,
-                  'Content-Type': 'application/json',
-                },
-              });
+              const preferencesResponse = await fetch(
+                `${import.meta.env.VITE_API_URL}/user-preferences`,
+                {
+                  method: 'GET',
+                  headers: {
+                    Authorization: `Bearer ${token}`,
+                    'Content-Type': 'application/json',
+                  },
+                }
+              );
 
               if (preferencesResponse.ok) {
                 const preferences = await preferencesResponse.json();
@@ -234,13 +237,16 @@ const useAuthStore = create<AuthStore>((set, get) => ({
 
         // Fetch user language preference and sync with i18n
         try {
-          const preferencesResponse = await fetch(`${import.meta.env.VITE_API_URL}/user-preferences`, {
-            method: 'GET',
-            headers: {
-              Authorization: `Bearer ${token}`,
-              'Content-Type': 'application/json',
-            },
-          });
+          const preferencesResponse = await fetch(
+            `${import.meta.env.VITE_API_URL}/user-preferences`,
+            {
+              method: 'GET',
+              headers: {
+                Authorization: `Bearer ${token}`,
+                'Content-Type': 'application/json',
+              },
+            }
+          );
 
           if (preferencesResponse.ok) {
             const preferences = await preferencesResponse.json();

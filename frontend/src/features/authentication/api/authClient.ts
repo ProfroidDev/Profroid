@@ -79,7 +79,12 @@ class AuthAPI {
   /**
    * Register a new user
    */
-  async register(email: string, password: string, name?: string, preferredLanguage?: 'en' | 'fr'): Promise<AuthResponse> {
+  async register(
+    email: string,
+    password: string,
+    name?: string,
+    preferredLanguage?: 'en' | 'fr'
+  ): Promise<AuthResponse> {
     try {
       const response = await this.client.post<AuthResponse>('/register', {
         email,

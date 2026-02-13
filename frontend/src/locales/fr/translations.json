@@ -834,45 +834,46 @@
         "edit": "Modifier",
         "delete": "Supprimer"
       }
-    },"reviews": {
-    "title": "Gestion des Avis",
-    "subtitle": "Gérer les avis et témoignages des clients",
-    "filters": {
-      "all": "Tous",
-      "pending": "En attente",
-      "approved": "Approuvés",
-      "rejected": "Rejetés"
     },
-    "statusBadges": {
-      "pending": "En attente",
-      "approved": "Approuvé",
-      "rejected": "Rejeté"
+    "reviews": {
+      "title": "Gestion des Avis",
+      "subtitle": "Gérer les avis et témoignages des clients",
+      "filters": {
+        "all": "Tous",
+        "pending": "En attente",
+        "approved": "Approuvés",
+        "rejected": "Rejetés"
+      },
+      "statusBadges": {
+        "pending": "En attente",
+        "approved": "Approuvé",
+        "rejected": "Rejeté"
+      },
+      "labels": {
+        "id": "ID",
+        "submitted": "Soumis",
+        "reviewed": "Examiné",
+        "loading": "Chargement des avis...",
+        "noReviews": "Aucun avis trouvé"
+      },
+      "actions": {
+        "approve": "Approuver",
+        "reject": "Rejeter",
+        "revokeApproval": "Révoquer l'approbation",
+        "delete": "Supprimer"
+      },
+      "messages": {
+        "approveSuccess": "Avis approuvé avec succès",
+        "approveFailed": "Impossible d'approuver l'avis",
+        "rejectSuccess": "Avis rejeté avec succès",
+        "rejectFailed": "Impossible de rejeter l'avis",
+        "deleteSuccess": "Avis supprimé avec succès",
+        "deleteFailed": "Impossible de supprimer l'avis",
+        "loadFailed": "Impossible de charger les avis",
+        "deleteConfirmTitle": "Supprimer l'avis",
+        "deleteConfirmMessage": "Êtes-vous sûr de vouloir supprimer définitivement cet avis? Cette action ne peut pas être annulée."
+      }
     },
-    "labels": {
-      "id": "ID",
-      "submitted": "Soumis",
-      "reviewed": "Examiné",
-      "loading": "Chargement des avis...",
-      "noReviews": "Aucun avis trouvé"
-    },
-    "actions": {
-      "approve": "Approuver",
-      "reject": "Rejeter",
-      "revokeApproval": "Révoquer l'approbation",
-      "delete": "Supprimer"
-    },
-    "messages": {
-      "approveSuccess": "Avis approuvé avec succès",
-      "approveFailed": "Impossible d'approuver l'avis",
-      "rejectSuccess": "Avis rejeté avec succès",
-      "rejectFailed": "Impossible de rejeter l'avis",
-      "deleteSuccess": "Avis supprimé avec succès",
-      "deleteFailed": "Impossible de supprimer l'avis",
-      "loadFailed": "Impossible de charger les avis",
-      "deleteConfirmTitle": "Supprimer l'avis",
-      "deleteConfirmMessage": "Êtes-vous sûr de vouloir supprimer définitivement cet avis? Cette action ne peut pas être annulée."
-    }
-  },
     "appointments": {
       "myAppointments": "Mes Rendez-vous",
       "allAppointments": "Tous les Rendez-vous",
@@ -1352,7 +1353,7 @@
     "failedToCreateAppointment": "Échec de la création du rendez-vous.",
     "failedToUpdateAppointment": "Échec de la mise à jour du rendez-vous."
   },
-"error": {
+  "error": {
     "sessionExpired": "Session Expirée",
     "sessionExpiredMessage": "Votre session a expiré en raison de l'inactivité. Veuillez vous connecter à nouveau pour continuer.",
     "permissionDenied": "Accès Refusé",

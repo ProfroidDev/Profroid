@@ -167,7 +167,12 @@ export default function RegisterPage() {
 
     setSubmitting(true);
     try {
-      const response = await authClient.register(sanitizedEmail, password, undefined, preferredLanguage);
+      const response = await authClient.register(
+        sanitizedEmail,
+        password,
+        undefined,
+        preferredLanguage
+      );
       if (response.success) {
         // Redirect to email verification page
         navigate('/auth/verify-email', {
