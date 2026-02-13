@@ -160,7 +160,9 @@
   padding: 25px;
   border-radius: 10px;
   border-left: 4px solid #722f37;
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease;
 }
 
 .coverage-item:hover {
@@ -248,7 +250,9 @@
   padding: 30px;
   border-radius: 10px;
   text-align: center;
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease;
 }
 
 .process-step:hover {
@@ -387,7 +391,9 @@
   font-weight: 600;
   border-radius: 8px;
   cursor: pointer;
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease;
   width: 100%;
   margin-top: 20px;
 }
