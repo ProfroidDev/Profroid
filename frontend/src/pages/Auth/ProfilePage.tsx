@@ -53,7 +53,6 @@ export default function ProfilePage() {
   const {
     user,
     changePassword,
-    logout,
     isLoading,
     error,
     clearError,
@@ -301,7 +300,7 @@ export default function ProfilePage() {
     const fetchUserPreferences = async () => {
       try {
         const token = localStorage.getItem('authToken');
-        const response = await fetch(`${import.meta.env.VITE_API_URL}/user`, {
+        const response = await fetch(`${import.meta.env.VITE_API_URL}/user-preferences`, {
           method: 'GET',
           headers: {
             Authorization: `Bearer ${token}`,
@@ -310,11 +309,9 @@ export default function ProfilePage() {
         });
 
         if (response.ok) {
-          const userData = await response.json();
-          // Preferred language might be available in user data or stored elsewhere
-          // For now, we default to 'en' - can be extended if backend returns it
-          if (userData.user) {
-            setPreferredLanguage('en');
+          const preferences = await response.json();
+          if (preferences.preferredLanguage) {
+            setPreferredLanguage(preferences.preferredLanguage as 'en' | 'fr');
           }
         }
       } catch (error) {
@@ -557,7 +554,11 @@ export default function ProfilePage() {
             }),
           });
 
-          if (!languageResponse.ok) {
+          if (languageResponse.ok) {
+            // Sync i18n with the new language preference
+            i18n.changeLanguage(preferredLanguage);
+            localStorage.setItem('i18nextLng', preferredLanguage);
+          } else {
             console.error('Failed to update language preference');
           }
         } catch (error) {
@@ -901,11 +902,6 @@ export default function ProfilePage() {
     } finally {
       setCellarLoading(false);
     }
-  };
-
-  const handleLogout = async () => {
-    await logout();
-    navigate('/login');
   };
 
   const handleFirstNameChange = (value: string) => {

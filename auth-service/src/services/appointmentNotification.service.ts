@@ -5,12 +5,12 @@ const SMTP_PORT = parseInt(process.env.SMTP_PORT || "587");
 const SMTP_USER = process.env.SMTP_USER || "";
 const SMTP_PASSWORD = process.env.SMTP_PASSWORD || "";
 const SMTP_FROM = process.env.SMTP_FROM || "noreply@profroid.com";
-const FRONTEND_URL =
-  process.env.FRONTEND_URLS?.split(",")[0] || "http://localhost:5173";
+const FRONTEND_URL = process.env.FRONTEND_URLS?.split(",")[0] || "http://localhost:5173";
 
 interface AppointmentDetails {
   appointmentId: string;
   jobName: string;
+  jobNameFr?: string; // French translation of job name
   technicianName: string;
   customerName: string;
   appointmentDate: string;
@@ -25,12 +25,220 @@ interface AppointmentDetails {
   };
   cellarName?: string;
   status?: string;
+  preferredLanguage?: "en" | "fr";
 }
 
 interface NotificationRecipient {
   email: string;
   name: string;
   role: "customer" | "technician";
+}
+
+/**
+ * Get the appropriate job name based on language
+ */
+function getJobName(details: AppointmentDetails, language: "en" | "fr"): string {
+  if (language === "fr" && details.jobNameFr) {
+    return details.jobNameFr;
+  }
+  return details.jobName;
+}
+
+/**
+ * Get validated language preference
+ */
+function getLanguage(lang?: string): "en" | "fr" {
+  if (lang === "fr") return "fr";
+  return "en";
+}
+
+/**
+ * Format date according to language preference
+ */
+function formatDateForLanguage(dateString: string, language: "en" | "fr"): string {
+  try {
+    const date = new Date(dateString);
+    if (isNaN(date.getTime())) return dateString; // Return original if invalid
+    
+    if (language === "fr") {
+      // Format: "12 février 2026"
+      return date.toLocaleDateString("fr-CA", { year: "numeric", month: "long", day: "numeric" });
+    } else {
+      // Format: "February 12, 2026"
+      return date.toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" });
+    }
+  } catch {
+    return dateString;
+  }
+}
+
+/**
+ * Format date phrase with language-specific preposition
+ */
+function formatDatePhrase(dateString: string, language: "en" | "fr"): string {
+  const formattedDate = formatDateForLanguage(dateString, language);
+  const preposition = language === "fr" ? "le" : "on";
+  return `${preposition} ${formattedDate}`;
+}
+
+/**
+ * Get appointment email strings in specified language
+ */
+function getAppointmentEmailStrings(language: "en" | "fr") {
+  if (language === "fr") {
+    return {
+      // Common labels
+      appointmentID: "ID de Rendez-vous",
+      service: "Service",
+      date: "Date",
+      time: "Heure",
+      location: "Emplacement",
+      technician: "Technicien",
+      customer: "Client",
+      cellar: "Cave",
+      notes: "Remarques",
+      notSpecified: "Non spécifié",
+      
+      // Booked email
+      bookedSubject: "Rendez-vous Confirmé",
+      bookedGreetingCustomer: "Cher client",
+      bookedGreetingTechnician: "Cher technicien",
+      bookedMessageCustomer: "Votre rendez-vous a été confirmé auprès de notre équipe.",
+      bookedMessageTechnician: "Un nouveau rendez-vous vous a été assigné.",
+      bookedDetails: "Détails du Rendez-vous",
+      bookedPleaseArrive: "Veuillez arriver à l'heure et apporter tous les documents ou articles nécessaires.",
+      bookedViewAppointments: "Voir Vos Rendez-vous",
+      bookedViewJobs: "Voir Vos Travaux",
+      
+      // Cancelled email
+      cancelledSubject: "Rendez-vous Annulé",
+      cancelledGreetingCustomer: "Cher client",
+      cancelledGreetingTechnician: "Cher technicien",
+      cancelledTitle: "Rendez-vous Annulé",
+      cancelledMessage: "Le rendez-vous suivant a été annulé:",
+      cancelledReason: "Raison",
+      cancelledContact: "Si vous devez reporter ou avez des questions, veuillez contacter notre équipe d'assistance.",
+      
+      // Updated email
+      updatedSubject: "Rendez-vous Mis à Jour",
+      updatedGreetingCustomer: "Cher client",
+      updatedGreetingTechnician: "Cher technicien",
+      updatedTitle: "Rendez-vous Mis à Jour",
+      updatedMessage: "Les détails de votre rendez-vous ont été modifiés:",
+      updatedChangedFields: "Champs Modifiés",
+      updatedContact: "Si vous avez des questions, veuillez contacter notre équipe d'assistance.",
+      
+      // Reminder email
+      reminderSubject: "Rappel de Rendez-vous",
+      reminderGreetingCustomer: "Cher client",
+      reminderGreetingTechnician: "Cher technicien",
+      reminderTitle: "Rappel de Rendez-vous",
+      reminderTomorrow: "prochain rendez-vous demain",
+      reminderInHours: "rendez-vous dans {hours} heures",
+      reminderPlease: "Veuillez arriver à l'heure et apporter tous les documents ou articles nécessaires.",
+      reminderViewAppointments: "Voir Vos Rendez-vous",
+      reminderViewJobs: "Voir Vos Travaux",
+      
+      // Reassigned email
+      reassignedSubject: "Rendez-vous Réassigné",
+      reassignedTitle: "Rendez-vous Réassigné",
+      reassignedMessage: "Ce rendez-vous a été réassigné à un autre {role}. Vous n'êtes plus responsable de ce rendez-vous.",
+      reassignedContact: "Si vous avez des questions, veuillez contacter notre équipe d'assistance.",
+      reassignedViewAppointments: "Voir Vos Rendez-vous",
+      reassignedViewJobs: "Voir Vos Travaux",
+      
+      // Confirmed email
+      confirmedSubject: "Rendez-vous Confirmé",
+      confirmedGreetingCustomer: "Cher client",
+      confirmedGreetingTechnician: "Cher technicien",
+      confirmedTitle: "Rendez-vous Confirmé",
+      confirmedMessage: "Votre rendez-vous a été confirmé auprès de notre équipe.",
+      confirmedPleaseArrive: "Veuillez arriver à l'heure. Si vous devez reporter ou annuler ce rendez-vous, veuillez nous contacter dès que possible.",
+      confirmedViewAppointments: "Voir Vos Rendez-vous",
+      confirmedViewJobs: "Voir Vos Travaux",
+      
+      // Footer
+      automatedEmail: "Ceci est un email automatisé de Profroid. Veuillez ne pas répondre à cet email.",
+      allRightsReserved: "Tous les droits sont réservés à Profroid",
+    };
+  }
+  
+  // English (default)
+  return {
+    // Common labels
+    appointmentID: "Appointment ID",
+    service: "Service",
+    date: "Date",
+    time: "Time",
+    location: "Location",
+    technician: "Technician",
+    customer: "Customer",
+    cellar: "Cellar",
+    notes: "Notes",
+    notSpecified: "Not specified",
+    
+    // Booked email
+    bookedSubject: "Appointment Confirmed",
+    bookedGreetingCustomer: "Dear Customer",
+    bookedGreetingTechnician: "Dear Technician",
+    bookedMessageCustomer: "Your appointment has been successfully booked with our team.",
+    bookedMessageTechnician: "A new appointment has been assigned to you.",
+    bookedDetails: "Appointment Details",
+    bookedPleaseArrive: "Please make sure to arrive on time. If you need to reschedule or cancel this appointment, please contact us as soon as possible.",
+    bookedViewAppointments: "View Your Appointments",
+    bookedViewJobs: "View Your Jobs",
+    
+    // Cancelled email
+    cancelledSubject: "Appointment Cancelled",
+    cancelledGreetingCustomer: "Dear Customer",
+    cancelledGreetingTechnician: "Dear Technician",
+    cancelledTitle: "Appointment Cancelled",
+    cancelledMessage: "The following appointment has been cancelled:",
+    cancelledReason: "Reason",
+    cancelledContact: "If you need to reschedule or have any questions, please contact our support team.",
+    
+    // Updated email
+    updatedSubject: "Appointment Updated",
+    updatedGreetingCustomer: "Dear Customer",
+    updatedGreetingTechnician: "Dear Technician",
+    updatedTitle: "Appointment Updated",
+    updatedMessage: "The details of your appointment have been changed:",
+    updatedChangedFields: "Changed Fields",
+    updatedContact: "If you have any questions, please contact our support team.",
+    
+    // Reminder email
+    reminderSubject: "Appointment Reminder",
+    reminderGreetingCustomer: "Dear Customer",
+    reminderGreetingTechnician: "Dear Technician",
+    reminderTitle: "Appointment Reminder",
+    reminderTomorrow: "upcoming appointment tomorrow",
+    reminderInHours: "appointment in {hours} hours",
+    reminderPlease: "Please arrive on time and bring any necessary documents or items.",
+    reminderViewAppointments: "View Your Appointments",
+    reminderViewJobs: "View Your Jobs",
+    
+    // Reassigned email
+    reassignedSubject: "Appointment Reassigned",
+    reassignedTitle: "Appointment Reassigned",
+    reassignedMessage: "This appointment has been reassigned to another {role}. You are no longer responsible for this appointment.",
+    reassignedContact: "If you have any questions, please contact our support team.",
+    reassignedViewAppointments: "View Your Appointments",
+    reassignedViewJobs: "View Your Jobs",
+    
+    // Confirmed email
+    confirmedSubject: "Appointment Confirmed",
+    confirmedGreetingCustomer: "Dear Customer",
+    confirmedGreetingTechnician: "Dear Technician",
+    confirmedTitle: "Appointment Confirmed",
+    confirmedMessage: "Your appointment has been confirmed with our team.",
+    confirmedPleaseArrive: "Please make sure to arrive on time. If you need to reschedule or cancel this appointment, please contact us as soon as possible.",
+    confirmedViewAppointments: "View Your Appointments",
+    confirmedViewJobs: "View Your Jobs",
+    
+    // Footer
+    automatedEmail: "This is an automated email from Profroid. Please do not reply to this email.",
+    allRightsReserved: "All rights reserved to Profroid",
+  };
 }
 
 /**
@@ -51,64 +259,60 @@ function createTransporter() {
 /**
  * Format appointment details for email display
  */
-function formatAppointmentDetails(details: AppointmentDetails): string {
+function formatAppointmentDetails(details: AppointmentDetails, language?: "en" | "fr"): string {
+  const lang = getLanguage(language || details.preferredLanguage);
+  const strings = getAppointmentEmailStrings(lang);
+  const jobName = getJobName(details, lang);
+  
   const startTime = details.appointmentStartTime.slice(0, 5);
   const endTime = details.appointmentEndTime.slice(0, 5);
   const address = details.appointmentAddress;
   const addressStr = address
     ? `${address.street || ""}, ${address.city || ""}, ${address.province || ""} ${address.postalCode || ""}`.trim()
-    : "Not specified";
+    : strings.notSpecified;
 
   return `
     <table style="width: 100%; border-collapse: collapse; margin: 15px 0;">
       <tr style="background-color: #f5f5f5;">
-        <td style="padding: 12px; border: 1px solid #ddd; font-weight: bold; width: 35%;">Appointment ID:</td>
+        <td style="padding: 12px; border: 1px solid #ddd; font-weight: bold; width: 35%;">${strings.appointmentID}:</td>
         <td style="padding: 12px; border: 1px solid #ddd;">${details.appointmentId}</td>
       </tr>
       <tr>
-        <td style="padding: 12px; border: 1px solid #ddd; font-weight: bold;">Service:</td>
-        <td style="padding: 12px; border: 1px solid #ddd;">${details.jobName}</td>
+        <td style="padding: 12px; border: 1px solid #ddd; font-weight: bold;">${strings.service}:</td>
+        <td style="padding: 12px; border: 1px solid #ddd;">${jobName}</td>
       </tr>
       <tr style="background-color: #f5f5f5;">
-        <td style="padding: 12px; border: 1px solid #ddd; font-weight: bold;">Date:</td>
-        <td style="padding: 12px; border: 1px solid #ddd;">${details.appointmentDate}</td>
+        <td style="padding: 12px; border: 1px solid #ddd; font-weight: bold;">${strings.date}:</td>
+        <td style="padding: 12px; border: 1px solid #ddd;">${formatDateForLanguage(details.appointmentDate, lang)}</td>
       </tr>
       <tr>
-        <td style="padding: 12px; border: 1px solid #ddd; font-weight: bold;">Time:</td>
+        <td style="padding: 12px; border: 1px solid #ddd; font-weight: bold;">${strings.time}:</td>
         <td style="padding: 12px; border: 1px solid #ddd;">${startTime} - ${endTime}</td>
       </tr>
       <tr style="background-color: #f5f5f5;">
-        <td style="padding: 12px; border: 1px solid #ddd; font-weight: bold;">Location:</td>
+        <td style="padding: 12px; border: 1px solid #ddd; font-weight: bold;">${strings.location}:</td>
         <td style="padding: 12px; border: 1px solid #ddd;">${addressStr}</td>
       </tr>
       <tr>
-        <td style="padding: 12px; border: 1px solid #ddd; font-weight: bold;">Technician:</td>
+        <td style="padding: 12px; border: 1px solid #ddd; font-weight: bold;">${strings.technician}:</td>
         <td style="padding: 12px; border: 1px solid #ddd;">${details.technicianName}</td>
       </tr>
       <tr style="background-color: #f5f5f5;">
-        <td style="padding: 12px; border: 1px solid #ddd; font-weight: bold;">Customer:</td>
+        <td style="padding: 12px; border: 1px solid #ddd; font-weight: bold;">${strings.customer}:</td>
         <td style="padding: 12px; border: 1px solid #ddd;">${details.customerName}</td>
       </tr>
-      ${
-        details.cellarName
-          ? `
+      ${details.cellarName ? `
       <tr>
-        <td style="padding: 12px; border: 1px solid #ddd; font-weight: bold;">Cellar:</td>
+        <td style="padding: 12px; border: 1px solid #ddd; font-weight: bold;">${strings.cellar}:</td>
         <td style="padding: 12px; border: 1px solid #ddd;">${details.cellarName}</td>
       </tr>
-      `
-          : ""
-      }
-      ${
-        details.description
-          ? `
+      ` : ""}
+      ${details.description ? `
       <tr style="background-color: #f5f5f5;">
-        <td style="padding: 12px; border: 1px solid #ddd; font-weight: bold; vertical-align: top;">Notes:</td>
+        <td style="padding: 12px; border: 1px solid #ddd; font-weight: bold; vertical-align: top;">${strings.notes}:</td>
         <td style="padding: 12px; border: 1px solid #ddd;">${details.description}</td>
       </tr>
-      `
-          : ""
-      }
+      ` : ""}
     </table>
   `;
 }
@@ -119,184 +323,112 @@ function formatAppointmentDetails(details: AppointmentDetails): string {
 export async function sendAppointmentBookedNotification(
   recipients: NotificationRecipient[],
   details: AppointmentDetails,
+  language?: "en" | "fr"
 ): Promise<void> {
   const transporter = createTransporter();
+  const lang = getLanguage(language || details.preferredLanguage);
+  const strings = getAppointmentEmailStrings(lang);
+  const jobName = getJobName(details, lang);
 
   for (const recipient of recipients) {
-    const greeting =
-      recipient.role === "customer" ? "Dear Customer" : "Dear Technician";
+    const greeting = recipient.role === "customer" ? strings.bookedGreetingCustomer : strings.bookedGreetingTechnician;
     const roleMessage =
       recipient.role === "customer"
-        ? "Your appointment has been successfully booked with our team."
-        : "A new appointment has been assigned to you.";
-
+        ? strings.bookedMessageCustomer
+        : strings.bookedMessageTechnician;
+    
     // Use role-specific appointment view URL
-    const appointmentUrl =
-      recipient.role === "customer"
-        ? `${FRONTEND_URL}/my-appointments`
-        : `${FRONTEND_URL}/my-jobs`;
+    const appointmentUrl = recipient.role === "customer" 
+      ? `${FRONTEND_URL}/my-appointments`
+      : `${FRONTEND_URL}/my-jobs`;
+    
+    const buttonText = recipient.role === "customer" ? strings.bookedViewAppointments : strings.bookedViewJobs;
 
     const mailOptions = {
       from: SMTP_FROM,
       to: recipient.email,
-      subject: `Appointment Confirmed - ${details.jobName} on ${details.appointmentDate}`,
+      subject: `${strings.bookedSubject} - ${jobName} ${formatDatePhrase(details.appointmentDate, lang)}`,
       html: `
         <!DOCTYPE html>
         <html>
           <head>
-            <meta charset="UTF-8">
-            <meta name="viewport" content="width=device-width, initial-scale=1.0">
             <style>
-              * {
-                margin: 0;
-                padding: 0;
-                box-sizing: border-box;
-              }
               body {
-                font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Helvetica Neue', Arial, sans-serif;
+                font-family: Arial, sans-serif;
                 line-height: 1.6;
-                color: #3a2e2a;
-                background-color: #f4f1ec;
-                padding: 20px;
+                color: #333;
               }
-              .email-wrapper {
+              .container {
                 max-width: 600px;
                 margin: 0 auto;
-                background-color: #ffffff;
-                border-radius: 8px;
-                overflow: hidden;
-                box-shadow: 0 2px 8px rgba(122, 9, 1, 0.1);
+                padding: 20px;
               }
               .header {
-                background: linear-gradient(135deg, #7a0901 0%, #a32c1a 100%);
-                padding: 40px 30px;
+                background-color: #4CAF50;
+                color: white;
+                padding: 20px;
                 text-align: center;
-              }
-              .logo {
-                color: #ffffff;
-                font-size: 32px;
-                font-weight: 700;
-                letter-spacing: 1px;
-                margin-bottom: 10px;
-              }
-              .header-subtitle {
-                color: #f4f1ec;
-                font-size: 14px;
-                font-weight: 400;
+                border-radius: 5px 5px 0 0;
               }
               .content {
-                padding: 40px 30px;
-                background-color: #ffffff;
-              }
-              .greeting {
-                font-size: 18px;
-                color: #3a2e2a;
-                margin-bottom: 20px;
-                font-weight: 600;
-              }
-              .message {
-                color: #5c504b;
-                margin-bottom: 15px;
-                font-size: 15px;
-              }
-              .success-banner {
-                background: linear-gradient(135deg, #d4f1d9 0%, #e8f5e9 100%);
-                border-left: 4px solid #4caf50;
-                padding: 20px;
-                margin: 25px 0;
-                border-radius: 4px;
-              }
-              .success-title {
-                color: #2e7d32;
-                font-weight: 600;
-                font-size: 16px;
-              }
-              table {
-                width: 100%;
-                border-collapse: collapse;
-                margin: 20px 0;
-                background-color: #ffffff;
-                border-radius: 6px;
-                overflow: hidden;
-              }
-              table tr:nth-child(odd) {
-                background-color: #f4f1ec;
-              }
-              table td {
-                padding: 14px;
-                border: 1px solid #e4e2df;
-                font-size: 14px;
-              }
-              table td:first-child {
-                font-weight: 600;
-                color: #7a0901;
-                width: 35%;
-              }
-              .button-container {
-                text-align: center;
-                margin: 35px 0;
+                background-color: #f9f9f9;
+                padding: 30px;
+                border: 1px solid #ddd;
+                border-top: none;
+                border-radius: 0 0 5px 5px;
               }
               .button {
                 display: inline-block;
-                padding: 16px 40px;
-                background: linear-gradient(90deg, #7a0901 0%, #a32c1a 100%);
-                color: #ffffff !important;
+                padding: 12px 30px;
+                margin: 20px 0;
+                background-color: #4CAF50;
+                color: white !important;
                 text-decoration: none;
-                border-radius: 6px;
-                font-weight: 600;
-                font-size: 16px;
-                box-shadow: 0 4px 12px rgba(122, 9, 1, 0.25);
+                border-radius: 5px;
+                font-weight: bold;
               }
               .footer {
-                background-color: #f4f1ec;
-                padding: 30px;
-                text-align: center;
-                border-top: 1px solid #e4e2df;
-              }
-              .footer-text {
-                color: #6b615c;
-                font-size: 13px;
-                line-height: 1.8;
-              }
-              .footer-brand {
-                color: #7a0901;
-                font-weight: 600;
-                font-size: 14px;
-                margin-top: 15px;
-              }
-              .footer-copyright {
-                color: #8b817c;
+                margin-top: 20px;
+                padding-top: 20px;
+                border-top: 1px solid #ddd;
                 font-size: 12px;
-                margin-top: 10px;
+                color: #666;
+              }
+              .success {
+                background-color: #d4edda;
+                border: 1px solid #28a745;
+                padding: 15px;
+                margin: 20px 0;
+                border-radius: 5px;
+                color: #155724;
               }
             </style>
           </head>
           <body>
-            <div class="email-wrapper">
+            <div class="container">
               <div class="header">
-                <div class="logo">PROFROID</div>
-                <div class="header-subtitle">Professional Service Management</div>
+                <h1>✓ ${strings.bookedSubject}</h1>
               </div>
               <div class="content">
-                <p class="greeting">${greeting},</p>
+                <p>${greeting},</p>
                 
-                <div class="success-banner">
-                  <div class="success-title">✓ ${roleMessage}</div>
+                <div class="success">
+                  <strong>${roleMessage}</strong>
                 </div>
                 
-                <h2 style="color: #7a0901; margin: 25px 0 15px 0; font-size: 20px;">Appointment Details</h2>
-                ${formatAppointmentDetails(details)}
+                <h2>${strings.bookedDetails}</h2>
+                ${formatAppointmentDetails(details, lang)}
                 
-                <p class="message">Please make sure to arrive on time. If you need to reschedule or cancel this appointment, please contact us as soon as possible.</p>
+                <p>${strings.bookedPleaseArrive}</p>
                 
-                <div class="button-container">
-                  <a href="${appointmentUrl}" class="button">${recipient.role === "customer" ? "View Your Appointments" : "View Your Jobs"}</a>
+                <div style="text-align: center;">
+                  <a href="${appointmentUrl}" class="button">${buttonText}</a>
                 </div>
-              </div>
-              <div class="footer">
-                <p class="footer-text">This is an automated message from Profroid.<br>Please do not reply to this email.</p>
-                <div class="footer-brand">PROFROID</div>
-                <p class="footer-copyright">&copy; ${new Date().getFullYear()} Profroid. All rights reserved.</p>
+                
+                <div class="footer">
+                  <p>${strings.automatedEmail}</p>
+                  <p>&copy; ${new Date().getFullYear()} Profroid. ${strings.allRightsReserved}.</p>
+                </div>
               </div>
             </div>
           </body>
@@ -307,20 +439,20 @@ ${greeting},
 
 ${roleMessage}
 
-Appointment Details:
-- Appointment ID: ${details.appointmentId}
-- Service: ${details.jobName}
-- Date: ${details.appointmentDate}
-- Time: ${details.appointmentStartTime.slice(0, 5)} - ${details.appointmentEndTime.slice(0, 5)}
-- Location: ${
+${strings.bookedDetails}:
+- ${strings.appointmentID}: ${details.appointmentId}
+- ${strings.service}: ${jobName}
+- ${strings.date}: ${formatDateForLanguage(details.appointmentDate, lang)}
+- ${strings.time}: ${details.appointmentStartTime.slice(0, 5)} - ${details.appointmentEndTime.slice(0, 5)}
+- ${strings.location}: ${
         details.appointmentAddress
           ? `${details.appointmentAddress.street || ""}, ${details.appointmentAddress.city || ""}`
-          : "Not specified"
+          : strings.notSpecified
       }
-- Technician: ${details.technicianName}
-- Customer: ${details.customerName}
+- ${strings.technician}: ${details.technicianName}
+- ${strings.customer}: ${details.customerName}
 
-Please make sure to arrive on time. If you need to reschedule or cancel this appointment, please contact us.
+${strings.bookedPleaseArrive}
 
 Best regards,
 The Profroid Team
@@ -331,13 +463,8 @@ The Profroid Team
       await transporter.sendMail(mailOptions);
       console.log(`Appointment booked notification sent to ${recipient.email}`);
     } catch (error) {
-      console.error(
-        `Failed to send appointment booked notification to ${recipient.email}:`,
-        error,
-      );
-      throw new Error(
-        `Failed to send appointment notification to ${recipient.email}`,
-      );
+      console.error(`Failed to send appointment booked notification to ${recipient.email}:`, error);
+      throw new Error(`Failed to send appointment notification to ${recipient.email}`);
     }
   }
 }
@@ -349,197 +476,104 @@ export async function sendAppointmentCancelledNotification(
   recipients: NotificationRecipient[],
   details: AppointmentDetails,
   cancellationReason?: string,
+  language?: "en" | "fr"
 ): Promise<void> {
   const transporter = createTransporter();
+  const lang = getLanguage(language || details.preferredLanguage);
+  const strings = getAppointmentEmailStrings(lang);
+  const jobName = getJobName(details, lang);
 
   for (const recipient of recipients) {
-    const greeting =
-      recipient.role === "customer" ? "Dear Customer" : "Dear Technician";
+    const greeting = recipient.role === "customer" ? strings.cancelledGreetingCustomer : strings.cancelledGreetingTechnician;
+    const buttonText = recipient.role === "customer" ? strings.bookedViewAppointments : strings.bookedViewJobs;
 
     const mailOptions = {
       from: SMTP_FROM,
       to: recipient.email,
-      subject: `Appointment Cancelled - ${details.jobName} on ${details.appointmentDate}`,
+      subject: `${strings.cancelledSubject} - ${jobName} ${formatDatePhrase(details.appointmentDate, lang)}`,
       html: `
         <!DOCTYPE html>
         <html>
           <head>
-            <meta charset="UTF-8">
-            <meta name="viewport" content="width=device-width, initial-scale=1.0">
             <style>
-              * {
-                margin: 0;
-                padding: 0;
-                box-sizing: border-box;
-              }
               body {
-                font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Helvetica Neue', Arial, sans-serif;
+                font-family: Arial, sans-serif;
                 line-height: 1.6;
-                color: #3a2e2a;
-                background-color: #f4f1ec;
-                padding: 20px;
+                color: #333;
               }
-              .email-wrapper {
+              .container {
                 max-width: 600px;
                 margin: 0 auto;
-                background-color: #ffffff;
-                border-radius: 8px;
-                overflow: hidden;
-                box-shadow: 0 2px 8px rgba(122, 9, 1, 0.1);
+                padding: 20px;
               }
               .header {
-                background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
-                padding: 40px 30px;
+                background-color: #dc3545;
+                color: white;
+                padding: 20px;
                 text-align: center;
-              }
-              .logo {
-                color: #ffffff;
-                font-size: 32px;
-                font-weight: 700;
-                letter-spacing: 1px;
-                margin-bottom: 10px;
-              }
-              .header-subtitle {
-                color: #f4f1ec;
-                font-size: 14px;
-                font-weight: 400;
+                border-radius: 5px 5px 0 0;
               }
               .content {
-                padding: 40px 30px;
-                background-color: #ffffff;
-              }
-              .greeting {
-                font-size: 18px;
-                color: #3a2e2a;
-                margin-bottom: 20px;
-                font-weight: 600;
-              }
-              .message {
-                color: #5c504b;
-                margin-bottom: 15px;
-                font-size: 15px;
-              }
-              .warning-banner {
-                background-color: #fff4e6;
-                border-left: 4px solid #dc3545;
-                padding: 20px;
-                margin: 25px 0;
-                border-radius: 4px;
-              }
-              .warning-title {
-                color: #c82333;
-                font-weight: 600;
-                font-size: 16px;
-              }
-              table {
-                width: 100%;
-                border-collapse: collapse;
-                margin: 20px 0;
-                background-color: #ffffff;
-                border-radius: 6px;
-                overflow: hidden;
-              }
-              table tr:nth-child(odd) {
-                background-color: #f4f1ec;
-              }
-              table td {
-                padding: 14px;
-                border: 1px solid #e4e2df;
-                font-size: 14px;
-              }
-              table td:first-child {
-                font-weight: 600;
-                color: #7a0901;
-                width: 35%;
-              }
-              .reason-box {
-                background-color: #f4f1ec;
-                padding: 20px;
-                border-radius: 6px;
-                margin: 20px 0;
-              }
-              .reason-title {
-                color: #7a0901;
-                font-weight: 600;
-                margin-bottom: 10px;
-                font-size: 15px;
-              }
-              .button-container {
-                text-align: center;
-                margin: 35px 0;
+                background-color: #f9f9f9;
+                padding: 30px;
+                border: 1px solid #ddd;
+                border-top: none;
+                border-radius: 0 0 5px 5px;
               }
               .button {
                 display: inline-block;
-                padding: 16px 40px;
-                background: linear-gradient(90deg, #7a0901 0%, #a32c1a 100%);
-                color: #ffffff !important;
+                padding: 12px 30px;
+                margin: 20px 0;
+                background-color: #dc3545;
+                color: white !important;
                 text-decoration: none;
-                border-radius: 6px;
-                font-weight: 600;
-                font-size: 16px;
-                box-shadow: 0 4px 12px rgba(122, 9, 1, 0.25);
+                border-radius: 5px;
+                font-weight: bold;
               }
               .footer {
-                background-color: #f4f1ec;
-                padding: 30px;
-                text-align: center;
-                border-top: 1px solid #e4e2df;
-              }
-              .footer-text {
-                color: #6b615c;
-                font-size: 13px;
-                line-height: 1.8;
-              }
-              .footer-brand {
-                color: #7a0901;
-                font-weight: 600;
-                font-size: 14px;
-                margin-top: 15px;
-              }
-              .footer-copyright {
-                color: #8b817c;
+                margin-top: 20px;
+                padding-top: 20px;
+                border-top: 1px solid #ddd;
                 font-size: 12px;
-                margin-top: 10px;
+                color: #666;
+              }
+              .warning {
+                background-color: #f8d7da;
+                border: 1px solid #f5c6cb;
+                padding: 15px;
+                margin: 20px 0;
+                border-radius: 5px;
+                color: #721c24;
               }
             </style>
           </head>
           <body>
-            <div class="email-wrapper">
+            <div class="container">
               <div class="header">
-                <div class="logo">PROFROID</div>
-                <div class="header-subtitle">Professional Service Management</div>
+                <h1>✗ ${strings.cancelledTitle}</h1>
               </div>
               <div class="content">
-                <p class="greeting">${greeting},</p>
+                <p>${greeting},</p>
                 
-                <div class="warning-banner">
-                  <div class="warning-title">✗ The following appointment has been cancelled</div>
+                <div class="warning">
+                  <strong>${strings.cancelledMessage}</strong>
                 </div>
                 
-                <h2 style="color: #7a0901; margin: 25px 0 15px 0; font-size: 20px;">Cancelled Appointment Details</h2>
-                ${formatAppointmentDetails(details)}
+                <h2>${strings.cancelledTitle}</h2>
+                ${formatAppointmentDetails(details, lang)}
                 
-                ${
-                  cancellationReason
-                    ? `
-                <div class="reason-box">
-                  <div class="reason-title">Reason for Cancellation</div>
-                  <p style="color: #5c504b; font-size: 14px;">${cancellationReason}</p>
+                ${cancellationReason ? `<p><strong>${strings.cancelledReason}:</strong> ${cancellationReason}</p>` : ""}
+                
+                <p>${strings.cancelledContact}</p>
+                
+                <div style="text-align: center;">
+                  <a href="${FRONTEND_URL}/my-appointments" class="button">${buttonText}</a>
                 </div>
-                `
-                    : ""
-                }
                 
-                <p class="message">If you need to reschedule or have any questions, please contact our support team.</p>
-                
-                <div class="button-container">
-                  <a href="${FRONTEND_URL}/my-appointments" class="button">Book a New Appointment</a>
+                <div class="footer">
+                  <p>${strings.automatedEmail}</p>
+                  <p>&copy; ${new Date().getFullYear()} Profroid. ${strings.allRightsReserved}.</p>
                 </div>
-              </div>
-              <div class="footer">
-                <p class="footer-text">This is an automated message from Profroid.<br>Please do not reply to this email.</p>
-                <div class="footer-brand">PROFROID</div>
-                <p class="footer-copyright">&copy; ${new Date().getFullYear()} Profroid. All rights reserved.</p>
               </div>
             </div>
           </body>
@@ -548,19 +582,19 @@ export async function sendAppointmentCancelledNotification(
       text: `
 ${greeting},
 
-The following appointment has been cancelled:
+${strings.cancelledMessage}
 
-Appointment Details:
-- Appointment ID: ${details.appointmentId}
-- Service: ${details.jobName}
-- Date: ${details.appointmentDate}
-- Time: ${details.appointmentStartTime.slice(0, 5)} - ${details.appointmentEndTime.slice(0, 5)}
-- Technician: ${details.technicianName}
-- Customer: ${details.customerName}
+${strings.cancelledTitle}:
+- ${strings.appointmentID}: ${details.appointmentId}
+- ${strings.service}: ${jobName}
+- ${strings.date}: ${details.appointmentDate}
+- ${strings.time}: ${details.appointmentStartTime.slice(0, 5)} - ${details.appointmentEndTime.slice(0, 5)}
+- ${strings.technician}: ${details.technicianName}
+- ${strings.customer}: ${details.customerName}
 
-${cancellationReason ? `Reason: ${cancellationReason}` : ""}
+${cancellationReason ? `${strings.cancelledReason}: ${cancellationReason}` : ""}
 
-If you need to reschedule or have any questions, please contact our support team.
+${strings.cancelledContact}
 
 Best regards,
 The Profroid Team
@@ -569,17 +603,10 @@ The Profroid Team
 
     try {
       await transporter.sendMail(mailOptions);
-      console.log(
-        `Appointment cancelled notification sent to ${recipient.email}`,
-      );
+      console.log(`Appointment cancelled notification sent to ${recipient.email}`);
     } catch (error) {
-      console.error(
-        `Failed to send appointment cancelled notification to ${recipient.email}:`,
-        error,
-      );
-      throw new Error(
-        `Failed to send appointment cancellation notification to ${recipient.email}`,
-      );
+      console.error(`Failed to send appointment cancelled notification to ${recipient.email}:`, error);
+      throw new Error(`Failed to send appointment cancellation notification to ${recipient.email}`);
     }
   }
 }
@@ -591,204 +618,139 @@ export async function sendAppointmentUpdatedNotification(
   recipients: NotificationRecipient[],
   details: AppointmentDetails,
   changedFields: string[],
+  language?: "en" | "fr"
 ): Promise<void> {
   const transporter = createTransporter();
+  const lang = getLanguage(language || details.preferredLanguage);
+  const strings = getAppointmentEmailStrings(lang);
+  const jobName = getJobName(details, lang);
 
-  // Format changed fields for display
+  // Format changed fields for display with language-specific labels
+  const fieldMapEn: Record<string, string> = {
+    appointmentDate: "Appointment Date",
+    appointmentStartTime: "Start Time",
+    appointmentEndTime: "End Time",
+    technician: "Assigned Technician",
+    customer: "Customer",
+    jobName: "Service Type",
+    description: "Description",
+    appointmentAddress: "Location",
+    cellarName: "Cellar",
+  };
+
+  const fieldMapFr: Record<string, string> = {
+    appointmentDate: "Date du Rendez-vous",
+    appointmentStartTime: "Heure de Début",
+    appointmentEndTime: "Heure de Fin",
+    technician: "Technicien Assigné",
+    customer: "Client",
+    jobName: "Type de Service",
+    description: "Description",
+    appointmentAddress: "Emplacement",
+    cellarName: "Cave",
+  };
+
+  const fieldMap = lang === "fr" ? fieldMapFr : fieldMapEn;
+
   const changedFieldsDisplay = changedFields
-    .map((field) => {
-      const fieldMap: Record<string, string> = {
-        appointmentDate: "Appointment Date",
-        appointmentStartTime: "Start Time",
-        appointmentEndTime: "End Time",
-        technician: "Assigned Technician",
-        customer: "Customer",
-        jobName: "Service Type",
-        description: "Description",
-        appointmentAddress: "Location",
-        cellarName: "Cellar",
-      };
-      return fieldMap[field] || field;
-    })
+    .map((field) => fieldMap[field] || field)
     .join(", ");
 
   for (const recipient of recipients) {
-    const greeting =
-      recipient.role === "customer" ? "Dear Customer" : "Dear Technician";
+    const greeting = recipient.role === "customer" ? strings.updatedGreetingCustomer : strings.updatedGreetingTechnician;
     // Use role-specific appointment view URL
-    const appointmentUrl =
-      recipient.role === "customer"
-        ? `${FRONTEND_URL}/my-appointments`
-        : `${FRONTEND_URL}/my-jobs`;
+    const appointmentUrl = recipient.role === "customer" 
+      ? `${FRONTEND_URL}/my-appointments`
+      : `${FRONTEND_URL}/my-jobs`;
+    
+    const buttonText = recipient.role === "customer" ? strings.bookedViewAppointments : strings.bookedViewJobs;
 
     const mailOptions = {
       from: SMTP_FROM,
       to: recipient.email,
-      subject: `Appointment Updated - ${details.jobName} on ${details.appointmentDate}`,
+      subject: `${strings.updatedSubject} - ${jobName} ${formatDatePhrase(details.appointmentDate, lang)}`,
       html: `
         <!DOCTYPE html>
         <html>
           <head>
-            <meta charset="UTF-8">
-            <meta name="viewport" content="width=device-width, initial-scale=1.0">
             <style>
-              * {
-                margin: 0;
-                padding: 0;
-                box-sizing: border-box;
-              }
               body {
-                font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Helvetica Neue', Arial, sans-serif;
+                font-family: Arial, sans-serif;
                 line-height: 1.6;
-                color: #3a2e2a;
-                background-color: #f4f1ec;
-                padding: 20px;
+                color: #333;
               }
-              .email-wrapper {
+              .container {
                 max-width: 600px;
                 margin: 0 auto;
-                background-color: #ffffff;
-                border-radius: 8px;
-                overflow: hidden;
-                box-shadow: 0 2px 8px rgba(122, 9, 1, 0.1);
+                padding: 20px;
               }
               .header {
-                background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
-                padding: 40px 30px;
+                background-color: #007bff;
+                color: white;
+                padding: 20px;
                 text-align: center;
-              }
-              .logo {
-                color: #ffffff;
-                font-size: 32px;
-                font-weight: 700;
-                letter-spacing: 1px;
-                margin-bottom: 10px;
-              }
-              .header-subtitle {
-                color: #f4f1ec;
-                font-size: 14px;
-                font-weight: 400;
+                border-radius: 5px 5px 0 0;
               }
               .content {
-                padding: 40px 30px;
-                background-color: #ffffff;
-              }
-              .greeting {
-                font-size: 18px;
-                color: #3a2e2a;
-                margin-bottom: 20px;
-                font-weight: 600;
-              }
-              .message {
-                color: #5c504b;
-                margin-bottom: 15px;
-                font-size: 15px;
-              }
-              .info-banner {
-                background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
-                border-left: 4px solid #007bff;
-                padding: 20px;
-                margin: 25px 0;
-                border-radius: 4px;
-              }
-              .info-title {
-                color: #0056b3;
-                font-weight: 600;
-                font-size: 16px;
-                margin-bottom: 10px;
-              }
-              .changed-fields {
-                color: #1976d2;
-                font-size: 14px;
-                font-weight: 500;
-              }
-              table {
-                width: 100%;
-                border-collapse: collapse;
-                margin: 20px 0;
-                background-color: #ffffff;
-                border-radius: 6px;
-                overflow: hidden;
-              }
-              table tr:nth-child(odd) {
-                background-color: #f4f1ec;
-              }
-              table td {
-                padding: 14px;
-                border: 1px solid #e4e2df;
-                font-size: 14px;
-              }
-              table td:first-child {
-                font-weight: 600;
-                color: #7a0901;
-                width: 35%;
-              }
-              .button-container {
-                text-align: center;
-                margin: 35px 0;
+                background-color: #f9f9f9;
+                padding: 30px;
+                border: 1px solid #ddd;
+                border-top: none;
+                border-radius: 0 0 5px 5px;
               }
               .button {
                 display: inline-block;
-                padding: 16px 40px;
-                background: linear-gradient(90deg, #7a0901 0%, #a32c1a 100%);
-                color: #ffffff !important;
+                padding: 12px 30px;
+                margin: 20px 0;
+                background-color: #007bff;
+                color: white !important;
                 text-decoration: none;
-                border-radius: 6px;
-                font-weight: 600;
-                font-size: 16px;
-                box-shadow: 0 4px 12px rgba(122, 9, 1, 0.25);
+                border-radius: 5px;
+                font-weight: bold;
               }
               .footer {
-                background-color: #f4f1ec;
-                padding: 30px;
-                text-align: center;
-                border-top: 1px solid #e4e2df;
-              }
-              .footer-text {
-                color: #6b615c;
-                font-size: 13px;
-                line-height: 1.8;
-              }
-              .footer-brand {
-                color: #7a0901;
-                font-weight: 600;
-                font-size: 14px;
-                margin-top: 15px;
-              }
-              .footer-copyright {
-                color: #8b817c;
+                margin-top: 20px;
+                padding-top: 20px;
+                border-top: 1px solid #ddd;
                 font-size: 12px;
-                margin-top: 10px;
+                color: #666;
+              }
+              .info {
+                background-color: #d1ecf1;
+                border: 1px solid #bee5eb;
+                padding: 15px;
+                margin: 20px 0;
+                border-radius: 5px;
+                color: #0c5460;
               }
             </style>
           </head>
           <body>
-            <div class="email-wrapper">
+            <div class="container">
               <div class="header">
-                <div class="logo">PROFROID</div>
-                <div class="header-subtitle">Professional Service Management</div>
+                <h1>⚡ ${strings.updatedTitle}</h1>
               </div>
               <div class="content">
-                <p class="greeting">${greeting},</p>
+                <p>${greeting},</p>
                 
-                <div class="info-banner">
-                  <div class="info-title">Your appointment has been updated</div>
-                  <div class="changed-fields">Changed: ${changedFieldsDisplay}</div>
+                <div class="info">
+                  <strong>${strings.updatedMessage} ${strings.updatedChangedFields}:</strong><br>
+                  ${changedFieldsDisplay}
                 </div>
                 
-                <h2 style="color: #7a0901; margin: 25px 0 15px 0; font-size: 20px;">Updated Appointment Details</h2>
-                ${formatAppointmentDetails(details)}
+                <h2>${strings.updatedTitle}</h2>
+                ${formatAppointmentDetails(details, lang)}
                 
-                <p class="message">Please review the updated information carefully. If you have any questions or concerns, please contact us immediately.</p>
+                <p>${strings.updatedContact}</p>
                 
-                <div class="button-container">
-                  <a href="${appointmentUrl}" class="button">${recipient.role === "customer" ? "View Your Appointments" : "View Your Jobs"}</a>
+                <div style="text-align: center;">
+                  <a href="${appointmentUrl}" class="button">${buttonText}</a>
                 </div>
-              </div>
-              <div class="footer">
-                <p class="footer-text">This is an automated message from Profroid.<br>Please do not reply to this email.</p>
-                <div class="footer-brand">PROFROID</div>
-                <p class="footer-copyright">&copy; ${new Date().getFullYear()} Profroid. All rights reserved.</p>
+                
+                <div class="footer">
+                  <p>${strings.automatedEmail}</p>
+                  <p>&copy; ${new Date().getFullYear()} Profroid. ${strings.allRightsReserved}.</p>
+                </div>
               </div>
             </div>
           </body>
@@ -797,23 +759,23 @@ export async function sendAppointmentUpdatedNotification(
       text: `
 ${greeting},
 
-Your appointment has been updated. The following details have changed:
+${strings.updatedMessage} ${strings.updatedChangedFields}:
 ${changedFieldsDisplay}
 
-Updated Appointment Details:
-- Appointment ID: ${details.appointmentId}
-- Service: ${details.jobName}
-- Date: ${details.appointmentDate}
-- Time: ${details.appointmentStartTime.slice(0, 5)} - ${details.appointmentEndTime.slice(0, 5)}
-- Location: ${
+${strings.updatedTitle}:
+- ${strings.appointmentID}: ${details.appointmentId}
+- ${strings.service}: ${jobName}
+- ${strings.date}: ${formatDateForLanguage(details.appointmentDate, lang)}
+- ${strings.time}: ${details.appointmentStartTime.slice(0, 5)} - ${details.appointmentEndTime.slice(0, 5)}
+- ${strings.location}: ${
         details.appointmentAddress
           ? `${details.appointmentAddress.street || ""}, ${details.appointmentAddress.city || ""}`
-          : "Not specified"
+          : strings.notSpecified
       }
-- Technician: ${details.technicianName}
-- Customer: ${details.customerName}
+- ${strings.technician}: ${details.technicianName}
+- ${strings.customer}: ${details.customerName}
 
-Please review the updated information carefully. If you have any questions, please contact us.
+${strings.updatedContact}
 
 Best regards,
 The Profroid Team
@@ -822,17 +784,10 @@ The Profroid Team
 
     try {
       await transporter.sendMail(mailOptions);
-      console.log(
-        `Appointment updated notification sent to ${recipient.email}`,
-      );
+      console.log(`Appointment updated notification sent to ${recipient.email}`);
     } catch (error) {
-      console.error(
-        `Failed to send appointment updated notification to ${recipient.email}:`,
-        error,
-      );
-      throw new Error(
-        `Failed to send appointment update notification to ${recipient.email}`,
-      );
+      console.error(`Failed to send appointment updated notification to ${recipient.email}:`, error);
+      throw new Error(`Failed to send appointment update notification to ${recipient.email}`);
     }
   }
 }
@@ -844,193 +799,104 @@ export async function sendAppointmentReminderNotification(
   recipient: NotificationRecipient,
   details: AppointmentDetails,
   hoursUntilAppointment: number,
+  language?: "en" | "fr"
 ): Promise<void> {
   const transporter = createTransporter();
+  const lang = getLanguage(language || details.preferredLanguage);
+  const strings = getAppointmentEmailStrings(lang);
+  const jobName = getJobName(details, lang);
 
-  const greeting =
-    recipient.role === "customer" ? "Dear Customer" : "Dear Technician";
+  const greeting = recipient.role === "customer" ? strings.reminderGreetingCustomer : strings.reminderGreetingTechnician;
   const reminderText =
-    hoursUntilAppointment <= 24
-      ? "upcoming appointment tomorrow"
-      : `appointment in ${hoursUntilAppointment} hours`;
+    hoursUntilAppointment <= 24 ? strings.reminderTomorrow : strings.reminderInHours.replace("{hours}", hoursUntilAppointment.toString());
+  
+  const buttonText = recipient.role === "customer" ? strings.reminderViewAppointments : strings.reminderViewJobs;
 
   const mailOptions = {
     from: SMTP_FROM,
     to: recipient.email,
-    subject: `Reminder: Your ${reminderText} - ${details.jobName}`,
+    subject: `${strings.reminderSubject}: Your ${reminderText} - ${jobName}`,
     html: `
       <!DOCTYPE html>
       <html>
         <head>
-          <meta charset="UTF-8">
-          <meta name="viewport" content="width=device-width, initial-scale=1.0">
           <style>
-            * {
-              margin: 0;
-              padding: 0;
-              box-sizing: border-box;
-            }
             body {
-              font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Helvetica Neue', Arial, sans-serif;
+              font-family: Arial, sans-serif;
               line-height: 1.6;
-              color: #3a2e2a;
-              background-color: #f4f1ec;
-              padding: 20px;
+              color: #333;
             }
-            .email-wrapper {
+            .container {
               max-width: 600px;
               margin: 0 auto;
-              background-color: #ffffff;
-              border-radius: 8px;
-              overflow: hidden;
-              box-shadow: 0 2px 8px rgba(122, 9, 1, 0.1);
+              padding: 20px;
             }
             .header {
-              background: linear-gradient(135deg, #ffa726 0%, #fb8c00 100%);
-              padding: 40px 30px;
+              background-color: #ffc107;
+              color: #333;
+              padding: 20px;
               text-align: center;
-            }
-            .logo {
-              color: #ffffff;
-              font-size: 32px;
-              font-weight: 700;
-              letter-spacing: 1px;
-              margin-bottom: 10px;
-            }
-            .header-subtitle {
-              color: #ffffff;
-              font-size: 14px;
-              font-weight: 400;
+              border-radius: 5px 5px 0 0;
             }
             .content {
-              padding: 40px 30px;
-              background-color: #ffffff;
-            }
-            .greeting {
-              font-size: 18px;
-              color: #3a2e2a;
-              margin-bottom: 20px;
-              font-weight: 600;
-            }
-            .message {
-              color: #5c504b;
-              margin-bottom: 15px;
-              font-size: 15px;
-            }
-            .reminder-banner {
-              background: linear-gradient(135deg, #fff8e1 0%, #ffecb3 100%);
-              border-left: 4px solid #ffa726;
-              padding: 20px;
-              margin: 25px 0;
-              border-radius: 4px;
-              text-align: center;
-            }
-            .reminder-icon {
-              font-size: 36px;
-              margin-bottom: 10px;
-            }
-            .reminder-title {
-              color: #e65100;
-              font-weight: 600;
-              font-size: 16px;
-            }
-            table {
-              width: 100%;
-              border-collapse: collapse;
-              margin: 20px 0;
-              background-color: #ffffff;
-              border-radius: 6px;
-              overflow: hidden;
-            }
-            table tr:nth-child(odd) {
-              background-color: #f4f1ec;
-            }
-            table td {
-              padding: 14px;
-              border: 1px solid #e4e2df;
-              font-size: 14px;
-            }
-            table td:first-child {
-              font-weight: 600;
-              color: #7a0901;
-              width: 35%;
-            }
-            .important-note {
-              background-color: #fff4e6;
-              padding: 15px;
-              border-radius: 6px;
-              margin: 20px 0;
-              text-align: center;
-              font-weight: 600;
-              color: #e65100;
-            }
-            .button-container {
-              text-align: center;
-              margin: 35px 0;
+              background-color: #f9f9f9;
+              padding: 30px;
+              border: 1px solid #ddd;
+              border-top: none;
+              border-radius: 0 0 5px 5px;
             }
             .button {
               display: inline-block;
-              padding: 16px 40px;
-              background: linear-gradient(90deg, #7a0901 0%, #a32c1a 100%);
-              color: #ffffff !important;
+              padding: 12px 30px;
+              margin: 20px 0;
+              background-color: #ffc107;
+              color: #333 !important;
               text-decoration: none;
-              border-radius: 6px;
-              font-weight: 600;
-              font-size: 16px;
-              box-shadow: 0 4px 12px rgba(122, 9, 1, 0.25);
+              border-radius: 5px;
+              font-weight: bold;
             }
             .footer {
-              background-color: #f4f1ec;
-              padding: 30px;
-              text-align: center;
-              border-top: 1px solid #e4e2df;
-            }
-            .footer-text {
-              color: #6b615c;
-              font-size: 13px;
-              line-height: 1.8;
-            }
-            .footer-brand {
-              color: #7a0901;
-              font-weight: 600;
-              font-size: 14px;
-              margin-top: 15px;
-            }
-            .footer-copyright {
-              color: #8b817c;
+              margin-top: 20px;
+              padding-top: 20px;
+              border-top: 1px solid #ddd;
               font-size: 12px;
-              margin-top: 10px;
+              color: #666;
+            }
+            .reminder {
+              background-color: #fff3cd;
+              border: 1px solid #ffeeba;
+              padding: 15px;
+              margin: 20px 0;
+              border-radius: 5px;
+              color: #856404;
             }
           </style>
         </head>
         <body>
-          <div class="email-wrapper">
+          <div class="container">
             <div class="header">
-              <div class="logo">PROFROID</div>
-              <div class="header-subtitle">Professional Service Management</div>
+              <h1>🔔 ${strings.reminderTitle}</h1>
             </div>
             <div class="content">
-              <p class="greeting">${greeting},</p>
+              <p>${greeting},</p>
               
-              <div class="reminder-banner">
-                <div class="reminder-title">This is a reminder about your ${reminderText}</div>
+              <div class="reminder">
+                <strong>${strings.reminderTitle}: ${reminderText}.</strong>
               </div>
               
-              <h2 style="color: #7a0901; margin: 25px 0 15px 0; font-size: 20px;">Appointment Details</h2>
-              ${formatAppointmentDetails(details)}
+              <h2>${strings.bookedDetails}</h2>
+              ${formatAppointmentDetails(details, lang)}
               
-              <div class="important-note">
-                Please arrive on time and bring any necessary documents or items
+              <p><strong>${strings.reminderPlease}</strong></p>
+              
+              <div style="text-align: center;">
+                <a href="${recipient.role === "customer" ? FRONTEND_URL + "/my-appointments" : FRONTEND_URL + "/my-jobs"}" class="button">${buttonText}</a>
               </div>
               
-              <div class="button-container">
-                <a href="${recipient.role === "customer" ? FRONTEND_URL + "/my-appointments" : FRONTEND_URL + "/my-jobs"}" class="button">${recipient.role === "customer" ? "View Your Appointments" : "View Your Jobs"}</a>
+              <div class="footer">
+                <p>${strings.automatedEmail}</p>
+                <p>&copy; ${new Date().getFullYear()} Profroid. ${strings.allRightsReserved}.</p>
               </div>
-            </div>
-            <div class="footer">
-              <p class="footer-text">This is an automated message from Profroid.<br>Please do not reply to this email.</p>
-              <div class="footer-brand">PROFROID</div>
-              <p class="footer-copyright">&copy; ${new Date().getFullYear()} Profroid. All rights reserved.</p>
             </div>
           </div>
         </body>
@@ -1039,21 +905,21 @@ export async function sendAppointmentReminderNotification(
     text: `
 ${greeting},
 
-This is a reminder about your ${reminderText}.
+${strings.reminderTitle}: ${reminderText}.
 
-Appointment Details:
-- Appointment ID: ${details.appointmentId}
-- Service: ${details.jobName}
-- Date: ${details.appointmentDate}
-- Time: ${details.appointmentStartTime.slice(0, 5)} - ${details.appointmentEndTime.slice(0, 5)}
-- Location: ${
-      details.appointmentAddress
-        ? `${details.appointmentAddress.street || ""}, ${details.appointmentAddress.city || ""}`
-        : "Not specified"
-    }
-- Technician: ${details.technicianName}
+${strings.bookedDetails}:
+- ${strings.appointmentID}: ${details.appointmentId}
+- ${strings.service}: ${jobName}
+- ${strings.date}: ${formatDateForLanguage(details.appointmentDate, lang)}
+- ${strings.time}: ${details.appointmentStartTime.slice(0, 5)} - ${details.appointmentEndTime.slice(0, 5)}
+- ${strings.location}: ${
+        details.appointmentAddress
+          ? `${details.appointmentAddress.street || ""}, ${details.appointmentAddress.city || ""}`
+          : strings.notSpecified
+      }
+- ${strings.technician}: ${details.technicianName}
 
-Please arrive on time and bring any necessary documents or items.
+${strings.reminderPlease}
 
 Best regards,
 The Profroid Team
@@ -1064,13 +930,8 @@ The Profroid Team
     await transporter.sendMail(mailOptions);
     console.log(`Appointment reminder notification sent to ${recipient.email}`);
   } catch (error) {
-    console.error(
-      `Failed to send appointment reminder notification to ${recipient.email}:`,
-      error,
-    );
-    throw new Error(
-      `Failed to send appointment reminder notification to ${recipient.email}`,
-    );
+    console.error(`Failed to send appointment reminder notification to ${recipient.email}:`, error);
+    throw new Error(`Failed to send appointment reminder notification to ${recipient.email}`);
   }
 }
 
@@ -1081,177 +942,117 @@ The Profroid Team
 export async function sendAppointmentCanceledFromReassignmentNotification(
   recipient: NotificationRecipient,
   details: AppointmentDetails,
+  language?: "en" | "fr"
 ): Promise<void> {
   const transporter = createTransporter();
+  const lang = getLanguage(language || details.preferredLanguage);
+  const strings = getAppointmentEmailStrings(lang);
+  const jobName = getJobName(details, lang);
 
-  const greeting =
-    recipient.role === "customer" ? "Dear Customer" : "Dear Technician";
+  const greeting = recipient.role === "customer" ? strings.reassignedTitle : strings.reassignedTitle;
   // Use role-specific appointment view URL
-  const appointmentUrl =
-    recipient.role === "customer"
-      ? `${FRONTEND_URL}/my-appointments`
-      : `${FRONTEND_URL}/my-jobs`;
+  const appointmentUrl = recipient.role === "customer" 
+    ? `${FRONTEND_URL}/my-appointments`
+    : `${FRONTEND_URL}/my-jobs`;
+  
+  const roleText = recipient.role === "customer" ? "customer" : "technician";
+  const buttonText = recipient.role === "customer" ? strings.reassignedViewAppointments : strings.reassignedViewJobs;
 
   const mailOptions = {
     from: SMTP_FROM,
     to: recipient.email,
-    subject: `Appointment Reassigned - ${details.jobName}`,
+    subject: `${strings.reassignedSubject} - ${jobName}`,
     html: `
       <!DOCTYPE html>
       <html>
         <head>
-          <meta charset="UTF-8">
-          <meta name="viewport" content="width=device-width, initial-scale=1.0">
           <style>
-            * {
-              margin: 0;
-              padding: 0;
-              box-sizing: border-box;
-            }
             body {
-              font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Helvetica Neue', Arial, sans-serif;
+              font-family: Arial, sans-serif;
               line-height: 1.6;
-              color: #3a2e2a;
-              background-color: #f4f1ec;
-              padding: 20px;
+              color: #333;
             }
-            .email-wrapper {
+            .container {
               max-width: 600px;
               margin: 0 auto;
-              background-color: #ffffff;
-              border-radius: 8px;
-              overflow: hidden;
-              box-shadow: 0 2px 8px rgba(122, 9, 1, 0.1);
+              padding: 20px;
             }
             .header {
-              background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
-              padding: 40px 30px;
+              background-color: #dc3545;
+              color: white;
+              padding: 20px;
               text-align: center;
-            }
-            .logo {
-              color: #ffffff;
-              font-size: 32px;
-              font-weight: 700;
-              letter-spacing: 1px;
-              margin-bottom: 10px;
-            }
-            .header-subtitle {
-              color: #f4f1ec;
-              font-size: 14px;
-              font-weight: 400;
+              border-radius: 5px 5px 0 0;
             }
             .content {
-              padding: 40px 30px;
-              background-color: #ffffff;
-            }
-            .greeting {
-              font-size: 18px;
-              color: #3a2e2a;
-              margin-bottom: 20px;
-              font-weight: 600;
-            }
-            .message {
-              color: #5c504b;
-              margin-bottom: 15px;
-              font-size: 15px;
-            }
-            .warning-banner {
-              background-color: #fff4e6;
-              border-left: 4px solid #dc3545;
-              padding: 20px;
-              margin: 25px 0;
-              border-radius: 4px;
-            }
-            .warning-title {
-              color: #c82333;
-              font-weight: 600;
-              font-size: 16px;
-            }
-            .info-box {
-              background-color: #f4f1ec;
-              padding: 20px;
-              margin: 20px 0;
-              border-left: 4px solid #7a0901;
-              border-radius: 4px;
-            }
-            .info-row {
-              margin: 10px 0;
-              color: #5c504b;
-              font-size: 14px;
-            }
-            .info-label {
-              font-weight: 600;
-              color: #7a0901;
-            }
-            .button-container {
-              text-align: center;
-              margin: 35px 0;
+              background-color: #f9f9f9;
+              padding: 30px;
+              border: 1px solid #ddd;
+              border-top: none;
+              border-radius: 0 0 5px 5px;
             }
             .button {
               display: inline-block;
-              padding: 16px 40px;
-              background: linear-gradient(90deg, #7a0901 0%, #a32c1a 100%);
-              color: #ffffff !important;
+              padding: 12px 30px;
+              margin: 20px 0;
+              background-color: #dc3545;
+              color: white !important;
               text-decoration: none;
-              border-radius: 6px;
-              font-weight: 600;
-              font-size: 16px;
-              box-shadow: 0 4px 12px rgba(122, 9, 1, 0.25);
+              border-radius: 5px;
+              font-weight: bold;
             }
             .footer {
-              background-color: #f4f1ec;
-              padding: 30px;
-              text-align: center;
-              border-top: 1px solid #e4e2df;
-            }
-            .footer-text {
-              color: #6b615c;
-              font-size: 13px;
-              line-height: 1.8;
-            }
-            .footer-brand {
-              color: #7a0901;
-              font-weight: 600;
-              font-size: 14px;
-              margin-top: 15px;
-            }
-            .footer-copyright {
-              color: #8b817c;
+              margin-top: 20px;
+              padding-top: 20px;
+              border-top: 1px solid #ddd;
               font-size: 12px;
-              margin-top: 10px;
+              color: #666;
+            }
+            .warning {
+              background-color: #f8d7da;
+              border: 1px solid #f5c6cb;
+              padding: 15px;
+              margin: 20px 0;
+              border-radius: 5px;
+              color: #721c24;
+            }
+            .minimal-info {
+              background-color: #f9f9f9;
+              padding: 15px;
+              margin: 15px 0;
+              border-left: 4px solid #dc3545;
             }
           </style>
         </head>
         <body>
-          <div class="email-wrapper">
+          <div class="container">
             <div class="header">
-              <div class="logo">PROFROID</div>
-              <div class="header-subtitle">Professional Service Management</div>
+              <h1>✗ ${strings.reassignedTitle}</h1>
             </div>
             <div class="content">
-              <p class="greeting">${greeting},</p>
+              <p>${greeting},</p>
               
-              <div class="warning-banner">
-                <div class="warning-title">Your appointment has been reassigned and is no longer assigned to you</div>
+              <div class="warning">
+                <strong>${strings.reassignedTitle}</strong>
               </div>
               
-              <div class="info-box">
-                <div class="info-row"><span class="info-label">Appointment ID:</span> ${details.appointmentId}</div>
-                <div class="info-row"><span class="info-label">Service:</span> ${details.jobName}</div>
+              <div class="minimal-info">
+                <p><strong>${strings.appointmentID}:</strong> ${details.appointmentId}</p>
+                <p><strong>${strings.service}:</strong> ${jobName}</p>
               </div>
               
-              <p class="message">This appointment has been reassigned to another ${recipient.role === "customer" ? "customer" : "technician"}. You are no longer responsible for this appointment.</p>
+              <p>${strings.reassignedMessage.replace("{role}", roleText)}</p>
               
-              <p class="message">If you have any questions, please contact our support team.</p>
+              <p>${strings.reassignedContact}</p>
               
-              <div class="button-container">
-                <a href="${appointmentUrl}" class="button">${recipient.role === "customer" ? "View Your Appointments" : "View Your Jobs"}</a>
+              <div style="text-align: center;">
+                <a href="${appointmentUrl}" class="button">${buttonText}</a>
               </div>
-            </div>
-            <div class="footer">
-              <p class="footer-text">This is an automated message from Profroid.<br>Please do not reply to this email.</p>
-              <div class="footer-brand">PROFROID</div>
-              <p class="footer-copyright">&copy; ${new Date().getFullYear()} Profroid. All rights reserved.</p>
+              
+              <div class="footer">
+                <p>${strings.automatedEmail}</p>
+                <p>&copy; ${new Date().getFullYear()} Profroid. ${strings.allRightsReserved}.</p>
+              </div>
             </div>
           </div>
         </body>
@@ -1260,14 +1061,14 @@ export async function sendAppointmentCanceledFromReassignmentNotification(
     text: `
 ${greeting}
 
-Your appointment has been reassigned and is no longer assigned to you.
+${strings.reassignedTitle}
 
-Appointment ID: ${details.appointmentId}
-Service: ${details.jobName}
+${strings.appointmentID}: ${details.appointmentId}
+${strings.service}: ${jobName}
 
-This appointment has been reassigned to another ${recipient.role === "customer" ? "customer" : "technician"}. You are no longer responsible for this appointment.
+${strings.reassignedMessage.replace("{role}", roleText)}
 
-If you have any questions, please contact our support team.
+${strings.reassignedContact}
 
 Best regards,
 The Profroid Team
@@ -1276,17 +1077,10 @@ The Profroid Team
 
   try {
     await transporter.sendMail(mailOptions);
-    console.log(
-      `Appointment reassigned notification sent to ${recipient.email}`,
-    );
+    console.log(`Appointment reassigned notification sent to ${recipient.email}`);
   } catch (error) {
-    console.error(
-      `Failed to send appointment reassigned notification to ${recipient.email}:`,
-      error,
-    );
-    throw new Error(
-      `Failed to send appointment reassigned notification to ${recipient.email}`,
-    );
+    console.error(`Failed to send appointment reassigned notification to ${recipient.email}:`, error);
+    throw new Error(`Failed to send appointment reassigned notification to ${recipient.email}`);
   }
 }
 
@@ -1297,199 +1091,129 @@ The Profroid Team
 export async function sendAppointmentConfirmedNotification(
   recipient: NotificationRecipient,
   details: AppointmentDetails,
+  language?: "en" | "fr"
 ): Promise<void> {
   const transporter = createTransporter();
+  const lang = getLanguage(language || details.preferredLanguage);
+  const strings = getAppointmentEmailStrings(lang);
+  const jobName = getJobName(details, lang);
 
   // Use role-specific appointment view URL
-  const appointmentUrl =
-    recipient.role === "customer"
-      ? `${FRONTEND_URL}/my-appointments`
-      : `${FRONTEND_URL}/my-jobs`;
+  const appointmentUrl = recipient.role === "customer" 
+    ? `${FRONTEND_URL}/my-appointments`
+    : `${FRONTEND_URL}/my-jobs`;
+
+  const greeting = recipient.role === "customer" ? strings.confirmedGreetingCustomer : strings.confirmedGreetingTechnician;
+  const buttonText = recipient.role === "customer" ? strings.confirmedViewAppointments : strings.confirmedViewJobs;
 
   const mailOptions = {
     from: SMTP_FROM,
     to: recipient.email,
-    subject: `Appointment Confirmed - ${details.jobName} on ${details.appointmentDate}`,
+    subject: `${strings.confirmedSubject} - ${jobName} ${formatDatePhrase(details.appointmentDate, lang)}`,
     html: `
       <!DOCTYPE html>
       <html>
         <head>
-          <meta charset="UTF-8">
-          <meta name="viewport" content="width=device-width, initial-scale=1.0">
           <style>
-            * {
-              margin: 0;
-              padding: 0;
-              box-sizing: border-box;
-            }
             body {
-              font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Helvetica Neue', Arial, sans-serif;
+              font-family: Arial, sans-serif;
               line-height: 1.6;
-              color: #3a2e2a;
-              background-color: #f4f1ec;
-              padding: 20px;
+              color: #333;
             }
-            .email-wrapper {
+            .container {
               max-width: 600px;
               margin: 0 auto;
-              background-color: #ffffff;
-              border-radius: 8px;
-              overflow: hidden;
-              box-shadow: 0 2px 8px rgba(122, 9, 1, 0.1);
+              padding: 20px;
             }
             .header {
-              background: linear-gradient(135deg, #7a0901 0%, #a32c1a 100%);
-              padding: 40px 30px;
+              background-color: #28a745;
+              color: white;
+              padding: 20px;
               text-align: center;
-            }
-            .logo {
-              color: #ffffff;
-              font-size: 32px;
-              font-weight: 700;
-              letter-spacing: 1px;
-              margin-bottom: 10px;
-            }
-            .header-subtitle {
-              color: #f4f1ec;
-              font-size: 14px;
-              font-weight: 400;
+              border-radius: 5px 5px 0 0;
             }
             .content {
-              padding: 40px 30px;
-              background-color: #ffffff;
-            }
-            .greeting {
-              font-size: 18px;
-              color: #3a2e2a;
-              margin-bottom: 20px;
-              font-weight: 600;
-            }
-            .message {
-              color: #5c504b;
-              margin-bottom: 15px;
-              font-size: 15px;
-            }
-            .success-banner {
-              background: linear-gradient(135deg, #d4f1d9 0%, #e8f5e9 100%);
-              border-left: 4px solid #4caf50;
-              padding: 20px;
-              margin: 25px 0;
-              border-radius: 4px;
-            }
-            .success-title {
-              color: #2e7d32;
-              font-weight: 600;
-              font-size: 16px;
-            }
-            table {
-              width: 100%;
-              border-collapse: collapse;
-              margin: 20px 0;
-              background-color: #ffffff;
-              border-radius: 6px;
-              overflow: hidden;
-            }
-            table tr:nth-child(odd) {
-              background-color: #f4f1ec;
-            }
-            table td {
-              padding: 14px;
-              border: 1px solid #e4e2df;
-              font-size: 14px;
-            }
-            table td:first-child {
-              font-weight: 600;
-              color: #7a0901;
-              width: 35%;
-            }
-            .button-container {
-              text-align: center;
-              margin: 35px 0;
+              background-color: #f9f9f9;
+              padding: 30px;
+              border: 1px solid #ddd;
+              border-top: none;
+              border-radius: 0 0 5px 5px;
             }
             .button {
               display: inline-block;
-              padding: 16px 40px;
-              background: linear-gradient(90deg, #7a0901 0%, #a32c1a 100%);
-              color: #ffffff !important;
+              padding: 12px 30px;
+              margin: 20px 0;
+              background-color: #28a745;
+              color: white !important;
               text-decoration: none;
-              border-radius: 6px;
-              font-weight: 600;
-              font-size: 16px;
-              box-shadow: 0 4px 12px rgba(122, 9, 1, 0.25);
+              border-radius: 5px;
+              font-weight: bold;
             }
             .footer {
-              background-color: #f4f1ec;
-              padding: 30px;
-              text-align: center;
-              border-top: 1px solid #e4e2df;
-            }
-            .footer-text {
-              color: #6b615c;
-              font-size: 13px;
-              line-height: 1.8;
-            }
-            .footer-brand {
-              color: #7a0901;
-              font-weight: 600;
-              font-size: 14px;
-              margin-top: 15px;
-            }
-            .footer-copyright {
-              color: #8b817c;
+              margin-top: 20px;
+              padding-top: 20px;
+              border-top: 1px solid #ddd;
               font-size: 12px;
-              margin-top: 10px;
+              color: #666;
+            }
+            .success {
+              background-color: #d4edda;
+              border: 1px solid #28a745;
+              padding: 15px;
+              margin: 20px 0;
+              border-radius: 5px;
+              color: #155724;
             }
           </style>
         </head>
         <body>
-          <div class="email-wrapper">
+          <div class="container">
             <div class="header">
-              <div class="logo">PROFROID</div>
-              <div class="header-subtitle">Professional Service Management</div>
+              <h1>✓ ${strings.confirmedTitle}</h1>
             </div>
             <div class="content">
-              <p class="greeting">Dear ${recipient.role === "customer" ? "Customer" : "Technician"},</p>
+              <p>${greeting},</p>
               
-              <div class="success-banner">
-                <div class="success-title">✓ Your appointment has been confirmed with our team</div>
+              <div class="success">
+                <strong>${strings.confirmedMessage}</strong>
               </div>
               
-              <h2 style="color: #7a0901; margin: 25px 0 15px 0; font-size: 20px;">Appointment Details</h2>
-              ${formatAppointmentDetails(details)}
+              <h2>${strings.bookedDetails}</h2>
+              ${formatAppointmentDetails(details, lang)}
               
-              <p class="message">Please make sure to arrive on time. If you need to reschedule or cancel this appointment, please contact us as soon as possible.</p>
+              <p>${strings.confirmedPleaseArrive}</p>
               
-              <div class="button-container">
-                <a href="${appointmentUrl}" class="button">${recipient.role === "customer" ? "View Your Appointments" : "View Your Jobs"}</a>
+              <div style="text-align: center;">
+                <a href="${appointmentUrl}" class="button">${buttonText}</a>
               </div>
-            </div>
-            <div class="footer">
-              <p class="footer-text">This is an automated message from Profroid.<br>Please do not reply to this email.</p>
-              <div class="footer-brand">PROFROID</div>
-              <p class="footer-copyright">&copy; ${new Date().getFullYear()} Profroid. All rights reserved.</p>
+              
+              <div class="footer">
+                <p>${strings.automatedEmail}</p>
+                <p>&copy; ${new Date().getFullYear()} Profroid. ${strings.allRightsReserved}.</p>
+              </div>
             </div>
           </div>
         </body>
       </html>
     `,
     text: `
-Dear Customer,
+${greeting},
 
-Your appointment has been confirmed with our team.
+${strings.confirmedMessage}
 
-Appointment Details:
-- Appointment ID: ${details.appointmentId}
-- Service: ${details.jobName}
-- Date: ${details.appointmentDate}
-- Time: ${details.appointmentStartTime.slice(0, 5)} - ${details.appointmentEndTime.slice(0, 5)}
-- Location: ${
-      details.appointmentAddress
-        ? `${details.appointmentAddress.street || ""}, ${details.appointmentAddress.city || ""}, ${details.appointmentAddress.province || ""}`
-        : "Not specified"
-    }
-- Technician: ${details.technicianName}
+${strings.bookedDetails}:
+- ${strings.appointmentID}: ${details.appointmentId}
+- ${strings.service}: ${jobName}
+- ${strings.date}: ${formatDateForLanguage(details.appointmentDate, lang)}
+- ${strings.time}: ${details.appointmentStartTime.slice(0, 5)} - ${details.appointmentEndTime.slice(0, 5)}
+- ${strings.location}: ${
+        details.appointmentAddress
+          ? `${details.appointmentAddress.street || ""}, ${details.appointmentAddress.city || ""}, ${details.appointmentAddress.province || ""}`
+          : strings.notSpecified
+      }
+- ${strings.technician}: ${details.technicianName}
 
-Please make sure to arrive on time. If you need to reschedule or cancel this appointment, please contact us as soon as possible.
+${strings.confirmedPleaseArrive}
 
 Best regards,
 The Profroid Team
@@ -1498,17 +1222,10 @@ The Profroid Team
 
   try {
     await transporter.sendMail(mailOptions);
-    console.log(
-      `Appointment confirmed notification sent to ${recipient.email}`,
-    );
+    console.log(`Appointment confirmed notification sent to ${recipient.email}`);
   } catch (error) {
-    console.error(
-      `Failed to send appointment confirmed notification to ${recipient.email}:`,
-      error,
-    );
-    throw new Error(
-      `Failed to send appointment confirmed notification to ${recipient.email}`,
-    );
+    console.error(`Failed to send appointment confirmed notification to ${recipient.email}:`, error);
+    throw new Error(`Failed to send appointment confirmed notification to ${recipient.email}`);
   }
 }
 

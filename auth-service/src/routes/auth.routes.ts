@@ -1348,6 +1348,35 @@ router.get("/verify-status", async (req: Request, res: Response) => {
 });
 
 /**
+ * Get user preferences (language)
+ * GET /api/auth/user-preferences
+ * Headers: Authorization: Bearer <jwt>
+ */
+router.get("/user-preferences", async (req: Request, res: Response) => {
+  try {
+    const payload = getPayloadFromRequest(req, res);
+    if (!payload) return;
+
+    const userProfile = await prisma.userProfile.findUnique({
+      where: { userId: payload.sub },
+      select: { preferredLanguage: true },
+    });
+
+    if (!userProfile) {
+      return res.status(404).json({ error: "User profile not found" });
+    }
+
+    res.json({
+      success: true,
+      preferredLanguage: userProfile.preferredLanguage || 'en',
+    });
+  } catch (error) {
+    console.error("Get user preferences error:", error);
+    return res.status(500).json({ error: "Failed to get preferences" });
+  }
+});
+
+/**
  * Update user preferences (language)
  * PUT /api/auth/user-preferences
  * Headers: Authorization: Bearer <jwt>

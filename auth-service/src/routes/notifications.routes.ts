@@ -43,24 +43,45 @@ async function getUserEmail(userId: string): Promise<string | null> {
 }
 
 /**
- * Helper function to enrich recipients with email addresses from userId
+ * Helper function to get user language preference
+ */
+async function getUserLanguagePreference(userId: string): Promise<"en" | "fr"> {
+  try {
+    const userProfile = await prisma.userProfile.findUnique({
+      where: { userId },
+      select: { preferredLanguage: true },
+    });
+    if (userProfile?.preferredLanguage === "fr") {
+      return "fr";
+    }
+    return "en";
+  } catch (error) {
+    console.error(`Failed to lookup language preference for userId ${userId}:`, error);
+    return "en";
+  }
+}
+
+/**
+ * Helper function to enrich recipients with email addresses and language preferences from userId
  */
 async function enrichRecipientsWithEmails(recipients: any[]): Promise<any[]> {
   return Promise.all(
     recipients.map(async (recipient) => {
-      // If recipient already has email, return as-is
-      if (recipient.email) {
-        return recipient;
-      }
-      // If recipient has userId, look up email
-      if (recipient.userId) {
+      let enriched = { ...recipient };
+      
+      // If recipient already has email, use it; otherwise look it up
+      if (!recipient.email && recipient.userId) {
         const email = await getUserEmail(recipient.userId);
-        return {
-          ...recipient,
-          email: email || `user-${recipient.userId}@example.com`, // Fallback
-        };
+        enriched.email = email || `user-${recipient.userId}@example.com`;
       }
-      return recipient;
+      
+      // If recipient has userId, look up language preference
+      if (recipient.userId && !recipient.preferredLanguage) {
+        const language = await getUserLanguagePreference(recipient.userId);
+        enriched.preferredLanguage = language;
+      }
+      
+      return enriched;
     })
   );
 }
@@ -128,10 +149,14 @@ router.post("/appointment/booked", async (req: Request, res: Response) => {
       });
     }
 
-    // Enrich recipients with email addresses
+    // Enrich recipients with email addresses and language preferences
     const enrichedRecipients = await enrichRecipientsWithEmails(recipients);
 
-    await sendAppointmentBookedNotification(enrichedRecipients, details);
+    // Send notification to each recipient with their preferred language
+    for (const recipient of enrichedRecipients) {
+      const language = recipient.preferredLanguage || "en";
+      await sendAppointmentBookedNotification([recipient], details, language);
+    }
 
     return res.json({
       success: true,
@@ -174,10 +199,14 @@ router.post("/appointment/cancelled", async (req: Request, res: Response) => {
       });
     }
 
-    // Enrich recipients with email addresses
+    // Enrich recipients with email addresses and language preferences
     const enrichedRecipients = await enrichRecipientsWithEmails(recipients);
 
-    await sendAppointmentCancelledNotification(enrichedRecipients, details, cancellationReason);
+    // Send notification to each recipient with their preferred language
+    for (const recipient of enrichedRecipients) {
+      const language = recipient.preferredLanguage || "en";
+      await sendAppointmentCancelledNotification([recipient], details, cancellationReason, language);
+    }
 
     return res.json({
       success: true,
@@ -227,10 +256,14 @@ router.post("/appointment/updated", async (req: Request, res: Response) => {
       });
     }
 
-    // Enrich recipients with email addresses
+    // Enrich recipients with email addresses and language preferences
     const enrichedRecipients = await enrichRecipientsWithEmails(recipients);
 
-    await sendAppointmentUpdatedNotification(enrichedRecipients, details, changedFields);
+    // Send notification to each recipient with their preferred language
+    for (const recipient of enrichedRecipients) {
+      const language = recipient.preferredLanguage || "en";
+      await sendAppointmentUpdatedNotification([recipient], details, changedFields, language);
+    }
 
     return res.json({
       success: true,
@@ -280,7 +313,7 @@ router.post("/appointment/reminder", async (req: Request, res: Response) => {
       });
     }
 
-    // Enrich recipient with email address if needed
+    // Enrich recipient with email address and language preference if needed
     let enrichedRecipient = recipient;
     if (!recipient.email && recipient.userId) {
       const email = await getUserEmail(recipient.userId);
@@ -289,8 +322,18 @@ router.post("/appointment/reminder", async (req: Request, res: Response) => {
         email: email || `user-${recipient.userId}@example.com`,
       };
     }
+    
+    // Get language preference if not already provided
+    if (recipient.userId && !enrichedRecipient.preferredLanguage) {
+      const language = await getUserLanguagePreference(recipient.userId);
+      enrichedRecipient = {
+        ...enrichedRecipient,
+        preferredLanguage: language,
+      };
+    }
 
-    await sendAppointmentReminderNotification(enrichedRecipient, details, hoursUntilAppointment);
+    const language = enrichedRecipient.preferredLanguage || "en";
+    await sendAppointmentReminderNotification(enrichedRecipient, details, hoursUntilAppointment, language);
 
     return res.json({
       success: true,
@@ -413,7 +456,7 @@ router.post("/appointment/assigned", async (req: Request, res: Response) => {
       });
     }
 
-    // Enrich recipient with email address if needed
+    // Enrich recipient with email address and language preference if needed
     let enrichedRecipient = recipient;
     if (!recipient.email && recipient.userId) {
       const email = await getUserEmail(recipient.userId);
@@ -422,17 +465,27 @@ router.post("/appointment/assigned", async (req: Request, res: Response) => {
         email: email || `user-${recipient.userId}@example.com`,
       };
     }
+    
+    // Get language preference if not already provided
+    if (recipient.userId && !enrichedRecipient.preferredLanguage) {
+      const language = await getUserLanguagePreference(recipient.userId);
+      enrichedRecipient = {
+        ...enrichedRecipient,
+        preferredLanguage: language,
+      };
+    }
 
     // For customer assignments, send appointment confirmed notification
     // For technician assignments, send the appointment confirmed notification as well
     const assignedNotification: NotificationRecipient = enrichedRecipient;
+    const language = enrichedRecipient.preferredLanguage || "en";
     
     if (notificationType === "customer_assigned" || recipient.role === "customer") {
       // Send "Appointment Confirmed" notification to newly assigned customer
-      await sendAppointmentConfirmedNotification(assignedNotification, details);
+      await sendAppointmentConfirmedNotification(assignedNotification, details, language);
     } else {
       // For technician, also send confirmation (can be used similarly)
-      await sendAppointmentConfirmedNotification(assignedNotification, details);
+      await sendAppointmentConfirmedNotification(assignedNotification, details, language);
     }
 
     return res.json({
@@ -477,7 +530,7 @@ router.post("/appointment/unassigned", async (req: Request, res: Response) => {
       });
     }
 
-    // Enrich recipient with email address if needed
+    // Enrich recipient with email address and language preference if needed
     let enrichedRecipient = recipient;
     if (!recipient.email && recipient.userId) {
       const email = await getUserEmail(recipient.userId);
@@ -486,16 +539,26 @@ router.post("/appointment/unassigned", async (req: Request, res: Response) => {
         email: email || `user-${recipient.userId}@example.com`,
       };
     }
+    
+    // Get language preference if not already provided
+    if (recipient.userId && !enrichedRecipient.preferredLanguage) {
+      const language = await getUserLanguagePreference(recipient.userId);
+      enrichedRecipient = {
+        ...enrichedRecipient,
+        preferredLanguage: language,
+      };
+    }
 
     // For customer unassignment due to reassignment, send cancellation notification with minimal info
     const unassignedNotification: NotificationRecipient = enrichedRecipient;
+    const language = enrichedRecipient.preferredLanguage || "en";
     
     if (notificationType === "customer_unassigned" || recipient.role === "customer") {
       // Send "Appointment Reassigned" notification to unassigned customer with minimal details
-      await sendAppointmentCanceledFromReassignmentNotification(unassignedNotification, details);
+      await sendAppointmentCanceledFromReassignmentNotification(unassignedNotification, details, language);
     } else {
       // For technician unassignment
-      await sendAppointmentCanceledFromReassignmentNotification(unassignedNotification, details);
+      await sendAppointmentCanceledFromReassignmentNotification(unassignedNotification, details, language);
     }
 
     return res.json({
