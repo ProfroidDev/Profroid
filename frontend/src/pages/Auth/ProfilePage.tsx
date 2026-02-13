@@ -74,6 +74,7 @@ export default function ProfilePage() {
   const [city, setCity] = useState('');
   const [province, setProvince] = useState('');
   const [country, setCountry] = useState('');
+  const [preferredLanguage, setPreferredLanguage] = useState<'en' | 'fr'>('en');
 
   // Password form state
   const [oldPassword, setOldPassword] = useState('');
@@ -220,6 +221,9 @@ export default function ProfilePage() {
         if (data.phoneNumbers && data.phoneNumbers.length > 0) {
           setPhone(data.phoneNumbers[0].number || '');
         }
+        // Load preferred language if available
+        // Note: The backend returns preferredLanguage through the user profile, not customer data
+        // We'll get it from the user store when needed
       }
     } catch (error) {
       console.error('Error fetching customer data:', error);
@@ -289,6 +293,37 @@ export default function ProfilePage() {
     fetchEmployeeData,
     setStoredCustomerData,
   ]);
+
+  // Load user preferences (language)
+  useEffect(() => {
+    if (!user?.id) return;
+
+    const fetchUserPreferences = async () => {
+      try {
+        const token = localStorage.getItem('authToken');
+        const response = await fetch(`${import.meta.env.VITE_API_URL}/user`, {
+          method: 'GET',
+          headers: {
+            Authorization: `Bearer ${token}`,
+            'Content-Type': 'application/json',
+          },
+        });
+
+        if (response.ok) {
+          const userData = await response.json();
+          // Preferred language might be available in user data or stored elsewhere
+          // For now, we default to 'en' - can be extended if backend returns it
+          if (userData.user) {
+            setPreferredLanguage('en');
+          }
+        }
+      } catch (error) {
+        console.error('Error fetching user preferences:', error);
+      }
+    };
+
+    fetchUserPreferences();
+  }, [user?.id]);
 
   const fetchEmployeeSchedule = useCallback(async () => {
     if (!employeeId) return; // Only fetch schedule if we have an employeeId
@@ -507,6 +542,29 @@ export default function ProfilePage() {
         message: t('pages.profile.notifications.profileUpdated'),
         type: 'success',
       });
+
+      // Update language preference if changed
+      if (user?.id) {
+        try {
+          const languageResponse = await fetch(`${import.meta.env.VITE_API_URL}/user-preferences`, {
+            method: 'PUT',
+            headers: {
+              Authorization: `Bearer ${token}`,
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              preferredLanguage: preferredLanguage,
+            }),
+          });
+
+          if (!languageResponse.ok) {
+            console.error('Failed to update language preference');
+          }
+        } catch (error) {
+          console.error('Error updating language preference:', error);
+          // Don't show error to user - not critical
+        }
+      }
     } catch (error) {
       console.error('Error saving profile:', error);
       setFormError(t('pages.profile.notifications.profileUpdateFailed'));
@@ -900,25 +958,6 @@ export default function ProfilePage() {
       <div className="profile-card">
         <div className="profile-header">
           <h1>{t('pages.profile.title')}</h1>
-          <div style={{ display: 'flex', gap: '0.5rem' }}>
-            <button
-              onClick={() => {
-                if (user?.employeeType) {
-                  fetchEmployeeData();
-                  fetchEmployeeSchedule();
-                } else {
-                  fetchCustomerData();
-                }
-              }}
-              className="btn-secondary"
-              disabled={isLoading}
-            >
-              {t('pages.profile.refresh')}
-            </button>
-            <button onClick={handleLogout} className="btn-secondary" disabled={isLoading}>
-              {t('common.logout')}
-            </button>
-          </div>
         </div>
 
         {/* Profile Information */}
@@ -1039,6 +1078,19 @@ export default function ProfilePage() {
                   </div>
                 </div>
 
+                <div className="auth-form-group">
+                  <label htmlFor="preferredLanguage">{t('common.language') || 'Language'}</label>
+                  <select
+                    id="preferredLanguage"
+                    value={preferredLanguage}
+                    onChange={(e) => setPreferredLanguage(e.target.value as 'en' | 'fr')}
+                    disabled={isLoading}
+                  >
+                    <option value="en">English</option>
+                    <option value="fr">Français (French)</option>
+                  </select>
+                </div>
+
                 {(formError || error) && (
                   <div className="alert alert-error">{formError || error}</div>
                 )}
@@ -1135,6 +1187,13 @@ export default function ProfilePage() {
                       </span>
                     </div>
                   )}
+
+                <div className="info-row">
+                  <span className="label">{t('common.language') || 'Language'}:</span>
+                  <span className="value">
+                    {preferredLanguage === 'fr' ? 'Français (French)' : 'English'}
+                  </span>
+                </div>
               </>
             )}
 

@@ -186,6 +186,7 @@ router.post("/register", async (req: Request, res: Response) => {
     // Check if user already exists
     const existingUser = await prisma.user.findUnique({
       where: { email: sanitizedEmail },
+      include: { userProfile: true },
     });
 
     if (existingUser) {
@@ -196,7 +197,9 @@ router.post("/register", async (req: Request, res: Response) => {
             existingUser.id,
           );
           // Send email asynchronously in background
-          sendVerificationEmail(sanitizedEmail, token, sanitizedName).catch((error) => {
+          // Use the user's preferred language or from registration request
+          const userLanguage = existingUser.userProfile?.preferredLanguage || parseResult.data.preferredLanguage || 'en';
+          sendVerificationEmail(sanitizedEmail, token, sanitizedName, userLanguage).catch((error) => {
             console.error("Error sending verification email:", error);
           });
           return res.status(409).json({
@@ -229,6 +232,7 @@ router.post("/register", async (req: Request, res: Response) => {
         userId: user.id,
         role: "customer",
         isActive: false, // Not active until customer data is submitted
+        preferredLanguage: parseResult.data.preferredLanguage || 'en', // Store preferred language from registration
       },
     });
 
@@ -250,7 +254,8 @@ router.post("/register", async (req: Request, res: Response) => {
       const { token } = await generateAndStoreVerificationToken(user.id);
 
       // Send email asynchronously in background to avoid blocking the response
-      sendVerificationEmail(sanitizedEmail, token, sanitizedName).catch((error) => {
+      // Use the preferred language from registration request
+      sendVerificationEmail(sanitizedEmail, token, sanitizedName, parseResult.data.preferredLanguage || 'en').catch((error) => {
         console.error("Error sending verification email:", error);
       });
 
@@ -541,6 +546,7 @@ router.post("/forgot-password", async (req: Request, res: Response) => {
     // Find user by email
     const user = await prisma.user.findUnique({
       where: { email },
+      include: { userProfile: true },
     });
 
     // Always return success to prevent email enumeration
@@ -585,9 +591,10 @@ router.post("/forgot-password", async (req: Request, res: Response) => {
       },
     });
 
-    // Send email with the unhashed token
+    // Send email with the unhashed token in user's preferred language
     try {
-      await sendPasswordResetEmail(email, resetToken);
+      const userLanguage = user.userProfile?.preferredLanguage || 'en';
+      await sendPasswordResetEmail(email, resetToken, undefined, userLanguage);
     } catch (emailError) {
       console.error("Failed to send reset email:", emailError);
       // Clear the token entry if email fails
@@ -694,9 +701,13 @@ router.post("/reset-password", async (req: Request, res: Response) => {
       where: { userId: user!.id },
     });
 
-    // Send confirmation email
+    // Send confirmation email in user's preferred language
     try {
-      await sendPasswordChangedEmail(user!.email || "");
+      const userProfile = await prisma.userProfile.findUnique({
+        where: { userId: user!.id },
+      });
+      const userLanguage = userProfile?.preferredLanguage || 'en';
+      await sendPasswordChangedEmail(user!.email || "", undefined, userLanguage);
     } catch (emailError) {
       console.error("Failed to send confirmation email:", emailError);
       // Don't fail the request if confirmation email fails
@@ -1333,6 +1344,42 @@ router.get("/verify-status", async (req: Request, res: Response) => {
     return res
       .status(500)
       .json({ error: "Failed to check verification status" });
+  }
+});
+
+/**
+ * Update user preferences (language)
+ * PUT /api/auth/user-preferences
+ * Headers: Authorization: Bearer <jwt>
+ */
+router.put("/user-preferences", async (req: Request, res: Response) => {
+  try {
+    const payload = getPayloadFromRequest(req, res);
+    if (!payload) return;
+
+    const { preferredLanguage } = req.body;
+
+    // Validate preferred language
+    if (!preferredLanguage || !['en', 'fr'].includes(preferredLanguage)) {
+      return res.status(400).json({ error: "Invalid language. Must be 'en' or 'fr'" });
+    }
+
+    // Update user profile with preferred language
+    const updatedProfile = await prisma.userProfile.update({
+      where: { userId: payload.sub },
+      data: {
+        preferredLanguage,
+      },
+    });
+
+    res.json({
+      success: true,
+      message: "Language preference updated",
+      preferredLanguage: updatedProfile.preferredLanguage,
+    });
+  } catch (error) {
+    console.error("Update user preferences error:", error);
+    return res.status(500).json({ error: "Failed to update preferences" });
   }
 });
 

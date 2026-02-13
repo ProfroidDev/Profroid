@@ -23,6 +23,46 @@ const FRONTEND_URL = process.env.FRONTEND_URLS?.split(",")[0] || "http://localho
 const resendAttempts = new Map<string, { count: number; resetTime: number }>();
 
 /**
+ * Helper function to get language (default to 'en')
+ */
+function getLanguage(lang?: string): 'en' | 'fr' {
+  return (lang === 'fr' || lang === 'FR') ? 'fr' : 'en';
+}
+
+/**
+ * Helper function to get verification email strings based on language
+ */
+function getVerificationEmailStrings(language: 'en' | 'fr') {
+  const strings = {
+    en: {
+      subject: "Verify Your Email - Profroid",
+      greeting: "Hello",
+      message1: "Thank you for signing up! To complete your registration, please verify your email address.",
+      codeInstructions: "Enter this verification code on the registration page to complete your sign up.",
+      expirationWarning: "This code expires in 2 hours",
+      expirationInfo: "For security reasons, verification codes are valid for 2 hours only.",
+      didNotSignUp: "Didn't sign up?",
+      ignoreEmail: "If you didn't create this account, you can safely ignore this email.",
+      emailSentTo: "This email was sent to",
+      headerSubtitle: "Professional Service Management",
+    },
+    fr: {
+      subject: "Vérifiez votre adresse e-mail - Profroid",
+      greeting: "Bonjour",
+      message1: "Merci de vous être inscrit ! Pour compléter votre inscription, veuillez vérifier votre adresse e-mail.",
+      codeInstructions: "Entrez ce code de vérification sur la page d'inscription pour finaliser votre inscription.",
+      expirationWarning: "Ce code expire dans 2 heures",
+      expirationInfo: "Pour des raisons de sécurité, les codes de vérification ne sont valides que pendant 2 heures.",
+      didNotSignUp: "Vous n'avez pas créé ce compte ?",
+      ignoreEmail: "Si vous n'avez pas créé ce compte, vous pouvez ignorer cet e-mail en toute sécurité.",
+      emailSentTo: "Cet e-mail a été envoyé à",
+      headerSubtitle: "Gestion professionnelle des services",
+    },
+  };
+  return strings[language];
+}
+
+/**
  * Track resend verification email attempts
  * Limits: 3 per hour, 10 per day per email
  */
@@ -95,7 +135,8 @@ function createTransporter() {
 export async function sendVerificationEmail(
   email: string,
   token: string,
-  name?: string
+  name?: string,
+  language?: string
 ): Promise<void> {
   const transporter = createTransporter();
   const encodedEmail = encodeURIComponent(email);
@@ -104,11 +145,14 @@ export async function sendVerificationEmail(
   
   // Display the token as verification code (first 8 characters uppercase)
   const displayCode = token.substring(0, 8).toUpperCase();
+  
+  const lang = getLanguage(language);
+  const strings = getVerificationEmailStrings(lang);
 
   const mailOptions = {
     from: SMTP_FROM,
     to: email,
-    subject: "Verify Your Email - Profroid",
+    subject: strings.subject,
     html: `
       <!DOCTYPE html>
       <html>
@@ -125,11 +169,21 @@ export async function sendVerificationEmail(
               padding: 20px;
             }
             .header {
-              background-color: #4CAF50;
+              background: linear-gradient(135deg, #7a0901 0%, #a32c1a 100%);
               color: white;
               padding: 20px;
               text-align: center;
               border-radius: 5px 5px 0 0;
+            }
+            .logo {
+              font-size: 32px;
+              font-weight: 700;
+              letter-spacing: 1px;
+              margin-bottom: 10px;
+            }
+            .header-subtitle {
+              font-size: 14px;
+              font-weight: 400;
             }
             .content {
               background-color: #f9f9f9;
@@ -138,22 +192,22 @@ export async function sendVerificationEmail(
               border-top: none;
               border-radius: 0 0 5px 5px;
             }
-            .button {
-              display: inline-block;
-              padding: 12px 30px;
-              margin: 20px 0;
-              background-color: #4CAF50;
-              color: white !important;
-              text-decoration: none;
+            .verification-code {
+              text-align: center;
+              background: #f0f0f0;
+              padding: 15px;
               border-radius: 5px;
+              font-size: 24px;
+              letter-spacing: 2px;
+              color: #7a0901;
+              margin: 20px 0;
               font-weight: bold;
             }
-            .footer {
-              margin-top: 20px;
-              padding-top: 20px;
-              border-top: 1px solid #ddd;
-              font-size: 12px;
+            .info-text {
+              text-align: center;
               color: #666;
+              font-size: 14px;
+              margin: 15px 0;
             }
             .warning {
               background-color: #fff3cd;
@@ -163,48 +217,69 @@ export async function sendVerificationEmail(
               border-radius: 5px;
               font-size: 14px;
             }
+            .footer {
+              margin-top: 20px;
+              padding-top: 20px;
+              border-top: 1px solid #ddd;
+              font-size: 12px;
+              color: #666;
+            }
           </style>
         </head>
         <body>
           <div class="container">
             <div class="header">
-              <h1>Verify Your Email</h1>
+              <div class="logo">PROFROID</div>
+              <div class="header-subtitle">${strings.headerSubtitle}</div>
             </div>
             <div class="content">
-              <p>Hello ${name || "User"},</p>
+              <p>${strings.greeting} ${name || (lang === 'fr' ? 'Utilisateur' : 'User')},</p>
               
-              <p>Thank you for signing up! To complete your registration, please verify your email address.</p>
+              <p>${strings.message1}</p>
               
-              <h3 style="text-align: center; background: #f0f0f0; padding: 15px; border-radius: 5px; font-size: 24px; letter-spacing: 2px; color: #4CAF50;">
-                ${displayCode}
-              </h3>
+              <div class="verification-code">${displayCode}</div>
               
-              <p style="text-align: center; color: #666; font-size: 14px;">Enter this verification code on the registration page to complete your sign up.</p>
+              <p class="info-text">${strings.codeInstructions}</p>
               
               <div class="warning">
-                <strong>⏱️ This code expires in 2 hours</strong><br>
-                For security reasons, verification codes are valid for 2 hours only.
+                <strong>⏱️ ${strings.expirationWarning}</strong><br>
+                ${strings.expirationInfo}
               </div>
               
               <div class="warning">
-                <strong>ℹ️ Didn't sign up?</strong><br>
-                If you didn't create this account, you can safely ignore this email.
+                <strong>ℹ️ ${strings.didNotSignUp}</strong><br>
+                ${strings.ignoreEmail}
               </div>
               
               <div class="footer">
-                <p>This email was sent to ${maskedEmail}</p>
-                <p>&copy; 2026 Profroid. All rights reserved.</p>
+                <p>${strings.emailSentTo} ${maskedEmail}</p>
+                <p>&copy; 2026 Profroid. ${lang === 'fr' ? 'Tous les droits sont réservés.' : 'All rights reserved.'}</p>
               </div>
             </div>
           </div>
         </body>
       </html>
     `,
+    text: `
+${strings.greeting} ${name || (lang === 'fr' ? 'Utilisateur' : 'User')},
+
+${strings.message1}
+
+${lang === 'fr' ? 'Votre code de vérification : ' : 'Your verification code: '}${displayCode}
+
+${strings.codeInstructions}
+
+${strings.expirationWarning}.
+
+${strings.ignoreEmail}
+
+${lang === 'fr' ? 'Cordialement, L\'équipe Profroid' : 'Best regards, The Profroid Team'}
+    `,
   };
 
   try {
     await transporter.sendMail(mailOptions);
-    console.log(`Verification email sent to ${email}`);
+    console.log(`Verification email sent to ${email} (${lang})`);
   } catch (error) {
     console.error(`Failed to send verification email to ${email}:`, error);
     throw new Error("Failed to send verification email");
@@ -365,12 +440,8 @@ export async function resendVerificationEmail(
   // Find user (no email enumeration - don't reveal if email exists)
   const user = await prisma.user.findUnique({
     where: { email },
-    select: {
-      id: true,
-      email: true,
-      emailVerified: true,
-      verificationAttempts: true,
-      verificationLockedUntil: true,
+    include: {
+      userProfile: true,
     },
   });
 
@@ -398,7 +469,9 @@ export async function resendVerificationEmail(
   const { token } = await generateAndStoreVerificationToken(user.id);
 
   // Send email asynchronously in background to avoid blocking
-  sendVerificationEmail(email, token).catch((error) => {
+  // Use the user's preferred language
+  const userLanguage = user.userProfile?.preferredLanguage || 'en';
+  sendVerificationEmail(email, token, undefined, userLanguage).catch((error) => {
     console.error("Resend verification email error:", error);
   });
 

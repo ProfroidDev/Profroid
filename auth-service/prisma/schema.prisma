@@ -73,20 +73,21 @@ model verification {
 }
 
 model userProfile {
-  id           String   @id @default(cuid())
-  userId       String   @unique
-  role         String   @default("customer")
-  isActive     Boolean  @default(true)
-  phone        String?
-  address      String?
-  postalCode   String?
-  city         String?
-  province     String?
-  country      String?
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
-  employeeType String?
-  user         user     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id                  String   @id @default(cuid())
+  userId              String   @unique
+  role                String   @default("customer")
+  isActive            Boolean  @default(true)
+  phone               String?
+  address             String?
+  postalCode          String?
+  city                String?
+  province            String?
+  country             String?
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+  employeeType        String?
+  preferredLanguage   String   @default("en")
+  user                user     @relation(fields: [userId], references: [id], onDelete: Cascade)
   notificationPreferences notificationPreference?
 }
 
