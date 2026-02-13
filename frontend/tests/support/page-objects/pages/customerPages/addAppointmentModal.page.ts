@@ -79,8 +79,8 @@ export class AddAppointmentModal {
           if (options.length === 0) {
             return;
           }
-          const target = options.find((opt) =>
-            opt.text.includes(args.desired) || opt.text.includes(args.normalizedLabel)
+          const target = options.find(
+            (opt) => opt.text.includes(args.desired) || opt.text.includes(args.normalizedLabel)
           );
           const chosen = target || options[0];
           selectEl.value = chosen.value;
