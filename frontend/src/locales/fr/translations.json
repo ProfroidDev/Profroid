@@ -751,13 +751,24 @@
         "categoriesLabel": "--- Catégories ---",
         "statusLabel": "--- Statut ---",
         "categories": {
+          "general": "Général",
+          "heating": "Chauffage",
+          "cooling": "Refroidissement",
           "compressors": "Compresseurs",
           "sensors": "Capteurs",
           "coils": "Bobines",
           "motors": "Moteurs",
           "refrigerants": "Réfrigérants",
           "electronics": "Électronique",
-          "accessories": "Accessoires"
+          "accessories": "Accessoires",
+          "filtration": "Filtration",
+          "hardware": "Quincaillerie",
+          "shelving": "Étagères",
+          "packaging": "Emballage",
+          "fluidControl": "Contrôle des fluides",
+          "doorsSeals": "Portes et joints",
+          "electrical": "Électrique",
+          "fasteners": "Fixations"
         },
         "status": {
           "inStock": "En Stock",

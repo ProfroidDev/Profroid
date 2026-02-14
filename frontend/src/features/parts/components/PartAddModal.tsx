@@ -4,6 +4,7 @@ import { createPart } from '../api/createPart';
 import { createPartWithImage } from '../api/createPartWithImage';
 import { sanitizeInput } from '../../../utils/sanitizer';
 import type { PartRequestModel } from '../models/PartRequestModel';
+import { CATEGORY_OPTIONS } from '../utils/partLocalization';
 import './PartAddModal.css';
 import { X } from 'lucide-react';
 
@@ -191,18 +192,11 @@ export default function PartAddModal({
                 disabled={submitting}
                 required
               >
-                <option value="General">General</option>
-                <option value="Heating">Heating</option>
-                <option value="Cooling">Cooling</option>
-                <option value="Electronics">Electronics</option>
-                <option value="Filtration">Filtration</option>
-                <option value="Hardware">Hardware</option>
-                <option value="Shelving">Shelving</option>
-                <option value="Packaging">Packaging</option>
-                <option value="Sensors">Sensors</option>
-                <option value="Fluid Control">Fluid Control</option>
-                <option value="Doors & Seals">Doors & Seals</option>
-                <option value="Electrical">Electrical</option>
+                {CATEGORY_OPTIONS.map((option) => (
+                  <option key={option.value} value={option.value}>
+                    {t(option.labelKey)}
+                  </option>
+                ))}
               </select>
             </div>
 

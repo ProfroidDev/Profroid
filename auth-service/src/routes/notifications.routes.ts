@@ -13,6 +13,7 @@ import {
   type NotificationRecipient,
 } from "../services/appointmentNotification.service.js";
 import {
+  sendPaymentDueNotification,
   sendPaymentPaidNotification,
   type PaymentDetails,
   type PaymentNotificationRecipient,
@@ -56,7 +57,10 @@ async function getUserLanguagePreference(userId: string): Promise<"en" | "fr"> {
     }
     return "en";
   } catch (error) {
-    console.error(`Failed to lookup language preference for userId ${userId}:`, error);
+    console.error(
+      `Failed to lookup language preference for userId ${userId}:`,
+      error,
+    );
     return "en";
   }
 }
@@ -68,21 +72,21 @@ async function enrichRecipientsWithEmails(recipients: any[]): Promise<any[]> {
   return Promise.all(
     recipients.map(async (recipient) => {
       let enriched = { ...recipient };
-      
+
       // If recipient already has email, use it; otherwise look it up
       if (!recipient.email && recipient.userId) {
         const email = await getUserEmail(recipient.userId);
         enriched.email = email || `user-${recipient.userId}@example.com`;
       }
-      
-      // If recipient has userId, look up language preference
-      if (recipient.userId && !recipient.preferredLanguage) {
+
+      // Add language preference when available
+      if (recipient.userId && !enriched.preferredLanguage) {
         const language = await getUserLanguagePreference(recipient.userId);
         enriched.preferredLanguage = language;
       }
-      
+
       return enriched;
-    })
+    }),
   );
 }
 
@@ -166,7 +170,8 @@ router.post("/appointment/booked", async (req: Request, res: Response) => {
     console.error("Error sending appointment booked notification:", error);
     return res.status(500).json({
       success: false,
-      error: error instanceof Error ? error.message : "Failed to send notifications",
+      error:
+        error instanceof Error ? error.message : "Failed to send notifications",
     });
   }
 });
@@ -205,7 +210,12 @@ router.post("/appointment/cancelled", async (req: Request, res: Response) => {
     // Send notification to each recipient with their preferred language
     for (const recipient of enrichedRecipients) {
       const language = recipient.preferredLanguage || "en";
-      await sendAppointmentCancelledNotification([recipient], details, cancellationReason, language);
+      await sendAppointmentCancelledNotification(
+        [recipient],
+        details,
+        cancellationReason,
+        language,
+      );
     }
 
     return res.json({
@@ -216,7 +226,8 @@ router.post("/appointment/cancelled", async (req: Request, res: Response) => {
     console.error("Error sending appointment cancelled notification:", error);
     return res.status(500).json({
       success: false,
-      error: error instanceof Error ? error.message : "Failed to send notifications",
+      error:
+        error instanceof Error ? error.message : "Failed to send notifications",
     });
   }
 });
@@ -249,7 +260,11 @@ router.post("/appointment/updated", async (req: Request, res: Response) => {
       });
     }
 
-    if (!changedFields || !Array.isArray(changedFields) || changedFields.length === 0) {
+    if (
+      !changedFields ||
+      !Array.isArray(changedFields) ||
+      changedFields.length === 0
+    ) {
       return res.status(400).json({
         success: false,
         error: "changedFields array is required and must not be empty",
@@ -262,7 +277,12 @@ router.post("/appointment/updated", async (req: Request, res: Response) => {
     // Send notification to each recipient with their preferred language
     for (const recipient of enrichedRecipients) {
       const language = recipient.preferredLanguage || "en";
-      await sendAppointmentUpdatedNotification([recipient], details, changedFields, language);
+      await sendAppointmentUpdatedNotification(
+        [recipient],
+        details,
+        changedFields,
+        language,
+      );
     }
 
     return res.json({
@@ -273,7 +293,8 @@ router.post("/appointment/updated", async (req: Request, res: Response) => {
     console.error("Error sending appointment updated notification:", error);
     return res.status(500).json({
       success: false,
-      error: error instanceof Error ? error.message : "Failed to send notifications",
+      error:
+        error instanceof Error ? error.message : "Failed to send notifications",
     });
   }
 });
@@ -306,7 +327,10 @@ router.post("/appointment/reminder", async (req: Request, res: Response) => {
       });
     }
 
-    if (typeof hoursUntilAppointment !== "number" || hoursUntilAppointment < 0) {
+    if (
+      typeof hoursUntilAppointment !== "number" ||
+      hoursUntilAppointment < 0
+    ) {
       return res.status(400).json({
         success: false,
         error: "hoursUntilAppointment must be a non-negative number",
@@ -322,7 +346,7 @@ router.post("/appointment/reminder", async (req: Request, res: Response) => {
         email: email || `user-${recipient.userId}@example.com`,
       };
     }
-    
+
     // Get language preference if not already provided
     if (recipient.userId && !enrichedRecipient.preferredLanguage) {
       const language = await getUserLanguagePreference(recipient.userId);
@@ -333,7 +357,12 @@ router.post("/appointment/reminder", async (req: Request, res: Response) => {
     }
 
     const language = enrichedRecipient.preferredLanguage || "en";
-    await sendAppointmentReminderNotification(enrichedRecipient, details, hoursUntilAppointment, language);
+    await sendAppointmentReminderNotification(
+      enrichedRecipient,
+      details,
+      hoursUntilAppointment,
+      language,
+    );
 
     return res.json({
       success: true,
@@ -343,7 +372,90 @@ router.post("/appointment/reminder", async (req: Request, res: Response) => {
     console.error("Error sending appointment reminder notification:", error);
     return res.status(500).json({
       success: false,
-      error: error instanceof Error ? error.message : "Failed to send notification",
+      error:
+        error instanceof Error ? error.message : "Failed to send notification",
+    });
+  }
+});
+
+/**
+ * POST /api/notifications/payment/due
+ * Send payment due notification to customer
+ * Request body:
+ * {
+ *   customer: { userId, name, role: "customer" },
+ *   details: { billId, amount, status, appointmentId, jobName, reportId, ... }
+ * }
+ */
+router.post("/payment/due", async (req: Request, res: Response) => {
+  try {
+    const { customer, details } = req.body as {
+      customer: PaymentCustomerInput;
+      details: PaymentDetails;
+    };
+
+    if (!customer || !customer.name) {
+      return res.status(400).json({
+        success: false,
+        error: "Customer with name and either email or userId is required",
+      });
+    }
+
+    if (!customer.email && !customer.userId) {
+      return res.status(400).json({
+        success: false,
+        error: "Customer with email or userId is required",
+      });
+    }
+
+    if (!details || !details.billId) {
+      return res.status(400).json({
+        success: false,
+        error: "Payment details with billId are required",
+      });
+    }
+
+    let enrichedCustomer: PaymentNotificationRecipient = {
+      email: customer.email || "",
+      name: customer.name,
+      role: "customer",
+    };
+
+    if (!customer.email && customer.userId) {
+      const email = await getUserEmail(customer.userId);
+      enrichedCustomer = {
+        email: email || `user-${customer.userId}@example.com`,
+        name: customer.name,
+        role: "customer",
+      };
+    }
+
+    if (customer.userId) {
+      const language = await getUserLanguagePreference(customer.userId);
+      enrichedCustomer = {
+        ...enrichedCustomer,
+        preferredLanguage: language,
+      };
+    }
+
+    const enrichedDetails: PaymentDetails = {
+      ...details,
+      customerName: details.customerName || customer.name,
+      customerEmail: details.customerEmail || enrichedCustomer.email,
+    };
+
+    await sendPaymentDueNotification([enrichedCustomer], enrichedDetails);
+
+    return res.json({
+      success: true,
+      message: "Payment due notification sent successfully",
+    });
+  } catch (error) {
+    console.error("Error sending payment due notification:", error);
+    return res.status(500).json({
+      success: false,
+      error:
+        error instanceof Error ? error.message : "Failed to send notification",
     });
   }
 });
@@ -403,7 +515,9 @@ router.post("/payment/paid", async (req: Request, res: Response) => {
     const adminRecipients = await getAdminRecipients();
     const combinedRecipients = [enrichedCustomer, ...adminRecipients];
     const uniqueRecipients = Array.from(
-      new Map(combinedRecipients.map((recipient) => [recipient.email, recipient])).values(),
+      new Map(
+        combinedRecipients.map((recipient) => [recipient.email, recipient]),
+      ).values(),
     );
 
     const enrichedDetails: PaymentDetails = {
@@ -422,7 +536,8 @@ router.post("/payment/paid", async (req: Request, res: Response) => {
     console.error("Error sending payment confirmation notification:", error);
     return res.status(500).json({
       success: false,
-      error: error instanceof Error ? error.message : "Failed to send notification",
+      error:
+        error instanceof Error ? error.message : "Failed to send notification",
     });
   }
 });
@@ -465,7 +580,7 @@ router.post("/appointment/assigned", async (req: Request, res: Response) => {
         email: email || `user-${recipient.userId}@example.com`,
       };
     }
-    
+
     // Get language preference if not already provided
     if (recipient.userId && !enrichedRecipient.preferredLanguage) {
       const language = await getUserLanguagePreference(recipient.userId);
@@ -479,13 +594,24 @@ router.post("/appointment/assigned", async (req: Request, res: Response) => {
     // For technician assignments, send the appointment confirmed notification as well
     const assignedNotification: NotificationRecipient = enrichedRecipient;
     const language = enrichedRecipient.preferredLanguage || "en";
-    
-    if (notificationType === "customer_assigned" || recipient.role === "customer") {
+
+    if (
+      notificationType === "customer_assigned" ||
+      recipient.role === "customer"
+    ) {
       // Send "Appointment Confirmed" notification to newly assigned customer
-      await sendAppointmentConfirmedNotification(assignedNotification, details, language);
+      await sendAppointmentConfirmedNotification(
+        assignedNotification,
+        details,
+        language,
+      );
     } else {
       // For technician, also send confirmation (can be used similarly)
-      await sendAppointmentConfirmedNotification(assignedNotification, details, language);
+      await sendAppointmentConfirmedNotification(
+        assignedNotification,
+        details,
+        language,
+      );
     }
 
     return res.json({
@@ -496,7 +622,8 @@ router.post("/appointment/assigned", async (req: Request, res: Response) => {
     console.error("Error sending assignment notification:", error);
     return res.status(500).json({
       success: false,
-      error: error instanceof Error ? error.message : "Failed to send notification",
+      error:
+        error instanceof Error ? error.message : "Failed to send notification",
     });
   }
 });
@@ -539,7 +666,7 @@ router.post("/appointment/unassigned", async (req: Request, res: Response) => {
         email: email || `user-${recipient.userId}@example.com`,
       };
     }
-    
+
     // Get language preference if not already provided
     if (recipient.userId && !enrichedRecipient.preferredLanguage) {
       const language = await getUserLanguagePreference(recipient.userId);
@@ -552,13 +679,24 @@ router.post("/appointment/unassigned", async (req: Request, res: Response) => {
     // For customer unassignment due to reassignment, send cancellation notification with minimal info
     const unassignedNotification: NotificationRecipient = enrichedRecipient;
     const language = enrichedRecipient.preferredLanguage || "en";
-    
-    if (notificationType === "customer_unassigned" || recipient.role === "customer") {
+
+    if (
+      notificationType === "customer_unassigned" ||
+      recipient.role === "customer"
+    ) {
       // Send "Appointment Reassigned" notification to unassigned customer with minimal details
-      await sendAppointmentCanceledFromReassignmentNotification(unassignedNotification, details, language);
+      await sendAppointmentCanceledFromReassignmentNotification(
+        unassignedNotification,
+        details,
+        language,
+      );
     } else {
       // For technician unassignment
-      await sendAppointmentCanceledFromReassignmentNotification(unassignedNotification, details, language);
+      await sendAppointmentCanceledFromReassignmentNotification(
+        unassignedNotification,
+        details,
+        language,
+      );
     }
 
     return res.json({
@@ -569,7 +707,8 @@ router.post("/appointment/unassigned", async (req: Request, res: Response) => {
     console.error("Error sending unassignment notification:", error);
     return res.status(500).json({
       success: false,
-      error: error instanceof Error ? error.message : "Failed to send notification",
+      error:
+        error instanceof Error ? error.message : "Failed to send notification",
     });
   }
 });

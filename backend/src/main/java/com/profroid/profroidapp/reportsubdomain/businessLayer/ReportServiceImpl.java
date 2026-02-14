@@ -19,6 +19,8 @@ import com.profroid.profroidapp.reportsubdomain.dataAccessLayer.BillRepository;
 import com.profroid.profroidapp.reportsubdomain.mappingLayer.ReportResponseMapper;
 import com.profroid.profroidapp.reportsubdomain.presentationLayer.ReportRequestModel;
 import com.profroid.profroidapp.reportsubdomain.presentationLayer.ReportResponseModel;
+import com.profroid.profroidapp.reportsubdomain.utils.PaymentNotificationPayloadBuilder;
+import com.profroid.profroidapp.reportsubdomain.utils.PaymentNotificationUtil;
 import com.profroid.profroidapp.filesubdomain.businessLayer.FileService;
 import com.profroid.profroidapp.filesubdomain.dataAccessLayer.FileCategory;
 import com.profroid.profroidapp.filesubdomain.dataAccessLayer.FileOwnerType;
@@ -53,6 +55,7 @@ public class ReportServiceImpl implements ReportService {
     private final StoredFileRepository storedFileRepository;
     private final ReportPdfGenerator reportPdfGenerator;
     private final BillRepository billRepository;
+    private final PaymentNotificationUtil paymentNotificationUtil;
 
     // Tax rates
     private static final BigDecimal TPS_RATE = new BigDecimal("0.05"); // 5%
@@ -66,7 +69,8 @@ public class ReportServiceImpl implements ReportService {
                              FileService fileService,
                              StoredFileRepository storedFileRepository,
                              ReportPdfGenerator reportPdfGenerator,
-                             BillRepository billRepository) {
+                             BillRepository billRepository,
+                             PaymentNotificationUtil paymentNotificationUtil) {
         this.reportRepository = reportRepository;
         this.appointmentRepository = appointmentRepository;
         this.employeeRepository = employeeRepository;
@@ -76,6 +80,7 @@ public class ReportServiceImpl implements ReportService {
         this.storedFileRepository = storedFileRepository;
         this.reportPdfGenerator = reportPdfGenerator;
         this.billRepository = billRepository;
+        this.paymentNotificationUtil = paymentNotificationUtil;
     }
 
     @Override
@@ -445,6 +450,10 @@ public class ReportServiceImpl implements ReportService {
             bill.setStatus(Bill.BillStatus.UNPAID);
 
             billRepository.save(bill);
+            paymentNotificationUtil.sendPaymentDueNotification(
+                    PaymentNotificationPayloadBuilder.buildCustomerRecipient(bill),
+                    PaymentNotificationPayloadBuilder.buildPaymentDetails(bill)
+            );
             logger.info("Bill created successfully with ID: {} for report: {}", bill.getBillId(), report.getReportIdentifier().getReportId());
         } catch (Exception e) {
             logger.error("Error creating bill for report: {}", report.getReportIdentifier().getReportId(), e);
