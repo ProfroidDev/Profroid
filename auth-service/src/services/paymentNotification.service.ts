@@ -56,7 +56,10 @@ function buildRow(label: string, value?: string | number): string {
   `;
 }
 
-function translatePaymentStatus(status?: string, language: "en" | "fr" = "en"): string | undefined {
+function translatePaymentStatus(
+  status?: string,
+  language: "en" | "fr" = "en",
+): string | undefined {
   if (!status) return status;
   if (language !== "fr") return status;
   switch (status.toUpperCase()) {
