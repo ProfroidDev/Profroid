@@ -333,6 +333,7 @@ export default function ContactPage() {
         localStorage.setItem('responseType', 'success');
         setFormData({ name: '', email: '', phone: '', subject: '', message: '' });
         setRateLimitTime(0);
+        localStorage.removeItem('rateLimitTimestamp');
         localStorage.removeItem('rateLimitTime');
         // Auto-clear success message after 5 seconds
         setTimeout(() => {
