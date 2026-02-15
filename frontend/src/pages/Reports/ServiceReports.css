@@ -217,8 +217,8 @@
     padding: 0.625rem 0.75rem 0.625rem 2.5rem;
     font-size: 0.875rem;
     border-radius: 0.375rem;
+    height: 40px;
   }
-  height: 40px;
 }
 
 .search-input:focus {
@@ -538,5 +538,190 @@
 
   .pagination-pages {
     flex-wrap: wrap;
+  }
+}
+
+/* MOBILE OPTIMIZATION FOR SMALL SCREENS */
+@media (max-width: 640px) {
+  .service-reports-page {
+    padding-top: 70px;
+  }
+
+  .main-content {
+    padding: 0.75rem 12px;
+  }
+
+  .page-header {
+    flex-direction: column;
+    gap: 10px;
+    margin-bottom: 1rem;
+  }
+
+  .page-title {
+    font-size: 1.2rem;
+    gap: 6px;
+  }
+
+  .title-icon {
+    width: 20px;
+    height: 20px;
+  }
+
+  .page-subtitle {
+    font-size: 0.7rem;
+  }
+
+  .filter-bar-reports {
+    gap: 6px;
+    margin-bottom: 0.8rem;
+  }
+
+  .search-box-reports {
+    width: 100%;
+    min-width: 100%;
+  }
+
+  .search-input {
+    padding: 6px 6px 6px 24px;
+    font-size: 0.75rem;
+  }
+
+  .search-icon {
+    left: 6px;
+    width: 12px;
+    height: 12px;
+  }
+
+  .table-container {
+    overflow-x: auto;
+    overflow-y: visible;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .reports-table {
+    font-size: 0.8rem;
+    width: 100%;
+    min-width: 600px;
+    table-layout: auto;
+    border-collapse: collapse;
+  }
+
+  .reports-table thead {
+    background-color: #f3f4f6;
+    border-bottom: 2px solid #d1d5db;
+    position: sticky;
+    top: 0;
+  }
+
+  .reports-table th {
+    padding: 12px 8px;
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    white-space: nowrap;
+    text-align: left;
+    background-color: #f3f4f6;
+  }
+
+  .reports-table td {
+    padding: 12px 8px;
+    font-size: 0.8rem;
+    white-space: normal;
+    line-height: 1.4;
+    border-bottom: 1px solid #f3f4f6;
+  }
+
+  /* Keep all columns visible */
+  .reports-table th.report-id-col-header,
+  .reports-table td.report-id-col {
+    display: table-cell;
+    min-width: 80px;
+  }
+
+  /* Adjust column widths for mobile scrolling */
+  .reports-table th.status-col-narrow-header,
+  .reports-table td.status-col-narrow {
+    width: auto;
+    min-width: 100px;
+  }
+
+  .customer-name,
+  .technician-name {
+    font-size: 0.8rem;
+    font-weight: 600;
+  }
+
+  .price-col {
+    display: table-cell;
+    min-width: 80px;
+    font-weight: 600;
+  }
+
+  .status-badge {
+    padding: 4px 8px;
+    font-size: 0.7rem;
+    border-radius: 4px;
+    display: inline-block;
+  }
+
+  .bill-status-badge {
+    padding: 4px 8px;
+    font-size: 0.7rem;
+    border-radius: 4px;
+    display: inline-block;
+  }
+
+  .actions-col {
+    width: auto;
+    text-align: center;
+  }
+
+  .icon-btn {
+    width: 28px;
+    height: 28px;
+    margin: 0 2px;
+  }
+
+  .icon-btn svg {
+    width: 14px;
+    height: 14px;
+  }
+
+  .pagination-container {
+    margin-top: 1rem;
+    padding: 0.75rem;
+  }
+
+  .pagination-btn {
+    padding: 0.4rem 0.8rem;
+    font-size: 0.7rem;
+    border: 1px solid #d1d5db;
+    border-radius: 0.3rem;
+    min-width: 60px;
+  }
+
+  .pagination-pages {
+    gap: 4px;
+  }
+
+  .pagination-page {
+    width: 28px;
+    height: 28px;
+    font-size: 0.65rem;
+    padding: 0;
+  }
+
+  .pagination-info {
+    font-size: 0.7rem;
+    margin-top: 0.75rem;
+  }
+
+  .toast {
+    bottom: 1rem;
+    right: 1rem;
+    left: 1rem;
+    padding: 0.75rem 1rem;
+    font-size: 0.75rem;
   }
 }
