@@ -23,10 +23,47 @@ export default function ContactPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [responseMessage, setResponseMessage] = useState(() => {
     // Load response message from localStorage on mount
+    // But only if rate limit is still active
+    const storedTimestamp = localStorage.getItem('rateLimitTimestamp');
+    if (!storedTimestamp) {
+      // No rate limit, don't load old messages
+      return '';
+    }
+    
+    const limitEndTime = parseInt(storedTimestamp, 10);
+    const now = Date.now();
+    const remaining = Math.ceil((limitEndTime - now) / 1000);
+    
+    if (remaining <= 0) {
+      // Rate limit expired, clear messages from localStorage
+      localStorage.removeItem('responseMessage');
+      localStorage.removeItem('responseType');
+      localStorage.removeItem('rateLimitTimestamp');
+      return '';
+    }
+    
+    // Rate limit still active, load message
     return localStorage.getItem('responseMessage') || '';
   });
   const [responseType, setResponseType] = useState<'success' | 'error' | ''>(() => {
     // Load response type from localStorage on mount
+    // But only if rate limit is still active
+    const storedTimestamp = localStorage.getItem('rateLimitTimestamp');
+    if (!storedTimestamp) {
+      // No rate limit, don't load old types
+      return '';
+    }
+    
+    const limitEndTime = parseInt(storedTimestamp, 10);
+    const now = Date.now();
+    const remaining = Math.ceil((limitEndTime - now) / 1000);
+    
+    if (remaining <= 0) {
+      // Rate limit expired, don't load type
+      return '';
+    }
+    
+    // Rate limit still active, load type
     const stored = localStorage.getItem('responseType');
     return (stored as 'success' | 'error' | '') || '';
   });
@@ -38,6 +75,14 @@ export default function ContactPage() {
     const limitEndTime = parseInt(storedTimestamp, 10);
     const now = Date.now();
     const remaining = Math.ceil((limitEndTime - now) / 1000);
+
+    if (remaining <= 0) {
+      // Clean up expired data
+      localStorage.removeItem('rateLimitTimestamp');
+      localStorage.removeItem('responseMessage');
+      localStorage.removeItem('responseType');
+      return 0;
+    }
 
     return remaining > 0 ? remaining : 0;
   }); // countdown in seconds
@@ -56,6 +101,11 @@ export default function ContactPage() {
     // Check if rate limit has expired on mount/update
     const storedTimestamp = localStorage.getItem('rateLimitTimestamp');
     if (!storedTimestamp) {
+      // No rate limit active, clear interval
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current);
+        intervalRef.current = null;
+      }
       return;
     }
 
@@ -84,7 +134,7 @@ export default function ContactPage() {
       intervalRef.current = null;
     }
 
-    // Start countdown interval - calculate elapsed time from stored timestamp
+    // Start countdown interval - update rate limit time every second
     intervalRef.current = setInterval(() => {
       const timestamp = localStorage.getItem('rateLimitTimestamp');
       if (!timestamp) {
@@ -115,6 +165,7 @@ export default function ContactPage() {
         return;
       }
 
+      // Update the countdown - this will trigger a re-render
       setRateLimitTime(timeRemaining);
     }, 1000);
 
@@ -125,7 +176,7 @@ export default function ContactPage() {
         intervalRef.current = null;
       }
     };
-  }, []);
+  }, [rateLimitTime]);
 
   // Check rate limit status when page becomes visible (user returns to tab)
   useEffect(() => {

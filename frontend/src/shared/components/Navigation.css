@@ -71,14 +71,22 @@
 .nav-links {
   display: none;
   align-items: center;
-  gap: 20px;
+  gap: 12px;
   justify-content: flex-end;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
+  flex-shrink: 0;
 }
 
 @media (min-width: 901px) {
   .nav-links {
     display: flex;
+    gap: 20px;
+  }
+}
+
+@media (min-width: 1200px) {
+  .nav-links {
+    gap: 24px;
   }
 }
 
@@ -88,6 +96,7 @@
   text-decoration: none;
   transition: 0.2s;
   white-space: nowrap;
+  flex-shrink: 0;
 }
 
 .nav-links a:hover {
@@ -104,6 +113,8 @@
   font-weight: 600;
   transition: 0.2s;
   cursor: pointer;
+  flex-shrink: 0;
+  white-space: nowrap;
 }
 
 .nav-book:hover {
@@ -123,6 +134,8 @@
   background: linear-gradient(90deg, #7a0901 60%, #a32c1a 100%);
   color: white;
   box-shadow: 0 2px 8px rgba(122, 9, 1, 0.08);
+  flex-shrink: 0;
+  white-space: nowrap;
 }
 
 .nav-signin:hover {
@@ -135,6 +148,9 @@
   background: none;
   border: none;
   cursor: pointer;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
 }
 
 .icon {
@@ -157,6 +173,8 @@
   transition: all 0.3s ease;
   background: #f0f0f0;
   color: #333;
+  flex-shrink: 0;
+  white-space: nowrap;
 }
 
 .nav-profile:hover {
@@ -294,6 +312,7 @@
 /* LANGUAGE SWITCHER - DESKTOP */
 .nav-language-container {
   position: relative;
+  flex-shrink: 0;
 }
 
 .nav-language-button {
@@ -309,6 +328,8 @@
   color: #3a2e2a;
   font-weight: 500;
   font-size: 0.85rem;
+  flex-shrink: 0;
+  white-space: nowrap;
 }
 
 @media (min-width: 641px) {
@@ -753,6 +774,8 @@
   display: inline-flex;
   align-items: center;
   gap: 4px;
+  flex-shrink: 0;
+  white-space: nowrap;
 }
 
 .nav-unread-badge,
