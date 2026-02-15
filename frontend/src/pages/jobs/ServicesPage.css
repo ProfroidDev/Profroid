@@ -721,13 +721,21 @@
 
 .modal {
   background: #ffffff;
-  width: 600px;
+  width: 90%;
+  max-width: 600px;
   border-radius: 18px;
   border: 1px solid #e4e2df;
-  padding: 24px;
+  padding: 20px;
   box-shadow: 0 15px 35px rgba(0, 0, 0, 0.12);
   max-height: 80vh;
   overflow: auto;
+}
+
+@media (min-width: 641px) {
+  .modal {
+    width: 600px;
+    padding: 24px;
+  }
 }
 
 .modal-header {
@@ -845,17 +853,33 @@
 .form-group textarea {
   resize: vertical;
   font-family: inherit;
+  width: 100%;
+  box-sizing: border-box;
+  min-height: 100px;
 }
 
 .form-row {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: 1fr;
   gap: 12px;
 }
 
+@media (min-width: 641px) {
+  .form-row {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
 .checkbox-group {
-  align-items: flex-end;
-  padding-top: 22px;
+  align-items: flex-start;
+  padding-top: 8px;
+}
+
+@media (min-width: 641px) {
+  .checkbox-group {
+    align-items: flex-end;
+    padding-top: 22px;
+  }
 }
 
 .checkbox-group label {
@@ -878,6 +902,13 @@
   margin-top: 12px;
   border-top: 1px solid #ece8e3;
   padding-top: 16px;
+  flex-direction: column;
+}
+
+@media (min-width: 641px) {
+  .form-actions {
+    flex-direction: row;
+  }
 }
 
 .btn-cancel,
@@ -889,6 +920,14 @@
   font-weight: 600;
   cursor: pointer;
   transition: all 0.2s ease;
+  width: 100%;
+}
+
+@media (min-width: 641px) {
+  .btn-cancel,
+  .btn-create {
+    width: auto;
+  }
 }
 
 .btn-cancel {

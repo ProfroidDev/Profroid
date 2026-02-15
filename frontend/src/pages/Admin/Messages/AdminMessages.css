@@ -20,6 +20,10 @@
   max-width: 1200px;
   margin: 0 auto 40px;
   text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
 }
 
 .messages-header h1 {
@@ -28,12 +32,14 @@
   color: #7a0901;
   margin-bottom: 10px;
   letter-spacing: 0px;
+  text-align: center;
 }
 
 .messages-header p {
   font-size: 1rem;
   color: #888;
   font-weight: 400;
+  text-align: center;
 }
 
 /* Filter Section */
@@ -42,6 +48,7 @@
   margin: 0 auto 30px;
   display: flex;
   align-items: center;
+  justify-content: flex-start;
   gap: 16px;
   flex-wrap: wrap;
   background: white;
@@ -141,6 +148,7 @@
 }
 .messages-table th:nth-child(6) {
   width: 25%;
+  text-align: center;
 }
 
 .messages-table tbody tr {
@@ -159,6 +167,8 @@
   font-size: 0.8rem;
   word-wrap: break-word;
   overflow-wrap: break-word;
+  text-align: left;
+  vertical-align: middle;
 }
 
 /* Read Status Cell */
@@ -228,6 +238,9 @@
   flex-wrap: wrap;
   justify-content: center;
   align-items: center;
+  text-align: center;
+  padding: 8px 6px;
+  min-height: 48px;
 }
 
 .btn-view-msg,
@@ -287,6 +300,7 @@
   border-radius: 8px;
   border: 1px solid #e8e4e0;
   box-shadow: 0 2px 8px rgba(122, 9, 1, 0.05);
+  flex-wrap: wrap;
 }
 
 .pagination button {
@@ -645,5 +659,144 @@
   .btn-cancel,
   .btn-save {
     width: 100%;
+  }
+}
+
+/* MOBILE OPTIMIZATION */
+@media (max-width: 640px) {
+  .admin-messages-container {
+    padding: 80px 12px 30px 12px;
+  }
+
+  .messages-header h1 {
+    font-size: 1.6rem;
+    margin-bottom: 8px;
+  }
+
+  .messages-header p {
+    font-size: 0.9rem;
+  }
+
+  .messages-filters {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 12px;
+    padding: 14px 16px;
+  }
+
+  .messages-filters label {
+    font-size: 0.9rem;
+  }
+
+  .status-filter {
+    width: 100%;
+  }
+
+  .messages-table-wrapper {
+    margin: 0 auto 20px;
+    overflow-x: auto;
+  }
+
+  .messages-table {
+    font-size: 0.7rem;
+    min-width: 600px;
+  }
+
+  .messages-table th {
+    padding: 8px 4px;
+    font-size: 0.65rem;
+  }
+
+  /* Hide READ column on mobile */
+  .messages-table th:nth-child(1),
+  .messages-table td:nth-child(1) {
+    display: none;
+  }
+
+  /* Hide FROM column on mobile */
+  .messages-table th:nth-child(2),
+  .messages-table td:nth-child(2) {
+    display: none;
+  }
+
+  /* Adjust remaining column widths */
+  .messages-table th:nth-child(3) {
+    width: 18%;
+  }
+
+  .messages-table th:nth-child(4) {
+    width: 30%;
+    padding-left: 12px;
+  }
+
+  .messages-table th:nth-child(5) {
+    width: 15%;
+  }
+
+  .messages-table th:nth-child(6) {
+    width: 40%;
+  }
+
+  .messages-table td {
+    padding: 6px 4px;
+    font-size: 0.7rem;
+  }
+
+  .messages-table td:nth-child(4) {
+    padding-left: 12px;
+  }
+
+  .action-cell {
+    flex-direction: row;
+    gap: 3px;
+    min-height: 44px;
+    padding: 4px 2px;
+  }
+
+  .btn-view-msg,
+  .btn-delete-msg {
+    padding: 5px 6px;
+    font-size: 0.6rem;
+    min-width: fit-content;
+  }
+
+  .checkmark-btn {
+    width: 28px;
+    height: 28px;
+    font-size: 0.9rem;
+  }
+
+  .pagination {
+    padding: 14px 16px;
+    gap: 10px;
+  }
+
+  .pagination button,
+  .pagination span {
+    font-size: 0.85rem;
+    padding: 8px 12px;
+  }
+
+  .modal-msg {
+    max-height: 95vh;
+    border-radius: 12px;
+  }
+
+  .modal-header-msg {
+    padding: 16px 18px;
+  }
+
+  .modal-header-msg h2 {
+    font-size: 1.1rem;
+  }
+
+  .modal-body-msg {
+    padding: 18px 16px;
+  }
+
+  .loading,
+  .no-messages {
+    padding: 40px 20px;
+    font-size: 1rem;
   }
 }
