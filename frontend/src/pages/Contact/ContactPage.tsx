@@ -29,11 +29,11 @@ export default function ContactPage() {
       // No rate limit, don't load old messages
       return '';
     }
-    
+
     const limitEndTime = parseInt(storedTimestamp, 10);
     const now = Date.now();
     const remaining = Math.ceil((limitEndTime - now) / 1000);
-    
+
     if (remaining <= 0) {
       // Rate limit expired, clear messages from localStorage
       localStorage.removeItem('responseMessage');
@@ -41,7 +41,7 @@ export default function ContactPage() {
       localStorage.removeItem('rateLimitTimestamp');
       return '';
     }
-    
+
     // Rate limit still active, load message
     return localStorage.getItem('responseMessage') || '';
   });
@@ -53,16 +53,16 @@ export default function ContactPage() {
       // No rate limit, don't load old types
       return '';
     }
-    
+
     const limitEndTime = parseInt(storedTimestamp, 10);
     const now = Date.now();
     const remaining = Math.ceil((limitEndTime - now) / 1000);
-    
+
     if (remaining <= 0) {
       // Rate limit expired, don't load type
       return '';
     }
-    
+
     // Rate limit still active, load type
     const stored = localStorage.getItem('responseType');
     return (stored as 'success' | 'error' | '') || '';
