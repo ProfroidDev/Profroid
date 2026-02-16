@@ -17,12 +17,14 @@ import ConfirmationModal from '../../components/ConfirmationModal';
 import Toast from '../../shared/components/Toast';
 import useAuthStore from '../../features/authentication/store/authStore';
 import { fileDownloadUrl } from '../../shared/utils/fileUrl';
+import { trimToMaxWords } from '../../utils/wordLimit';
 
 export default function ServicesPage(): React.ReactElement {
   const { t, i18n } = useTranslation();
   const { user } = useAuthStore();
   const isAdmin = user?.role === 'admin';
   const isFrench = i18n.language === 'fr';
+  const JOB_DESCRIPTION_MAX_WORDS = 120;
   const [jobs, setJobs] = useState<JobResponseModel[]>([]);
   const [expandedDescriptions, setExpandedDescriptions] = useState<Set<string>>(new Set());
   const [loading, setLoading] = useState<boolean>(false);
@@ -262,6 +264,12 @@ export default function ServicesPage(): React.ReactElement {
           ''
         );
       }
+      if (name === 'jobDescription') {
+        sanitizedValue = trimToMaxWords(sanitizedValue, JOB_DESCRIPTION_MAX_WORDS);
+      }
+      if (name === 'jobDescriptionFr') {
+        sanitizedValue = trimToMaxWords(sanitizedValue, JOB_DESCRIPTION_MAX_WORDS);
+      }
       setUpdateFormData((prev) => ({ ...prev, [name]: sanitizedValue }));
     }
   }
@@ -414,6 +422,12 @@ export default function ServicesPage(): React.ReactElement {
           /<<|>>|--|';|DROP|DELETE|INSERT|UPDATE|SELECT|UNION|WHERE/gi,
           ''
         );
+      }
+      if (name === 'jobDescription') {
+        sanitizedValue = trimToMaxWords(sanitizedValue, JOB_DESCRIPTION_MAX_WORDS);
+      }
+      if (name === 'jobDescriptionFr') {
+        sanitizedValue = trimToMaxWords(sanitizedValue, JOB_DESCRIPTION_MAX_WORDS);
       }
       setFormData((prev) => ({ ...prev, [name]: sanitizedValue }));
     }

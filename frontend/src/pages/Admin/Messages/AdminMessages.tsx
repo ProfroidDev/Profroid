@@ -4,6 +4,7 @@ import './AdminMessages.css';
 import Toast from '../../../shared/components/Toast';
 import ConfirmationModal from '../../../components/ConfirmationModal';
 import { sanitizeInput } from '../../../utils/sanitizer';
+import { trimToMaxWords } from '../../../utils/wordLimit';
 
 export interface ContactMessage {
   messageId: string;
@@ -30,6 +31,7 @@ interface PaginatedResponse {
 
 export default function AdminMessages() {
   const { t } = useTranslation();
+  const ADMIN_NOTES_MAX_WORDS = 120;
   const [messages, setMessages] = useState<ContactMessage[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [currentPage, setCurrentPage] = useState(0);
@@ -138,7 +140,10 @@ export default function AdminMessages() {
 
     try {
       const token = localStorage.getItem('authToken');
-      const sanitizedNotes = sanitizeInput(adminNotes);
+      const sanitizedNotes = trimToMaxWords(
+        sanitizeInput(adminNotes),
+        ADMIN_NOTES_MAX_WORDS
+      );
       const response = await fetch(
         `${backendUrl}/contact/messages/${selectedMessage.messageId}/notes`,
         {
@@ -380,7 +385,11 @@ export default function AdminMessages() {
                 <h3>{t('pages.adminMessages.adminNotesLabel')}</h3>
                 <textarea
                   value={adminNotes}
-                  onChange={(e) => setAdminNotes(sanitizeInput(e.target.value))}
+                  onChange={(e) =>
+                    setAdminNotes(
+                      trimToMaxWords(sanitizeInput(e.target.value), ADMIN_NOTES_MAX_WORDS)
+                    )
+                  }
                   placeholder={t('pages.adminMessages.adminNotesPlaceholder')}
                   className="admin-notes-textarea"
                   rows={4}

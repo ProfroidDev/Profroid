@@ -30,6 +30,7 @@ import {
   sanitizeInput,
   sanitizePostalCode,
 } from '../../../utils/sanitizer';
+import { trimToMaxWords } from '../../../utils/wordLimit';
 
 // Cache for shared data to reduce API calls when modal is opened/closed multiple times
 const dataCache: {
@@ -223,6 +224,7 @@ export default function AddAppointmentModal({
   editAppointment,
 }: AddAppointmentModalProps): React.ReactElement {
   const { t, i18n } = useTranslation();
+  const DESCRIPTION_MAX_WORDS = 120;
   const { customerData } = useAuthStore();
 
   // Language detection helper
@@ -1693,7 +1695,11 @@ export default function AddAppointmentModal({
               <span>{t('pages.appointments.description')}</span>
               <textarea
                 value={description}
-                onChange={(e) => setDescription(sanitizeInput(e.target.value))}
+                onChange={(e) =>
+                  setDescription(
+                    trimToMaxWords(sanitizeInput(e.target.value), DESCRIPTION_MAX_WORDS)
+                  )
+                }
                 rows={3}
                 placeholder={t('pages.appointments.description')}
                 required

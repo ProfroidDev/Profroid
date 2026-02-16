@@ -1,10 +1,19 @@
 import { useTranslation } from 'react-i18next';
 import { useState } from 'react';
 import { createWarrantyClaim } from '../../features/warranty/api/createWarrantyClaim';
+import {
+  sanitizeAddress,
+  sanitizeEmail,
+  sanitizeInput,
+  sanitizeName,
+  sanitizePhoneNumber,
+} from '../../utils/sanitizer';
+import { trimToMaxWords } from '../../utils/wordLimit';
 import './WarrantyPage.css';
 
 export default function WarrantyPage() {
   const { t } = useTranslation();
+  const ISSUE_DESCRIPTION_MAX_WORDS = 200;
   const [formData, setFormData] = useState({
     customerName: '',
     customerEmail: '',
@@ -24,7 +33,23 @@ export default function WarrantyPage() {
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
   ) => {
     const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
+    let sanitizedValue = value;
+
+    if (name === 'customerName') {
+      sanitizedValue = sanitizeName(value);
+    } else if (name === 'customerEmail') {
+      sanitizedValue = sanitizeEmail(value);
+    } else if (name === 'customerPhone') {
+      sanitizedValue = sanitizePhoneNumber(value);
+    } else if (name === 'customerAddress') {
+      sanitizedValue = sanitizeAddress(value);
+    } else if (name === 'productName' || name === 'productSerialNumber') {
+      sanitizedValue = sanitizeInput(value);
+    } else if (name === 'issueDescription') {
+      sanitizedValue = trimToMaxWords(sanitizeInput(value), ISSUE_DESCRIPTION_MAX_WORDS);
+    }
+
+    setFormData((prev) => ({ ...prev, [name]: sanitizedValue }));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {

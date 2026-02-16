@@ -5,10 +5,14 @@ import {
   updateWarrantyClaimStatus,
 } from '../../../features/warranty/api/warrantyClaimApi';
 import type { WarrantyClaimResponseModel } from '../../../features/warranty/models/WarrantyModels';
+import { sanitizeInput } from '../../../utils/sanitizer';
+import { trimToMaxWords } from '../../../utils/wordLimit';
 import './AdminWarrantyClaims.css';
 
 export default function AdminWarrantyClaims() {
   const { t } = useTranslation();
+  const ADMIN_NOTES_MAX_WORDS = 120;
+  const RESOLUTION_DETAILS_MAX_WORDS = 120;
   const [claims, setClaims] = useState<WarrantyClaimResponseModel[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedClaim, setSelectedClaim] = useState<WarrantyClaimResponseModel | null>(null);
@@ -268,7 +272,15 @@ export default function AdminWarrantyClaims() {
                   <label>{t('pages.adminWarranty.adminNotes')}</label>
                   <textarea
                     value={updateData.adminNotes}
-                    onChange={(e) => setUpdateData({ ...updateData, adminNotes: e.target.value })}
+                    onChange={(e) =>
+                      setUpdateData({
+                        ...updateData,
+                        adminNotes: trimToMaxWords(
+                          sanitizeInput(e.target.value),
+                          ADMIN_NOTES_MAX_WORDS
+                        ),
+                      })
+                    }
                     rows={4}
                     placeholder={t('pages.adminWarranty.adminNotesPlaceholder')}
                   />
@@ -279,7 +291,13 @@ export default function AdminWarrantyClaims() {
                   <textarea
                     value={updateData.resolutionDetails}
                     onChange={(e) =>
-                      setUpdateData({ ...updateData, resolutionDetails: e.target.value })
+                      setUpdateData({
+                        ...updateData,
+                        resolutionDetails: trimToMaxWords(
+                          sanitizeInput(e.target.value),
+                          RESOLUTION_DETAILS_MAX_WORDS
+                        ),
+                      })
                     }
                     rows={4}
                     placeholder={t('pages.adminWarranty.resolutionDetailsPlaceholder')}

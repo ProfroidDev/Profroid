@@ -8,6 +8,7 @@ import {
   sanitizePhoneNumber,
   sanitizeInput,
 } from '../../utils/sanitizer';
+import { trimToMaxWords } from '../../utils/wordLimit';
 
 export default function ContactPage() {
   const { t } = useTranslation();
@@ -94,6 +95,11 @@ export default function ContactPage() {
     phone: 20,
     subject: 75,
     message: 500,
+  };
+
+  const WORD_LIMITS = {
+    subject: 12,
+    message: 120,
   };
 
   // Rate limit countdown timer - recalculate from server timestamp
@@ -238,8 +244,10 @@ export default function ContactPage() {
       sanitizedValue = sanitizePhoneNumber(value);
     } else if (name === 'subject') {
       sanitizedValue = sanitizeInput(value);
+      sanitizedValue = trimToMaxWords(sanitizedValue, WORD_LIMITS.subject);
     } else if (name === 'message') {
       sanitizedValue = sanitizeInput(value);
+      sanitizedValue = trimToMaxWords(sanitizedValue, WORD_LIMITS.message);
     }
 
     setFormData((prev) => ({

@@ -5,12 +5,14 @@ import { useTranslation } from 'react-i18next';
 import { createReview } from '../../../features/review/api/createReview';
 import useAuthStore from '../../../features/authentication/store/authStore';
 import { sanitizeName, sanitizeInput } from '../../../utils/sanitizer';
+import { trimToMaxWords } from '../../../utils/wordLimit';
 import '../HomePage.css';
 import './FeedbackSection.css';
 
 const FeedbackSection: React.FC = () => {
   const { t } = useTranslation();
   const { user } = useAuthStore();
+  const FEEDBACK_MAX_WORDS = 80;
   const [rating, setRating] = useState(0);
   const [hoverRating, setHoverRating] = useState(0);
   const [feedback, setFeedback] = useState('');
@@ -154,7 +156,9 @@ const FeedbackSection: React.FC = () => {
                   className="feedback-textarea"
                   placeholder={t('pages.home.feedback.placeholder')}
                   value={feedback}
-                  onChange={(e) => setFeedback(sanitizeInput(e.target.value))}
+                  onChange={(e) =>
+                    setFeedback(trimToMaxWords(sanitizeInput(e.target.value), FEEDBACK_MAX_WORDS))
+                  }
                   rows={4}
                 />
               </div>
