@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Menu, X, LogIn, LogOut, User, Globe, Mail } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import { changeLanguageExplicitly } from '../../i18n/config';
 import useAuthStore from '../../features/authentication/store/authStore';
 import './Navigation.css';
 
@@ -88,7 +89,8 @@ export default function Navigation(): React.ReactElement {
   };
 
   const changeLanguage = (lang: string) => {
-    i18n.changeLanguage(lang);
+    // Call the explicitly protected language change function
+    changeLanguageExplicitly(lang as 'en' | 'fr');
     setLanguageOpen(false);
   };
 
