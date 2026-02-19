@@ -21,25 +21,23 @@ const getInitialLanguage = (): 'en' | 'fr' => {
   return 'en';
 };
 
-i18n
-  .use(initReactI18next)
-  .init({
-    lng: getInitialLanguage(),
-    fallbackLng: 'en',
-    defaultNS: 'translation',
-    ns: ['translation'],
-    resources: {
-      en: {
-        translation: enTranslations,
-      },
-      fr: {
-        translation: frTranslations,
-      },
+i18n.use(initReactI18next).init({
+  lng: getInitialLanguage(),
+  fallbackLng: 'en',
+  defaultNS: 'translation',
+  ns: ['translation'],
+  resources: {
+    en: {
+      translation: enTranslations,
     },
-    interpolation: {
-      escapeValue: false,
+    fr: {
+      translation: frTranslations,
     },
-  });
+  },
+  interpolation: {
+    escapeValue: false,
+  },
+});
 
 // CRITICAL: Override changeLanguage to prevent unauthorized language changes
 const originalChangeLanguage = i18n.changeLanguage.bind(i18n);
@@ -48,7 +46,7 @@ i18n.changeLanguage = function (lng: string | undefined) {
     console.warn('[i18n PROTECTION] Blocked unauthorized changeLanguage call with:', lng);
     return Promise.resolve();
   }
-  
+
   if (lng && (lng === 'en' || lng === 'fr')) {
     try {
       localStorage.setItem(LANGUAGE_KEY, lng);

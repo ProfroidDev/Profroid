@@ -12,9 +12,7 @@ export default function Footer() {
         <div className="footer-brand">
           <Wine className="footer-icon" />
           <span className="footer-logo">Profroid</span>
-          <p className="footer-desc">
-            {t('footer.tagline')}
-          </p>
+          <p className="footer-desc">{t('footer.tagline')}</p>
         </div>
 
         <div className="footer-section">
@@ -31,9 +29,7 @@ export default function Footer() {
         </div>
       </div>
 
-      <div className="footer-bottom">
-        {t('footer.copyright', { year: currentYear })}
-      </div>
+      <div className="footer-bottom">{t('footer.copyright', { year: currentYear })}</div>
     </footer>
   );
 }

@@ -140,10 +140,7 @@ export default function AdminMessages() {
 
     try {
       const token = localStorage.getItem('authToken');
-      const sanitizedNotes = trimToMaxWords(
-        sanitizeInput(adminNotes),
-        ADMIN_NOTES_MAX_WORDS
-      );
+      const sanitizedNotes = trimToMaxWords(sanitizeInput(adminNotes), ADMIN_NOTES_MAX_WORDS);
       const response = await fetch(
         `${backendUrl}/contact/messages/${selectedMessage.messageId}/notes`,
         {

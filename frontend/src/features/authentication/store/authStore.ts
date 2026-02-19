@@ -1,7 +1,6 @@
 import { create } from 'zustand';
 import authClient from '../api/authClient';
 
-
 export interface AuthUser {
   id: string;
   email: string;
