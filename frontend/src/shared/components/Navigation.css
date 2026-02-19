@@ -12,23 +12,23 @@
 .nav-inner {
   max-width: 1400px;
   margin: 0 auto;
-  padding: 12px 16px;
+  padding: 8px 12px;
   display: grid;
   grid-template-columns: auto 1fr;
   align-items: center;
-  gap: 12px;
+  gap: 8px;
 }
 
 @media (min-width: 641px) {
   .nav-inner {
-    padding: 12px 24px;
-    gap: 24px;
+    padding: 8px 16px;
+    gap: 16px;
   }
 }
 
 @media (min-width: 1025px) {
   .nav-inner {
-    padding: 12px 32px;
+    padding: 8px 20px;
   }
 }
 
@@ -71,7 +71,7 @@
 .nav-links {
   display: none;
   align-items: center;
-  gap: 12px;
+  gap: 8px;
   justify-content: flex-end;
   flex-wrap: nowrap;
   flex-shrink: 0;
@@ -80,23 +80,29 @@
 @media (min-width: 901px) {
   .nav-links {
     display: flex;
-    gap: 20px;
+    gap: 12px;
   }
 }
 
 @media (min-width: 1200px) {
   .nav-links {
-    gap: 24px;
+    gap: 16px;
   }
 }
 
 .nav-links a {
-  font-size: 0.95rem;
+  font-size: 0.8rem;
   color: #3a2e2a;
   text-decoration: none;
   transition: 0.2s;
   white-space: nowrap;
   flex-shrink: 0;
+}
+
+@media (min-width: 1200px) {
+  .nav-links a {
+    font-size: 0.9rem;
+  }
 }
 
 .nav-links a:hover {
@@ -107,14 +113,22 @@
 .nav-book {
   background: #7a0901;
   color: white;
-  padding: 8px 18px;
-  border-radius: 8px;
+  padding: 6px 12px;
+  border-radius: 6px;
   border: none;
   font-weight: 600;
+  font-size: 0.75rem;
   transition: 0.2s;
   cursor: pointer;
   flex-shrink: 0;
   white-space: nowrap;
+}
+
+@media (min-width: 1200px) {
+  .nav-book {
+    padding: 8px 16px;
+    font-size: 0.9rem;
+  }
 }
 
 .nav-book:hover {
@@ -122,20 +136,29 @@
 }
 
 .nav-signin {
-  padding: 8px 16px;
-  border-radius: 8px;
+  padding: 6px 12px;
+  border-radius: 6px;
   border: none;
   cursor: pointer;
   font-weight: 600;
+  font-size: 0.75rem;
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 4px;
   transition: all 0.3s ease;
   background: linear-gradient(90deg, #7a0901 60%, #a32c1a 100%);
   color: white;
   box-shadow: 0 2px 8px rgba(122, 9, 1, 0.08);
   flex-shrink: 0;
   white-space: nowrap;
+}
+
+@media (min-width: 1200px) {
+  .nav-signin {
+    padding: 8px 16px;
+    font-size: 0.9rem;
+    gap: 6px;
+  }
 }
 
 .nav-signin:hover {
@@ -162,19 +185,29 @@
 /* Auth Buttons */
 .nav-profile,
 .nav-logout {
-  padding: 8px 16px;
+  padding: 6px 10px;
   border-radius: 6px;
   border: none;
   cursor: pointer;
   font-weight: 600;
+  font-size: 0.7rem;
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 4px;
   transition: all 0.3s ease;
   background: #f0f0f0;
   color: #333;
   flex-shrink: 0;
   white-space: nowrap;
+}
+
+@media (min-width: 1200px) {
+  .nav-profile,
+  .nav-logout {
+    padding: 8px 14px;
+    font-size: 0.8rem;
+    gap: 6px;
+  }
 }
 
 .nav-profile:hover {
@@ -189,16 +222,26 @@
 }
 
 .nav-profile-email {
-  font-size: 0.9rem;
+  font-size: 0.65rem;
   font-weight: 600;
 }
 
 .nav-profile-role {
-  font-size: 0.75rem;
+  font-size: 0.6rem;
   font-weight: 500;
   color: #7a0901;
   text-transform: uppercase;
-  letter-spacing: 0.5px;
+  letter-spacing: 0.3px;
+}
+
+@media (min-width: 1200px) {
+  .nav-profile-email {
+    font-size: 0.85rem;
+  }
+
+  .nav-profile-role {
+    font-size: 0.7rem;
+  }
 }
 
 .nav-logout {
@@ -318,24 +361,32 @@
 .nav-language-button {
   display: flex;
   align-items: center;
-  gap: 6px;
-  padding: 8px 12px;
+  gap: 4px;
+  padding: 5px 8px;
   background: white;
   border: 1.5px solid #d7d3cd;
-  border-radius: 8px;
+  border-radius: 6px;
   cursor: pointer;
   transition: all 0.25s ease;
   color: #3a2e2a;
   font-weight: 500;
-  font-size: 0.85rem;
+  font-size: 0.7rem;
   flex-shrink: 0;
   white-space: nowrap;
 }
 
 @media (min-width: 641px) {
   .nav-language-button {
-    padding: 8px 14px;
+    padding: 6px 10px;
+    font-size: 0.8rem;
+  }
+}
+
+@media (min-width: 1200px) {
+  .nav-language-button {
+    padding: 8px 12px;
     font-size: 0.9rem;
+    gap: 6px;
   }
 }
 
