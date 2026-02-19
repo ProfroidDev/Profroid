@@ -97,7 +97,10 @@ async function hashPassword(password: string): Promise<string> {
 
 // Verify password with support for both bcrypt and legacy SHA256 hashes
 // Automatically migrates SHA256 hashes to bcrypt on successful login
-async function verifyPassword(password: string, hash: string): Promise<{ valid: boolean; needsUpdate: boolean }> {
+async function verifyPassword(
+  password: string,
+  hash: string,
+): Promise<{ valid: boolean; needsUpdate: boolean }> {
   try {
     // Try bcrypt first (new hashes)
     const isBcryptValid = await bcrypt.compare(password, hash);
@@ -111,7 +114,7 @@ async function verifyPassword(password: string, hash: string): Promise<{ valid: 
   // Try legacy SHA256 hash (old passwords)
   const sha256Hash = crypto.createHash("sha256").update(password).digest("hex");
   const isSha256Valid = sha256Hash === hash;
-  
+
   if (isSha256Valid) {
     // Password is valid but needs migration from SHA256 to bcrypt
     return { valid: true, needsUpdate: true };
@@ -178,10 +181,16 @@ router.post("/register", async (req: Request, res: Response) => {
 
     if (!parseResult.success) {
       const errorMessages = parseResult.error.errors.map((err) => err.message);
-      return res.status(400).json({ error: "Validation Failed", errors: errorMessages });
+      return res
+        .status(400)
+        .json({ error: "Validation Failed", errors: errorMessages });
     }
 
-    const { email: sanitizedEmail, password: sanitizedPassword, name: sanitizedName } = parseResult.data;
+    const {
+      email: sanitizedEmail,
+      password: sanitizedPassword,
+      name: sanitizedName,
+    } = parseResult.data;
 
     // Check if user already exists
     const existingUser = await prisma.user.findUnique({
@@ -198,8 +207,16 @@ router.post("/register", async (req: Request, res: Response) => {
           );
           // Send email asynchronously in background
           // Use the user's preferred language or from registration request
-          const userLanguage = existingUser.userProfile?.preferredLanguage || parseResult.data.preferredLanguage || 'en';
-          sendVerificationEmail(sanitizedEmail, token, sanitizedName, userLanguage).catch((error) => {
+          const userLanguage =
+            existingUser.userProfile?.preferredLanguage ||
+            parseResult.data.preferredLanguage ||
+            "en";
+          sendVerificationEmail(
+            sanitizedEmail,
+            token,
+            sanitizedName,
+            userLanguage,
+          ).catch((error) => {
             console.error("Error sending verification email:", error);
           });
           return res.status(409).json({
@@ -232,7 +249,7 @@ router.post("/register", async (req: Request, res: Response) => {
         userId: user.id,
         role: "customer",
         isActive: false, // Not active until customer data is submitted
-        preferredLanguage: parseResult.data.preferredLanguage || 'en', // Store preferred language from registration
+        preferredLanguage: parseResult.data.preferredLanguage || "en", // Store preferred language from registration
       },
     });
 
@@ -255,7 +272,12 @@ router.post("/register", async (req: Request, res: Response) => {
 
       // Send email asynchronously in background to avoid blocking the response
       // Use the preferred language from registration request
-      sendVerificationEmail(sanitizedEmail, token, sanitizedName, parseResult.data.preferredLanguage || 'en').catch((error) => {
+      sendVerificationEmail(
+        sanitizedEmail,
+        token,
+        sanitizedName,
+        parseResult.data.preferredLanguage || "en",
+      ).catch((error) => {
         console.error("Error sending verification email:", error);
       });
 
@@ -294,10 +316,13 @@ router.post("/sign-in", async (req: Request, res: Response) => {
 
     if (!parseResult.success) {
       const errorMessages = parseResult.error.errors.map((err) => err.message);
-      return res.status(400).json({ error: "Validation Failed", errors: errorMessages });
+      return res
+        .status(400)
+        .json({ error: "Validation Failed", errors: errorMessages });
     }
 
-    const { email: sanitizedEmail, password: sanitizedPassword } = parseResult.data;
+    const { email: sanitizedEmail, password: sanitizedPassword } =
+      parseResult.data;
 
     // Find user
     const user = await prisma.user.findUnique({
@@ -328,7 +353,10 @@ router.post("/sign-in", async (req: Request, res: Response) => {
       return res.status(401).json({ error: "Invalid credentials" });
     }
 
-    const passwordVerification = await verifyPassword(sanitizedPassword, account.accessToken || "");
+    const passwordVerification = await verifyPassword(
+      sanitizedPassword,
+      account.accessToken || "",
+    );
     if (!passwordVerification.valid) {
       return res.status(401).json({ error: "Invalid credentials" });
     }
@@ -340,7 +368,9 @@ router.post("/sign-in", async (req: Request, res: Response) => {
         where: { id: account.id },
         data: { accessToken: hashedPassword },
       });
-      console.log(`[PASSWORD MIGRATION] User ${user.email} password upgraded from SHA256 to bcrypt`);
+      console.log(
+        `[PASSWORD MIGRATION] User ${user.email} password upgraded from SHA256 to bcrypt`,
+      );
     }
 
     // Get user profile
@@ -494,7 +524,10 @@ router.post("/change-password", async (req: Request, res: Response) => {
       return res.status(401).json({ error: "Invalid current password" });
     }
 
-    const passwordVerification = await verifyPassword(oldPassword, account.accessToken || "");
+    const passwordVerification = await verifyPassword(
+      oldPassword,
+      account.accessToken || "",
+    );
     if (!passwordVerification.valid) {
       return res.status(401).json({ error: "Invalid current password" });
     }
@@ -593,7 +626,7 @@ router.post("/forgot-password", async (req: Request, res: Response) => {
 
     // Send email with the unhashed token in user's preferred language
     try {
-      const userLanguage = user.userProfile?.preferredLanguage || 'en';
+      const userLanguage = user.userProfile?.preferredLanguage || "en";
       await sendPasswordResetEmail(email, resetToken, undefined, userLanguage);
     } catch (emailError) {
       console.error("Failed to send reset email:", emailError);
@@ -706,8 +739,12 @@ router.post("/reset-password", async (req: Request, res: Response) => {
       const userProfile = await prisma.userProfile.findUnique({
         where: { userId: user!.id },
       });
-      const userLanguage = userProfile?.preferredLanguage || 'en';
-      await sendPasswordChangedEmail(user!.email || "", undefined, userLanguage);
+      const userLanguage = userProfile?.preferredLanguage || "en";
+      await sendPasswordChangedEmail(
+        user!.email || "",
+        undefined,
+        userLanguage,
+      );
     } catch (emailError) {
       console.error("Failed to send confirmation email:", emailError);
       // Don't fail the request if confirmation email fails
@@ -1368,7 +1405,7 @@ router.get("/user-preferences", async (req: Request, res: Response) => {
 
     res.json({
       success: true,
-      preferredLanguage: userProfile.preferredLanguage || 'en',
+      preferredLanguage: userProfile.preferredLanguage || "en",
     });
   } catch (error) {
     console.error("Get user preferences error:", error);
@@ -1389,8 +1426,10 @@ router.put("/user-preferences", async (req: Request, res: Response) => {
     const { preferredLanguage } = req.body;
 
     // Validate preferred language
-    if (!preferredLanguage || !['en', 'fr'].includes(preferredLanguage)) {
-      return res.status(400).json({ error: "Invalid language. Must be 'en' or 'fr'" });
+    if (!preferredLanguage || !["en", "fr"].includes(preferredLanguage)) {
+      return res
+        .status(400)
+        .json({ error: "Invalid language. Must be 'en' or 'fr'" });
     }
 
     // Update user profile with preferred language
@@ -1443,6 +1482,16 @@ router.get("/google/callback", (req: Request, res: Response, next) => {
         const frontendUrl =
           process.env.FRONTEND_URLS?.split(",")[0] || "http://localhost:5173";
         return res.redirect(`${frontendUrl}/login?error=no_user`);
+      }
+
+      // If profile is incomplete, force registration completion flow
+      if (!user.userProfile?.isActive) {
+        const frontendUrl =
+          process.env.FRONTEND_URLS?.split(",")[0] || "http://localhost:5173";
+        const encodedEmail = encodeURIComponent(user.email || "");
+        return res.redirect(
+          `${frontendUrl}/callback?requiresCompletion=true&userId=${user.id}&email=${encodedEmail}`,
+        );
       }
 
       // Generate JWT token

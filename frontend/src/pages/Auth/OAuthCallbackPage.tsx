@@ -29,6 +29,30 @@ export default function OAuthCallbackPage() {
 
   useEffect(() => {
     const processOAuthCallback = async () => {
+      const requiresCompletion = searchParams.get('requiresCompletion');
+      if (requiresCompletion === 'true') {
+        const userId = searchParams.get('userId');
+        const email = searchParams.get('email');
+
+        if (!userId) {
+          setError(t('auth.oauthCallbackFailed'));
+          setTimeout(() => {
+            navigate('/auth/login');
+          }, 3000);
+          return;
+        }
+
+        navigate('/auth/register', {
+          state: {
+            completionMode: true,
+            userId,
+            email: email || '',
+          },
+          replace: true,
+        });
+        return;
+      }
+
       // Check for error parameter
       const errorParam = searchParams.get('error');
       if (errorParam) {
