@@ -1,7 +1,11 @@
 import { Wine } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import './Footer.css';
 
 export default function Footer() {
+  const { t } = useTranslation();
+  const currentYear = new Date().getFullYear();
+
   return (
     <footer className="footer-container">
       <div className="footer-inner">
@@ -9,26 +13,26 @@ export default function Footer() {
           <Wine className="footer-icon" />
           <span className="footer-logo">Profroid</span>
           <p className="footer-desc">
-            Premium wine cellars crafted with precision and elegant design.
+            {t('footer.tagline')}
           </p>
         </div>
 
         <div className="footer-section">
-          <h4>Quick Links</h4>
-          <a href="/about">About</a>
-          <a href="/privacy">Privacy Policy</a>
-          <a href="/services">Services</a>
-          <a href="/contact">Contact</a>
+          <h4>{t('footer.quickLinks')}</h4>
+          <a href="/about">{t('footer.about')}</a>
+          <a href="/privacy">{t('footer.privacyPolicy')}</a>
+          <a href="/services">{t('footer.services')}</a>
+          <a href="/contact">{t('footer.contact')}</a>
         </div>
 
         <div className="footer-section">
-          <h4>Resources</h4>
-          <a href="/warranty">Warranty</a>
+          <h4>{t('footer.resources')}</h4>
+          <a href="/warranty">{t('footer.warranty')}</a>
         </div>
       </div>
 
       <div className="footer-bottom">
-        © {new Date().getFullYear()} Profroid. All rights reserved.
+        {t('footer.copyright', { year: currentYear })}
       </div>
     </footer>
   );
