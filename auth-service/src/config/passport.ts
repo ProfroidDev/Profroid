@@ -153,6 +153,7 @@ if (process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET) {
                 userProfile: {
                   create: {
                     id: crypto.randomUUID(),
+                    isActive: false,
                     phone: null,
                     address: null,
                     postalCode: null,
