@@ -921,13 +921,19 @@ export default function ServicesPage(): React.ReactElement {
               }}
             >
               <div className="form-group">
-                <label htmlFor="jobName">{t('pages.services.name')} *</label>
+                <label htmlFor="jobName">
+                  {t('pages.services.name')} *
+                  <span style={{ fontSize: '0.85rem', color: '#666', marginLeft: '8px' }}>
+                    {formData.jobName.length}/100
+                  </span>
+                </label>
                 <input
                   id="jobName"
                   type="text"
                   name="jobName"
                   value={formData.jobName}
                   onChange={handleFormChange}
+                  maxLength={100}
                   placeholder={t('common.enterPlaceholder', {
                     field: t('pages.services.name'),
                   })}
@@ -937,11 +943,25 @@ export default function ServicesPage(): React.ReactElement {
 
               <div className="form-group">
                 <label htmlFor="jobDescription">{t('pages.services.description')} *</label>
+                <div
+                  style={{
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                    marginBottom: '4px',
+                  }}
+                >
+                  <span></span>
+                  <span style={{ fontSize: '0.85rem', color: '#666' }}>
+                    {formData.jobDescription.length}/1000
+                  </span>
+                </div>
                 <textarea
                   id="jobDescription"
                   name="jobDescription"
                   value={formData.jobDescription}
                   onChange={handleFormChange}
+                  maxLength={1000}
                   placeholder={t('common.enterPlaceholder', {
                     field: t('pages.services.description'),
                   })}
@@ -951,13 +971,19 @@ export default function ServicesPage(): React.ReactElement {
               </div>
 
               <div className="form-group">
-                <label htmlFor="jobNameFr">{t('pages.services.nameFr')}</label>
+                <label htmlFor="jobNameFr">
+                  {t('pages.services.nameFr')}
+                  <span style={{ fontSize: '0.85rem', color: '#666', marginLeft: '8px' }}>
+                    {(formData.jobNameFr || '').length}/100
+                  </span>
+                </label>
                 <input
                   id="jobNameFr"
                   type="text"
                   name="jobNameFr"
                   value={formData.jobNameFr || ''}
                   onChange={handleFormChange}
+                  maxLength={100}
                   placeholder={t('common.enterPlaceholder', {
                     field: t('pages.services.nameFr'),
                   })}
@@ -967,11 +993,25 @@ export default function ServicesPage(): React.ReactElement {
 
               <div className="form-group">
                 <label htmlFor="jobDescriptionFr">{t('pages.services.descriptionFr')}</label>
+                <div
+                  style={{
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                    marginBottom: '4px',
+                  }}
+                >
+                  <span></span>
+                  <span style={{ fontSize: '0.85rem', color: '#666' }}>
+                    {(formData.jobDescriptionFr || '').length}/1000
+                  </span>
+                </div>
                 <textarea
                   id="jobDescriptionFr"
                   name="jobDescriptionFr"
                   value={formData.jobDescriptionFr || ''}
                   onChange={handleFormChange}
+                  maxLength={1000}
                   placeholder={t('common.enterPlaceholder', {
                     field: t('pages.services.descriptionFr'),
                   })}
@@ -1123,13 +1163,19 @@ export default function ServicesPage(): React.ReactElement {
               }}
             >
               <div className="form-group">
-                <label htmlFor="updateJobName">{t('pages.services.name')} *</label>
+                <label htmlFor="updateJobName">
+                  {t('pages.services.name')} *
+                  <span style={{ fontSize: '0.85rem', color: '#666', marginLeft: '8px' }}>
+                    {updateFormData.jobName.length}/100
+                  </span>
+                </label>
                 <input
                   id="updateJobName"
                   type="text"
                   name="jobName"
                   value={updateFormData.jobName}
                   onChange={handleUpdateFormChange}
+                  maxLength={100}
                   placeholder={t('common.enterPlaceholder', {
                     field: t('pages.services.name'),
                   })}
@@ -1139,11 +1185,25 @@ export default function ServicesPage(): React.ReactElement {
 
               <div className="form-group">
                 <label htmlFor="updateJobDescription">{t('pages.services.description')} *</label>
+                <div
+                  style={{
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                    marginBottom: '4px',
+                  }}
+                >
+                  <span></span>
+                  <span style={{ fontSize: '0.85rem', color: '#666' }}>
+                    {updateFormData.jobDescription.length}/1000
+                  </span>
+                </div>
                 <textarea
                   id="updateJobDescription"
                   name="jobDescription"
                   value={updateFormData.jobDescription}
                   onChange={handleUpdateFormChange}
+                  maxLength={1000}
                   placeholder={t('common.enterPlaceholder', {
                     field: t('pages.services.description'),
                   })}
@@ -1153,13 +1213,19 @@ export default function ServicesPage(): React.ReactElement {
               </div>
 
               <div className="form-group">
-                <label htmlFor="updateJobNameFr">{t('pages.services.nameFr')}</label>
+                <label htmlFor="updateJobNameFr">
+                  {t('pages.services.nameFr')}
+                  <span style={{ fontSize: '0.85rem', color: '#666', marginLeft: '8px' }}>
+                    {(updateFormData.jobNameFr || '').length}/100
+                  </span>
+                </label>
                 <input
                   id="updateJobNameFr"
                   type="text"
                   name="jobNameFr"
                   value={updateFormData.jobNameFr || ''}
                   onChange={handleUpdateFormChange}
+                  maxLength={100}
                   placeholder={t('common.enterPlaceholder', {
                     field: t('pages.services.nameFr'),
                   })}
@@ -1169,11 +1235,25 @@ export default function ServicesPage(): React.ReactElement {
 
               <div className="form-group">
                 <label htmlFor="updateJobDescriptionFr">{t('pages.services.descriptionFr')}</label>
+                <div
+                  style={{
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                    marginBottom: '4px',
+                  }}
+                >
+                  <span></span>
+                  <span style={{ fontSize: '0.85rem', color: '#666' }}>
+                    {(updateFormData.jobDescriptionFr || '').length}/1000
+                  </span>
+                </div>
                 <textarea
                   id="updateJobDescriptionFr"
                   name="jobDescriptionFr"
                   value={updateFormData.jobDescriptionFr || ''}
                   onChange={handleUpdateFormChange}
+                  maxLength={1000}
                   placeholder={t('common.enterPlaceholder', {
                     field: t('pages.services.descriptionFr'),
                   })}

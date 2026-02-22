@@ -152,13 +152,19 @@ export default function ResetPasswordPage() {
           <>
             <form onSubmit={handleSubmit} className="auth-form">
               <div className="auth-form-group">
-                <label htmlFor="password">{t('common.password')}</label>
+                <label htmlFor="password">
+                  {t('common.password')}
+                  <span style={{ fontSize: '0.85rem', color: '#666', marginLeft: '8px' }}>
+                    {password.length}/128
+                  </span>
+                </label>
                 <input
                   id="password"
                   type="password"
                   value={password}
                   onChange={(e) => handlePasswordChange(e.target.value)}
                   placeholder="••••••••"
+                  maxLength={128}
                   disabled={isLoading}
                   required
                   autoComplete="new-password"
@@ -178,13 +184,19 @@ export default function ResetPasswordPage() {
               </div>
 
               <div className="auth-form-group">
-                <label htmlFor="confirmPassword">{t('common.confirmPassword')}</label>
+                <label htmlFor="confirmPassword">
+                  {t('common.confirmPassword')}
+                  <span style={{ fontSize: '0.85rem', color: '#666', marginLeft: '8px' }}>
+                    {confirmPassword.length}/128
+                  </span>
+                </label>
                 <input
                   id="confirmPassword"
                   type="password"
                   value={confirmPassword}
                   onChange={(e) => handleConfirmPasswordChange(e.target.value)}
                   placeholder="••••••••"
+                  maxLength={128}
                   disabled={isLoading}
                   required
                   autoComplete="new-password"

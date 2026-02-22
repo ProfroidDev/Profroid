@@ -46,6 +46,7 @@ const filterOptions: FilterOption[] = [
 
 const Inventory = () => {
   const { t, i18n } = useTranslation();
+  const MAX_TEXT_LENGTH = 100;
   const [parts, setParts] = useState<PartResponseModel[]>([]);
   const [loading, setLoading] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
@@ -315,8 +316,9 @@ const Inventory = () => {
               placeholder={t('pages.parts.inventory.searchPlaceholder')}
               value={searchQuery}
               onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                setSearchQuery(sanitizeInput(e.target.value))
+                setSearchQuery(sanitizeInput(e.target.value).slice(0, MAX_TEXT_LENGTH))
               }
+              maxLength={MAX_TEXT_LENGTH}
               className="search-input"
             />
           </div>
@@ -614,6 +616,9 @@ const Inventory = () => {
                     <label htmlFor="add-name" className="inventory-form-label">
                       {t('pages.parts.inventory.modal.fields.name')}{' '}
                       <span className="required">*</span>
+                      <span style={{ fontSize: '0.85rem', color: '#666', marginLeft: '8px' }}>
+                        {(newPart.name || '').length}/{MAX_TEXT_LENGTH}
+                      </span>
                     </label>
                     <input
                       id="add-name"
@@ -622,8 +627,12 @@ const Inventory = () => {
                       placeholder={t('pages.parts.inventory.modal.placeholders.name')}
                       value={newPart.name || ''}
                       onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                        setNewPart((p) => ({ ...p, name: e.target.value }))
+                        setNewPart((p) => ({
+                          ...p,
+                          name: sanitizeInput(e.target.value).slice(0, MAX_TEXT_LENGTH),
+                        }))
                       }
+                      maxLength={MAX_TEXT_LENGTH}
                       required
                     />
                   </div>
@@ -690,6 +699,9 @@ const Inventory = () => {
                     <label htmlFor="add-supplier" className="inventory-form-label">
                       {t('pages.parts.inventory.modal.fields.supplier')}{' '}
                       <span className="required">*</span>
+                      <span style={{ fontSize: '0.85rem', color: '#666', marginLeft: '8px' }}>
+                        {(newPart.supplier || '').length}/{MAX_TEXT_LENGTH}
+                      </span>
                     </label>
                     <input
                       id="add-supplier"
@@ -698,8 +710,13 @@ const Inventory = () => {
                       placeholder={t('pages.parts.inventory.modal.placeholders.supplier')}
                       value={newPart.supplier || ''}
                       onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                        setNewPart((p) => ({ ...p, supplier: e.target.value }))
+                        setNewPart((p) => ({
+                          ...p,
+                          supplier: sanitizeInput(e.target.value).slice(0, MAX_TEXT_LENGTH),
+                        }))
                       }
+                      maxLength={MAX_TEXT_LENGTH}
+                      title={`${(newPart.supplier || '').length}/${MAX_TEXT_LENGTH}`}
                       required
                     />
                   </div>
@@ -822,6 +839,9 @@ const Inventory = () => {
                     <label htmlFor="edit-name" className="inventory-form-label">
                       {t('pages.parts.inventory.modal.fields.name')}{' '}
                       <span className="required">*</span>
+                      <span style={{ fontSize: '0.85rem', color: '#666', marginLeft: '8px' }}>
+                        {(editingPart?.name || '').length}/{MAX_TEXT_LENGTH}
+                      </span>
                     </label>
                     <input
                       id="edit-name"
@@ -830,8 +850,16 @@ const Inventory = () => {
                       placeholder={t('pages.parts.inventory.modal.placeholders.name')}
                       value={editingPart?.name || ''}
                       onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                        setEditingPart((p) => (p ? { ...p, name: e.target.value } : null))
+                        setEditingPart((p) =>
+                          p
+                            ? {
+                                ...p,
+                                name: sanitizeInput(e.target.value).slice(0, MAX_TEXT_LENGTH),
+                              }
+                            : null
+                        )
                       }
+                      maxLength={MAX_TEXT_LENGTH}
                       required
                     />
                   </div>
@@ -902,6 +930,9 @@ const Inventory = () => {
                     <label htmlFor="edit-supplier" className="inventory-form-label">
                       {t('pages.parts.inventory.modal.fields.supplier')}{' '}
                       <span className="required">*</span>
+                      <span style={{ fontSize: '0.85rem', color: '#666', marginLeft: '8px' }}>
+                        {(editingPart?.supplier || '').length}/{MAX_TEXT_LENGTH}
+                      </span>
                     </label>
                     <input
                       id="edit-supplier"
@@ -910,8 +941,17 @@ const Inventory = () => {
                       placeholder={t('pages.parts.inventory.modal.placeholders.supplier')}
                       value={editingPart?.supplier || ''}
                       onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                        setEditingPart((p) => (p ? { ...p, supplier: e.target.value } : null))
+                        setEditingPart((p) =>
+                          p
+                            ? {
+                                ...p,
+                                supplier: sanitizeInput(e.target.value).slice(0, MAX_TEXT_LENGTH),
+                              }
+                            : null
+                        )
                       }
+                      maxLength={MAX_TEXT_LENGTH}
+                      title={`${(editingPart?.supplier || '').length}/${MAX_TEXT_LENGTH}`}
                       required
                     />
                   </div>

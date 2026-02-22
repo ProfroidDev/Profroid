@@ -12,8 +12,6 @@ import {
   sanitizeInput,
 } from '../../utils/sanitizer';
 import '../Auth.css';
-import '../jobs/ServicesPage.css'; // Import ServicesPage styles for modal
-import './ProfilePage.css';
 import Calendar from 'react-calendar';
 import 'react-calendar/dist/Calendar.css';
 import '../Employee/EmployeeListPage.css';
@@ -51,9 +49,11 @@ type CustomerData = {
 export default function ProfilePage() {
   const navigate = useNavigate();
   const { t } = useTranslation();
+  const MAX_CELLAR_NAME_LENGTH = 100;
   const {
     user,
     changePassword,
+    logout,
     isLoading,
     error,
     clearError,
@@ -74,7 +74,6 @@ export default function ProfilePage() {
   const [city, setCity] = useState('');
   const [province, setProvince] = useState('');
   const [country, setCountry] = useState('');
-  const [preferredLanguage, setPreferredLanguage] = useState<'en' | 'fr'>('en');
 
   // Password form state
   const [oldPassword, setOldPassword] = useState('');
@@ -221,9 +220,6 @@ export default function ProfilePage() {
         if (data.phoneNumbers && data.phoneNumbers.length > 0) {
           setPhone(data.phoneNumbers[0].number || '');
         }
-        // Load preferred language if available
-        // Note: The backend returns preferredLanguage through the user profile, not customer data
-        // We'll get it from the user store when needed
       }
     } catch (error) {
       console.error('Error fetching customer data:', error);
@@ -293,35 +289,6 @@ export default function ProfilePage() {
     fetchEmployeeData,
     setStoredCustomerData,
   ]);
-
-  // Load user preferences (language)
-  useEffect(() => {
-    if (!user?.id) return;
-
-    const fetchUserPreferences = async () => {
-      try {
-        const token = localStorage.getItem('authToken');
-        const response = await fetch(`${import.meta.env.VITE_API_URL}/user-preferences`, {
-          method: 'GET',
-          headers: {
-            Authorization: `Bearer ${token}`,
-            'Content-Type': 'application/json',
-          },
-        });
-
-        if (response.ok) {
-          const preferences = await response.json();
-          if (preferences.preferredLanguage) {
-            setPreferredLanguage(preferences.preferredLanguage as 'en' | 'fr');
-          }
-        }
-      } catch (error) {
-        console.error('Error fetching user preferences:', error);
-      }
-    };
-
-    fetchUserPreferences();
-  }, [user?.id]);
 
   const fetchEmployeeSchedule = useCallback(async () => {
     if (!employeeId) return; // Only fetch schedule if we have an employeeId
@@ -428,7 +395,7 @@ export default function ProfilePage() {
       <div className="auth-container">
         <div className="auth-card">
           <p>Please log in to view your profile</p>
-          <button onClick={() => navigate('/auth/login')} className="btn-primary">
+          <button onClick={() => navigate('/login')} className="btn-primary">
             Go to Login
           </button>
         </div>
@@ -540,33 +507,6 @@ export default function ProfilePage() {
         message: t('pages.profile.notifications.profileUpdated'),
         type: 'success',
       });
-
-      // Update language preference if changed
-      if (user?.id) {
-        try {
-          const languageResponse = await fetch(`${import.meta.env.VITE_API_URL}/user-preferences`, {
-            method: 'PUT',
-            headers: {
-              Authorization: `Bearer ${token}`,
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-              preferredLanguage: preferredLanguage,
-            }),
-          });
-
-          if (languageResponse.ok) {
-            // Sync i18n with the new language preference
-            i18n.changeLanguage(preferredLanguage);
-            localStorage.setItem('i18nextLng', preferredLanguage);
-          } else {
-            console.error('Failed to update language preference');
-          }
-        } catch (error) {
-          console.error('Error updating language preference:', error);
-          // Don't show error to user - not critical
-        }
-      }
     } catch (error) {
       console.error('Error saving profile:', error);
       setFormError(t('pages.profile.notifications.profileUpdateFailed'));
@@ -905,6 +845,11 @@ export default function ProfilePage() {
     }
   };
 
+  const handleLogout = async () => {
+    await logout();
+    navigate('/login');
+  };
+
   const handleFirstNameChange = (value: string) => {
     setFirstName(sanitizeName(value));
   };
@@ -955,6 +900,25 @@ export default function ProfilePage() {
       <div className="profile-card">
         <div className="profile-header">
           <h1>{t('pages.profile.title')}</h1>
+          <div style={{ display: 'flex', gap: '0.5rem' }}>
+            <button
+              onClick={() => {
+                if (user?.employeeType) {
+                  fetchEmployeeData();
+                  fetchEmployeeSchedule();
+                } else {
+                  fetchCustomerData();
+                }
+              }}
+              className="btn-secondary"
+              disabled={isLoading}
+            >
+              {t('pages.profile.refresh')}
+            </button>
+            <button onClick={handleLogout} className="btn-secondary" disabled={isLoading}>
+              {t('common.logout')}
+            </button>
+          </div>
         </div>
 
         {/* Profile Information */}
@@ -973,22 +937,34 @@ export default function ProfilePage() {
               <form onSubmit={handleProfileSubmit} className="auth-form">
                 <div className="form-row">
                   <div className="auth-form-group">
-                    <label htmlFor="firstName">{t('pages.profile.firstName')}</label>
+                    <label htmlFor="firstName">
+                      {t('pages.profile.firstName')}
+                      <span style={{ fontSize: '0.85rem', color: '#666', marginLeft: '8px' }}>
+                        {firstName.length}/100
+                      </span>
+                    </label>
                     <input
                       id="firstName"
                       type="text"
                       value={firstName}
                       onChange={(e) => handleFirstNameChange(e.target.value)}
+                      maxLength={100}
                       disabled={isLoading}
                     />
                   </div>
                   <div className="auth-form-group">
-                    <label htmlFor="lastName">{t('pages.profile.lastName')}</label>
+                    <label htmlFor="lastName">
+                      {t('pages.profile.lastName')}
+                      <span style={{ fontSize: '0.85rem', color: '#666', marginLeft: '8px' }}>
+                        {lastName.length}/100
+                      </span>
+                    </label>
                     <input
                       id="lastName"
                       type="text"
                       value={lastName}
                       onChange={(e) => handleLastNameChange(e.target.value)}
+                      maxLength={100}
                       disabled={isLoading}
                     />
                   </div>
@@ -1000,50 +976,74 @@ export default function ProfilePage() {
                 </div>
 
                 <div className="auth-form-group">
-                  <label htmlFor="phone">{t('pages.profile.phone')}</label>
+                  <label htmlFor="phone">
+                    {t('pages.profile.phone')}
+                    <span style={{ fontSize: '0.85rem', color: '#666', marginLeft: '8px' }}>
+                      {phone.length}/20
+                    </span>
+                  </label>
                   <input
                     id="phone"
                     type="tel"
                     value={phone}
                     onChange={(e) => handlePhoneChange(e.target.value)}
                     placeholder="+1 (555) 123-4567"
+                    maxLength={20}
                     disabled={isLoading}
                   />
                 </div>
 
                 <div className="auth-form-group">
-                  <label htmlFor="address">{t('pages.profile.address')}</label>
+                  <label htmlFor="address">
+                    {t('pages.profile.address')}
+                    <span style={{ fontSize: '0.85rem', color: '#666', marginLeft: '8px' }}>
+                      {address.length}/256
+                    </span>
+                  </label>
                   <input
                     id="address"
                     type="text"
                     value={address}
                     onChange={(e) => handleAddressChange(e.target.value)}
                     placeholder="123 Main St"
+                    maxLength={256}
                     disabled={isLoading}
                   />
                 </div>
 
                 <div className="form-row">
                   <div className="auth-form-group">
-                    <label htmlFor="postalCode">{t('pages.profile.postalCode')}</label>
+                    <label htmlFor="postalCode">
+                      {t('pages.profile.postalCode')}
+                      <span style={{ fontSize: '0.85rem', color: '#666', marginLeft: '8px' }}>
+                        {postalCode.length}/10
+                      </span>
+                    </label>
                     <input
                       id="postalCode"
                       type="text"
                       value={postalCode}
                       onChange={(e) => handlePostalCodeChange(e.target.value)}
                       placeholder="A1A 1A1"
+                      maxLength={10}
                       disabled={isLoading}
                     />
                   </div>
 
                   <div className="auth-form-group">
-                    <label htmlFor="city">{t('pages.profile.city')}</label>
+                    <label htmlFor="city">
+                      {t('pages.profile.city')}
+                      <span style={{ fontSize: '0.85rem', color: '#666', marginLeft: '8px' }}>
+                        {city.length}/100
+                      </span>
+                    </label>
                     <input
                       id="city"
                       type="text"
                       value={city}
                       onChange={(e) => handleCityChange(e.target.value)}
                       placeholder="Toronto"
+                      maxLength={100}
                       disabled={isLoading}
                     />
                   </div>
@@ -1051,41 +1051,40 @@ export default function ProfilePage() {
 
                 <div className="form-row">
                   <div className="auth-form-group">
-                    <label htmlFor="province">{t('pages.profile.province')}</label>
+                    <label htmlFor="province">
+                      {t('pages.profile.province')}
+                      <span style={{ fontSize: '0.85rem', color: '#666', marginLeft: '8px' }}>
+                        {province.length}/100
+                      </span>
+                    </label>
                     <input
                       id="province"
                       type="text"
                       value={province}
                       onChange={(e) => handleProvinceChange(e.target.value)}
                       placeholder="ON"
+                      maxLength={100}
                       disabled={isLoading}
                     />
                   </div>
 
                   <div className="auth-form-group">
-                    <label htmlFor="country">{t('pages.profile.country')}</label>
+                    <label htmlFor="country">
+                      {t('pages.profile.country')}
+                      <span style={{ fontSize: '0.85rem', color: '#666', marginLeft: '8px' }}>
+                        {country.length}/100
+                      </span>
+                    </label>
                     <input
                       id="country"
                       type="text"
                       value={country}
                       onChange={(e) => handleCountryChange(e.target.value)}
                       placeholder="Canada"
+                      maxLength={100}
                       disabled={isLoading}
                     />
                   </div>
-                </div>
-
-                <div className="auth-form-group">
-                  <label htmlFor="preferredLanguage">{t('common.language') || 'Language'}</label>
-                  <select
-                    id="preferredLanguage"
-                    value={preferredLanguage}
-                    onChange={(e) => setPreferredLanguage(e.target.value as 'en' | 'fr')}
-                    disabled={isLoading}
-                  >
-                    <option value="en">English</option>
-                    <option value="fr">Français (French)</option>
-                  </select>
                 </div>
 
                 {(formError || error) && (
@@ -1184,13 +1183,6 @@ export default function ProfilePage() {
                       </span>
                     </div>
                   )}
-
-                <div className="info-row">
-                  <span className="label">{t('common.language') || 'Language'}:</span>
-                  <span className="value">
-                    {preferredLanguage === 'fr' ? 'Français (French)' : 'English'}
-                  </span>
-                </div>
               </>
             )}
 
@@ -1312,17 +1304,11 @@ export default function ProfilePage() {
 
         {/* Cellar Intake Modal - Only show for customers */}
         {user?.role === 'customer' && addCellarModalOpen && (
-          <div
-            className="modal-overlay"
-            role="dialog"
-            aria-modal="true"
-            aria-labelledby="profile-add-cellar-modal-title"
-          >
+          <div className="modal-overlay">
             <div className="modal">
               <div className="modal-header">
-                <h3 id="profile-add-cellar-modal-title">{t('pages.profile.addCellarIntake')}</h3>
+                <h3>{t('pages.profile.addCellarIntake')}</h3>
                 <button
-                  type="button"
                   className="modal-close-light"
                   aria-label="Close"
                   onClick={() => {
@@ -1345,15 +1331,23 @@ export default function ProfilePage() {
 
               {cellarError && <div className="alert alert-error">{cellarError}</div>}
 
-              <form onSubmit={handleCellarSubmit} className="create-job-form">
+              <form onSubmit={handleCellarSubmit} className="cellar-form">
                 <div className="auth-form-group">
-                  <label htmlFor="cellarName">{t('pages.profile.cellarName')} *</label>
+                  <label htmlFor="cellarName">
+                    {t('pages.profile.cellarName')} *
+                    <span style={{ fontSize: '0.85rem', color: '#666', marginLeft: '8px' }}>
+                      {cellarName.length}/{MAX_CELLAR_NAME_LENGTH}
+                    </span>
+                  </label>
                   <input
                     id="cellarName"
                     type="text"
                     value={cellarName}
-                    onChange={(e) => setCellarName(sanitizeInput(e.target.value))}
+                    onChange={(e) =>
+                      setCellarName(sanitizeInput(e.target.value).slice(0, MAX_CELLAR_NAME_LENGTH))
+                    }
                     placeholder="e.g., Main Wine Cellar"
+                    maxLength={MAX_CELLAR_NAME_LENGTH}
                     disabled={cellarLoading}
                     required
                   />
@@ -1519,17 +1513,11 @@ export default function ProfilePage() {
 
         {/* Edit Cellar Modal - Only show for customers */}
         {user?.role === 'customer' && editCellarModalOpen && (
-          <div
-            className="modal-overlay"
-            role="dialog"
-            aria-modal="true"
-            aria-labelledby="profile-edit-cellar-modal-title"
-          >
+          <div className="modal-overlay">
             <div className="modal">
               <div className="modal-header">
-                <h3 id="profile-edit-cellar-modal-title">{t('pages.profile.updateCellar')}</h3>
+                <h3>{t('pages.profile.updateCellar')}</h3>
                 <button
-                  type="button"
                   className="modal-close-light"
                   aria-label="Close"
                   onClick={() => {
@@ -1553,15 +1541,23 @@ export default function ProfilePage() {
 
               {cellarError && <div className="alert alert-error">{cellarError}</div>}
 
-              <form onSubmit={handleCellarUpdate} className="create-job-form">
+              <form onSubmit={handleCellarUpdate} className="cellar-form">
                 <div className="auth-form-group">
-                  <label htmlFor="editCellarName">{t('pages.profile.cellarName')} *</label>
+                  <label htmlFor="editCellarName">
+                    {t('pages.profile.cellarName')} *
+                    <span style={{ fontSize: '0.85rem', color: '#666', marginLeft: '8px' }}>
+                      {cellarName.length}/{MAX_CELLAR_NAME_LENGTH}
+                    </span>
+                  </label>
                   <input
                     id="editCellarName"
                     type="text"
                     value={cellarName}
-                    onChange={(e) => setCellarName(sanitizeInput(e.target.value))}
+                    onChange={(e) =>
+                      setCellarName(sanitizeInput(e.target.value).slice(0, MAX_CELLAR_NAME_LENGTH))
+                    }
                     placeholder="e.g., Main Wine Cellar"
+                    maxLength={MAX_CELLAR_NAME_LENGTH}
                     disabled={cellarLoading}
                     required
                   />
@@ -1742,6 +1738,7 @@ export default function ProfilePage() {
                   value={oldPassword}
                   onChange={(e) => handleOldPasswordChange(e.target.value)}
                   placeholder="••••••••"
+                  maxLength={128}
                   disabled={isLoading}
                   required
                 />
@@ -1755,6 +1752,7 @@ export default function ProfilePage() {
                   value={newPassword}
                   onChange={(e) => handleNewPasswordChange(e.target.value)}
                   placeholder="••••••••"
+                  maxLength={128}
                   disabled={isLoading}
                   required
                 />
@@ -1768,6 +1766,7 @@ export default function ProfilePage() {
                   value={confirmPassword}
                   onChange={(e) => handleConfirmPasswordChange(e.target.value)}
                   placeholder="••••••••"
+                  maxLength={128}
                   disabled={isLoading}
                   required
                 />

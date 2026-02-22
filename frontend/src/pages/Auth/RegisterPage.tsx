@@ -377,39 +377,57 @@ export default function RegisterPage() {
         {step === 1 ? (
           <form onSubmit={handleStep1Submit} className="auth-form">
             <div className="form-group">
-              <label htmlFor="email">{t('common.email')}</label>
+              <label htmlFor="email">
+                {t('common.email')}
+                <span style={{ fontSize: '0.85rem', color: '#666', marginLeft: '8px' }}>
+                  {email.length}/254
+                </span>
+              </label>
               <input
                 id="email"
                 type="email"
                 value={email}
                 onChange={(e) => handleEmailChange(e.target.value)}
                 placeholder={t('auth.enterEmail')}
+                maxLength={254}
                 disabled={submitting}
                 required
               />
             </div>
 
             <div className="form-group">
-              <label htmlFor="password">{t('common.password')}</label>
+              <label htmlFor="password">
+                {t('common.password')}
+                <span style={{ fontSize: '0.85rem', color: '#666', marginLeft: '8px' }}>
+                  {password.length}/128
+                </span>
+              </label>
               <input
                 id="password"
                 type="password"
                 value={password}
                 onChange={(e) => handlePasswordChange(e.target.value)}
                 placeholder="••••••••"
+                maxLength={128}
                 disabled={isLoading}
                 required
               />
             </div>
 
             <div className="form-group">
-              <label htmlFor="confirmPassword">{t('common.confirmPassword')}</label>
+              <label htmlFor="confirmPassword">
+                {t('common.confirmPassword')}
+                <span style={{ fontSize: '0.85rem', color: '#666', marginLeft: '8px' }}>
+                  {confirmPassword.length}/128
+                </span>
+              </label>
               <input
                 id="confirmPassword"
                 type="password"
                 value={confirmPassword}
                 onChange={(e) => handleConfirmPasswordChange(e.target.value)}
                 placeholder="••••••••"
+                maxLength={128}
                 disabled={isLoading}
                 required
               />
@@ -465,7 +483,12 @@ export default function RegisterPage() {
         ) : (
           <form onSubmit={handleStep2Submit} className="auth-form">
             <div className="form-group">
-              <label htmlFor="firstName">{t('auth.firstName')} *</label>
+              <label htmlFor="firstName">
+                {t('auth.firstName')} *
+                <span style={{ fontSize: '0.85rem', color: '#666', marginLeft: '8px' }}>
+                  {customerData.firstName.length}/100
+                </span>
+              </label>
               <input
                 id="firstName"
                 name="firstName"
@@ -473,6 +496,7 @@ export default function RegisterPage() {
                 value={customerData.firstName}
                 onChange={handleCustomerInputChange}
                 placeholder="John"
+                maxLength={100}
                 disabled={submitting}
                 required
               />
@@ -480,7 +504,12 @@ export default function RegisterPage() {
             </div>
 
             <div className="form-group">
-              <label htmlFor="lastName">{t('auth.lastName')} *</label>
+              <label htmlFor="lastName">
+                {t('auth.lastName')} *
+                <span style={{ fontSize: '0.85rem', color: '#666', marginLeft: '8px' }}>
+                  {customerData.lastName.length}/100
+                </span>
+              </label>
               <input
                 id="lastName"
                 name="lastName"
@@ -488,6 +517,7 @@ export default function RegisterPage() {
                 value={customerData.lastName}
                 onChange={handleCustomerInputChange}
                 placeholder="Doe"
+                maxLength={100}
                 disabled={submitting}
                 required
               />
@@ -495,7 +525,12 @@ export default function RegisterPage() {
             </div>
 
             <div className="form-group">
-              <label htmlFor="streetAddress">{t('pages.customers.address')} *</label>
+              <label htmlFor="streetAddress">
+                {t('pages.customers.address')} *
+                <span style={{ fontSize: '0.85rem', color: '#666', marginLeft: '8px' }}>
+                  {customerData.streetAddress.length}/256
+                </span>
+              </label>
               <input
                 id="streetAddress"
                 name="streetAddress"
@@ -503,6 +538,7 @@ export default function RegisterPage() {
                 value={customerData.streetAddress}
                 onChange={handleCustomerInputChange}
                 placeholder="123 Main St"
+                maxLength={256}
                 disabled={submitting}
                 required
               />
@@ -510,7 +546,12 @@ export default function RegisterPage() {
             </div>
 
             <div className="form-group">
-              <label htmlFor="city">{t('pages.customers.city')} *</label>
+              <label htmlFor="city">
+                {t('pages.customers.city')} *
+                <span style={{ fontSize: '0.85rem', color: '#666', marginLeft: '8px' }}>
+                  {customerData.city.length}/100
+                </span>
+              </label>
               <input
                 id="city"
                 name="city"
@@ -518,6 +559,7 @@ export default function RegisterPage() {
                 value={customerData.city}
                 onChange={handleCustomerInputChange}
                 placeholder="Toronto"
+                maxLength={100}
                 disabled={submitting}
                 required
               />
@@ -543,7 +585,12 @@ export default function RegisterPage() {
             </div>
 
             <div className="form-group">
-              <label htmlFor="postalCode">{t('pages.customers.postalCode')} *</label>
+              <label htmlFor="postalCode">
+                {t('pages.customers.postalCode')} *
+                <span style={{ fontSize: '0.85rem', color: '#666', marginLeft: '8px' }}>
+                  {customerData.postalCode.length}/10
+                </span>
+              </label>
               <input
                 id="postalCode"
                 name="postalCode"
@@ -551,6 +598,7 @@ export default function RegisterPage() {
                 value={customerData.postalCode}
                 onChange={handleCustomerInputChange}
                 placeholder="M5H 2N2"
+                maxLength={10}
                 disabled={submitting}
                 required
               />
@@ -566,8 +614,10 @@ export default function RegisterPage() {
                     value={phone.number}
                     onChange={(e) => handlePhoneChange(index, 'number', e.target.value)}
                     placeholder="123-456-7890"
+                    maxLength={20}
                     disabled={submitting}
                     style={{ flex: 1 }}
+                    title={`${phone.number.length}/20`}
                     required
                   />
                   <select

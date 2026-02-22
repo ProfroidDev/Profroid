@@ -118,13 +118,19 @@ export default function LoginPage() {
 
         <form onSubmit={handleSubmit} className="auth-form">
           <div className="form-group">
-            <label htmlFor="email">{t('common.email')}</label>
+            <label htmlFor="email">
+              {t('common.email')}
+              <span style={{ fontSize: '0.85rem', color: '#666', marginLeft: '8px' }}>
+                {email.length}/254
+              </span>
+            </label>
             <input
               id="email"
               type="email"
               value={email}
               onChange={(e) => handleEmailChange(e.target.value)}
               placeholder={t('auth.enterEmail')}
+              maxLength={254}
               disabled={isLoading}
               required
               autoComplete="email"
@@ -132,13 +138,19 @@ export default function LoginPage() {
           </div>
 
           <div className="form-group">
-            <label htmlFor="password">{t('common.password')}</label>
+            <label htmlFor="password">
+              {t('common.password')}
+              <span style={{ fontSize: '0.85rem', color: '#666', marginLeft: '8px' }}>
+                {password.length}/128
+              </span>
+            </label>
             <input
               id="password"
               type="password"
               value={password}
               onChange={(e) => handlePasswordChange(e.target.value)}
               placeholder="••••••••"
+              maxLength={128}
               disabled={isLoading}
               required
               autoComplete="current-password"

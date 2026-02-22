@@ -341,7 +341,20 @@ export default function AdminAppointmentsPage(): React.ReactElement {
                   setCurrentPage(1);
                 }}
                 className="search-input"
+                maxLength={100}
+                title={`${technicianSearchTerm.length}/100`}
               />
+              <span
+                style={{
+                  fontSize: '0.75rem',
+                  color: '#999',
+                  position: 'absolute',
+                  right: '4px',
+                  top: '22px',
+                }}
+              >
+                {technicianSearchTerm.length}/100
+              </span>
             </div>
           </div>
 

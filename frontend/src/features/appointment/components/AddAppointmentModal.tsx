@@ -1462,6 +1462,7 @@ export default function AddAppointmentModal({
                       placeholder={t('pages.appointments.autoAssignedTechnician')}
                       disabled
                       value="Auto-assigned"
+                      maxLength={100}
                     />
                   ) : (
                     <input
@@ -1473,6 +1474,7 @@ export default function AddAppointmentModal({
                       }
                       value={customerSearch}
                       onChange={(e) => setCustomerSearch(e.target.value)}
+                      maxLength={100}
                       disabled={disableCustomerSearch || isEditingQuotationCreatedByCustomer}
                     />
                   )}
@@ -1607,22 +1609,34 @@ export default function AddAppointmentModal({
 
             <div className="grid two">
               <label className="field">
-                <span>{t('pages.appointments.streetAddress')}</span>
+                <span>
+                  {t('pages.appointments.streetAddress')}
+                  <span style={{ fontSize: '0.85rem', color: '#666', marginLeft: '8px' }}>
+                    {address.streetAddress.length}/256
+                  </span>
+                </span>
                 <input
                   type="text"
                   value={address.streetAddress}
                   onChange={(e) =>
                     setAddress({ ...address, streetAddress: sanitizeAddress(e.target.value) })
                   }
+                  maxLength={256}
                   required
                 />
               </label>
               <label className="field">
-                <span>{t('pages.appointments.city')}</span>
+                <span>
+                  {t('pages.appointments.city')}
+                  <span style={{ fontSize: '0.85rem', color: '#666', marginLeft: '8px' }}>
+                    {address.city.length}/100
+                  </span>
+                </span>
                 <input
                   type="text"
                   value={address.city}
                   onChange={(e) => setAddress({ ...address, city: sanitizeCity(e.target.value) })}
+                  maxLength={100}
                   required
                 />
               </label>
@@ -1662,6 +1676,9 @@ export default function AddAppointmentModal({
                   onChange={(e) =>
                     setAddress({ ...address, country: sanitizeInput(e.target.value) })
                   }
+                  maxLength={100}
+                  placeholder={t('pages.appointments.country')}
+                  title={`${address.country.length}/100`}
                   required
                 />
               </label>
@@ -1681,6 +1698,9 @@ export default function AddAppointmentModal({
                     );
                     setPostalCodeValidationError(validationError);
                   }}
+                  maxLength={10}
+                  placeholder={t('pages.appointments.postalCode')}
+                  title={`${address.postalCode.length}/10`}
                   required
                   style={{
                     borderColor: postalCodeValidationError ? '#ef4444' : undefined,
@@ -1697,12 +1717,16 @@ export default function AddAppointmentModal({
             </div>
 
             <label className="field">
-              <span>{t('pages.appointments.description')}</span>
+              <span>
+                {t('pages.appointments.description')}
+                <span className="char-count">{description.length}/500</span>
+              </span>
               <textarea
                 value={description}
                 onChange={(e) => setDescription(sanitizeInput(e.target.value))}
                 rows={3}
                 placeholder={t('pages.appointments.description')}
+                maxLength={500}
                 required
               />
             </label>
