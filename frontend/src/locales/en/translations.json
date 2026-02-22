@@ -36,6 +36,7 @@
     "uploadProfileImage": "Upload Profile Image",
     "creating": "Creating...",
     "updating": "Updating...",
+    "verifying": "Verifying...",
     "enterPlaceholder": "Enter {{field}}",
     "or": "or",
     "dayOfWeek": {
@@ -701,7 +702,10 @@
         "fileSizeExceeds": "File size exceeds maximum allowed",
         "addButton": "Add Part",
         "cancelButton": "Cancel",
-        "updateButton": "Update Part"
+        "updateButton": "Update Part",
+        "closeButton": "Close",
+        "uploadNewImageToReplace": "Upload a new image to replace the current one",
+        "deleteCurrentImage": "Delete current image"
       }
     },
     "appointments": {
@@ -1310,6 +1314,7 @@
     "postalCodeMismatch": "Postal code does not match {{city}}, {{province}}",
     "phoneInvalid": "Please enter a valid phone number",
     "passwordTooShort": "Password must be at least 8 characters",
+    "emailRequired": "Email is required",
     "required": "This field is required",
     "fieldRequired": "{{field}} is required",
     "invalidImageType": "Please select an image file",

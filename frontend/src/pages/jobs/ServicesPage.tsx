@@ -18,6 +18,7 @@ import Toast from '../../shared/components/Toast';
 import useAuthStore from '../../features/authentication/store/authStore';
 import { fileDownloadUrl } from '../../shared/utils/fileUrl';
 import { trimToMaxWords } from '../../utils/wordLimit';
+import { formatCurrencyLocalized } from '../../utils/localeFormat';
 
 export default function ServicesPage(): React.ReactElement {
   const { t, i18n } = useTranslation();
@@ -661,7 +662,9 @@ export default function ServicesPage(): React.ReactElement {
                   <h3 className="service-title-modern">{getJobName(j)}</h3>
                   <div className="service-price">
                     <span className="price-label">{isFrench ? 'Prix' : 'Price'}</span>
-                    <span className="price-value">${j.hourlyRate?.toFixed(2)}</span>
+                    <span className="price-value">
+                      {formatCurrencyLocalized(j.hourlyRate ?? 0, i18n.language, 'CAD')}
+                    </span>
                     <span className="price-unit">{isFrench ? '/heure' : '/hour'}</span>
                   </div>
                 </div>
@@ -797,19 +800,19 @@ export default function ServicesPage(): React.ReactElement {
 
       {modalOpen && (
         <div
-          className="modal-overlay"
+          className="services-modal-overlay"
           role="dialog"
           aria-modal="true"
           aria-labelledby="services-details-modal-title"
         >
-          <div className="modal">
-            <div className="modal-header">
+          <div className="services-modal">
+            <div className="services-modal-header">
               <h3 id="services-details-modal-title" className="services-modal-title">
                 {t('pages.services.serviceDetails')}
               </h3>
               <button
                 type="button"
-                className="modal-close-light"
+                className="services-modal-close-light"
                 aria-label="Close"
                 onClick={closeModal}
               >
@@ -856,8 +859,8 @@ export default function ServicesPage(): React.ReactElement {
                   </p>
                 )}
                 <p>
-                  <strong>{t('pages.services.hourlyRate')}:</strong> $
-                  {selectedJob.hourlyRate?.toFixed(2)}
+                  <strong>{t('pages.services.hourlyRate')}:</strong>{' '}
+                  {formatCurrencyLocalized(selectedJob.hourlyRate ?? 0, i18n.language, 'CAD')}
                 </p>
                 <p>
                   <strong>{t('pages.services.estimatedDuration')}:</strong>{' '}
@@ -882,19 +885,19 @@ export default function ServicesPage(): React.ReactElement {
 
       {createModalOpen && (
         <div
-          className="modal-overlay"
+          className="services-modal-overlay"
           role="dialog"
           aria-modal="true"
           aria-labelledby="services-create-modal-title"
         >
-          <div className="modal">
-            <div className="modal-header">
+          <div className="services-modal">
+            <div className="services-modal-header">
               <h3 id="services-create-modal-title" className="services-modal-title">
                 {t('pages.services.createNewService')}
               </h3>
               <button
                 type="button"
-                className="modal-close-light"
+                className="services-modal-close-light"
                 aria-label="Close"
                 onClick={closeCreateModal}
                 disabled={createLoading}
@@ -911,7 +914,7 @@ export default function ServicesPage(): React.ReactElement {
             )}
 
             <form
-              className="create-job-form"
+              className="create-job-form services-form"
               onSubmit={(e) => {
                 e.preventDefault();
                 void handleCreateJob();
@@ -1083,20 +1086,20 @@ export default function ServicesPage(): React.ReactElement {
 
       {updateModalOpen && (
         <div
-          className="modal-overlay"
+          className="services-modal-overlay"
           role="dialog"
           aria-modal="true"
           aria-labelledby="services-update-modal-title"
           onClick={closeUpdateModal}
         >
-          <div className="modal" onClick={(e) => e.stopPropagation()}>
-            <div className="modal-header">
+          <div className="services-modal" onClick={(e) => e.stopPropagation()}>
+            <div className="services-modal-header">
               <h3 id="services-update-modal-title" className="services-modal-title">
                 {t('pages.services.modifyService')}
               </h3>
               <button
                 type="button"
-                className="modal-close-light"
+                className="services-modal-close-light"
                 aria-label="Close"
                 onClick={closeUpdateModal}
                 disabled={updateLoading}
@@ -1113,7 +1116,7 @@ export default function ServicesPage(): React.ReactElement {
             )}
 
             <form
-              className="create-job-form"
+              className="create-job-form services-form"
               onSubmit={(e) => {
                 e.preventDefault();
                 void handleUpdateJob();
@@ -1269,12 +1272,7 @@ export default function ServicesPage(): React.ReactElement {
                       <img
                         src={resolveJobImage(jobToUpdate)}
                         alt="Current job image"
-                        style={{
-                          maxWidth: '200px',
-                          maxHeight: '150px',
-                          borderRadius: '6px',
-                          marginBottom: '10px',
-                        }}
+                        className="service-image-preview"
                         onError={(e) => {
                           e.currentTarget.style.display = 'none';
                         }}

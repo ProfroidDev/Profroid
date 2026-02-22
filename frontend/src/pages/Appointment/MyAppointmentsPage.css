@@ -490,7 +490,8 @@
    MODAL
 ================================= */
 
-.modal-overlay-light {
+.my-appointments-page .modal-overlay-light,
+.my-appt-modal-overlay {
   position: fixed;
   inset: 0;
   background: rgba(0, 0, 0, 0.18);
@@ -502,7 +503,8 @@
   padding: 20px;
 }
 
-.modal-container-light {
+.my-appointments-page .modal-container-light,
+.my-appt-modal-container {
   background: #fff;
   width: 90%;
   max-width: 600px;
@@ -515,34 +517,41 @@
 }
 
 /* Modern Scrollbar */
-.modal-container-light {
+.my-appointments-page .modal-container-light,
+.my-appt-modal-container {
   scrollbar-width: thin;
   scrollbar-color: rgba(122, 9, 1, 0.3) transparent;
 }
 
-.modal-container-light::-webkit-scrollbar {
+.my-appointments-page .modal-container-light::-webkit-scrollbar,
+.my-appt-modal-container::-webkit-scrollbar {
   width: 6px;
 }
 
-.modal-container-light::-webkit-scrollbar-track {
+.my-appointments-page .modal-container-light::-webkit-scrollbar-track,
+.my-appt-modal-container::-webkit-scrollbar-track {
   background: transparent;
 }
 
-.modal-container-light::-webkit-scrollbar-thumb {
+.my-appointments-page .modal-container-light::-webkit-scrollbar-thumb,
+.my-appt-modal-container::-webkit-scrollbar-thumb {
   background: rgba(122, 9, 1, 0.2);
   border-radius: 10px;
   transition: background 0.2s ease;
 }
 
-.modal-container-light::-webkit-scrollbar-thumb:hover {
+.my-appointments-page .modal-container-light::-webkit-scrollbar-thumb:hover,
+.my-appt-modal-container::-webkit-scrollbar-thumb:hover {
   background: rgba(122, 9, 1, 0.4);
 }
 
-.modal-container-light:hover::-webkit-scrollbar-thumb {
+.my-appointments-page .modal-container-light:hover::-webkit-scrollbar-thumb,
+.my-appt-modal-container:hover::-webkit-scrollbar-thumb {
   background: rgba(122, 9, 1, 0.3);
 }
 
-.modal-header-light {
+.my-appointments-page .modal-header-light,
+.my-appt-modal-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -551,7 +560,8 @@
   margin-bottom: 18px;
 }
 
-.modal-header-light h2 {
+.my-appointments-page .modal-header-light h2,
+.my-appt-modal-header h2 {
   font-size: 1.8rem;
   font-weight: 700;
   color: #7a0901;
@@ -559,7 +569,8 @@
   font-family: 'Georgia', serif;
 }
 
-.modal-close-light {
+.my-appointments-page .modal-close-light,
+.my-appt-modal-close {
   background: transparent;
   border: none;
   font-size: 1.8rem;
@@ -574,24 +585,28 @@
   line-height: 1;
 }
 
-.modal-close-light:hover {
+.my-appointments-page .modal-close-light:hover,
+.my-appt-modal-close:hover {
   color: #5a2a27;
 }
 
-.modal-content-light {
+.my-appointments-page .modal-content-light,
+.my-appt-modal-content {
   display: flex;
   flex-direction: column;
   gap: 16px;
 }
 
-.detail-section {
+.my-appointments-page .detail-section,
+.my-appt-detail-section {
   padding: 16px;
   background: #faf9f7;
   border-radius: 10px;
   border: 1px solid #ece8e3;
 }
 
-.detail-section h3 {
+.my-appointments-page .detail-section h3,
+.my-appt-detail-section h3 {
   font-size: 1.1rem;
   font-weight: 700;
   color: #7a0901;
@@ -599,19 +614,22 @@
   font-family: 'Georgia', serif;
 }
 
-.detail-section p {
+.my-appointments-page .detail-section p,
+.my-appt-detail-section p {
   margin: 6px 0;
   color: #5a2a27;
   line-height: 1.6;
   font-size: 0.95rem;
 }
 
-.detail-section strong {
+.my-appointments-page .detail-section strong,
+.my-appt-detail-section strong {
   color: #7a0901;
   font-weight: 600;
 }
 
-.modal-status-badge {
+.my-appointments-page .modal-status-badge,
+.my-appt-modal-status-badge {
   display: inline-block;
   padding: 4px 12px;
   border-radius: 12px;

@@ -33,6 +33,11 @@ import { exportReportPdf } from '../../features/report/api/exportReportPdf';
 import type { ReportResponseModel } from '../../features/report/models/ReportResponseModel';
 import { getCellars } from '../../features/cellar/api/getAllCellars';
 import type { CellarResponseModel } from '../../features/cellar/models/CellarResponseModel';
+import {
+  formatCurrencyLocalized,
+  formatDateTimeLocalized,
+  formatTimeLocalized,
+} from '../../utils/localeFormat';
 
 export default function MyJobsPage(): React.ReactElement {
   const { t, i18n } = useTranslation();
@@ -271,9 +276,7 @@ export default function MyJobsPage(): React.ReactElement {
   };
 
   const formatDate = (dateString: string): string => {
-    const date = new Date(dateString);
-    const locale = i18n.language === 'fr' ? 'fr-FR' : 'en-US';
-    return date.toLocaleDateString(locale, {
+    return formatDateTimeLocalized(dateString, i18n.language, {
       weekday: 'long',
       year: 'numeric',
       month: 'long',
@@ -375,7 +378,7 @@ export default function MyJobsPage(): React.ReactElement {
   const goNext = () => setCurrentPage((p) => Math.min(totalPages, p + 1));
 
   return (
-    <div className="jobs-page-light">
+    <div className="jobs-page-light my-jobs-page">
       <div className="jobs-header">
         <h1 className="jobs-title-light">{t('pages.jobs.myJobs')}</h1>
         {customerData?.firstName && customerData?.lastName && (
@@ -556,9 +559,11 @@ export default function MyJobsPage(): React.ReactElement {
                     {job.appointmentStartTime && job.appointmentEndTime && (
                       <>
                         {' | '}
-                        <strong>{isFrench ? 'Début:' : 'Start:'}</strong> {job.appointmentStartTime}
+                        <strong>{isFrench ? 'Début:' : 'Start:'}</strong>{' '}
+                        {formatTimeLocalized(job.appointmentStartTime, i18n.language)}
                         {' | '}
-                        <strong>{isFrench ? 'Fin:' : 'End:'}</strong> {job.appointmentEndTime}
+                        <strong>{isFrench ? 'Fin:' : 'End:'}</strong>{' '}
+                        {formatTimeLocalized(job.appointmentEndTime, i18n.language)}
                       </>
                     )}
                   </span>
@@ -600,7 +605,7 @@ export default function MyJobsPage(): React.ReactElement {
                 <div className="job-info-row highlight-rate">
                   <DollarSign size={18} />
                   <span>
-                    ${job.hourlyRate.toFixed(2)}
+                    {formatCurrencyLocalized(job.hourlyRate, i18n.language, 'CAD')}
                     {t('pages.jobs.hour')}
                   </span>
                 </div>
@@ -767,7 +772,8 @@ export default function MyJobsPage(): React.ReactElement {
                   <strong>{t('pages.jobs.type')}:</strong> {getJobType(selectedJob)}
                 </p>
                 <p>
-                  <strong>{t('pages.jobs.rate')}:</strong> ${selectedJob.hourlyRate.toFixed(2)}/hour
+                  <strong>{t('pages.jobs.rate')}:</strong>{' '}
+                  {formatCurrencyLocalized(selectedJob.hourlyRate, i18n.language, 'CAD')}/hour
                 </p>
                 <p>
                   <strong>{t('pages.jobs.status')}:</strong>{' '}
@@ -784,9 +790,11 @@ export default function MyJobsPage(): React.ReactElement {
                   {selectedJob.appointmentStartTime && selectedJob.appointmentEndTime && (
                     <>
                       <br />
-                      <strong>{t('pages.jobs.start')}:</strong> {selectedJob.appointmentStartTime}
+                      <strong>{t('pages.jobs.start')}:</strong>{' '}
+                      {formatTimeLocalized(selectedJob.appointmentStartTime, i18n.language)}
                       {' | '}
-                      <strong>{t('pages.jobs.end')}:</strong> {selectedJob.appointmentEndTime}
+                      <strong>{t('pages.jobs.end')}:</strong>{' '}
+                      {formatTimeLocalized(selectedJob.appointmentEndTime, i18n.language)}
                     </>
                   )}
                 </p>

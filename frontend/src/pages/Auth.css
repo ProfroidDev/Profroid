@@ -44,19 +44,26 @@
   gap: 1rem;
 }
 
-.form-group {
+.pf-auth-form-group,
+.auth-form .form-group,
+.auth-form-group {
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
 }
 
-.form-group label {
+.pf-auth-form-group label,
+.auth-form .form-group label,
+.auth-form-group label {
   font-weight: 600;
   color: #333;
   font-size: 0.9rem;
 }
 
-.form-group input {
+.pf-auth-form-group input,
+.auth-form .form-group input,
+.auth-form-group input,
+.auth-form-group select {
   padding: 0.75rem;
   border: 2px solid #ddd;
   border-radius: 10px;
@@ -64,13 +71,19 @@
   transition: all 0.3s ease;
 }
 
-.form-group input:focus {
+.pf-auth-form-group input:focus,
+.auth-form .form-group input:focus,
+.auth-form-group input:focus,
+.auth-form-group select:focus {
   outline: 2px solid transparent;
   border-color: #7a0901;
   box-shadow: 0 0 0 3px rgba(122, 9, 1, 0.1);
 }
 
-.form-group input:disabled {
+.pf-auth-form-group input:disabled,
+.auth-form .form-group input:disabled,
+.auth-form-group input:disabled,
+.auth-form-group select:disabled {
   background-color: #f5f5f5;
   cursor: not-allowed;
 }
@@ -302,13 +315,17 @@
   }
 }
 
-.form-actions {
+.pf-auth-form-actions,
+.auth-card .form-actions,
+.profile-card .form-actions {
   display: flex;
   gap: 1rem;
   margin-top: 1rem;
 }
 
-.form-actions button {
+.pf-auth-form-actions button,
+.auth-card .form-actions button,
+.profile-card .form-actions button {
   flex: 1;
 }
 

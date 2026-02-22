@@ -36,6 +36,7 @@
     "uploadProfileImage": "Téléverser l'image de profil",
     "creating": "Création en cours...",
     "updating": "Mise à jour en cours...",
+    "verifying": "Vérification...",
     "enterPlaceholder": "Entrez {{field}}",
     "or": "ou",
     "dayOfWeek": {
@@ -844,7 +845,10 @@
         "fileSizeExceeds": "La taille du fichier dépasse la limite autorisée",
         "addButton": "Ajouter la Pièce",
         "cancelButton": "Annuler",
-        "updateButton": "Mettre à Jour la Pièce"
+        "updateButton": "Mettre à Jour la Pièce",
+        "closeButton": "Fermer",
+        "uploadNewImageToReplace": "Téléversez une nouvelle image pour remplacer l'image actuelle",
+        "deleteCurrentImage": "Supprimer l'image actuelle"
       }
     },
     "appointments": {
@@ -1305,6 +1309,7 @@
     "postalCodeMismatch": "Le code postal ne correspond pas à {{city}}, {{province}}",
     "phoneInvalid": "Veuillez entrer un numéro de téléphone valide",
     "passwordTooShort": "Le mot de passe doit contenir au moins 8 caractères",
+    "emailRequired": "L'e-mail est obligatoire",
     "required": "Ce champ est obligatoire",
     "fieldRequired": "{{field}} est obligatoire",
     "invalidImageType": "Veuillez sélectionner un fichier image",

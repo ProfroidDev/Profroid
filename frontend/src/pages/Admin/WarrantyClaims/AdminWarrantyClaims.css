@@ -211,7 +211,8 @@
 }
 
 /* Modal Styles */
-.modal-overlay {
+.admin-warranty-container .modal-overlay,
+.admin-warranty-modal-overlay {
   position: fixed;
   top: 0;
   left: 0;
@@ -226,7 +227,8 @@
   overflow-y: auto;
 }
 
-.modal-content {
+.admin-warranty-container .modal-content,
+.admin-warranty-modal-content {
   background: white;
   border-radius: 12px;
   max-width: 900px;
@@ -237,7 +239,8 @@
   margin: auto;
 }
 
-.modal-header {
+.admin-warranty-container .modal-header,
+.admin-warranty-modal-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -247,12 +250,14 @@
   color: white;
 }
 
-.modal-header h2 {
+.admin-warranty-container .modal-header h2,
+.admin-warranty-modal-header h2 {
   margin: 0;
   font-size: 24px;
 }
 
-.modal-close {
+.admin-warranty-container .modal-close,
+.admin-warranty-modal-close {
   background: none;
   border: none;
   font-size: 32px;
@@ -269,11 +274,13 @@
   transition: background-color 0.2s ease;
 }
 
-.modal-close:hover {
+.admin-warranty-container .modal-close:hover,
+.admin-warranty-modal-close:hover {
   background: rgba(255, 255, 255, 0.2);
 }
 
-.modal-body {
+.admin-warranty-container .modal-body,
+.admin-warranty-modal-body {
   padding: 30px;
 }
 
@@ -327,11 +334,13 @@
   margin: 0;
 }
 
-.form-group {
+.admin-warranty-container .form-group,
+.admin-warranty-form-group {
   margin-bottom: 20px;
 }
 
-.form-group label {
+.admin-warranty-container .form-group label,
+.admin-warranty-form-group label {
   display: block;
   font-size: 14px;
   font-weight: 600;
@@ -339,8 +348,10 @@
   margin-bottom: 8px;
 }
 
-.form-group select,
-.form-group textarea {
+.admin-warranty-container .form-group select,
+.admin-warranty-container .form-group textarea,
+.admin-warranty-form-group select,
+.admin-warranty-form-group textarea {
   width: 100%;
   padding: 12px;
   border: 2px solid #e5e5e5;
@@ -350,17 +361,21 @@
   transition: border-color 0.2s ease;
 }
 
-.form-group select:focus,
-.form-group textarea:focus {
+.admin-warranty-container .form-group select:focus,
+.admin-warranty-container .form-group textarea:focus,
+.admin-warranty-form-group select:focus,
+.admin-warranty-form-group textarea:focus {
   outline: 2px solid transparent;
   border-color: #722f37;
 }
 
-.form-group textarea {
+.admin-warranty-container .form-group textarea,
+.admin-warranty-form-group textarea {
   resize: vertical;
 }
 
-.modal-footer {
+.admin-warranty-container .modal-footer,
+.admin-warranty-modal-footer {
   padding: 20px 30px;
   border-top: 2px solid #e5e5e5;
   display: flex;

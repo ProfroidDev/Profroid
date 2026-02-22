@@ -8,6 +8,7 @@ import type { EmployeeResponseModel } from '../../features/employee/models/Emplo
 import type { EmployeeSchedule } from '../../features/employee/models/EmployeeSchedule';
 import { getEmployeeSchedule } from '../../features/employee/api/getEmployeeSchedule';
 import { getEmployeeScheduleForDate } from '../../features/employee/api/getEmployeeScheduleForDate';
+import { formatDateLocalized } from '../../utils/localeFormat';
 import Calendar from 'react-calendar';
 import 'react-calendar/dist/Calendar.css';
 import EmployeeAssignModal from '../../components/EmployeeAssignModal';
@@ -771,10 +772,10 @@ export default function EmployeeListPage(): React.ReactElement {
                   .toLocaleDateString('en-US', { weekday: 'long' })
                   .toUpperCase() as 'MONDAY' | 'TUESDAY' | 'WEDNESDAY' | 'THURSDAY' | 'FRIDAY';
                 const dayName = t(`common.dayOfWeek.${dayOfWeek.toLowerCase()}`);
-                const monthDay = selectedDate.toLocaleDateString(
-                  i18n.language === 'fr' ? 'fr-FR' : 'en-US',
-                  { month: 'short', day: 'numeric' }
-                );
+                const monthDay = formatDateLocalized(selectedDate, i18n.language, {
+                  month: 'short',
+                  day: 'numeric',
+                });
                 setToast({
                   message: t('pages.employees.scheduleUpdatedForDate', {
                     date: `${dayName}, ${monthDay}`,

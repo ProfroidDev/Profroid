@@ -22,6 +22,11 @@ import { getEmployee } from '../../features/employee/api/getEmployeeById';
 import type { EmployeeResponseModel } from '../../features/employee/models/EmployeeResponseModel';
 import { getCellars } from '../../features/cellar/api/getAllCellars';
 import type { CellarResponseModel } from '../../features/cellar/models/CellarResponseModel';
+import {
+  formatCurrencyLocalized,
+  formatDateTimeLocalized,
+  formatTimeLocalized,
+} from '../../utils/localeFormat';
 
 export default function AdminAppointmentsPage(): React.ReactElement {
   const { t, i18n } = useTranslation();
@@ -73,9 +78,7 @@ export default function AdminAppointmentsPage(): React.ReactElement {
   };
 
   const formatDate = (dateString: string): string => {
-    const date = new Date(dateString);
-    const locale = i18n.language === 'fr' ? 'fr-FR' : 'en-US';
-    return date.toLocaleDateString(locale, {
+    return formatDateTimeLocalized(dateString, i18n.language, {
       weekday: 'long',
       year: 'numeric',
       month: 'long',
@@ -206,7 +209,7 @@ export default function AdminAppointmentsPage(): React.ReactElement {
   }
 
   return (
-    <div className="appointments-page-light">
+    <div className="appointments-page-light admin-appointments-page">
       <div className="appointments-header">
         <h1 className="appointments-title-light">{t('pages.appointments.allAppointments')}</h1>
         <p className="appointments-subtitle">{t('pages.appointments.manageAllAppointments')}</p>
@@ -399,10 +402,10 @@ export default function AdminAppointmentsPage(): React.ReactElement {
                       <>
                         {' | '}
                         <strong>{t('pages.appointments.start')}:</strong>{' '}
-                        {appointment.appointmentStartTime}
+                        {formatTimeLocalized(appointment.appointmentStartTime, i18n.language)}
                         {' | '}
                         <strong>{t('pages.appointments.end')}:</strong>{' '}
-                        {appointment.appointmentEndTime}
+                        {formatTimeLocalized(appointment.appointmentEndTime, i18n.language)}
                       </>
                     )}
                   </span>
@@ -447,7 +450,7 @@ export default function AdminAppointmentsPage(): React.ReactElement {
                 <div className="appointment-info-row">
                   <DollarSign size={18} />
                   <span>
-                    ${appointment.hourlyRate.toFixed(2)}
+                    {formatCurrencyLocalized(appointment.hourlyRate, i18n.language, 'CAD')}
                     {t('pages.appointments.hour')}
                   </span>
                 </div>
@@ -524,8 +527,8 @@ export default function AdminAppointmentsPage(): React.ReactElement {
                   </p>
                 )}
                 <p>
-                  <strong>{t('pages.appointments.rate')}:</strong> $
-                  {selectedAppointment.hourlyRate.toFixed(2)}
+                  <strong>{t('pages.appointments.rate')}:</strong>{' '}
+                  {formatCurrencyLocalized(selectedAppointment.hourlyRate, i18n.language, 'CAD')}
                   {t('pages.appointments.hour')}
                 </p>
                 <p>
@@ -559,11 +562,14 @@ export default function AdminAppointmentsPage(): React.ReactElement {
                     <>
                       <p>
                         <strong>{t('pages.appointments.startTime')}:</strong>{' '}
-                        {selectedAppointment.appointmentStartTime}
+                        {formatTimeLocalized(
+                          selectedAppointment.appointmentStartTime,
+                          i18n.language
+                        )}
                       </p>
                       <p>
                         <strong>{t('pages.appointments.endTime')}:</strong>{' '}
-                        {selectedAppointment.appointmentEndTime}
+                        {formatTimeLocalized(selectedAppointment.appointmentEndTime, i18n.language)}
                       </p>
                     </>
                   )}

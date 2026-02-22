@@ -5,6 +5,7 @@ import Toast from '../../../shared/components/Toast';
 import ConfirmationModal from '../../../components/ConfirmationModal';
 import { sanitizeInput } from '../../../utils/sanitizer';
 import { trimToMaxWords } from '../../../utils/wordLimit';
+import { formatDateLocalized, formatDateTimeLocalized } from '../../../utils/localeFormat';
 
 export interface ContactMessage {
   messageId: string;
@@ -30,7 +31,7 @@ interface PaginatedResponse {
 }
 
 export default function AdminMessages() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const ADMIN_NOTES_MAX_WORDS = 120;
   const [messages, setMessages] = useState<ContactMessage[]>([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -282,7 +283,13 @@ export default function AdminMessages() {
                   <td>{msg.name}</td>
                   <td>{msg.email}</td>
                   <td className="subject-cell">{msg.subject}</td>
-                  <td className="date-cell">{new Date(msg.createdAt).toLocaleDateString()}</td>
+                  <td className="date-cell">
+                    {formatDateLocalized(msg.createdAt, i18n.language, {
+                      year: 'numeric',
+                      month: 'short',
+                      day: 'numeric',
+                    })}
+                  </td>
                   <td className="action-cell">
                     <button className="btn-view-msg" onClick={() => handleViewMessage(msg)}>
                       {t('pages.adminMessages.viewButton')}
@@ -397,12 +404,12 @@ export default function AdminMessages() {
               <div className="msg-section msg-metadata">
                 <p>
                   <strong>{t('pages.adminMessages.receivedLabel')}:</strong>{' '}
-                  {new Date(selectedMessage.createdAt).toLocaleString()}
+                  {formatDateTimeLocalized(selectedMessage.createdAt, i18n.language)}
                 </p>
                 {selectedMessage.respondedAt && (
                   <p>
                     <strong>{t('pages.adminMessages.respondedLabel')}:</strong>{' '}
-                    {new Date(selectedMessage.respondedAt).toLocaleString()}
+                    {formatDateTimeLocalized(selectedMessage.respondedAt, i18n.language)}
                   </p>
                 )}
               </div>

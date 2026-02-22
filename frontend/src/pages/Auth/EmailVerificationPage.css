@@ -187,23 +187,27 @@
   }
 }
 
-.form-group {
+.pf-email-verification-group,
+.auth-form .form-group {
   margin-bottom: 1.25rem;
 }
 
 @media (min-width: 641px) {
-  .form-group {
+  .pf-email-verification-group,
+  .auth-form .form-group {
     margin-bottom: 1.5rem;
   }
 }
 
 @media (min-width: 1025px) {
-  .form-group {
+  .pf-email-verification-group,
+  .auth-form .form-group {
     margin-bottom: 1.75rem;
   }
 }
 
-.form-group label {
+.pf-email-verification-group label,
+.auth-form .form-group label {
   display: block;
   margin-bottom: 8px;
   font-weight: 600;
@@ -212,18 +216,21 @@
 }
 
 @media (min-width: 641px) {
-  .form-group label {
+  .pf-email-verification-group label,
+  .auth-form .form-group label {
     font-size: 0.9rem;
   }
 }
 
 @media (min-width: 1025px) {
-  .form-group label {
+  .pf-email-verification-group label,
+  .auth-form .form-group label {
     font-size: 0.95rem;
   }
 }
 
-.form-input {
+.pf-email-verification-input,
+.auth-form .form-input {
   width: 100%;
   padding: 10px 12px;
   border: 1px solid #ddd;
@@ -234,20 +241,23 @@
 }
 
 @media (min-width: 641px) {
-  .form-input {
+  .pf-email-verification-input,
+  .auth-form .form-input {
     padding: 12px 14px;
     font-size: 0.95rem;
   }
 }
 
 @media (min-width: 1025px) {
-  .form-input {
+  .pf-email-verification-input,
+  .auth-form .form-input {
     padding: 12px 16px;
     font-size: 1rem;
   }
 }
 
-.form-input:focus {
+.pf-email-verification-input:focus,
+.auth-form .form-input:focus {
   outline: 2px solid transparent;
   border-color: #667eea;
   box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
