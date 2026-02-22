@@ -475,7 +475,7 @@ export default function UpdateDayScheduleModal({
             disabled={submitting}
             style={{
               background: submitting
-                ? 'linear-gradient(90deg, #888 60%, #999 100%)'
+                ? 'linear-gradient(90deg, #4b5563 60%, #374151 100%)'
                 : 'linear-gradient(90deg, #7a0901 60%, #a32c1a 100%)',
               color: '#fff',
               fontWeight: 600,

@@ -6,6 +6,14 @@
   text-align: center;
 }
 
+.why-choose-us-section .section-title {
+  color: #2c1810;
+}
+
+.why-choose-us-section .section-subtitle {
+  color: #4f4440;
+}
+
 @media (min-width: 641px) {
   .features-grid {
     grid-template-columns: repeat(2, 1fr);
@@ -85,7 +93,7 @@
 }
 
 .feature-description {
-  color: #666;
+  color: #4f4440;
   line-height: 1.5;
   max-width: 100%;
   font-size: 0.9rem;

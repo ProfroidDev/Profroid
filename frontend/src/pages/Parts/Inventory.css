@@ -1,4 +1,7 @@
+@import url('https://fonts.googleapis.com/css2?family=Source+Sans+3:wght@400;500;600;700&display=swap');
+
 .inventory-page {
+  font-family: 'Source Sans 3', 'Segoe UI', sans-serif;
   min-height: 100vh;
   background-color: #fafafa;
   padding-top: 80px;
@@ -448,7 +451,7 @@
   transform: translateY(-50%);
   width: 16px;
   height: 16px;
-  color: #9ca3af;
+  color: #6b7280;
   stroke-width: 2;
 }
 
@@ -462,7 +465,7 @@
 }
 
 .search-input:focus {
-  outline: none;
+  outline: 2px solid transparent;
   border-color: #991b1b;
   box-shadow: 0 0 0 3px rgba(153, 27, 27, 0.1);
 }
@@ -507,7 +510,7 @@ select.filter-select {
 
 .filter-select select:focus,
 select.filter-select:focus {
-  outline: none;
+  outline: 2px solid transparent;
   border-color: #991b1b;
   box-shadow: 0 0 0 3px rgba(153, 27, 27, 0.1);
 }
@@ -525,6 +528,7 @@ select.filter-select:focus {
   width: 100%;
   border-collapse: collapse;
   table-layout: fixed;
+  font-variant-numeric: tabular-nums;
 }
 
 .parts-table thead {
@@ -611,13 +615,13 @@ select.filter-select:focus {
 }
 
 .status-in-stock {
-  background-color: #d1fae5;
-  color: #065f46;
+  background-color: #c9f2dd;
+  color: #0b3d2f;
 }
 
 .status-low-stock {
-  background-color: #fef3c7;
-  color: #92400e;
+  background-color: #fde3a6;
+  color: #7a2e00;
 }
 
 .status-out-of-stock {
@@ -654,7 +658,7 @@ select.filter-select:focus {
 .empty-state {
   text-align: center;
   padding: 3rem 1rem !important;
-  color: #9ca3af;
+  color: #6b7280;
 }
 
 /* Stats Footer */
@@ -664,7 +668,7 @@ select.filter-select:focus {
   gap: 1rem;
   margin-top: 1rem;
   font-size: 0.875rem;
-  color: #6b7280;
+  color: #4f4440;
 }
 
 @media (max-width: 640px) {
@@ -860,7 +864,10 @@ select.filter-select:focus {
   .pagination-btn:disabled,
   .pagination-prev:disabled,
   .pagination-next:disabled {
-    opacity: 0.4;
+    background: #eaded8;
+    color: #4f1f26;
+    box-shadow: none;
+    transform: none;
     cursor: not-allowed;
   }
 
@@ -967,7 +974,7 @@ select.filter-select:focus {
   font-size: 1.5rem;
   line-height: 1;
   cursor: pointer;
-  color: #9ca3af;
+  color: #e5e7eb;
   padding: 0;
   width: 32px;
   height: 32px;
@@ -1059,7 +1066,7 @@ select.filter-select:focus {
 }
 
 .form-input:focus {
-  outline: none;
+  outline: 2px solid transparent;
   border-color: #991b1b;
   box-shadow: 0 0 0 3px rgba(153, 27, 27, 0.1);
 }
@@ -1102,7 +1109,7 @@ select.filter-select:focus {
 
 .inventory-form-group input:focus,
 .inventory-form-group select:focus {
-  outline: none;
+  outline: 2px solid transparent;
   border-color: #991b1b;
   box-shadow: 0 0 0 3px rgba(153, 27, 27, 0.1);
 }
@@ -1215,7 +1222,10 @@ select.filter-select:focus {
 .pagination-btn:disabled,
 .pagination-prev:disabled,
 .pagination-next:disabled {
-  opacity: 0.4;
+  background: #eaded8;
+  color: #4f1f26;
+  box-shadow: none;
+  transform: none;
   cursor: not-allowed;
 }
 
@@ -1302,7 +1312,7 @@ select.filter-select:focus {
 .pagination-info {
   text-align: center;
   font-size: 0.9rem;
-  color: #666;
+  color: #4f4440;
   margin-top: 16px;
   font-weight: 500;
 }

@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useId, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Loader2, CalendarClock, ClipboardList, Users } from 'lucide-react';
 import './AddAppointmentModal.css';
@@ -30,7 +30,6 @@ import {
   sanitizeInput,
   sanitizePostalCode,
 } from '../../../utils/sanitizer';
-import { trimToMaxWords } from '../../../utils/wordLimit';
 
 // Cache for shared data to reduce API calls when modal is opened/closed multiple times
 const dataCache: {
@@ -223,8 +222,9 @@ export default function AddAppointmentModal({
   onCreated,
   editAppointment,
 }: AddAppointmentModalProps): React.ReactElement {
+  const appointmentDialogTitleId = useId();
+  const bufferDialogTitleId = useId();
   const { t, i18n } = useTranslation();
-  const DESCRIPTION_MAX_WORDS = 120;
   const { customerData } = useAuthStore();
 
   // Language detection helper
@@ -1386,7 +1386,12 @@ export default function AddAppointmentModal({
   const isEditingQuotationCreatedByCustomer = disableJobChange;
 
   return (
-    <div className="appointment-modal-backdrop" role="dialog" aria-modal="true">
+    <div
+      className="appointment-modal-backdrop"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby={appointmentDialogTitleId}
+    >
       <div className="appointment-modal">
         <header className="appointment-modal__header">
           <div>
@@ -1395,13 +1400,13 @@ export default function AddAppointmentModal({
                 ? t('pages.appointments.customerBooking')
                 : t('pages.appointments.technicianScheduling')}
             </p>
-            <h2>
+            <p id={appointmentDialogTitleId} className="appointment-modal-title">
               {isEditMode
                 ? t('pages.appointments.editAppointment')
                 : t('pages.appointments.addAppointment')}
-            </h2>
+            </p>
           </div>
-          <button className="ghost" onClick={onClose} aria-label="Close">
+          <button type="button" className="ghost" onClick={onClose} aria-label="Close">
             ×
           </button>
         </header>
@@ -1437,7 +1442,7 @@ export default function AddAppointmentModal({
                   </select>
                 </div>
                 {disableJobChange && (
-                  <small className="hint" style={{ color: '#d97706' }}>
+                  <small className="hint" style={{ color: '#92400e' }}>
                     {t('pages.appointments.cannotChangeCustomerQuotation')}
                   </small>
                 )}
@@ -1477,7 +1482,7 @@ export default function AddAppointmentModal({
                     {disableCustomerSearch ? (
                       <small className="hint">{t('pages.appointments.pickServiceFirst')}</small>
                     ) : isEditingQuotationCreatedByCustomer ? (
-                      <small className="hint" style={{ color: '#d97706' }}>
+                      <small className="hint" style={{ color: '#92400e' }}>
                         {t('pages.appointments.cannotChangeCustomerForQuotation')}
                       </small>
                     ) : filteredCustomers.length === 0 && customerSearch.trim().length >= 2 ? (
@@ -1682,7 +1687,7 @@ export default function AddAppointmentModal({
                   }}
                 />
                 {postalCodeValidationError && (
-                  <small style={{ color: '#ef4444', marginTop: '4px' }}>
+                  <small style={{ color: '#b91c1c', marginTop: '4px' }}>
                     {t(postalCodeValidationError, {
                       province: address.province,
                     })}
@@ -1695,11 +1700,7 @@ export default function AddAppointmentModal({
               <span>{t('pages.appointments.description')}</span>
               <textarea
                 value={description}
-                onChange={(e) =>
-                  setDescription(
-                    trimToMaxWords(sanitizeInput(e.target.value), DESCRIPTION_MAX_WORDS)
-                  )
-                }
+                onChange={(e) => setDescription(sanitizeInput(e.target.value))}
                 rows={3}
                 placeholder={t('pages.appointments.description')}
                 required
@@ -1729,12 +1730,17 @@ export default function AddAppointmentModal({
       {/* Buffer Warning Confirmation Dialog - renders at root level with high z-index */}
       {/* Buffer Warning Confirmation Dialog */}
       {showBufferWarning && pendingRequest && (
-        <div className="confirmation-modal-overlay" role="dialog" aria-modal="true">
+        <div
+          className="confirmation-modal-overlay"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby={bufferDialogTitleId}
+        >
           <div className="confirmation-modal-container">
             <div className="confirmation-modal-header">
-              <h3 className="confirmation-modal-title">
+              <p id={bufferDialogTitleId} className="confirmation-modal-title">
                 {t('pages.appointments.bufferWarningTitle')}
-              </h3>
+              </p>
               <button
                 type="button"
                 className="confirmation-modal-close"

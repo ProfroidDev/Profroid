@@ -88,7 +88,9 @@
   flex-wrap: wrap;
 }
 
-.appointment-modal__header h2 {
+.appointment-modal__header h1,
+.appointment-modal__header h2,
+.appointment-modal__header .appointment-modal-title {
   margin: 4px 0;
   font-size: 1.25rem;
   color: #7a0901;
@@ -98,13 +100,17 @@
 }
 
 @media (min-width: 641px) {
-  .appointment-modal__header h2 {
+  .appointment-modal__header h1,
+  .appointment-modal__header h2,
+  .appointment-modal__header .appointment-modal-title {
     font-size: 1.4rem;
   }
 }
 
 @media (min-width: 1025px) {
-  .appointment-modal__header h2 {
+  .appointment-modal__header h1,
+  .appointment-modal__header h2,
+  .appointment-modal__header .appointment-modal-title {
     font-size: 1.6rem;
   }
 }
@@ -288,7 +294,7 @@
 
 .input-with-icon input:focus,
 .input-with-icon select:focus {
-  outline: none;
+  outline: 2px solid transparent;
 }
 
 .customer-results {
@@ -417,7 +423,7 @@
 .field select:focus,
 .field input:focus,
 .field textarea:focus {
-  outline: none;
+  outline: 2px solid transparent;
   border-color: #7a0901;
   box-shadow: 0 0 0 3px rgba(122, 9, 1, 0.12);
 }

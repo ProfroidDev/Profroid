@@ -80,7 +80,7 @@
 }
 
 .warranty-filters select:focus {
-  outline: none;
+  outline: 2px solid transparent;
   border-color: #722f37;
 }
 
@@ -147,7 +147,7 @@
   color: #666;
 }
 
-.status-badge {
+.warranty-status-badge {
   display: inline-block;
   padding: 6px 12px;
   border-radius: 20px;
@@ -197,7 +197,7 @@
 .no-claims {
   text-align: center;
   padding: 60px 20px !important;
-  color: #999;
+  color: #595959;
   font-size: 16px;
 }
 
@@ -352,7 +352,7 @@
 
 .form-group select:focus,
 .form-group textarea:focus {
-  outline: none;
+  outline: 2px solid transparent;
   border-color: #722f37;
 }
 

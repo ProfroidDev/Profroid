@@ -170,7 +170,7 @@
 }
 
 .part-edit-form-input:focus {
-  outline: none;
+  outline: 2px solid transparent;
   border-color: #a32c1a;
   box-shadow: 0 2px 8px rgba(122, 9, 1, 0.12);
 }
@@ -181,7 +181,7 @@
 }
 
 .part-edit-form-input::placeholder {
-  color: #999;
+  color: #595959;
 }
 
 .part-edit-helper-text {

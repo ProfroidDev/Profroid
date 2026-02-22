@@ -13,6 +13,7 @@
   justify-content: center;
   text-align: center;
   color: white;
+  background-color: #1f1613;
 }
 
 @media (min-width: 641px) {
@@ -34,7 +35,7 @@
   left: 0;
   width: 100%;
   height: 100%;
-  background-color: rgba(0, 0, 0, 0.6);
+  background-color: rgba(0, 0, 0, 0.72);
   z-index: 1;
 }
 
@@ -43,6 +44,8 @@
   z-index: 2;
   max-width: 800px;
   padding: 20px;
+  background-color: rgba(0, 0, 0, 0.55);
+  border-radius: 8px;
   animation: fadeInUp 1s ease-out;
 }
 
@@ -52,6 +55,8 @@
   margin-bottom: 1rem;
   font-family: serif;
   line-height: 1.2;
+  color: #ffffff;
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.6);
 }
 
 @media (min-width: 641px) {
@@ -72,7 +77,8 @@
   font-size: 0.95rem;
   margin-bottom: 1.5rem;
   line-height: 1.6;
-  color: #e0e0e0;
+  color: #ffffff;
+  text-shadow: 0 1px 6px rgba(0, 0, 0, 0.55);
 }
 
 @media (min-width: 641px) {
@@ -143,7 +149,7 @@
 
 .hero-btn-outline {
   border: 2px solid white;
-  background-color: transparent;
+  background-color: rgba(0, 0, 0, 0.72);
   color: white;
   font-weight: 600;
   display: flex;
