@@ -377,6 +377,7 @@ export default function ReportFormModal({
                     placeholder={isFrench ? 'Rechercher des pièces...' : 'Search parts...'}
                     value={partSearchTerm}
                     onChange={(e) => setPartSearchTerm(sanitizeInput(e.target.value))}
+                    maxLength={100}
                     autoFocus
                   />
                 </div>
@@ -456,13 +457,19 @@ export default function ReportFormModal({
                       </div>
                     </div>
                     <div className="report-form-group">
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+                        <label>{isFrench ? 'Notes (optionnel)' : 'Notes (optional)'}</label>
+                        <span style={{ fontSize: '0.85rem', color: '#666' }}>
+                          {(part.notes || '').length}/500
+                        </span>
+                      </div>
                       <input
                         type="text"
-                        placeholder={isFrench ? 'Notes (optionnel)' : 'Notes (optional)'}
-                        value={part.notes}
+                        value={part.notes || ''}
                         onChange={(e) =>
                           handlePartChange(part.partId, 'notes', sanitizeInput(e.target.value))
                         }
+                        maxLength={500}
                       />
                     </div>
                   </div>

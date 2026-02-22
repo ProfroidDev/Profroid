@@ -116,14 +116,23 @@ const FeedbackSection: React.FC = () => {
               )}
 
               <div className="feedback-input-group">
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+                  <label style={{ fontSize: '0.9rem', fontWeight: '500' }}>
+                    {t('pages.home.feedback.namePlaceholder') || 'Your Name'}
+                  </label>
+                  <span style={{ fontSize: '0.85rem', color: '#666' }}>
+                    {customerName.length}/100
+                  </span>
+                </div>
                 <input
                   type="text"
                   className="feedback-textarea"
                   placeholder={t('pages.home.feedback.namePlaceholder') || 'Your Name'}
                   value={customerName}
                   onChange={(e) => setCustomerName(sanitizeName(e.target.value))}
+                  maxLength={100}
                   required
-                  style={{ height: '45px', marginBottom: '15px' }}
+                  style={{ height: '45px' }}
                 />
               </div>
 
@@ -152,6 +161,12 @@ const FeedbackSection: React.FC = () => {
               </div>
 
               <div className="feedback-input-group">
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+                  <label>{t('pages.home.feedback.placeholder')}</label>
+                  <span style={{ fontSize: '0.85rem', color: '#666' }}>
+                    {feedback.length}/2000
+                  </span>
+                </div>
                 <textarea
                   className="feedback-textarea"
                   placeholder={t('pages.home.feedback.placeholder')}
@@ -159,6 +174,7 @@ const FeedbackSection: React.FC = () => {
                   onChange={(e) =>
                     setFeedback(trimToMaxWords(sanitizeInput(e.target.value), FEEDBACK_MAX_WORDS))
                   }
+                  maxLength={2000}
                   rows={4}
                 />
               </div>

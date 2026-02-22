@@ -254,7 +254,12 @@ export default function WarrantyPage() {
           <form className="warranty-claim-form" onSubmit={handleSubmit}>
             <div className="form-row">
               <div className="form-group">
-                <label htmlFor="customerName">{t('pages.warranty.form.name')} *</label>
+                <label htmlFor="customerName">
+                  {t('pages.warranty.form.name')} *
+                  <span style={{ fontSize: '0.85rem', color: '#666', marginLeft: '8px' }}>
+                    {formData.customerName.length}/100
+                  </span>
+                </label>
                 <input
                   type="text"
                   id="customerName"
@@ -268,13 +273,19 @@ export default function WarrantyPage() {
               </div>
 
               <div className="form-group">
-                <label htmlFor="customerEmail">{t('pages.warranty.form.email')} *</label>
+                <label htmlFor="customerEmail">
+                  {t('pages.warranty.form.email')} *
+                  <span style={{ fontSize: '0.85rem', color: '#666', marginLeft: '8px' }}>
+                    {formData.customerEmail.length}/254
+                  </span>
+                </label>
                 <input
                   type="email"
                   id="customerEmail"
                   name="customerEmail"
                   value={formData.customerEmail}
                   onChange={handleInputChange}
+                  maxLength={254}
                   required
                 />
               </div>
@@ -282,13 +293,19 @@ export default function WarrantyPage() {
 
             <div className="form-row">
               <div className="form-group">
-                <label htmlFor="customerPhone">{t('pages.warranty.form.phone')} *</label>
+                <label htmlFor="customerPhone">
+                  {t('pages.warranty.form.phone')} *
+                  <span style={{ fontSize: '0.85rem', color: '#666', marginLeft: '8px' }}>
+                    {formData.customerPhone.length}/20
+                  </span>
+                </label>
                 <input
                   type="tel"
                   id="customerPhone"
                   name="customerPhone"
                   value={formData.customerPhone}
                   onChange={handleInputChange}
+                  maxLength={20}
                   required
                 />
               </div>
@@ -311,19 +328,30 @@ export default function WarrantyPage() {
             </div>
 
             <div className="form-group">
-              <label htmlFor="customerAddress">{t('pages.warranty.form.address')}</label>
+              <label htmlFor="customerAddress">
+                {t('pages.warranty.form.address')}
+                <span style={{ fontSize: '0.85rem', color: '#666', marginLeft: '8px' }}>
+                  {formData.customerAddress.length}/256
+                </span>
+              </label>
               <input
                 type="text"
                 id="customerAddress"
                 name="customerAddress"
                 value={formData.customerAddress}
                 onChange={handleInputChange}
+                maxLength={256}
               />
             </div>
 
             <div className="form-row">
               <div className="form-group">
-                <label htmlFor="productName">{t('pages.warranty.form.product')} *</label>
+                <label htmlFor="productName">
+                  {t('pages.warranty.form.product')} *
+                  <span style={{ fontSize: '0.85rem', color: '#666', marginLeft: '8px' }}>
+                    {formData.productName.length}/200
+                  </span>
+                </label>
                 <input
                   type="text"
                   id="productName"
@@ -337,13 +365,19 @@ export default function WarrantyPage() {
               </div>
 
               <div className="form-group">
-                <label htmlFor="productSerialNumber">{t('pages.warranty.form.serialNumber')}</label>
+                <label htmlFor="productSerialNumber">
+                  {t('pages.warranty.form.serialNumber')}
+                  <span style={{ fontSize: '0.85rem', color: '#666', marginLeft: '8px' }}>
+                    {formData.productSerialNumber.length}/100
+                  </span>
+                </label>
                 <input
                   type="text"
                   id="productSerialNumber"
                   name="productSerialNumber"
                   value={formData.productSerialNumber}
                   onChange={handleInputChange}
+                  maxLength={100}
                 />
               </div>
             </div>

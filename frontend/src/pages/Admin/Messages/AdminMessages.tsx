@@ -387,6 +387,12 @@ export default function AdminMessages() {
               {/* Admin Notes */}
               <div className="msg-section">
                 <h3>{t('pages.adminMessages.adminNotesLabel')}</h3>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+                  <label>{t('pages.adminMessages.adminNotesLabel')}</label>
+                  <span style={{ fontSize: '0.85rem', color: '#666' }}>
+                    {adminNotes.length}/2000
+                  </span>
+                </div>
                 <textarea
                   value={adminNotes}
                   onChange={(e) =>
@@ -396,6 +402,7 @@ export default function AdminMessages() {
                   }
                   placeholder={t('pages.adminMessages.adminNotesPlaceholder')}
                   className="admin-notes-textarea"
+                  maxLength={2000}
                   rows={4}
                 />
               </div>

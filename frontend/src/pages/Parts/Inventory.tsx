@@ -614,6 +614,9 @@ const Inventory = () => {
                     <label htmlFor="add-name" className="inventory-form-label">
                       {t('pages.parts.inventory.modal.fields.name')}{' '}
                       <span className="required">*</span>
+                      <span style={{ fontSize: '0.85rem', color: '#666', marginLeft: '8px' }}>
+                        {(newPart.name || '').length}/100
+                      </span>
                     </label>
                     <input
                       id="add-name"
@@ -624,6 +627,7 @@ const Inventory = () => {
                       onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
                         setNewPart((p) => ({ ...p, name: e.target.value }))
                       }
+                      maxLength={100}
                       required
                     />
                   </div>
@@ -700,6 +704,8 @@ const Inventory = () => {
                       onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
                         setNewPart((p) => ({ ...p, supplier: e.target.value }))
                       }
+                      maxLength={100}
+                      title={`${(newPart.supplier || '').length}/100`}
                       required
                     />
                   </div>
@@ -822,6 +828,9 @@ const Inventory = () => {
                     <label htmlFor="edit-name" className="inventory-form-label">
                       {t('pages.parts.inventory.modal.fields.name')}{' '}
                       <span className="required">*</span>
+                      <span style={{ fontSize: '0.85rem', color: '#666', marginLeft: '8px' }}>
+                        {(editingPart?.name || '').length}/100
+                      </span>
                     </label>
                     <input
                       id="edit-name"
@@ -832,6 +841,7 @@ const Inventory = () => {
                       onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
                         setEditingPart((p) => (p ? { ...p, name: e.target.value } : null))
                       }
+                      maxLength={100}
                       required
                     />
                   </div>
@@ -912,6 +922,8 @@ const Inventory = () => {
                       onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
                         setEditingPart((p) => (p ? { ...p, supplier: e.target.value } : null))
                       }
+                      maxLength={100}
+                      title={`${(editingPart?.supplier || '').length}/100`}
                       required
                     />
                   </div>

@@ -199,7 +199,12 @@ export default function PartsPage(): React.ReactElement {
           placeholder={t('pages.parts.name')}
           value={searchTerm}
           onChange={handleSearchChange}
+          maxLength={100}
+          title={`${searchTerm.length}/100`}
         />
+        <span style={{ fontSize: '0.75rem', color: '#999', marginTop: '4px', display: 'block' }}>
+          {searchTerm.length}/100
+        </span>
       </div>
 
       {loading ? (
