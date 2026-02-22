@@ -85,7 +85,7 @@
 
 .footer-desc {
   max-width: 100%;
-  color: #5c504b;
+  color: #4f4440;
   font-size: 0.9rem;
   line-height: 1.5;
 }
@@ -131,7 +131,7 @@
 }
 
 .footer-section a {
-  color: #6b615c;
+  color: #4f4440;
   font-size: 0.85rem;
   text-decoration: none;
   transition: 0.2s;
@@ -157,6 +157,6 @@
 .footer-bottom {
   text-align: center;
   margin-top: 50px;
-  color: #7b716d;
+  color: #4f4440;
   font-size: 0.9rem;
 }

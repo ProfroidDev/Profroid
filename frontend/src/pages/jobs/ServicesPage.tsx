@@ -796,11 +796,23 @@ export default function ServicesPage(): React.ReactElement {
       )}
 
       {modalOpen && (
-        <div className="modal-overlay" role="dialog" aria-modal>
+        <div
+          className="modal-overlay"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="services-details-modal-title"
+        >
           <div className="modal">
             <div className="modal-header">
-              <h3 className="services-modal-title">{t('pages.services.serviceDetails')}</h3>
-              <button className="modal-close-light" aria-label="Close" onClick={closeModal}>
+              <h3 id="services-details-modal-title" className="services-modal-title">
+                {t('pages.services.serviceDetails')}
+              </h3>
+              <button
+                type="button"
+                className="modal-close-light"
+                aria-label="Close"
+                onClick={closeModal}
+              >
                 &#10005;
               </button>
             </div>
@@ -869,11 +881,19 @@ export default function ServicesPage(): React.ReactElement {
       )}
 
       {createModalOpen && (
-        <div className="modal-overlay" role="dialog" aria-modal>
+        <div
+          className="modal-overlay"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="services-create-modal-title"
+        >
           <div className="modal">
             <div className="modal-header">
-              <h3 className="services-modal-title">{t('pages.services.createNewService')}</h3>
+              <h3 id="services-create-modal-title" className="services-modal-title">
+                {t('pages.services.createNewService')}
+              </h3>
               <button
+                type="button"
                 className="modal-close-light"
                 aria-label="Close"
                 onClick={closeCreateModal}
@@ -1062,11 +1082,20 @@ export default function ServicesPage(): React.ReactElement {
       )}
 
       {updateModalOpen && (
-        <div className="modal-overlay" role="dialog" aria-modal onClick={closeUpdateModal}>
+        <div
+          className="modal-overlay"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="services-update-modal-title"
+          onClick={closeUpdateModal}
+        >
           <div className="modal" onClick={(e) => e.stopPropagation()}>
             <div className="modal-header">
-              <h3 className="services-modal-title">{t('pages.services.modifyService')}</h3>
+              <h3 id="services-update-modal-title" className="services-modal-title">
+                {t('pages.services.modifyService')}
+              </h3>
               <button
+                type="button"
                 className="modal-close-light"
                 aria-label="Close"
                 onClick={closeUpdateModal}

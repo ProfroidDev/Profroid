@@ -103,10 +103,10 @@ const FeedbackSection: React.FC = () => {
               {error && (
                 <div
                   style={{
-                    color: '#dc3545',
+                    color: '#991b1b',
                     marginBottom: '15px',
                     padding: '10px',
-                    backgroundColor: '#fee',
+                    backgroundColor: '#fef2f2',
                     borderRadius: '6px',
                     textAlign: 'center',
                   }}

@@ -37,7 +37,7 @@
 
 .messages-header p {
   font-size: 1rem;
-  color: #888;
+  color: #5f5f5f;
   font-weight: 400;
   text-align: center;
 }
@@ -82,7 +82,7 @@
 }
 
 .status-filter:focus {
-  outline: none;
+  outline: 2px solid transparent;
   border-color: #7a0901;
   box-shadow: 0 0 0 3px rgba(122, 9, 1, 0.08);
 }
@@ -102,7 +102,7 @@
 .no-messages {
   padding: 60px 40px;
   text-align: center;
-  color: #999;
+  color: #595959;
   font-size: 1.05rem;
   font-weight: 500;
 }
@@ -190,7 +190,7 @@
   cursor: pointer;
   transition: all 0.3s ease;
   padding: 0;
-  color: #999;
+  color: #595959;
   font-weight: bold;
 }
 
@@ -289,46 +289,46 @@
 
 /* Pagination */
 .pagination {
-  max-width: 1200px;
-  margin: 0 auto;
   display: flex;
-  justify-content: center;
   align-items: center;
-  gap: 16px;
-  padding: 20px 24px;
-  background: white;
-  border-radius: 8px;
-  border: 1px solid #e8e4e0;
-  box-shadow: 0 2px 8px rgba(122, 9, 1, 0.05);
+  justify-content: center;
+  gap: 12px;
+  margin-top: 40px;
   flex-wrap: wrap;
 }
 
 .pagination button {
   padding: 10px 16px;
-  border: 1px solid #ddd;
-  border-radius: 6px;
-  background-color: white;
-  color: #333;
+  border: none;
+  border-radius: 8px;
+  background: linear-gradient(90deg, #7a0901 60%, #a32c1a 100%);
+  color: #fff;
   cursor: pointer;
-  font-weight: 500;
-  transition: all 0.2s ease;
-  font-size: 0.9rem;
+  font-weight: 600;
+  box-shadow: 0 2px 8px rgba(122, 9, 1, 0.08);
+  transition:
+    background 0.2s,
+    box-shadow 0.2s,
+    transform 0.2s;
+  font-size: 0.95rem;
 }
 
 .pagination button:hover:not(:disabled) {
-  border-color: #7a0901;
-  color: white;
-  background-color: #7a0901;
+  background: linear-gradient(90deg, #a32c1a 60%, #7a0901 100%);
+  box-shadow: 0 4px 12px rgba(122, 9, 1, 0.12);
+  transform: translateY(-2px);
 }
 
 .pagination button:disabled {
-  opacity: 0.5;
+  background: #eaded8;
+  color: #4f1f26;
+  box-shadow: none;
+  transform: none;
   cursor: not-allowed;
-  color: #ccc;
 }
 
 .pagination span {
-  color: #666;
+  color: #4f4440;
   font-weight: 600;
   font-size: 0.95rem;
 }
@@ -393,7 +393,7 @@
   background: none;
   border: none;
   font-size: 2rem;
-  color: #999;
+  color: #595959;
   cursor: pointer;
   padding: 0;
   width: 40px;
@@ -516,14 +516,14 @@
 }
 
 .admin-notes-textarea:focus {
-  outline: none;
+  outline: 2px solid transparent;
   border-color: #7a0901;
   background-color: #fffbf8;
   box-shadow: 0 0 0 3px rgba(122, 9, 1, 0.06);
 }
 
 .admin-notes-textarea::placeholder {
-  color: #aaa;
+  color: #666666;
 }
 
 /* Metadata */

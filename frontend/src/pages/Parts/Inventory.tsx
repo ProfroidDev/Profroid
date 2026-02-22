@@ -302,7 +302,7 @@ const Inventory = () => {
   return (
     <div className="inventory-page">
       {/* Main Content */}
-      <main className="container main-content">
+      <div className="container main-content" role="region" aria-label="Inventory">
         {/* Title */}
         <div className="page-header">
           <div className="page-title-section">
@@ -567,7 +567,7 @@ const Inventory = () => {
             </div>
           </>
         )}
-      </main>
+      </div>
 
       {/* Add Dialog */}
       <AnimatePresence>

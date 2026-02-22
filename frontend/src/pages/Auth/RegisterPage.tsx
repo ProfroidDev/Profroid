@@ -363,7 +363,7 @@ export default function RegisterPage() {
                   ? t('pages.profile.personalInfo')
                   : t('pages.profile.updateProfile')}
               </h2>
-              <p style={{ color: '#999', marginTop: 0 }}>Step 2 of 2</p>
+              <p style={{ color: '#595959', marginTop: 0 }}>Step 2 of 2</p>
             </>
           )}
           {step === 1 && (

@@ -13,7 +13,7 @@ export default function AboutPage() {
 
       <div className="about-container">
         {/* Experience Highlight Section */}
-        <section className="about-section experience-highlight">
+        <section className="about-section experience-highlight" tabIndex={0}>
           <div className="experience-badge">
             <div className="experience-number">20+</div>
             <div className="experience-text">{t('pages.about.yearsOfExperience')}</div>
@@ -26,15 +26,15 @@ export default function AboutPage() {
 
         {/* Stats Section */}
         <section className="stats-section">
-          <div className="stat-card">
+          <div className="stat-card" tabIndex={0}>
             <div className="stat-number">{t('pages.about.stat1Number')}</div>
             <div className="stat-label">{t('pages.about.stat1Label')}</div>
           </div>
-          <div className="stat-card">
+          <div className="stat-card" tabIndex={0}>
             <div className="stat-number">{t('pages.about.stat2Number')}</div>
             <div className="stat-label">{t('pages.about.stat2Label')}</div>
           </div>
-          <div className="stat-card">
+          <div className="stat-card" tabIndex={0}>
             <div className="stat-number">{t('pages.about.stat3Number')}</div>
             <div className="stat-label">{t('pages.about.stat3Label')}</div>
           </div>
@@ -48,19 +48,19 @@ export default function AboutPage() {
         <section className="about-section">
           <h2>{t('pages.about.values')}</h2>
           <div className="values-grid">
-            <div className="value-item">
+            <div className="value-item" tabIndex={0}>
               <h3>{t('pages.about.value1Title')}</h3>
               <p>{t('pages.about.value1Text')}</p>
             </div>
-            <div className="value-item">
+            <div className="value-item" tabIndex={0}>
               <h3>{t('pages.about.value2Title')}</h3>
               <p>{t('pages.about.value2Text')}</p>
             </div>
-            <div className="value-item">
+            <div className="value-item" tabIndex={0}>
               <h3>{t('pages.about.value3Title')}</h3>
               <p>{t('pages.about.value3Text')}</p>
             </div>
-            <div className="value-item">
+            <div className="value-item" tabIndex={0}>
               <h3>{t('pages.about.value4Title')}</h3>
               <p>{t('pages.about.value4Text')}</p>
             </div>
@@ -71,13 +71,13 @@ export default function AboutPage() {
           <h2>{t('pages.about.team')}</h2>
           <p>{t('pages.about.teamText')}</p>
           <div className="team-highlights">
-            <div className="team-highlight-item">
+            <div className="team-highlight-item" tabIndex={0}>
               <span>{t('pages.about.teamHighlight1')}</span>
             </div>
-            <div className="team-highlight-item">
+            <div className="team-highlight-item" tabIndex={0}>
               <span>{t('pages.about.teamHighlight2')}</span>
             </div>
-            <div className="team-highlight-item">
+            <div className="team-highlight-item" tabIndex={0}>
               <span>{t('pages.about.teamHighlight3')}</span>
             </div>
           </div>

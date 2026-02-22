@@ -1,0 +1,33 @@
+*:focus-visible {
+  outline: 2px solid #7a0901 !important;
+  outline-offset: 2px;
+}
+
+button:focus-visible,
+a:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible,
+[role='button']:focus-visible,
+[tabindex]:focus-visible {
+  box-shadow: 0 0 0 3px rgba(122, 9, 1, 0.22);
+}
+
+.skip-link {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  padding: 10px 14px;
+  background: #ffffff;
+  color: #7a0901;
+  border: 2px solid #7a0901;
+  border-radius: 6px;
+  text-decoration: none;
+  font-weight: 700;
+  transform: translateY(-200%);
+  z-index: 2000;
+}
+
+.skip-link:focus {
+  transform: translateY(0);
+}

@@ -141,6 +141,11 @@
   box-shadow: 0 4px 15px rgba(114, 47, 55, 0.2);
 }
 
+.warranty-highlight:focus-visible {
+  outline: 3px solid #f4d7d2;
+  outline-offset: 4px;
+}
+
 .warranty-highlight p {
   margin: 0;
   font-size: 17px;
@@ -170,6 +175,12 @@
   box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1);
 }
 
+.coverage-item:focus-visible {
+  outline: 3px solid #722f37;
+  outline-offset: 4px;
+  transform: translateY(-2px);
+}
+
 .coverage-item h4 {
   color: #722f37;
   margin: 0 0 12px 0;
@@ -185,15 +196,20 @@
 }
 
 .warranty-info-box {
-  background: #e8f4f8;
+  background: #f4f1ec;
   padding: 30px;
   border-radius: 10px;
-  border-left: 5px solid #3498db;
+  border-left: 5px solid #722f37;
   margin: 25px 0;
 }
 
+.warranty-info-box:focus-visible {
+  outline: 3px solid #722f37;
+  outline-offset: 4px;
+}
+
 .warranty-info-box h4 {
-  color: #2c3e50;
+  color: #2c2c2c;
   margin: 0 0 15px 0;
   font-size: 18px;
   font-weight: 600;
@@ -208,19 +224,24 @@
   margin-bottom: 10px;
   font-size: 15px;
   line-height: 1.6;
-  color: #444;
+  color: #4f4440;
 }
 
 .warranty-warning-box {
-  background: #fff3cd;
+  background: #f4f1ec;
   padding: 30px;
   border-radius: 10px;
-  border-left: 5px solid #ffc107;
+  border-left: 5px solid #722f37;
   margin: 25px 0;
 }
 
+.warranty-warning-box:focus-visible {
+  outline: 3px solid #722f37;
+  outline-offset: 4px;
+}
+
 .warranty-warning-box h4 {
-  color: #856404;
+  color: #2c2c2c;
   margin: 0 0 15px 0;
   font-size: 18px;
   font-weight: 600;
@@ -235,7 +256,7 @@
   margin-bottom: 10px;
   font-size: 15px;
   line-height: 1.6;
-  color: #856404;
+  color: #4f4440;
 }
 
 .warranty-process-steps {
@@ -258,6 +279,12 @@
 .process-step:hover {
   transform: translateY(-3px);
   box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1);
+}
+
+.process-step:focus-visible {
+  outline: 3px solid #722f37;
+  outline-offset: 4px;
+  transform: translateY(-2px);
 }
 
 .step-number {
@@ -306,6 +333,11 @@
 
 .contact-method:hover {
   border-color: #722f37;
+}
+
+.contact-method:focus-visible {
+  outline: 3px solid #722f37;
+  outline-offset: 4px;
 }
 
 .contact-method h4 {
@@ -366,7 +398,7 @@
 .form-group input:focus,
 .form-group textarea:focus,
 .form-group select:focus {
-  outline: none;
+  outline: 2px solid transparent;
   border-color: #722f37;
 }
 
@@ -377,7 +409,7 @@
 
 .char-count {
   font-size: 13px;
-  color: #888;
+  color: #5f5f5f;
   margin-top: 5px;
   text-align: right;
 }

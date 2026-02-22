@@ -18,15 +18,25 @@ export default function Toast({ message, type = 'success', duration = 3000, onCl
   }, [duration, onClose]);
 
   return (
-    <div className={`toast toast-${type}`}>
-      <div className="toast-icon">
+    <div
+      className={`toast toast-${type}`}
+      role={type === 'error' ? 'alert' : 'status'}
+      aria-live={type === 'error' ? 'assertive' : 'polite'}
+      aria-atomic="true"
+    >
+      <div className="toast-icon" aria-hidden="true">
         {type === 'success' && '✓'}
         {type === 'error' && '✕'}
         {type === 'info' && 'ℹ'}
         {type === 'warning' && '⚠'}
       </div>
       <div className="toast-message">{message}</div>
-      <button className="toast-close" onClick={onClose}>
+      <button
+        type="button"
+        className="toast-close"
+        onClick={onClose}
+        aria-label="Close notification"
+      >
         ✕
       </button>
     </div>

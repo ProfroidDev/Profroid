@@ -408,7 +408,8 @@
 }
 .schedule-calendar-section .react-calendar {
   margin: 0 auto; /* center within second column */
-  width: auto;
+  width: 100%;
+  max-width: 360px;
 }
 .react-calendar {
   border: none;
@@ -416,15 +417,27 @@
   box-shadow: 0 2px 12px rgba(122, 9, 1, 0.07);
   font-family: 'Georgia', serif;
   margin: 0 auto; /* Explicit centering */
+  width: 100%;
+  box-sizing: border-box;
+}
+.react-calendar *,
+.react-calendar *::before,
+.react-calendar *::after {
+  box-sizing: border-box;
 }
 .react-calendar__tile {
   border-radius: 8px;
-  padding: 8px 0;
+  padding: 4px 0;
   font-size: 1rem;
   color: #7a0901;
   transition:
     background 0.2s,
     color 0.2s;
+  width: 100%;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 .react-calendar__tile--active {
   background: #a32c1a !important;
@@ -444,6 +457,20 @@
   font-size: 1.1rem;
 }
 .react-calendar__month-view__weekdays {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 0;
   font-weight: 700;
   color: #a32c1a;
+}
+
+.react-calendar__month-view__weekdays__weekday {
+  text-align: center;
+  padding: 4px 0;
+}
+
+.react-calendar__month-view__days {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 0;
 }

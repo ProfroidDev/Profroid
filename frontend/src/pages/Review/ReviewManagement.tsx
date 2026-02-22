@@ -11,7 +11,7 @@ import useAuthStore from '../../features/authentication/store/authStore';
 import './ReviewManagement.css';
 
 export default function ReviewManagement(): React.ReactElement {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const { user } = useAuthStore();
   const [reviews, setReviews] = useState<ReviewResponseModel[]>([]);
   const [loading, setLoading] = useState(true);
@@ -148,7 +148,7 @@ export default function ReviewManagement(): React.ReactElement {
 
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
-    return date.toLocaleDateString('en-US', {
+    return date.toLocaleDateString(i18n.resolvedLanguage || i18n.language || 'en-US', {
       year: 'numeric',
       month: 'short',
       day: 'numeric',
@@ -158,20 +158,24 @@ export default function ReviewManagement(): React.ReactElement {
   };
 
   return (
-    <div className="review-management-page">
+    <div className="review-management-page" aria-labelledby="reviews-page-title">
       <div className="review-management-header">
-        <h1 className="page-title">{t('pages.reviews.title')}</h1>
+        <h1 id="reviews-page-title" className="page-title">
+          {t('pages.reviews.title')}
+        </h1>
         <p className="page-subtitle">{t('pages.reviews.subtitle')}</p>
       </div>
 
-      <div className="review-filters">
+      <div className="review-filters" role="group" aria-label={t('pages.reviews.title')}>
         <button
+          type="button"
           className={`filter-btn ${filter === 'ALL' ? 'active' : ''}`}
           onClick={() => setFilter('ALL')}
         >
           {t('pages.reviews.filters.all')} ({reviews.length})
         </button>
         <button
+          type="button"
           className={`filter-btn ${filter === 'PENDING' ? 'active' : ''}`}
           onClick={() => setFilter('PENDING')}
         >
@@ -179,6 +183,7 @@ export default function ReviewManagement(): React.ReactElement {
           {reviews.filter((r) => r.status === 'PENDING').length})
         </button>
         <button
+          type="button"
           className={`filter-btn ${filter === 'APPROVED' ? 'active' : ''}`}
           onClick={() => setFilter('APPROVED')}
         >
@@ -186,6 +191,7 @@ export default function ReviewManagement(): React.ReactElement {
           {reviews.filter((r) => r.status === 'APPROVED').length})
         </button>
         <button
+          type="button"
           className={`filter-btn ${filter === 'REJECTED' ? 'active' : ''}`}
           onClick={() => setFilter('REJECTED')}
         >
@@ -195,20 +201,24 @@ export default function ReviewManagement(): React.ReactElement {
       </div>
 
       {loading ? (
-        <div className="loading-container">
-          <div className="loading-spinner"></div>
+        <div className="loading-container" role="status" aria-live="polite">
+          <div className="loading-spinner" aria-hidden="true"></div>
           <p>{t('pages.reviews.labels.loading')}</p>
         </div>
       ) : filteredReviews.length === 0 ? (
-        <div className="empty-state">
+        <div className="empty-state" role="status" aria-live="polite">
           <p>{t('pages.reviews.labels.noReviews')}</p>
         </div>
       ) : (
         <div className="reviews-grid">
           {filteredReviews.map((review) => (
-            <div key={review.reviewId} className="review-card">
+            <article
+              key={review.reviewId}
+              className="review-card"
+              aria-labelledby={`review-title-${review.reviewId}`}
+            >
               <div className="review-card-header">
-                <div className="review-id">
+                <div id={`review-title-${review.reviewId}`} className="review-id">
                   <strong>{t('pages.reviews.labels.id')}:</strong> {review.reviewId}
                 </div>
                 {getStatusBadge(review.status)}
@@ -221,8 +231,11 @@ export default function ReviewManagement(): React.ReactElement {
                     size={20}
                     fill={i < review.rating ? '#eebb4d' : 'none'}
                     color={i < review.rating ? '#eebb4d' : '#ddd'}
+                    aria-hidden="true"
+                    focusable="false"
                   />
                 ))}
+                <span className="sr-only">{`Rating: ${review.rating} out of 5`}</span>
                 <span className="rating-text">({review.rating}/5)</span>
               </div>
 
@@ -250,6 +263,7 @@ export default function ReviewManagement(): React.ReactElement {
                 {review.status === 'PENDING' && (
                   <>
                     <button
+                      type="button"
                       className="action-btn approve-btn"
                       onClick={() => handleApprove(review.reviewId)}
                     >
@@ -257,6 +271,7 @@ export default function ReviewManagement(): React.ReactElement {
                       {t('pages.reviews.actions.approve')}
                     </button>
                     <button
+                      type="button"
                       className="action-btn reject-btn"
                       onClick={() => handleReject(review.reviewId)}
                     >
@@ -267,6 +282,7 @@ export default function ReviewManagement(): React.ReactElement {
                 )}
                 {review.status === 'APPROVED' && (
                   <button
+                    type="button"
                     className="action-btn reject-btn"
                     onClick={() => handleReject(review.reviewId)}
                   >
@@ -276,6 +292,7 @@ export default function ReviewManagement(): React.ReactElement {
                 )}
                 {review.status === 'REJECTED' && (
                   <button
+                    type="button"
                     className="action-btn approve-btn"
                     onClick={() => handleApprove(review.reviewId)}
                   >
@@ -284,6 +301,7 @@ export default function ReviewManagement(): React.ReactElement {
                   </button>
                 )}
                 <button
+                  type="button"
                   className="action-btn delete-btn"
                   onClick={() => handleDelete(review.reviewId)}
                 >
@@ -291,7 +309,7 @@ export default function ReviewManagement(): React.ReactElement {
                   {t('pages.reviews.actions.delete')}
                 </button>
               </div>
-            </div>
+            </article>
           ))}
         </div>
       )}

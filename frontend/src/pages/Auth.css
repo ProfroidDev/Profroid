@@ -65,7 +65,7 @@
 }
 
 .form-group input:focus {
-  outline: none;
+  outline: 2px solid transparent;
   border-color: #7a0901;
   box-shadow: 0 0 0 3px rgba(122, 9, 1, 0.1);
 }

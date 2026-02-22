@@ -217,7 +217,7 @@
 }
 
 .id-input:focus {
-  outline: none;
+  outline: 2px solid transparent;
   border-color: #667eea;
 }
 
@@ -368,18 +368,18 @@
 }
 
 .status-scheduled {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  color: white;
+  background: #3b3f8f;
+  color: #ffffff;
 }
 
 .status-completed {
-  background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
-  color: white;
+  background: #0f5c4b;
+  color: #ffffff;
 }
 
 .status-cancelled {
-  background: linear-gradient(135deg, #ee0979 0%, #ff6a00 100%);
-  color: white;
+  background: #8f2b1c;
+  color: #ffffff;
 }
 
 /* ===============================
@@ -681,22 +681,22 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 16px;
-  margin: 24px auto 32px auto;
+  gap: 12px;
+  margin: 24px auto 32px;
 }
 
 .pagination-button {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-  border: 1px solid #e5e3df;
-  background: #fff;
-  color: #7a0901;
+  padding: 10px 16px;
+  min-width: 44px;
+  border-radius: 8px;
+  border: none;
+  background: linear-gradient(90deg, #7a0901 60%, #a32c1a 100%);
+  color: #fff;
   cursor: pointer;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.06);
+  box-shadow: 0 2px 8px rgba(122, 9, 1, 0.08);
   transition:
     transform 0.15s ease,
     box-shadow 0.15s ease,
@@ -705,18 +705,21 @@
 
 .pagination-button:hover:not(:disabled) {
   transform: translateY(-2px);
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.12);
-  background: #faf9f7;
+  box-shadow: 0 4px 12px rgba(122, 9, 1, 0.12);
+  background: linear-gradient(90deg, #a32c1a 60%, #7a0901 100%);
 }
 
 .pagination-button:disabled {
-  opacity: 0.5;
+  background: #eaded8;
+  color: #4f1f26;
+  box-shadow: none;
+  transform: none;
   cursor: not-allowed;
 }
 
 .page-indicator {
   font-size: 0.95rem;
-  color: #5a2a27;
+  color: #4f4440;
 }
 
 /* ===============================

@@ -5,7 +5,10 @@
 }
 
 .about-hero {
-  background: linear-gradient(135deg, #722f37 0%, #8b3a44 100%);
+  background-color: #5a252b;
+  background-image: linear-gradient(135deg, #722f37 0%, #8b3a44 100%);
+  background-repeat: no-repeat;
+  background-size: cover;
   color: white;
   padding: 40px 16px;
   text-align: center;
@@ -49,6 +52,7 @@
   max-width: 600px;
   margin: 0 auto;
   font-weight: 300;
+  color: #ffffff;
 }
 
 @media (min-width: 641px) {
@@ -250,13 +254,21 @@
   display: flex;
   align-items: center;
   gap: 40px;
-  background: linear-gradient(135deg, #722f37 0%, #8b3a44 100%);
+  background-color: #5a252b;
+  background-image: linear-gradient(135deg, #722f37 0%, #8b3a44 100%);
+  background-repeat: no-repeat;
+  background-size: cover;
   color: white;
   padding: 40px;
   border-radius: 12px;
   margin-top: 20px;
   box-shadow: 0 10px 30px rgba(114, 47, 55, 0.3);
   animation: fadeInUp 0.8s ease-out;
+}
+
+.experience-highlight:focus-visible {
+  outline: 3px solid #f4d7d2;
+  outline-offset: 4px;
 }
 
 @media (max-width: 768px) {
@@ -302,7 +314,7 @@
 }
 
 .experience-content p {
-  color: rgba(255, 255, 255, 0.95);
+  color: #ffffff;
   font-size: 1.05rem;
   line-height: 1.8;
   margin: 0;
@@ -339,6 +351,12 @@
 .stat-card:hover {
   transform: translateY(-8px);
   box-shadow: 0 8px 24px rgba(114, 47, 55, 0.2);
+}
+
+.stat-card:focus-visible {
+  outline: 3px solid #722f37;
+  outline-offset: 4px;
+  transform: translateY(-6px);
 }
 
 .stat-number {
@@ -386,6 +404,12 @@
   box-shadow: 0 6px 20px rgba(114, 47, 55, 0.15);
 }
 
+.value-item:focus-visible {
+  outline: 3px solid #722f37;
+  outline-offset: 4px;
+  transform: translateY(-4px);
+}
+
 /* Team Section Enhancement */
 .team-section {
   background: linear-gradient(to right, #f8f9fa, #ffffff);
@@ -422,6 +446,12 @@
   transform: translateX(8px);
 }
 
+.team-highlight-item:focus-visible {
+  outline: 3px solid #722f37;
+  outline-offset: 4px;
+  transform: translateX(6px);
+}
+
 .team-highlight-item span {
   color: #333;
   font-size: 0.95rem;
@@ -431,7 +461,10 @@
 /* Call to Action Section */
 .cta-section {
   text-align: center;
-  background: linear-gradient(135deg, #722f37 0%, #8b3a44 100%);
+  background-color: #5a252b;
+  background-image: linear-gradient(135deg, #722f37 0%, #8b3a44 100%);
+  background-repeat: no-repeat;
+  background-size: cover;
   color: white;
   padding: 60px 40px;
   border-radius: 12px;
@@ -447,7 +480,7 @@
 }
 
 .cta-section p {
-  color: rgba(255, 255, 255, 0.95);
+  color: #ffffff;
   font-size: 1.1rem;
   margin-bottom: 32px;
   max-width: 600px;
@@ -457,9 +490,9 @@
 
 .cta-button {
   background: white;
-  color: #722f37;
+  color: #4f1f26;
+  border: 2px solid #4f1f26;
   padding: 16px 48px;
-  border: none;
   border-radius: 50px;
   font-size: 1.1rem;
   font-weight: 600;
@@ -474,6 +507,11 @@
   transform: translateY(-3px);
   box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
   background: #f8f9fa;
+}
+
+.cta-button:focus-visible {
+  outline: 3px solid #f4d7d2;
+  outline-offset: 4px;
 }
 
 .cta-button:active {

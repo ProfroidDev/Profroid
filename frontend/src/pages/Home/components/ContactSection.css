@@ -3,6 +3,14 @@
   padding: 30px 16px;
 }
 
+.contact-section .section-title {
+  color: #2c1810;
+}
+
+.contact-section .section-subtitle {
+  color: #4f4440;
+}
+
 @media (min-width: 641px) {
   .contact-section {
     padding: 50px 24px;
@@ -140,7 +148,7 @@
 
 .contact-sub-info {
   font-size: 0.85rem;
-  color: #6c757d;
+  color: #4f4440;
 }
 
 @media (min-width: 641px) {

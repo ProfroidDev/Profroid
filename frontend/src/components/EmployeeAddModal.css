@@ -151,7 +151,7 @@
 
 .form-group input:focus,
 .form-group select:focus {
-  outline: none;
+  outline: 2px solid transparent;
   border-color: #7a0901;
   box-shadow: 0 0 0 3px rgba(122, 9, 1, 0.1);
 }
@@ -371,5 +371,5 @@
 .search-no-results {
   padding: 20px;
   text-align: center;
-  color: #999;
+  color: #595959;
 }

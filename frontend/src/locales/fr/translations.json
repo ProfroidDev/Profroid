@@ -732,13 +732,24 @@
         "categoriesLabel": "--- Catégories ---",
         "statusLabel": "--- Statut ---",
         "categories": {
+          "general": "Général",
+          "heating": "Chauffage",
+          "cooling": "Refroidissement",
           "compressors": "Compresseurs",
           "sensors": "Capteurs",
           "coils": "Bobines",
           "motors": "Moteurs",
           "refrigerants": "Réfrigérants",
           "electronics": "Électronique",
-          "accessories": "Accessoires"
+          "accessories": "Accessoires",
+          "filtration": "Filtration",
+          "hardware": "Quincaillerie",
+          "shelving": "Étagères",
+          "packaging": "Emballage",
+          "fluidControl": "Contrôle des Fluides",
+          "doorsSeals": "Portes et Joints",
+          "electrical": "Électrique",
+          "fasteners": "Attaches"
         },
         "status": {
           "inStock": "En Stock",
@@ -814,6 +825,26 @@
         "viewDetails": "Voir Détails",
         "edit": "Modifier",
         "delete": "Supprimer"
+      },
+      "form": {
+        "partName": "Nom de la Pièce",
+        "enterPartName": "Entrez le nom de la pièce",
+        "category": "Catégorie",
+        "quantity": "Quantité",
+        "price": "Prix",
+        "supplier": "Fournisseur",
+        "enterSupplierName": "Entrez le nom du fournisseur",
+        "lowStockThreshold": "Seuil de Stock Faible",
+        "outOfStockThreshold": "Seuil de Rupture de Stock",
+        "highStockThreshold": "Seuil de Stock Élevé",
+        "available": "Disponible",
+        "image": "Image",
+        "maximumFileSize": "Taille maximale du fichier",
+        "onlyImageFilesAllowed": "Seuls les fichiers images sont autorisés",
+        "fileSizeExceeds": "La taille du fichier dépasse la limite autorisée",
+        "addButton": "Ajouter la Pièce",
+        "cancelButton": "Annuler",
+        "updateButton": "Mettre à Jour la Pièce"
       }
     },
     "appointments": {
@@ -1002,6 +1033,45 @@
         "next": "Suivant →",
         "pageInfo": "Page {{current}} de {{total}}",
         "showing": "Affichage de {{showing}} sur {{total}} rapports"
+      }
+    },
+    "reviews": {
+      "title": "Avis",
+      "subtitle": "Consultez et gérez les avis des clients",
+      "filters": {
+        "all": "Tous",
+        "pending": "En attente",
+        "approved": "Approuvés",
+        "rejected": "Rejetés"
+      },
+      "statusBadges": {
+        "pending": "En attente",
+        "approved": "Approuvé",
+        "rejected": "Rejeté"
+      },
+      "labels": {
+        "loading": "Chargement des avis...",
+        "noReviews": "Aucun avis trouvé",
+        "id": "ID",
+        "submitted": "Soumis",
+        "reviewed": "Traité"
+      },
+      "actions": {
+        "approve": "Approuver",
+        "reject": "Rejeter",
+        "revokeApproval": "Retirer l'approbation",
+        "delete": "Supprimer"
+      },
+      "messages": {
+        "loadFailed": "Échec du chargement des avis",
+        "approveSuccess": "Avis approuvé avec succès",
+        "approveFailed": "Échec de l'approbation de l'avis",
+        "rejectSuccess": "Avis rejeté avec succès",
+        "rejectFailed": "Échec du rejet de l'avis",
+        "deleteConfirmTitle": "Supprimer l'avis",
+        "deleteConfirmMessage": "Êtes-vous sûr de vouloir supprimer cet avis?",
+        "deleteSuccess": "Avis supprimé avec succès",
+        "deleteFailed": "Échec de la suppression de l'avis"
       }
     },
     "profile": {

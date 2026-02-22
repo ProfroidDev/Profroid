@@ -8,6 +8,14 @@
   border: 1px solid #f0f0f0;
 }
 
+.feedback-section .section-title {
+  color: #2c1810;
+}
+
+.feedback-section .section-subtitle {
+  color: #4f4440;
+}
+
 @media (min-width: 641px) {
   .feedback-card {
     padding: 30px;
@@ -126,7 +134,7 @@
 }
 
 .feedback-textarea:focus {
-  outline: none;
+  outline: 2px solid transparent;
   border-color: #722f37;
 }
 
@@ -164,13 +172,22 @@
 }
 
 .submit-btn:disabled {
-  background-color: #ccc;
+  background-color: #6b7280;
+  color: #ffffff;
   cursor: not-allowed;
 }
 
 .success-message {
   text-align: center;
   padding: 30px 0;
+}
+
+.success-message h3 {
+  color: #2c1810;
+}
+
+.success-message p {
+  color: #4f4440;
 }
 
 @media (min-width: 641px) {
