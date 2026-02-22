@@ -22,6 +22,7 @@ export default function PartAddModal({
   onError,
 }: PartAddModalProps): React.ReactElement | null {
   const { t } = useTranslation();
+  const MAX_TEXT_LENGTH = 100;
   const [name, setName] = useState<string>('');
   const [category, setCategory] = useState<string>('General');
   const [quantity, setQuantity] = useState<number>(0);
@@ -167,6 +168,9 @@ export default function PartAddModal({
             <div className="part-add-form-group">
               <label className="part-add-form-label" htmlFor="part-name">
                 {t('pages.parts.form.partName')} <span className="part-add-required">*</span>
+                <span style={{ fontSize: '0.85rem', color: '#666', marginLeft: '8px' }}>
+                  {name.length}/{MAX_TEXT_LENGTH}
+                </span>
               </label>
               <input
                 id="part-name"
@@ -174,7 +178,10 @@ export default function PartAddModal({
                 className="part-add-form-input"
                 placeholder={t('pages.parts.form.enterPartName')}
                 value={name}
-                onChange={(e) => setName(sanitizeInput(e.target.value))}
+                onChange={(e) =>
+                  setName(sanitizeInput(e.target.value).slice(0, MAX_TEXT_LENGTH))
+                }
+                maxLength={MAX_TEXT_LENGTH}
                 disabled={submitting}
                 required
               />
@@ -237,6 +244,9 @@ export default function PartAddModal({
             <div className="part-add-form-group">
               <label className="part-add-form-label" htmlFor="part-supplier">
                 {t('pages.parts.form.supplier')} <span className="part-add-required">*</span>
+                <span style={{ fontSize: '0.85rem', color: '#666', marginLeft: '8px' }}>
+                  {supplier.length}/{MAX_TEXT_LENGTH}
+                </span>
               </label>
               <input
                 id="part-supplier"
@@ -244,7 +254,10 @@ export default function PartAddModal({
                 className="part-add-form-input"
                 placeholder={t('pages.parts.form.enterSupplierName')}
                 value={supplier}
-                onChange={(e) => setSupplier(sanitizeInput(e.target.value))}
+                onChange={(e) =>
+                  setSupplier(sanitizeInput(e.target.value).slice(0, MAX_TEXT_LENGTH))
+                }
+                maxLength={MAX_TEXT_LENGTH}
                 disabled={submitting}
                 required
               />

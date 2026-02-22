@@ -12,7 +12,6 @@ import {
   sanitizeInput,
 } from '../../utils/sanitizer';
 import '../Auth.css';
-import '../jobs/ServicesPage.css'; // Import ServicesPage styles for modal
 import Calendar from 'react-calendar';
 import 'react-calendar/dist/Calendar.css';
 import '../Employee/EmployeeListPage.css';
@@ -50,6 +49,7 @@ type CustomerData = {
 export default function ProfilePage() {
   const navigate = useNavigate();
   const { t } = useTranslation();
+  const MAX_CELLAR_NAME_LENGTH = 100;
   const {
     user,
     changePassword,
@@ -1304,7 +1304,7 @@ export default function ProfilePage() {
 
         {/* Cellar Intake Modal - Only show for customers */}
         {user?.role === 'customer' && addCellarModalOpen && (
-          <div className="modal-overlay" role="dialog" aria-modal>
+          <div className="modal-overlay">
             <div className="modal">
               <div className="modal-header">
                 <h3>{t('pages.profile.addCellarIntake')}</h3>
@@ -1331,21 +1331,25 @@ export default function ProfilePage() {
 
               {cellarError && <div className="alert alert-error">{cellarError}</div>}
 
-              <form onSubmit={handleCellarSubmit} className="create-job-form">
+              <form onSubmit={handleCellarSubmit} className="cellar-form">
                 <div className="auth-form-group">
                   <label htmlFor="cellarName">
                     {t('pages.profile.cellarName')} *
                     <span style={{ fontSize: '0.85rem', color: '#666', marginLeft: '8px' }}>
-                      {cellarName.length}/100
+                      {cellarName.length}/{MAX_CELLAR_NAME_LENGTH}
                     </span>
                   </label>
                   <input
                     id="cellarName"
                     type="text"
                     value={cellarName}
-                    onChange={(e) => setCellarName(sanitizeInput(e.target.value))}
+                    onChange={(e) =>
+                      setCellarName(
+                        sanitizeInput(e.target.value).slice(0, MAX_CELLAR_NAME_LENGTH)
+                      )
+                    }
                     placeholder="e.g., Main Wine Cellar"
-                    maxLength={100}
+                    maxLength={MAX_CELLAR_NAME_LENGTH}
                     disabled={cellarLoading}
                     required
                   />
@@ -1511,7 +1515,7 @@ export default function ProfilePage() {
 
         {/* Edit Cellar Modal - Only show for customers */}
         {user?.role === 'customer' && editCellarModalOpen && (
-          <div className="modal-overlay" role="dialog" aria-modal>
+          <div className="modal-overlay">
             <div className="modal">
               <div className="modal-header">
                 <h3>{t('pages.profile.updateCellar')}</h3>
@@ -1539,15 +1543,25 @@ export default function ProfilePage() {
 
               {cellarError && <div className="alert alert-error">{cellarError}</div>}
 
-              <form onSubmit={handleCellarUpdate} className="create-job-form">
+              <form onSubmit={handleCellarUpdate} className="cellar-form">
                 <div className="auth-form-group">
-                  <label htmlFor="editCellarName">{t('pages.profile.cellarName')} *</label>
+                  <label htmlFor="editCellarName">
+                    {t('pages.profile.cellarName')} *
+                    <span style={{ fontSize: '0.85rem', color: '#666', marginLeft: '8px' }}>
+                      {cellarName.length}/{MAX_CELLAR_NAME_LENGTH}
+                    </span>
+                  </label>
                   <input
                     id="editCellarName"
                     type="text"
                     value={cellarName}
-                    onChange={(e) => setCellarName(sanitizeInput(e.target.value))}
+                    onChange={(e) =>
+                      setCellarName(
+                        sanitizeInput(e.target.value).slice(0, MAX_CELLAR_NAME_LENGTH)
+                      )
+                    }
                     placeholder="e.g., Main Wine Cellar"
+                    maxLength={MAX_CELLAR_NAME_LENGTH}
                     disabled={cellarLoading}
                     required
                   />
