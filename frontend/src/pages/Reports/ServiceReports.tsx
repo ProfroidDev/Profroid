@@ -7,6 +7,7 @@ import ViewReportModal from '../../features/report/components/ViewReportModal';
 import { exportReportPdf } from '../../features/report/api/exportReportPdf';
 import ReportFormModal from '../../features/report/components/ReportFormModal';
 import { sanitizeInput } from '../../utils/sanitizer';
+import { formatCurrencyLocalized, formatDateLocalized } from '../../utils/localeFormat';
 import type { ReportResponseModel } from '../../features/report/models/ReportResponseModel';
 import type { BillResponseModel } from '../../features/report/models/BillResponseModel';
 import type { AppointmentResponseModel } from '../../features/appointment/models/AppointmentResponseModel';
@@ -98,15 +99,11 @@ const ServiceReports = () => {
   }, [searchQuery]);
 
   const formatCurrency = (value: number) => {
-    return new Intl.NumberFormat('en-CA', {
-      style: 'currency',
-      currency: 'CAD',
-    }).format(value);
+    return formatCurrencyLocalized(value, i18n.language, 'CAD');
   };
 
   const formatDate = (dateString: string) => {
-    const locale = i18n.language === 'fr' ? 'fr-CA' : 'en-CA';
-    return new Date(dateString).toLocaleDateString(locale, {
+    return formatDateLocalized(dateString, i18n.language, {
       year: 'numeric',
       month: 'short',
       day: 'numeric',

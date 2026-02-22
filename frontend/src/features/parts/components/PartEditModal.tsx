@@ -368,11 +368,7 @@ export default function PartEditModal({
                     <img
                       src={`${import.meta.env.VITE_BACKEND_URL}/files/${currentImageFileId}/download`}
                       alt="Current part image"
-                      style={{
-                        maxWidth: '150px',
-                        maxHeight: '120px',
-                        borderRadius: '6px',
-                      }}
+                      className="part-edit-image-preview"
                       onError={(e) => {
                         e.currentTarget.style.display = 'none';
                       }}

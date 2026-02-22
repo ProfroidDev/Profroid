@@ -7,10 +7,11 @@ import {
 import type { WarrantyClaimResponseModel } from '../../../features/warranty/models/WarrantyModels';
 import { sanitizeInput } from '../../../utils/sanitizer';
 import { trimToMaxWords } from '../../../utils/wordLimit';
+import { formatDateLocalized } from '../../../utils/localeFormat';
 import './AdminWarrantyClaims.css';
 
 export default function AdminWarrantyClaims() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const ADMIN_NOTES_MAX_WORDS = 120;
   const RESOLUTION_DETAILS_MAX_WORDS = 120;
   const [claims, setClaims] = useState<WarrantyClaimResponseModel[]>([]);
@@ -166,13 +167,13 @@ export default function AdminWarrantyClaims() {
                     </div>
                   </td>
                   <td>{claim.productName}</td>
-                  <td>{new Date(claim.purchaseDate).toLocaleDateString()}</td>
+                  <td>{formatDateLocalized(claim.purchaseDate, i18n.language)}</td>
                   <td>
                     <span className="warranty-status-badge" style={getStatusStyles(claim.status)}>
                       {claim.status}
                     </span>
                   </td>
-                  <td>{new Date(claim.createdAt).toLocaleDateString()}</td>
+                  <td>{formatDateLocalized(claim.createdAt, i18n.language)}</td>
                   <td>
                     <div className="action-buttons">
                       <button className="btn-view" onClick={() => handleViewClaim(claim)}>
@@ -238,7 +239,7 @@ export default function AdminWarrantyClaims() {
                   )}
                   <div className="detail-item">
                     <strong>{t('pages.adminWarranty.purchaseDate')}:</strong>{' '}
-                    {new Date(selectedClaim.purchaseDate).toLocaleDateString()}
+                    {formatDateLocalized(selectedClaim.purchaseDate, i18n.language)}
                   </div>
                 </div>
               </div>

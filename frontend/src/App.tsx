@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { Routes, Route } from 'react-router-dom';
+import { Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import './App.css';
 import './styles/mobile.css';
 import './styles/modals.css';
@@ -45,6 +45,11 @@ import NotFoundPage from './pages/NotFoundPage';
 import BillingSuccessPage from './pages/Billing/BillingSuccessPage';
 import BillingCancelPage from './pages/Billing/BillingCancelPage';
 
+function RedirectWithQuery({ to }: { to: string }): React.ReactElement {
+  const location = useLocation();
+  return <Navigate to={`${to}${location.search}${location.hash}`} replace />;
+}
+
 function AppRoutes(): React.ReactElement {
   const { initializeAuth } = useAuthStore();
 
@@ -75,6 +80,7 @@ function AppRoutes(): React.ReactElement {
               </PublicRoute>
             }
           />
+          <Route path="/login" element={<RedirectWithQuery to="/auth/login" />} />
           <Route
             path="/auth/register"
             element={
@@ -83,6 +89,7 @@ function AppRoutes(): React.ReactElement {
               </PublicRoute>
             }
           />
+          <Route path="/register" element={<RedirectWithQuery to="/auth/register" />} />
           <Route
             path="/auth/forgot-password"
             element={
@@ -90,6 +97,10 @@ function AppRoutes(): React.ReactElement {
                 <ForgotPasswordPage />
               </PublicRoute>
             }
+          />
+          <Route
+            path="/forgot-password"
+            element={<RedirectWithQuery to="/auth/forgot-password" />}
           />
           <Route
             path="/auth/reset-password"
@@ -100,14 +111,7 @@ function AppRoutes(): React.ReactElement {
             }
           />
           {/* Backward compatibility: old reset-password links without /auth/ */}
-          <Route
-            path="/reset-password"
-            element={
-              <PublicRoute>
-                <ResetPasswordPage />
-              </PublicRoute>
-            }
-          />
+          <Route path="/reset-password" element={<RedirectWithQuery to="/auth/reset-password" />} />
           <Route
             path="/auth/verify-email"
             element={

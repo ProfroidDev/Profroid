@@ -6,6 +6,7 @@ import { getCustomerBills } from '../../features/report/api/getCustomerBills';
 import { downloadBillPdf } from '../../features/report/api/downloadBillPdf';
 import useAuthStore from '../../features/authentication/store/authStore';
 import { sanitizeInput } from '../../utils/sanitizer';
+import { formatCurrencyLocalized, formatDateLocalized } from '../../utils/localeFormat';
 import type { BillResponseModel } from '../../features/report/models/BillResponseModel';
 import { handlePayment } from '../../features/payment/api/handlePayment';
 import './CustomerBills.css';
@@ -92,8 +93,7 @@ const CustomerBills = () => {
   };
 
   const formatDate = (dateString: string) => {
-    const locale = i18n.language === 'fr' ? 'fr-CA' : 'en-CA';
-    return new Date(dateString).toLocaleDateString(locale, {
+    return formatDateLocalized(dateString, i18n.language, {
       year: 'numeric',
       month: 'short',
       day: 'numeric',
@@ -139,10 +139,7 @@ const CustomerBills = () => {
   }, [searchQuery, filterStatus]);
 
   const formatCurrency = (value: number) => {
-    return new Intl.NumberFormat('en-CA', {
-      style: 'currency',
-      currency: 'CAD',
-    }).format(value);
+    return formatCurrencyLocalized(value, i18n.language, 'CAD');
   };
 
   const getStatusBadgeClass = (status: string) => {

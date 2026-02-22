@@ -117,7 +117,7 @@ export default function ResetPasswordPage() {
           </div>
           <div className="alert alert-error">{t('validation.passwordTooShort')}</div>
           <div className="auth-footer" style={{ marginTop: '1.5rem' }}>
-            <Link to="/forgot-password" className="btn-primary">
+            <Link to="/auth/forgot-password" className="btn-primary">
               {t('auth.resetPassword')}
             </Link>
           </div>
@@ -143,7 +143,7 @@ export default function ResetPasswordPage() {
             </div>
 
             <div className="auth-footer" style={{ marginTop: '1.5rem' }}>
-              <Link to="/login" className="btn-primary">
+              <Link to="/auth/login" className="btn-primary">
                 {t('auth.login')}
               </Link>
             </div>
@@ -205,7 +205,7 @@ export default function ResetPasswordPage() {
             <div className="auth-footer">
               <p>
                 {t('auth.alreadyHaveAccount')}{' '}
-                <Link to="/login" className="link">
+                <Link to="/auth/login" className="link">
                   {t('auth.login')}
                 </Link>
               </p>

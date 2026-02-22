@@ -21,11 +21,15 @@ import {
   Filter,
   Calendar,
 } from 'lucide-react';
-import './MyAppointmentsPage.css';
 import { getEmployee } from '../../features/employee/api/getEmployeeById';
 import type { EmployeeResponseModel } from '../../features/employee/models/EmployeeResponseModel';
 import { getCellars } from '../../features/cellar/api/getAllCellars';
 import type { CellarResponseModel } from '../../features/cellar/models/CellarResponseModel';
+import {
+  formatCurrencyLocalized,
+  formatDateTimeLocalized,
+  formatTimeLocalized,
+} from '../../utils/localeFormat';
 
 export default function MyAppointmentsPage(): React.ReactElement {
   const { t, i18n } = useTranslation();
@@ -63,7 +67,6 @@ export default function MyAppointmentsPage(): React.ReactElement {
     if (user) {
       fetchAppointments();
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user]);
 
   const fetchAppointments = async () => {
@@ -131,7 +134,7 @@ export default function MyAppointmentsPage(): React.ReactElement {
       fetchAppointments();
       setToast({ message: t('pages.appointments.appointmentCancelled'), type: 'success' });
       setConfirmModal({ isOpen: false, appointmentId: null });
-    } catch (error: unknown) {
+    } catch {
       setToast({ message: t('pages.appointments.errorCancelling'), type: 'error' });
       setConfirmModal({ isOpen: false, appointmentId: null });
     }
@@ -143,9 +146,7 @@ export default function MyAppointmentsPage(): React.ReactElement {
   };
 
   const formatDate = (dateString: string): string => {
-    const date = new Date(dateString);
-    const locale = i18n.language === 'fr' ? 'fr-FR' : 'en-US';
-    return date.toLocaleDateString(locale, {
+    return formatDateTimeLocalized(dateString, i18n.language, {
       weekday: 'long',
       year: 'numeric',
       month: 'long',
@@ -208,7 +209,7 @@ export default function MyAppointmentsPage(): React.ReactElement {
       try {
         const emp = await getEmployee(selectedAppointment.technicianId);
         setTechnicianDetails(emp);
-      } catch (e) {
+      } catch {
         setTechnicianDetails(null);
       }
 
@@ -233,7 +234,7 @@ export default function MyAppointmentsPage(): React.ReactElement {
             ) || null;
           setMatchedCellar(match);
         }
-      } catch (e) {
+      } catch {
         setMatchedCellar(null);
       }
     };
@@ -298,7 +299,11 @@ export default function MyAppointmentsPage(): React.ReactElement {
                 onClick={() => {
                   setStatusFilters((prev) => {
                     const next = new Set(prev);
-                    next.has('SCHEDULED') ? next.delete('SCHEDULED') : next.add('SCHEDULED');
+                    if (next.has('SCHEDULED')) {
+                      next.delete('SCHEDULED');
+                    } else {
+                      next.add('SCHEDULED');
+                    }
                     setCurrentPage(1);
                     return Array.from(next);
                   });
@@ -312,7 +317,11 @@ export default function MyAppointmentsPage(): React.ReactElement {
                 onClick={() => {
                   setStatusFilters((prev) => {
                     const next = new Set(prev);
-                    next.has('COMPLETED') ? next.delete('COMPLETED') : next.add('COMPLETED');
+                    if (next.has('COMPLETED')) {
+                      next.delete('COMPLETED');
+                    } else {
+                      next.add('COMPLETED');
+                    }
                     setCurrentPage(1);
                     return Array.from(next);
                   });
@@ -326,7 +335,11 @@ export default function MyAppointmentsPage(): React.ReactElement {
                 onClick={() => {
                   setStatusFilters((prev) => {
                     const next = new Set(prev);
-                    next.has('CANCELLED') ? next.delete('CANCELLED') : next.add('CANCELLED');
+                    if (next.has('CANCELLED')) {
+                      next.delete('CANCELLED');
+                    } else {
+                      next.add('CANCELLED');
+                    }
                     setCurrentPage(1);
                     return Array.from(next);
                   });
@@ -440,10 +453,10 @@ export default function MyAppointmentsPage(): React.ReactElement {
                       <>
                         {' | '}
                         <strong>{t('pages.appointments.start')}:</strong>{' '}
-                        {appointment.appointmentStartTime}
+                        {formatTimeLocalized(appointment.appointmentStartTime, i18n.language)}
                         {' | '}
                         <strong>{t('pages.appointments.end')}:</strong>{' '}
-                        {appointment.appointmentEndTime}
+                        {formatTimeLocalized(appointment.appointmentEndTime, i18n.language)}
                       </>
                     )}
                   </span>
@@ -479,7 +492,7 @@ export default function MyAppointmentsPage(): React.ReactElement {
                 <div className="appointment-info-row">
                   <DollarSign size={18} />
                   <span>
-                    ${appointment.hourlyRate.toFixed(2)}
+                    {formatCurrencyLocalized(appointment.hourlyRate, i18n.language, 'CAD')}
                     {t('pages.appointments.hour')}
                   </span>
                 </div>
@@ -580,8 +593,9 @@ export default function MyAppointmentsPage(): React.ReactElement {
                   </p>
                 )}
                 <p>
-                  <strong>{t('pages.appointments.rate')}:</strong> $
-                  {selectedAppointment.hourlyRate.toFixed(2)}/hour
+                  <strong>{t('pages.appointments.rate')}:</strong>{' '}
+                  {formatCurrencyLocalized(selectedAppointment.hourlyRate, i18n.language, 'CAD')}
+                  /hour
                 </p>
                 <p>
                   <strong>{t('pages.appointments.status')}:</strong>{' '}
@@ -602,10 +616,13 @@ export default function MyAppointmentsPage(): React.ReactElement {
                       <>
                         <br />
                         <strong>{t('pages.appointments.start')}:</strong>{' '}
-                        {selectedAppointment.appointmentStartTime}
+                        {formatTimeLocalized(
+                          selectedAppointment.appointmentStartTime,
+                          i18n.language
+                        )}
                         {' | '}
                         <strong>{t('pages.appointments.end')}:</strong>{' '}
-                        {selectedAppointment.appointmentEndTime}
+                        {formatTimeLocalized(selectedAppointment.appointmentEndTime, i18n.language)}
                       </>
                     )}
                 </p>

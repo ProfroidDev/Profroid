@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Plus, Download, Edit2, Search, X, RotateCcw } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { sanitizeInput } from '../../utils/sanitizer';
+import { formatCurrencyLocalized } from '../../utils/localeFormat';
 import { getAllParts } from '../../features/parts/api/getAllParts';
 import { createPart } from '../../features/parts/api/createPart';
 import { updatePart } from '../../features/parts/api/updatePart';
@@ -44,7 +45,7 @@ const filterOptions: FilterOption[] = [
 ];
 
 const Inventory = () => {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const [parts, setParts] = useState<PartResponseModel[]>([]);
   const [loading, setLoading] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
@@ -462,7 +463,9 @@ const Inventory = () => {
                     <td className="sku-code">{part.partId}</td>
                     <td>{getCategoryLabel(t, part.category)}</td>
                     <td className="text-right qty-col">{part.quantity}</td>
-                    <td className="text-right price-col">${part.price.toFixed(2)}</td>
+                    <td className="text-right price-col">
+                      {formatCurrencyLocalized(part.price, i18n.language, 'CAD')}
+                    </td>
                     <td>{part.supplier}</td>
                     <td className="status-col">
                       <span className={`status-badge-part ${getStatusColor(part.status)}`}>
@@ -494,8 +497,12 @@ const Inventory = () => {
           </span>
           <span>•</span>
           <span>
-            {t('pages.parts.inventory.stats.totalValue')}: $
-            {filteredParts.reduce((sum, p) => sum + p.price * p.quantity, 0).toFixed(2)}
+            {t('pages.parts.inventory.stats.totalValue')}:{' '}
+            {formatCurrencyLocalized(
+              filteredParts.reduce((sum, p) => sum + p.price * p.quantity, 0),
+              i18n.language,
+              'CAD'
+            )}
           </span>
           <span>•</span>
           <span>

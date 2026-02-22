@@ -428,7 +428,7 @@ export default function ProfilePage() {
       <div className="auth-container">
         <div className="auth-card">
           <p>Please log in to view your profile</p>
-          <button onClick={() => navigate('/login')} className="btn-primary">
+          <button onClick={() => navigate('/auth/login')} className="btn-primary">
             Go to Login
           </button>
         </div>

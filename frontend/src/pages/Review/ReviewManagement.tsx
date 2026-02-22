@@ -8,6 +8,7 @@ import type { ReviewResponseModel } from '../../features/review/models/ReviewMod
 import Toast from '../../shared/components/Toast';
 import ConfirmationModal from '../../components/ConfirmationModal';
 import useAuthStore from '../../features/authentication/store/authStore';
+import { formatDateTimeLocalized } from '../../utils/localeFormat';
 import './ReviewManagement.css';
 
 export default function ReviewManagement(): React.ReactElement {
@@ -147,8 +148,7 @@ export default function ReviewManagement(): React.ReactElement {
   };
 
   const formatDate = (dateString: string) => {
-    const date = new Date(dateString);
-    return date.toLocaleDateString(i18n.resolvedLanguage || i18n.language || 'en-US', {
+    return formatDateTimeLocalized(dateString, i18n.language, {
       year: 'numeric',
       month: 'short',
       day: 'numeric',
