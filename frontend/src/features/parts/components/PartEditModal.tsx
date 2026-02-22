@@ -216,9 +216,7 @@ export default function PartEditModal({
                 className="part-edit-form-input"
                 placeholder={t('pages.parts.form.enterPartName')}
                 value={name}
-                onChange={(e) =>
-                  setName(sanitizeInput(e.target.value).slice(0, MAX_TEXT_LENGTH))
-                }
+                onChange={(e) => setName(sanitizeInput(e.target.value).slice(0, MAX_TEXT_LENGTH))}
                 maxLength={MAX_TEXT_LENGTH}
                 disabled={submitting}
                 required

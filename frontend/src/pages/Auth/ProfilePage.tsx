@@ -1344,9 +1344,7 @@ export default function ProfilePage() {
                     type="text"
                     value={cellarName}
                     onChange={(e) =>
-                      setCellarName(
-                        sanitizeInput(e.target.value).slice(0, MAX_CELLAR_NAME_LENGTH)
-                      )
+                      setCellarName(sanitizeInput(e.target.value).slice(0, MAX_CELLAR_NAME_LENGTH))
                     }
                     placeholder="e.g., Main Wine Cellar"
                     maxLength={MAX_CELLAR_NAME_LENGTH}
@@ -1556,9 +1554,7 @@ export default function ProfilePage() {
                     type="text"
                     value={cellarName}
                     onChange={(e) =>
-                      setCellarName(
-                        sanitizeInput(e.target.value).slice(0, MAX_CELLAR_NAME_LENGTH)
-                      )
+                      setCellarName(sanitizeInput(e.target.value).slice(0, MAX_CELLAR_NAME_LENGTH))
                     }
                     placeholder="e.g., Main Wine Cellar"
                     maxLength={MAX_CELLAR_NAME_LENGTH}
