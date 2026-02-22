@@ -192,7 +192,7 @@ const ServiceReports = () => {
   return (
     <div className="service-reports-page">
       {/* Main Content */}
-      <main className="container main-content">
+      <div className="container main-content" role="region" aria-label="Service reports">
         {/* Title */}
         <div className="page-header">
           <div className="page-title-section">
@@ -397,7 +397,7 @@ const ServiceReports = () => {
             </div>
           </>
         )}
-      </main>
+      </div>
 
       {/* Toast Notification */}
       <AnimatePresence>

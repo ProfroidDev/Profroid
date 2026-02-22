@@ -130,7 +130,7 @@ export default function WarrantyPage() {
         <section id="overview" className="warranty-section">
           <h2>{t('pages.warranty.overview')}</h2>
           <p>{t('pages.warranty.overviewText')}</p>
-          <div className="warranty-highlight">
+          <div className="warranty-highlight" tabIndex={0}>
             <p>{t('pages.warranty.overviewHighlight')}</p>
           </div>
         </section>
@@ -140,19 +140,19 @@ export default function WarrantyPage() {
           <p>{t('pages.warranty.coverageText')}</p>
 
           <div className="warranty-coverage-list">
-            <div className="coverage-item">
+            <div className="coverage-item" tabIndex={0}>
               <h4>✓ {t('pages.warranty.coverage1Title')}</h4>
               <p>{t('pages.warranty.coverage1Text')}</p>
             </div>
-            <div className="coverage-item">
+            <div className="coverage-item" tabIndex={0}>
               <h4>✓ {t('pages.warranty.coverage2Title')}</h4>
               <p>{t('pages.warranty.coverage2Text')}</p>
             </div>
-            <div className="coverage-item">
+            <div className="coverage-item" tabIndex={0}>
               <h4>✓ {t('pages.warranty.coverage3Title')}</h4>
               <p>{t('pages.warranty.coverage3Text')}</p>
             </div>
-            <div className="coverage-item">
+            <div className="coverage-item" tabIndex={0}>
               <h4>✓ {t('pages.warranty.coverage4Title')}</h4>
               <p>{t('pages.warranty.coverage4Text')}</p>
             </div>
@@ -163,7 +163,7 @@ export default function WarrantyPage() {
           <h2>{t('pages.warranty.durationTitle')}</h2>
           <p>{t('pages.warranty.durationText')}</p>
 
-          <div className="warranty-info-box">
+          <div className="warranty-info-box" tabIndex={0}>
             <h4>{t('pages.warranty.durationDetailsTitle')}</h4>
             <ul>
               <li>{t('pages.warranty.durationDetail1')}</li>
@@ -177,7 +177,7 @@ export default function WarrantyPage() {
           <h2>{t('pages.warranty.exclusionsTitle')}</h2>
           <p>{t('pages.warranty.exclusionsText')}</p>
 
-          <div className="warranty-warning-box">
+          <div className="warranty-warning-box" tabIndex={0}>
             <h4>{t('pages.warranty.exclusionsWarning')}</h4>
             <ul>
               <li>{t('pages.warranty.exclusion1')}</li>
@@ -194,22 +194,22 @@ export default function WarrantyPage() {
           <p>{t('pages.warranty.claimProcessText')}</p>
 
           <div className="warranty-process-steps">
-            <div className="process-step">
+            <div className="process-step" tabIndex={0}>
               <div className="step-number">1</div>
               <h4>{t('pages.warranty.step1Title')}</h4>
               <p>{t('pages.warranty.step1Text')}</p>
             </div>
-            <div className="process-step">
+            <div className="process-step" tabIndex={0}>
               <div className="step-number">2</div>
               <h4>{t('pages.warranty.step2Title')}</h4>
               <p>{t('pages.warranty.step2Text')}</p>
             </div>
-            <div className="process-step">
+            <div className="process-step" tabIndex={0}>
               <div className="step-number">3</div>
               <h4>{t('pages.warranty.step3Title')}</h4>
               <p>{t('pages.warranty.step3Text')}</p>
             </div>
-            <div className="process-step">
+            <div className="process-step" tabIndex={0}>
               <div className="step-number">4</div>
               <h4>{t('pages.warranty.step4Title')}</h4>
               <p>{t('pages.warranty.step4Text')}</p>
@@ -222,15 +222,15 @@ export default function WarrantyPage() {
           <p>{t('pages.warranty.contactText')}</p>
 
           <div className="warranty-contact-box">
-            <div className="contact-method">
+            <div className="contact-method" tabIndex={0}>
               <h4>{t('pages.warranty.contactEmailTitle')}</h4>
               <a href="mailto:profroid@hotmail.com">{t('pages.warranty.contactEmailValue')}</a>
             </div>
-            <div className="contact-method">
+            <div className="contact-method" tabIndex={0}>
               <h4>{t('pages.warranty.contactPhoneTitle')}</h4>
               <a href="tel:+15145853298">{t('pages.warranty.contactPhoneValue')}</a>
             </div>
-            <div className="contact-method">
+            <div className="contact-method" tabIndex={0}>
               <h4>{t('pages.warranty.contactMailTitle')}</h4>
               <p>
                 Profroid Inc.

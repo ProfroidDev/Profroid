@@ -13,6 +13,7 @@ import {
 } from '../../utils/sanitizer';
 import '../Auth.css';
 import '../jobs/ServicesPage.css'; // Import ServicesPage styles for modal
+import './ProfilePage.css';
 import Calendar from 'react-calendar';
 import 'react-calendar/dist/Calendar.css';
 import '../Employee/EmployeeListPage.css';
@@ -1311,11 +1312,17 @@ export default function ProfilePage() {
 
         {/* Cellar Intake Modal - Only show for customers */}
         {user?.role === 'customer' && addCellarModalOpen && (
-          <div className="modal-overlay" role="dialog" aria-modal>
+          <div
+            className="modal-overlay"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="profile-add-cellar-modal-title"
+          >
             <div className="modal">
               <div className="modal-header">
-                <h3>{t('pages.profile.addCellarIntake')}</h3>
+                <h3 id="profile-add-cellar-modal-title">{t('pages.profile.addCellarIntake')}</h3>
                 <button
+                  type="button"
                   className="modal-close-light"
                   aria-label="Close"
                   onClick={() => {
@@ -1512,11 +1519,17 @@ export default function ProfilePage() {
 
         {/* Edit Cellar Modal - Only show for customers */}
         {user?.role === 'customer' && editCellarModalOpen && (
-          <div className="modal-overlay" role="dialog" aria-modal>
+          <div
+            className="modal-overlay"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="profile-edit-cellar-modal-title"
+          >
             <div className="modal">
               <div className="modal-header">
-                <h3>{t('pages.profile.updateCellar')}</h3>
+                <h3 id="profile-edit-cellar-modal-title">{t('pages.profile.updateCellar')}</h3>
                 <button
+                  type="button"
                   className="modal-close-light"
                   aria-label="Close"
                   onClick={() => {

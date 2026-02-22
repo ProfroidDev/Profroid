@@ -71,15 +71,15 @@ export default function AdminWarrantyClaims() {
     }
   };
 
-  const getStatusColor = (status: string) => {
-    const colors: Record<string, string> = {
-      PENDING: '#ffc107',
-      IN_REVIEW: '#17a2b8',
-      APPROVED: '#28a745',
-      REJECTED: '#dc3545',
-      RESOLVED: '#6c757d',
+  const getStatusStyles = (status: string) => {
+    const styles: Record<string, { backgroundColor: string; color: string }> = {
+      PENDING: { backgroundColor: '#7a2e00', color: '#ffffff' },
+      IN_REVIEW: { backgroundColor: '#0c4a6e', color: '#ffffff' },
+      APPROVED: { backgroundColor: '#0b3d2f', color: '#ffffff' },
+      REJECTED: { backgroundColor: '#7a1f24', color: '#ffffff' },
+      RESOLVED: { backgroundColor: '#4f4440', color: '#ffffff' },
     };
-    return colors[status] || '#6c757d';
+    return styles[status] || { backgroundColor: '#4f4440', color: '#ffffff' };
   };
 
   const filteredClaims =
@@ -168,10 +168,7 @@ export default function AdminWarrantyClaims() {
                   <td>{claim.productName}</td>
                   <td>{new Date(claim.purchaseDate).toLocaleDateString()}</td>
                   <td>
-                    <span
-                      className="status-badge"
-                      style={{ backgroundColor: getStatusColor(claim.status) }}
-                    >
+                    <span className="warranty-status-badge" style={getStatusStyles(claim.status)}>
                       {claim.status}
                     </span>
                   </td>

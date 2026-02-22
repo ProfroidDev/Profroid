@@ -358,7 +358,7 @@ export default function EmployeeListPage(): React.ReactElement {
                     {e.isActive ? (
                       <button
                         className="btn-view-light"
-                        style={{ marginLeft: 8, backgroundColor: '#ff6b6b', color: 'white' }}
+                        style={{ marginLeft: 8, backgroundColor: '#b91c1c', color: 'white' }}
                         onClick={() => handleDeactivateEmployee(e)}
                         disabled={deactivateLoading}
                       >
@@ -367,7 +367,7 @@ export default function EmployeeListPage(): React.ReactElement {
                     ) : (
                       <button
                         className="btn-view-light"
-                        style={{ marginLeft: 8, backgroundColor: '#51cf66', color: 'white' }}
+                        style={{ marginLeft: 8, backgroundColor: '#15803d', color: 'white' }}
                         onClick={() => handleReactivateEmployee(e)}
                         disabled={deactivateLoading}
                       >
@@ -485,7 +485,7 @@ export default function EmployeeListPage(): React.ReactElement {
             {!scheduleLoading && !scheduleEmployeeData?.isActive && (
               <div className="modal-content-light">
                 <div className="modal-section">
-                  <h4 className="modal-label" style={{ color: '#ff6b6b' }}>
+                  <h4 className="modal-label" style={{ color: '#b91c1c' }}>
                     {t('pages.employees.employeeInactive')}
                   </h4>
                   <p className="modal-value">{t('pages.employees.employeeInactiveMessage')}</p>

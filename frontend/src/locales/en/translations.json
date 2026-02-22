@@ -589,13 +589,24 @@
         "categoriesLabel": "--- Categories ---",
         "statusLabel": "--- Status ---",
         "categories": {
+          "general": "General",
+          "heating": "Heating",
+          "cooling": "Cooling",
           "compressors": "Compressors",
           "sensors": "Sensors",
           "coils": "Coils",
           "motors": "Motors",
           "refrigerants": "Refrigerants",
           "electronics": "Electronics",
-          "accessories": "Accessories"
+          "accessories": "Accessories",
+          "filtration": "Filtration",
+          "hardware": "Hardware",
+          "shelving": "Shelving",
+          "packaging": "Packaging",
+          "fluidControl": "Fluid Control",
+          "doorsSeals": "Doors & Seals",
+          "electrical": "Electrical",
+          "fasteners": "Fasteners"
         },
         "status": {
           "inStock": "In Stock",
@@ -671,6 +682,26 @@
         "viewDetails": "View Details",
         "edit": "Edit",
         "delete": "Delete"
+      },
+      "form": {
+        "partName": "Part Name",
+        "enterPartName": "Enter part name",
+        "category": "Category",
+        "quantity": "Quantity",
+        "price": "Price",
+        "supplier": "Supplier",
+        "enterSupplierName": "Enter supplier name",
+        "lowStockThreshold": "Low Stock Threshold",
+        "outOfStockThreshold": "Out of Stock Threshold",
+        "highStockThreshold": "High Stock Threshold",
+        "available": "Available",
+        "image": "Image",
+        "maximumFileSize": "Maximum file size",
+        "onlyImageFilesAllowed": "Only image files are allowed",
+        "fileSizeExceeds": "File size exceeds maximum allowed",
+        "addButton": "Add Part",
+        "cancelButton": "Cancel",
+        "updateButton": "Update Part"
       }
     },
     "appointments": {
@@ -830,33 +861,43 @@
       "capacity": "Capacity",
       "features": "Features"
     },
-    "serviceReports": {
-      "title": "Service Reports",
-      "subtitle": "View and manage all service reports",
-      "searchPlaceholder": "Search by customer name, technician, or service...",
-      "table": {
-        "reportId": "Report ID",
-        "customer": "Customer",
-        "service": "Service",
-        "date": "Date",
-        "status": "Status",
-        "billStatus": "Bill Status",
-        "total": "Total",
-        "actions": "Actions"
+    "reviews": {
+      "title": "Reviews",
+      "subtitle": "View and manage customer reviews",
+      "filters": {
+        "all": "All",
+        "pending": "Pending",
+        "approved": "Approved",
+        "rejected": "Rejected"
+      },
+      "statusBadges": {
+        "pending": "Pending",
+        "approved": "Approved",
+        "rejected": "Rejected"
+      },
+      "labels": {
+        "loading": "Loading reviews...",
+        "noReviews": "No reviews found",
+        "id": "ID",
+        "submitted": "Submitted",
+        "reviewed": "Reviewed"
       },
       "actions": {
-        "viewDetails": "View Details",
-        "downloadPdf": "Download PDF",
-        "editReport": "Edit Report"
+        "approve": "Approve",
+        "reject": "Reject",
+        "revokeApproval": "Revoke Approval",
+        "delete": "Delete"
       },
-      "summary": {
-        "totalReports": "Total Reports"
-      },
-      "pagination": {
-        "previous": "← Previous",
-        "next": "Next →",
-        "pageInfo": "Page {{current}} of {{total}}",
-        "showing": "Showing {{showing}} of {{total}} reports"
+      "messages": {
+        "loadFailed": "Failed to load reviews",
+        "approveSuccess": "Review approved successfully",
+        "approveFailed": "Failed to approve review",
+        "rejectSuccess": "Review rejected successfully",
+        "rejectFailed": "Failed to reject review",
+        "deleteConfirmTitle": "Delete Review",
+        "deleteConfirmMessage": "Are you sure you want to delete this review?",
+        "deleteSuccess": "Review deleted successfully",
+        "deleteFailed": "Failed to delete review"
       }
     },
     "profile": {

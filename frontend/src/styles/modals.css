@@ -137,7 +137,7 @@
   border: none;
   font-size: 1.5rem;
   cursor: pointer;
-  color: #999;
+  color: #595959;
   transition: color 0.2s;
 }
 
@@ -247,7 +247,7 @@
 }
 
 .form-input:focus {
-  outline: none;
+  outline: 2px solid transparent;
   border-color: #722f37;
   box-shadow: 0 0 0 3px rgba(114, 47, 55, 0.1);
 }
@@ -353,7 +353,7 @@
 }
 
 .form-select:focus {
-  outline: none;
+  outline: 2px solid transparent;
   border-color: #722f37;
   box-shadow: 0 0 0 3px rgba(114, 47, 55, 0.1);
 }

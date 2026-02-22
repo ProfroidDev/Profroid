@@ -470,7 +470,7 @@
 }
 
 .form-input:focus {
-  outline: none;
+  outline: 2px solid transparent;
   border-color: #722f37;
   box-shadow: 0 0 0 3px rgba(114, 47, 55, 0.1);
 }
@@ -753,13 +753,13 @@
 }
 
 .react-calendar__month-view__weekdays {
-  display: grid;
-  grid-template-columns: repeat(7, 1fr);
-  gap: 1px;
+  display: flex;
+  flex-wrap: nowrap;
   margin-bottom: 2px;
 }
 
 .react-calendar__month-view__weekdays__weekday {
+  flex: 0 0 14.2857%;
   text-align: center;
   font-weight: 700;
   color: #a32c1a;
@@ -780,9 +780,8 @@
 }
 
 .react-calendar__month-view__days {
-  display: grid;
-  grid-template-columns: repeat(7, 1fr);
-  gap: 1px;
+  display: flex;
+  flex-wrap: wrap;
 }
 
 .react-calendar__tile {
@@ -797,17 +796,18 @@
   background: transparent;
   border: none;
   font-size: 0.65rem;
-  aspect-ratio: 1 / 1;
+  flex: 0 0 14.2857%;
+  max-width: 14.2857%;
   display: flex;
   align-items: center;
   justify-content: center;
-  min-height: 28px;
+  height: 32px;
 }
 
 @media (min-width: 641px) {
   .react-calendar__tile {
     font-size: 0.7rem;
-    min-height: 32px;
+    height: 36px;
     padding: 4px 0;
   }
 }
@@ -815,7 +815,7 @@
 @media (min-width: 1025px) {
   .react-calendar__tile {
     font-size: 0.8rem;
-    min-height: 36px;
+    height: 40px;
   }
 }
 
