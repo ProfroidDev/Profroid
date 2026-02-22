@@ -271,7 +271,7 @@ export default function MyAppointmentsPage(): React.ReactElement {
   const goNext = () => setCurrentPage((p) => Math.min(totalPages, p + 1));
 
   return (
-    <div className="appointments-page-light">
+    <div className="appointments-page-light my-appointments-page">
       <div className="appointments-header">
         <h1 className="appointments-title-light">{t('pages.appointments.myAppointments')}</h1>
         {customerData?.firstName && customerData?.lastName && (

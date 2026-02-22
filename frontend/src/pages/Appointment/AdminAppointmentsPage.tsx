@@ -209,7 +209,7 @@ export default function AdminAppointmentsPage(): React.ReactElement {
   }
 
   return (
-    <div className="appointments-page-light">
+    <div className="appointments-page-light admin-appointments-page">
       <div className="appointments-header">
         <h1 className="appointments-title-light">{t('pages.appointments.allAppointments')}</h1>
         <p className="appointments-subtitle">{t('pages.appointments.manageAllAppointments')}</p>

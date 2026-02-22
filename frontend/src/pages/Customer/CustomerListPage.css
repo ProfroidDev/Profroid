@@ -200,7 +200,8 @@
    MODAL OVERLAY
 ================================= */
 
-.modal-overlay-light {
+.customers-page-light .modal-overlay-light,
+.customer-modal-overlay-light {
   position: fixed;
   inset: 0;
   background: rgba(0, 0, 0, 0.25);
@@ -214,13 +215,14 @@
    WIDE MODAL CONTAINER
 ================================= */
 
-.modal-container-light {
+.customers-page-light .modal-container-light,
+.customer-modal-container-light {
   background: #ffffff;
-  width: 85vw;
-  max-width: 1300px;
+  width: 92vw;
+  max-width: 1100px;
   border-radius: 22px;
   border: 1px solid #e4e2df;
-  padding: 40px 60px;
+  padding: 28px 32px;
   box-shadow:
     0 25px 45px rgba(0, 0, 0, 0.15),
     0 8px 20px rgba(0, 0, 0, 0.08);
@@ -233,31 +235,43 @@
   overflow-x: hidden;
 }
 
+.customer-modal-container {
+  width: 92vw;
+  max-width: 900px;
+  padding: 24px 28px;
+}
+
 /* Modern Scrollbar */
-.modal-container-light {
+.customers-page-light .modal-container-light,
+.customer-modal-container-light {
   scrollbar-width: thin;
   scrollbar-color: rgba(122, 9, 1, 0.3) transparent;
 }
 
-.modal-container-light::-webkit-scrollbar {
+.customers-page-light .modal-container-light::-webkit-scrollbar,
+.customer-modal-container-light::-webkit-scrollbar {
   width: 6px;
 }
 
-.modal-container-light::-webkit-scrollbar-track {
+.customers-page-light .modal-container-light::-webkit-scrollbar-track,
+.customer-modal-container-light::-webkit-scrollbar-track {
   background: transparent;
 }
 
-.modal-container-light::-webkit-scrollbar-thumb {
+.customers-page-light .modal-container-light::-webkit-scrollbar-thumb,
+.customer-modal-container-light::-webkit-scrollbar-thumb {
   background: rgba(122, 9, 1, 0.2);
   border-radius: 10px;
   transition: background 0.2s ease;
 }
 
-.modal-container-light::-webkit-scrollbar-thumb:hover {
+.customers-page-light .modal-container-light::-webkit-scrollbar-thumb:hover,
+.customer-modal-container-light::-webkit-scrollbar-thumb:hover {
   background: rgba(122, 9, 1, 0.4);
 }
 
-.modal-container-light:hover::-webkit-scrollbar-thumb {
+.customers-page-light .modal-container-light:hover::-webkit-scrollbar-thumb,
+.customer-modal-container-light:hover::-webkit-scrollbar-thumb {
   background: rgba(122, 9, 1, 0.3);
 }
 
@@ -265,7 +279,8 @@
    MODAL HEADER
 ================================= */
 
-.modal-header-light {
+.customers-page-light .modal-header-light,
+.customer-modal-header-light {
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -274,7 +289,8 @@
   margin-bottom: 24px;
 }
 
-.modal-close-light {
+.customers-page-light .modal-close-light,
+.customer-modal-close-light {
   background: transparent;
   border: none;
   font-size: 1.6rem;
@@ -282,7 +298,8 @@
   color: #5a2a27;
 }
 
-.modal-close-light:hover {
+.customers-page-light .modal-close-light:hover,
+.customer-modal-close-light:hover {
   color: #8e0a03;
 }
 
@@ -290,7 +307,8 @@
    CONTENT CONTAINER
 ================================= */
 
-.modal-content-light {
+.customers-page-light .modal-content-light,
+.customer-modal-content-light {
   width: 100%;
   max-width: 650px;
   margin: 0 auto;
@@ -301,19 +319,22 @@
    DETAILS SECTIONS
 ================================= */
 
-.modal-section {
+.customers-page-light .modal-section,
+.customer-modal-section {
   display: grid;
   grid-template-columns: 140px 1fr;
   gap: 8px 12px;
   padding: 12px 0;
 }
 
-.modal-label {
+.customers-page-light .modal-label,
+.customer-modal-label {
   font-weight: 600;
   color: #3d2d2b;
 }
 
-.modal-value {
+.customers-page-light .modal-value,
+.customer-modal-value {
   padding: 8px 12px;
   background: #faf8f7;
   border-radius: 6px;
@@ -339,27 +360,33 @@
 
 /* Same form styles as Create Job */
 
-.form-group {
+.create-customer-form .form-group,
+.customer-form-group {
   display: flex;
   flex-direction: column;
   gap: 6px;
 }
 
-.form-group label {
+.create-customer-form .form-group label,
+.customer-form-group label {
   font-weight: 600;
   color: #333;
 }
 
-.form-group input,
-.form-group select {
+.create-customer-form .form-group input,
+.create-customer-form .form-group select,
+.customer-form-group input,
+.customer-form-group select {
   padding: 10px 12px;
   border: 1px solid #ddd;
   border-radius: 6px;
   font-size: 0.95rem;
 }
 
-.form-group input:focus,
-.form-group select:focus {
+.create-customer-form .form-group input:focus,
+.create-customer-form .form-group select:focus,
+.customer-form-group input:focus,
+.customer-form-group select:focus {
   outline: 2px solid transparent;
   border-color: #5a2a27;
   box-shadow: 0 0 0 3px rgba(90, 42, 39, 0.1);
@@ -382,7 +409,8 @@
 }
 
 /* Actions */
-.form-actions {
+.create-customer-form .form-actions,
+.customer-form-actions {
   display: flex;
   justify-content: flex-end;
   gap: 12px;

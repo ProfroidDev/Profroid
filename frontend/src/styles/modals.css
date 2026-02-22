@@ -4,6 +4,7 @@
    ============================================ */
 
 /* CONFIRMATION MODAL */
+.pf-modal-overlay,
 .modal-overlay {
   position: fixed;
   top: 0;
@@ -24,10 +25,12 @@
   }
 }
 
+.pf-modal-overlay-light,
 .modal-overlay-light {
   background: rgba(0, 0, 0, 0.3);
 }
 
+.pf-modal-container,
 .modal-container {
   background: white;
   border-radius: 12px;
@@ -51,6 +54,7 @@
   }
 }
 
+.pf-modal-container-light,
 .modal-container-light {
   box-shadow: 0 10px 40px rgba(0, 0, 0, 0.08);
 }
@@ -76,6 +80,7 @@
   }
 }
 
+.pf-modal-header,
 .modal-header {
   padding: 16px 20px;
   border-bottom: 1px solid #eee;
@@ -96,10 +101,12 @@
   }
 }
 
+.pf-modal-header-light,
 .modal-header-light {
   border-bottom-color: #f0f0f0;
 }
 
+.pf-modal-title,
 .modal-title {
   font-size: 1.1rem;
   font-weight: 600;
@@ -119,6 +126,7 @@
   }
 }
 
+.pf-modal-close,
 .modal-close {
   background: none;
   border: none;
@@ -128,10 +136,12 @@
   transition: color 0.2s;
 }
 
+.pf-modal-close:hover,
 .modal-close:hover {
   color: #2c1810;
 }
 
+.pf-modal-close-light,
 .modal-close-light {
   background: none;
   border: none;
@@ -141,10 +151,12 @@
   transition: color 0.2s;
 }
 
+.pf-modal-close-light:hover,
 .modal-close-light:hover {
   color: #2c1810;
 }
 
+.pf-modal-body,
 .modal-body {
   padding: 16px 20px;
 }
@@ -161,6 +173,7 @@
   }
 }
 
+.pf-modal-footer,
 .modal-footer {
   padding: 12px 20px;
   border-top: 1px solid #eee;
@@ -183,11 +196,13 @@
   }
 }
 
+.pf-modal-footer-light,
 .modal-footer-light {
   border-top-color: #f0f0f0;
 }
 
 /* MODAL FORMS */
+.pf-modal-form,
 .modal-form {
   display: flex;
   flex-direction: column;
@@ -224,7 +239,9 @@
   }
 }
 
-.form-input {
+.pf-form-input,
+.modal-form .form-input,
+.employee-form .form-input {
   padding: 10px 12px;
   border: 1px solid #ddd;
   border-radius: 6px;
@@ -246,7 +263,9 @@
   }
 }
 
-.form-input:focus {
+.pf-form-input:focus,
+.modal-form .form-input:focus,
+.employee-form .form-input:focus {
   outline: 2px solid transparent;
   border-color: #722f37;
   box-shadow: 0 0 0 3px rgba(114, 47, 55, 0.1);
@@ -276,6 +295,7 @@
 }
 
 /* BUTTONS IN MODALS */
+.pf-modal-btn,
 .modal-btn {
   padding: 10px 16px;
   border: 1px solid #ddd;
@@ -302,35 +322,42 @@
   }
 }
 
+.pf-modal-btn:hover,
 .modal-btn:hover {
   background: #f5f3f1;
   border-color: #ccc;
 }
 
+.pf-modal-btn-primary,
 .modal-btn-primary {
   background: #722f37;
   color: white;
   border-color: #722f37;
 }
 
+.pf-modal-btn-primary:hover,
 .modal-btn-primary:hover {
   background: #5a252b;
   border-color: #5a252b;
 }
 
+.pf-modal-btn-danger,
 .modal-btn-danger {
   background: #c33;
   color: white;
   border-color: #c33;
 }
 
+.pf-modal-btn-danger:hover,
 .modal-btn-danger:hover {
   background: #a22;
   border-color: #a22;
 }
 
 /* SELECT FIELD IN MODAL */
-.form-select {
+.pf-form-select,
+.modal-form .form-select,
+.employee-form .form-select {
   padding: 10px 12px;
   border: 1px solid #ddd;
   border-radius: 6px;
@@ -352,14 +379,18 @@
   }
 }
 
-.form-select:focus {
+.pf-form-select:focus,
+.modal-form .form-select:focus,
+.employee-form .form-select:focus {
   outline: 2px solid transparent;
   border-color: #722f37;
   box-shadow: 0 0 0 3px rgba(114, 47, 55, 0.1);
 }
 
 /* LABEL IN MODAL */
-.form-label {
+.pf-form-label,
+.modal-form .form-label,
+.employee-form .form-label {
   font-size: 0.85rem;
   font-weight: 600;
   color: #2c1810;

@@ -703,7 +703,9 @@
         "addButton": "Add Part",
         "cancelButton": "Cancel",
         "updateButton": "Update Part",
-        "closeButton": "Close"
+        "closeButton": "Close",
+        "uploadNewImageToReplace": "Upload a new image to replace the current one",
+        "deleteCurrentImage": "Delete current image"
       }
     },
     "appointments": {

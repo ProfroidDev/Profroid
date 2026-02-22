@@ -192,16 +192,16 @@ export default function AdminWarrantyClaims() {
       </div>
 
       {showModal && selectedClaim && (
-        <div className="modal-overlay" onClick={() => setShowModal(false)}>
-          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-            <div className="modal-header">
+        <div className="admin-warranty-modal-overlay" onClick={() => setShowModal(false)}>
+          <div className="admin-warranty-modal-content" onClick={(e) => e.stopPropagation()}>
+            <div className="admin-warranty-modal-header">
               <h2>{t('pages.adminWarranty.claimDetails')}</h2>
-              <button className="modal-close" onClick={() => setShowModal(false)}>
+              <button className="admin-warranty-modal-close" onClick={() => setShowModal(false)}>
                 ×
               </button>
             </div>
 
-            <div className="modal-body">
+            <div className="admin-warranty-modal-body">
               <div className="claim-details-grid">
                 <div className="detail-section">
                   <h3>{t('pages.adminWarranty.customerInformation')}</h3>
@@ -252,7 +252,7 @@ export default function AdminWarrantyClaims() {
               <div className="detail-section full-width">
                 <h3>{t('pages.adminWarranty.updateClaim')}</h3>
 
-                <div className="form-group">
+                <div className="admin-warranty-form-group">
                   <label>{t('pages.adminWarranty.status')}</label>
                   <select
                     value={updateData.status}
@@ -266,7 +266,7 @@ export default function AdminWarrantyClaims() {
                   </select>
                 </div>
 
-                <div className="form-group">
+                <div className="admin-warranty-form-group">
                   <label>{t('pages.adminWarranty.adminNotes')}</label>
                   <textarea
                     value={updateData.adminNotes}
@@ -284,7 +284,7 @@ export default function AdminWarrantyClaims() {
                   />
                 </div>
 
-                <div className="form-group">
+                <div className="admin-warranty-form-group">
                   <label>{t('pages.adminWarranty.resolutionDetails')}</label>
                   <textarea
                     value={updateData.resolutionDetails}
@@ -304,7 +304,7 @@ export default function AdminWarrantyClaims() {
               </div>
             </div>
 
-            <div className="modal-footer">
+            <div className="admin-warranty-modal-footer">
               <button className="btn-cancel" onClick={() => setShowModal(false)}>
                 {t('pages.adminWarranty.cancel')}
               </button>

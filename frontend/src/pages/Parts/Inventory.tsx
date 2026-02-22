@@ -82,8 +82,8 @@ const Inventory = () => {
       const data = await getAllParts();
       setParts(data);
     } catch (error) {
-      showToast(t('messages.failedToLoadParts'), 'error');
       console.error(error);
+      showToast(t('messages.failedToLoadParts'), 'error');
     } finally {
       setLoading(false);
     }
@@ -94,34 +94,6 @@ const Inventory = () => {
     setTimeout(() => setToastMessage(null), 3000);
   };
 
-  const resetFilters = () => {
-    setSearchQuery('');
-    setCategoryFilter('All');
-    setStatusFilter('All');
-  };
-
-  const getCurrentFilterLabel = () => {
-    const filters = [];
-    const findLabel = (value: string, type: 'category' | 'status') => {
-      const option = filterOptions.find((item) =>
-        type === 'category' ? item.category === value : item.status === value
-      );
-      return option ? t(option.label) : value;
-    };
-
-    if (categoryFilter !== 'All') {
-      filters.push(findLabel(categoryFilter, 'category'));
-    }
-    if (statusFilter !== 'All') {
-      filters.push(findLabel(statusFilter, 'status'));
-    }
-    if (filters.length === 0) {
-      return t('pages.parts.inventory.filterAll');
-    }
-    return filters.join(' • ');
-  };
-
-  // Filtered parts
   const normalizedParts = useMemo(() => {
     return parts.map((part) => ({
       ...part,
@@ -129,6 +101,28 @@ const Inventory = () => {
       status: normalizeStatus(part.status),
     }));
   }, [parts]);
+
+  const resetFilters = () => {
+    setSearchQuery('');
+    setCategoryFilter('All');
+    setStatusFilter('All');
+  };
+
+  const getCurrentFilterLabel = () => {
+    if (categoryFilter === 'All' && statusFilter === 'All') {
+      return t('pages.parts.inventory.filterAll');
+    }
+
+    const labels = [] as string[];
+    if (categoryFilter !== 'All') {
+      labels.push(getCategoryLabel(t, categoryFilter));
+    }
+    if (statusFilter !== 'All') {
+      labels.push(getStatusLabel(t, statusFilter));
+    }
+
+    return labels.join(' • ');
+  };
 
   const filteredParts = useMemo(() => {
     return normalizedParts.filter((part) => {
@@ -580,25 +574,25 @@ const Inventory = () => {
       <AnimatePresence>
         {isAddDialogOpen && (
           <motion.div
-            className="modal-overlay"
+            className="inventory-modal-overlay"
             onClick={() => setIsAddDialogOpen(false)}
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
           >
             <motion.div
-              className="modal-content"
+              className="inventory-modal-content"
               onClick={(e: React.MouseEvent) => e.stopPropagation()}
               initial={{ opacity: 0, scale: 0.9, y: 20 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.9, y: 20 }}
             >
-              <div className="modal-header inventory-modal-header">
-                <h2 className="modal-title inventory-modal-title">
+              <div className="inventory-modal-header">
+                <h2 className="inventory-modal-title">
                   {t('pages.parts.inventory.modal.addTitle')}
                 </h2>
                 <button
-                  className="modal-close"
+                  className="inventory-modal-close"
                   onClick={() => setIsAddDialogOpen(false)}
                   aria-label="Close modal"
                 >
@@ -615,16 +609,16 @@ const Inventory = () => {
                   handleAddPart();
                 }}
               >
-                <div className="modal-body">
+                <div className="inventory-modal-body">
                   <div className="inventory-form-group">
-                    <label htmlFor="add-name" className="form-label">
+                    <label htmlFor="add-name" className="inventory-form-label">
                       {t('pages.parts.inventory.modal.fields.name')}{' '}
                       <span className="required">*</span>
                     </label>
                     <input
                       id="add-name"
                       type="text"
-                      className="form-input"
+                      className="inventory-form-input"
                       placeholder={t('pages.parts.inventory.modal.placeholders.name')}
                       value={newPart.name || ''}
                       onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
@@ -634,13 +628,13 @@ const Inventory = () => {
                     />
                   </div>
                   <div className="inventory-form-group">
-                    <label htmlFor="add-category" className="form-label">
+                    <label htmlFor="add-category" className="inventory-form-label">
                       {t('pages.parts.inventory.modal.fields.category')}{' '}
                       <span className="required">*</span>
                     </label>
                     <select
                       id="add-category"
-                      className="form-input"
+                      className="inventory-form-input"
                       value={newPart.category || 'General'}
                       onChange={(e: React.ChangeEvent<HTMLSelectElement>) =>
                         setNewPart((p) => ({ ...p, category: e.target.value }))
@@ -656,7 +650,7 @@ const Inventory = () => {
                   </div>
                   <div className="inventory-form-row">
                     <div className="inventory-form-group">
-                      <label htmlFor="add-quantity" className="form-label">
+                      <label htmlFor="add-quantity" className="inventory-form-label">
                         {t('pages.parts.inventory.modal.fields.quantity')}{' '}
                         <span className="required">*</span>
                       </label>
@@ -664,7 +658,7 @@ const Inventory = () => {
                         id="add-quantity"
                         type="text"
                         inputMode="numeric"
-                        className="form-input"
+                        className="inventory-form-input"
                         placeholder={t('pages.parts.inventory.modal.placeholders.quantity')}
                         value={newPart.quantity || ''}
                         onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
@@ -674,7 +668,7 @@ const Inventory = () => {
                       />
                     </div>
                     <div className="inventory-form-group">
-                      <label htmlFor="add-price" className="form-label">
+                      <label htmlFor="add-price" className="inventory-form-label">
                         {t('pages.parts.inventory.modal.fields.price')}{' '}
                         <span className="required">*</span>
                       </label>
@@ -682,7 +676,7 @@ const Inventory = () => {
                         id="add-price"
                         type="text"
                         inputMode="decimal"
-                        className="form-input"
+                        className="inventory-form-input"
                         placeholder={t('pages.parts.inventory.modal.placeholders.price')}
                         value={newPart.price || ''}
                         onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
@@ -693,14 +687,14 @@ const Inventory = () => {
                     </div>
                   </div>
                   <div className="inventory-form-group">
-                    <label htmlFor="add-supplier" className="form-label">
+                    <label htmlFor="add-supplier" className="inventory-form-label">
                       {t('pages.parts.inventory.modal.fields.supplier')}{' '}
                       <span className="required">*</span>
                     </label>
                     <input
                       id="add-supplier"
                       type="text"
-                      className="form-input"
+                      className="inventory-form-input"
                       placeholder={t('pages.parts.inventory.modal.placeholders.supplier')}
                       value={newPart.supplier || ''}
                       onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
@@ -711,14 +705,14 @@ const Inventory = () => {
                   </div>
                   <div className="inventory-form-row">
                     <div className="inventory-form-group">
-                      <label htmlFor="add-low-threshold" className="form-label">
+                      <label htmlFor="add-low-threshold" className="inventory-form-label">
                         {t('pages.parts.inventory.modal.fields.lowStockThreshold')}
                       </label>
                       <input
                         id="add-low-threshold"
                         type="text"
                         inputMode="numeric"
-                        className="form-input"
+                        className="inventory-form-input"
                         value={newPart.lowStockThreshold || ''}
                         onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
                           setNewPart((p) => ({
@@ -729,14 +723,14 @@ const Inventory = () => {
                       />
                     </div>
                     <div className="inventory-form-group">
-                      <label htmlFor="add-out-threshold" className="form-label">
+                      <label htmlFor="add-out-threshold" className="inventory-form-label">
                         {t('pages.parts.inventory.modal.fields.outOfStockThreshold')}
                       </label>
                       <input
                         id="add-out-threshold"
                         type="text"
                         inputMode="numeric"
-                        className="form-input"
+                        className="inventory-form-input"
                         value={newPart.outOfStockThreshold || ''}
                         onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
                           setNewPart((p) => ({
@@ -748,14 +742,14 @@ const Inventory = () => {
                     </div>
                   </div>
                   <div className="inventory-form-group">
-                    <label htmlFor="add-high-threshold" className="form-label">
+                    <label htmlFor="add-high-threshold" className="inventory-form-label">
                       {t('pages.parts.inventory.modal.fields.highStockThreshold')}
                     </label>
                     <input
                       id="add-high-threshold"
                       type="text"
                       inputMode="numeric"
-                      className="form-input"
+                      className="inventory-form-input"
                       value={newPart.highStockThreshold || ''}
                       onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
                         setNewPart((p) => ({
@@ -766,15 +760,15 @@ const Inventory = () => {
                     />
                   </div>
                 </div>
-                <div className="modal-footer">
+                <div className="inventory-modal-footer">
                   <button
                     type="button"
-                    className="btn-cancel"
+                    className="inventory-btn-cancel"
                     onClick={() => setIsAddDialogOpen(false)}
                   >
                     {t('pages.parts.inventory.modal.buttons.cancel')}
                   </button>
-                  <button type="submit" className="btn-submit">
+                  <button type="submit" className="inventory-btn-submit">
                     {t('pages.parts.inventory.modal.buttons.addPart')}
                   </button>
                 </div>
@@ -788,25 +782,25 @@ const Inventory = () => {
       <AnimatePresence>
         {editingPart && (
           <motion.div
-            className="modal-overlay"
+            className="inventory-modal-overlay"
             onClick={() => setEditingPart(null)}
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
           >
             <motion.div
-              className="modal-content"
+              className="inventory-modal-content"
               onClick={(e: React.MouseEvent) => e.stopPropagation()}
               initial={{ opacity: 0, scale: 0.9, y: 20 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.9, y: 20 }}
             >
-              <div className="modal-header inventory-modal-header">
-                <h2 className="modal-title inventory-modal-title">
+              <div className="inventory-modal-header">
+                <h2 className="inventory-modal-title">
                   {t('pages.parts.inventory.modal.editTitle')}
                 </h2>
                 <button
-                  className="modal-close"
+                  className="inventory-modal-close"
                   onClick={() => setEditingPart(null)}
                   aria-label="Close modal"
                 >
@@ -823,16 +817,16 @@ const Inventory = () => {
                   handleUpdatePart();
                 }}
               >
-                <div className="modal-body">
+                <div className="inventory-modal-body">
                   <div className="inventory-form-group">
-                    <label htmlFor="edit-name" className="form-label">
+                    <label htmlFor="edit-name" className="inventory-form-label">
                       {t('pages.parts.inventory.modal.fields.name')}{' '}
                       <span className="required">*</span>
                     </label>
                     <input
                       id="edit-name"
                       type="text"
-                      className="form-input"
+                      className="inventory-form-input"
                       placeholder={t('pages.parts.inventory.modal.placeholders.name')}
                       value={editingPart?.name || ''}
                       onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
@@ -842,13 +836,13 @@ const Inventory = () => {
                     />
                   </div>
                   <div className="inventory-form-group">
-                    <label htmlFor="edit-category" className="form-label">
+                    <label htmlFor="edit-category" className="inventory-form-label">
                       {t('pages.parts.inventory.modal.fields.category')}{' '}
                       <span className="required">*</span>
                     </label>
                     <select
                       id="edit-category"
-                      className="form-input"
+                      className="inventory-form-input"
                       value={editingPart?.category || 'General'}
                       onChange={(e: React.ChangeEvent<HTMLSelectElement>) =>
                         setEditingPart((p) => (p ? { ...p, category: e.target.value } : null))
@@ -864,7 +858,7 @@ const Inventory = () => {
                   </div>
                   <div className="inventory-form-row">
                     <div className="inventory-form-group">
-                      <label htmlFor="edit-quantity" className="form-label">
+                      <label htmlFor="edit-quantity" className="inventory-form-label">
                         {t('pages.parts.inventory.modal.fields.quantity')}{' '}
                         <span className="required">*</span>
                       </label>
@@ -872,7 +866,7 @@ const Inventory = () => {
                         id="edit-quantity"
                         type="text"
                         inputMode="numeric"
-                        className="form-input"
+                        className="inventory-form-input"
                         placeholder={t('pages.parts.inventory.modal.placeholders.quantity')}
                         value={editingPart?.quantity || ''}
                         onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
@@ -884,7 +878,7 @@ const Inventory = () => {
                       />
                     </div>
                     <div className="inventory-form-group">
-                      <label htmlFor="edit-price" className="form-label">
+                      <label htmlFor="edit-price" className="inventory-form-label">
                         {t('pages.parts.inventory.modal.fields.price')}{' '}
                         <span className="required">*</span>
                       </label>
@@ -892,7 +886,7 @@ const Inventory = () => {
                         id="edit-price"
                         type="text"
                         inputMode="decimal"
-                        className="form-input"
+                        className="inventory-form-input"
                         placeholder={t('pages.parts.inventory.modal.placeholders.price')}
                         value={editingPart?.price || ''}
                         onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
@@ -905,14 +899,14 @@ const Inventory = () => {
                     </div>
                   </div>
                   <div className="inventory-form-group">
-                    <label htmlFor="edit-supplier" className="form-label">
+                    <label htmlFor="edit-supplier" className="inventory-form-label">
                       {t('pages.parts.inventory.modal.fields.supplier')}{' '}
                       <span className="required">*</span>
                     </label>
                     <input
                       id="edit-supplier"
                       type="text"
-                      className="form-input"
+                      className="inventory-form-input"
                       placeholder={t('pages.parts.inventory.modal.placeholders.supplier')}
                       value={editingPart?.supplier || ''}
                       onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
@@ -923,14 +917,14 @@ const Inventory = () => {
                   </div>
                   <div className="inventory-form-row">
                     <div className="inventory-form-group">
-                      <label htmlFor="edit-low-threshold" className="form-label">
+                      <label htmlFor="edit-low-threshold" className="inventory-form-label">
                         {t('pages.parts.inventory.modal.fields.lowStockThreshold')}
                       </label>
                       <input
                         id="edit-low-threshold"
                         type="text"
                         inputMode="numeric"
-                        className="form-input"
+                        className="inventory-form-input"
                         value={editingPart?.lowStockThreshold || ''}
                         onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
                           setEditingPart((p) =>
@@ -940,14 +934,14 @@ const Inventory = () => {
                       />
                     </div>
                     <div className="inventory-form-group">
-                      <label htmlFor="edit-out-threshold" className="form-label">
+                      <label htmlFor="edit-out-threshold" className="inventory-form-label">
                         {t('pages.parts.inventory.modal.fields.outOfStockThreshold')}
                       </label>
                       <input
                         id="edit-out-threshold"
                         type="text"
                         inputMode="numeric"
-                        className="form-input"
+                        className="inventory-form-input"
                         value={editingPart?.outOfStockThreshold || ''}
                         onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
                           setEditingPart((p) =>
@@ -958,14 +952,14 @@ const Inventory = () => {
                     </div>
                   </div>
                   <div className="inventory-form-group">
-                    <label htmlFor="edit-high-threshold" className="form-label">
+                    <label htmlFor="edit-high-threshold" className="inventory-form-label">
                       {t('pages.parts.inventory.modal.fields.highStockThreshold')}
                     </label>
                     <input
                       id="edit-high-threshold"
                       type="text"
                       inputMode="numeric"
-                      className="form-input"
+                      className="inventory-form-input"
                       value={editingPart?.highStockThreshold || ''}
                       onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
                         setEditingPart((p) =>
@@ -975,11 +969,15 @@ const Inventory = () => {
                     />
                   </div>
                 </div>
-                <div className="modal-footer">
-                  <button type="button" className="btn-cancel" onClick={() => setEditingPart(null)}>
+                <div className="inventory-modal-footer">
+                  <button
+                    type="button"
+                    className="inventory-btn-cancel"
+                    onClick={() => setEditingPart(null)}
+                  >
                     {t('pages.parts.inventory.modal.buttons.cancel')}
                   </button>
-                  <button type="submit" className="btn-submit">
+                  <button type="submit" className="inventory-btn-submit">
                     {t('pages.parts.inventory.modal.buttons.updatePart')}
                   </button>
                 </div>

@@ -251,9 +251,12 @@ export default function ReportFormModal({
   const totals = calculateTotals();
 
   return (
-    <div className="modal-overlay" onClick={onClose}>
-      <div className="modal-content report-modal" onClick={(e) => e.stopPropagation()}>
-        <div className="modal-header">
+    <div className="report-form-modal-overlay" onClick={onClose}>
+      <div
+        className="report-form-modal-content report-form-modal"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="report-form-modal-header">
           <h2>
             {existingReport
               ? isFrench
@@ -263,7 +266,7 @@ export default function ReportFormModal({
                 ? 'Créer un Rapport de Travail'
                 : 'Create Work Report'}
           </h2>
-          <button className="modal-close" onClick={onClose}>
+          <button className="report-form-modal-close" onClick={onClose}>
             <X size={24} />
           </button>
         </div>
@@ -302,7 +305,7 @@ export default function ReportFormModal({
           <div className="form-section">
             <h3>{isFrench ? 'Détails du Travail' : 'Work Details'}</h3>
             <div className="form-grid">
-              <div className="form-group">
+              <div className="report-form-group">
                 <label htmlFor="hoursWorked">
                   {isFrench ? 'Heures Travaillées' : 'Hours Worked'} *
                 </label>
@@ -317,7 +320,7 @@ export default function ReportFormModal({
                   required
                 />
               </div>
-              <div className="form-group">
+              <div className="report-form-group">
                 <label htmlFor="frais">{isFrench ? 'Autres Frais ($)' : 'Other Costs ($)'} *</label>
                 <input
                   id="frais"
@@ -331,7 +334,7 @@ export default function ReportFormModal({
                   required
                 />
               </div>
-              <div className="form-group">
+              <div className="report-form-group">
                 <label htmlFor="fraisDeplacement">
                   {isFrench ? 'Frais de Déplacement ($)' : 'Travel Expenses ($)'} *
                 </label>
@@ -422,7 +425,7 @@ export default function ReportFormModal({
                       </button>
                     </div>
                     <div className="part-item-inputs">
-                      <div className="form-group-inline">
+                      <div className="report-form-group-inline">
                         <label>{isFrench ? 'Qtité:' : 'Qty:'}</label>
                         <input
                           type="number"
@@ -433,7 +436,7 @@ export default function ReportFormModal({
                           }
                         />
                       </div>
-                      <div className="form-group-inline">
+                      <div className="report-form-group-inline">
                         <label>{isFrench ? 'Prix ($):' : 'Price ($):'}</label>
                         <input
                           type="number"
@@ -447,12 +450,12 @@ export default function ReportFormModal({
                           }
                         />
                       </div>
-                      <div className="form-group-inline total">
+                      <div className="report-form-group-inline total">
                         <label>{isFrench ? 'Total:' : 'Total:'}</label>
                         <span>${(part.quantity * part.price).toFixed(2)}</span>
                       </div>
                     </div>
-                    <div className="form-group">
+                    <div className="report-form-group">
                       <input
                         type="text"
                         placeholder={isFrench ? 'Notes (optionnel)' : 'Notes (optional)'}
@@ -511,7 +514,7 @@ export default function ReportFormModal({
           </div>
 
           {/* Actions */}
-          <div className="modal-actions">
+          <div className="report-form-actions">
             <button type="button" className="btn-secondary" onClick={onClose}>
               {isFrench ? 'Annuler' : 'Cancel'}
             </button>

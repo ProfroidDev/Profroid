@@ -588,7 +588,8 @@
   MODAL
 ================================= */
 
-.modal-overlay-light {
+.my-jobs-page .modal-overlay-light,
+.my-jobs-modal-overlay {
   position: fixed;
   inset: 0;
   background: rgba(0, 0, 0, 0.18);
@@ -600,7 +601,8 @@
   padding: 20px;
 }
 
-.modal-container-light {
+.my-jobs-page .modal-container-light,
+.my-jobs-modal-container {
   background: #fff;
   width: 90%;
   max-width: 600px;
@@ -613,34 +615,41 @@
 }
 
 /* Modern Scrollbar */
-.modal-container-light {
+.my-jobs-page .modal-container-light,
+.my-jobs-modal-container {
   scrollbar-width: thin;
   scrollbar-color: rgba(122, 9, 1, 0.3) transparent;
 }
 
-.modal-container-light::-webkit-scrollbar {
+.my-jobs-page .modal-container-light::-webkit-scrollbar,
+.my-jobs-modal-container::-webkit-scrollbar {
   width: 6px;
 }
 
-.modal-container-light::-webkit-scrollbar-track {
+.my-jobs-page .modal-container-light::-webkit-scrollbar-track,
+.my-jobs-modal-container::-webkit-scrollbar-track {
   background: transparent;
 }
 
-.modal-container-light::-webkit-scrollbar-thumb {
+.my-jobs-page .modal-container-light::-webkit-scrollbar-thumb,
+.my-jobs-modal-container::-webkit-scrollbar-thumb {
   background: rgba(122, 9, 1, 0.2);
   border-radius: 10px;
   transition: background 0.2s ease;
 }
 
-.modal-container-light::-webkit-scrollbar-thumb:hover {
+.my-jobs-page .modal-container-light::-webkit-scrollbar-thumb:hover,
+.my-jobs-modal-container::-webkit-scrollbar-thumb:hover {
   background: rgba(122, 9, 1, 0.4);
 }
 
-.modal-container-light:hover::-webkit-scrollbar-thumb {
+.my-jobs-page .modal-container-light:hover::-webkit-scrollbar-thumb,
+.my-jobs-modal-container:hover::-webkit-scrollbar-thumb {
   background: rgba(122, 9, 1, 0.3);
 }
 
-.modal-header-light {
+.my-jobs-page .modal-header-light,
+.my-jobs-modal-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -653,7 +662,8 @@
   z-index: 10;
 }
 
-.modal-header-light h2 {
+.my-jobs-page .modal-header-light h2,
+.my-jobs-modal-header h2 {
   font-size: 1.3rem;
   font-weight: 700;
   color: #7a0901;
@@ -662,26 +672,31 @@
 }
 
 @media (min-width: 641px) {
-  .modal-header-light {
+  .my-jobs-page .modal-header-light,
+  .my-jobs-modal-header {
     padding-bottom: 12px;
     margin-bottom: 14px;
   }
-  .modal-header-light h2 {
+  .my-jobs-page .modal-header-light h2,
+  .my-jobs-modal-header h2 {
     font-size: 1.5rem;
   }
 }
 
 @media (min-width: 1025px) {
-  .modal-header-light {
+  .my-jobs-page .modal-header-light,
+  .my-jobs-modal-header {
     padding-bottom: 12px;
     margin-bottom: 18px;
   }
-  .modal-header-light h2 {
+  .my-jobs-page .modal-header-light h2,
+  .my-jobs-modal-header h2 {
     font-size: 1.8rem;
   }
 }
 
-.modal-close-light {
+.my-jobs-page .modal-close-light,
+.my-jobs-modal-close {
   background: transparent;
   border: none;
   font-size: 1.3rem;
@@ -699,7 +714,8 @@
 }
 
 @media (min-width: 641px) {
-  .modal-close-light {
+  .my-jobs-page .modal-close-light,
+  .my-jobs-modal-close {
     font-size: 1.5rem;
     width: 35px;
     height: 35px;
@@ -707,24 +723,28 @@
 }
 
 @media (min-width: 1025px) {
-  .modal-close-light {
+  .my-jobs-page .modal-close-light,
+  .my-jobs-modal-close {
     font-size: 1.8rem;
     width: 40px;
     height: 40px;
   }
 }
 
-.modal-close-light:hover {
+.my-jobs-page .modal-close-light:hover,
+.my-jobs-modal-close:hover {
   color: #5a2a27;
 }
 
-.modal-content-light {
+.my-jobs-page .modal-content-light,
+.my-jobs-modal-content {
   display: flex;
   flex-direction: column;
   gap: 16px;
 }
 
-.detail-section {
+.my-jobs-page .detail-section,
+.my-jobs-detail-section {
   padding: 16px;
   background: #faf9f7;
   border-radius: 10px;
@@ -732,12 +752,14 @@
 }
 
 /* Highlight customer section for technicians */
-.detail-section.customer-highlight {
+.my-jobs-page .detail-section.customer-highlight,
+.my-jobs-detail-section.customer-highlight {
   background: linear-gradient(135deg, #fff9e6 0%, #ffe8cc 100%);
   border: 2px solid #f5a623;
 }
 
-.detail-section h3 {
+.my-jobs-page .detail-section h3,
+.my-jobs-detail-section h3 {
   font-size: 1.1rem;
   font-weight: 700;
   color: #7a0901;
@@ -745,23 +767,27 @@
   font-family: 'Georgia', serif;
 }
 
-.detail-section p {
+.my-jobs-page .detail-section p,
+.my-jobs-detail-section p {
   margin: 6px 0;
   color: #5a2a27;
   line-height: 1.6;
   font-size: 0.95rem;
 }
 
-.detail-section strong {
+.my-jobs-page .detail-section strong,
+.my-jobs-detail-section strong {
   color: #7a0901;
   font-weight: 600;
 }
 
-.detail-section.customer-highlight strong {
+.my-jobs-page .detail-section.customer-highlight strong,
+.my-jobs-detail-section.customer-highlight strong {
   color: #92400e;
 }
 
-.modal-status-badge {
+.my-jobs-page .modal-status-badge,
+.my-jobs-modal-status-badge {
   display: inline-block;
   padding: 4px 12px;
   border-radius: 12px;

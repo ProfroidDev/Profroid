@@ -846,7 +846,9 @@
         "addButton": "Ajouter la Pièce",
         "cancelButton": "Annuler",
         "updateButton": "Mettre à Jour la Pièce",
-        "closeButton": "Fermer"
+        "closeButton": "Fermer",
+        "uploadNewImageToReplace": "Téléversez une nouvelle image pour remplacer l'image actuelle",
+        "deleteCurrentImage": "Supprimer l'image actuelle"
       }
     },
     "appointments": {

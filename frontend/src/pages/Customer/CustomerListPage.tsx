@@ -149,7 +149,7 @@ export default function CustomerListPage(): React.ReactElement {
       ================================ */}
       {modalOpen && (
         <div className="modal-overlay-light">
-          <div className="modal-container-light">
+          <div className="modal-container-light customer-modal-container">
             <div className="modal-header-light">
               <h3>{t('pages.customers.customerDetails')}</h3>
               <button className="modal-close-light" onClick={closeDetails}>

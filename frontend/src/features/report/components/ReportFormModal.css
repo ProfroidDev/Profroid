@@ -1,7 +1,7 @@
 /* Report Form Modal Styles */
 
 /* Modal Overlay */
-.modal-overlay {
+.report-form-modal-overlay {
   position: fixed;
   top: 0;
   left: 0;
@@ -17,13 +17,13 @@
 }
 
 @media (min-width: 641px) {
-  .modal-overlay {
+  .report-form-modal-overlay {
     padding: 16px;
   }
 }
 
 @media (min-width: 1025px) {
-  .modal-overlay {
+  .report-form-modal-overlay {
     padding: 20px;
   }
 }
@@ -38,7 +38,7 @@
 }
 
 /* Modal Content */
-.modal-content {
+.report-form-modal-content {
   background: #fff;
   border-radius: 12px;
   box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
@@ -50,44 +50,44 @@
 }
 
 @media (min-width: 641px) {
-  .modal-content {
+  .report-form-modal-content {
     max-width: 600px;
     border-radius: 14px;
   }
 }
 
 @media (min-width: 1025px) {
-  .modal-content {
+  .report-form-modal-content {
     max-width: 750px;
     border-radius: 16px;
   }
 }
 
 /* Modern Scrollbar */
-.modal-content {
+.report-form-modal-content {
   scrollbar-width: thin;
   scrollbar-color: rgba(122, 9, 1, 0.3) transparent;
 }
 
-.modal-content::-webkit-scrollbar {
+.report-form-modal-content::-webkit-scrollbar {
   width: 6px;
 }
 
-.modal-content::-webkit-scrollbar-track {
+.report-form-modal-content::-webkit-scrollbar-track {
   background: transparent;
 }
 
-.modal-content::-webkit-scrollbar-thumb {
+.report-form-modal-content::-webkit-scrollbar-thumb {
   background: rgba(122, 9, 1, 0.2);
   border-radius: 10px;
   transition: background 0.2s ease;
 }
 
-.modal-content::-webkit-scrollbar-thumb:hover {
+.report-form-modal-content::-webkit-scrollbar-thumb:hover {
   background: rgba(122, 9, 1, 0.4);
 }
 
-.modal-content:hover::-webkit-scrollbar-thumb {
+.report-form-modal-content:hover::-webkit-scrollbar-thumb {
   background: rgba(122, 9, 1, 0.3);
 }
 
@@ -103,7 +103,7 @@
 }
 
 /* Modal Header */
-.modal-header {
+.report-form-modal-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -118,7 +118,7 @@
 }
 
 @media (min-width: 641px) {
-  .modal-header {
+  .report-form-modal-header {
     padding: 18px 22px;
     border-radius: 14px 14px 0 0;
     gap: 14px;
@@ -126,14 +126,14 @@
 }
 
 @media (min-width: 1025px) {
-  .modal-header {
+  .report-form-modal-header {
     padding: 20px 24px;
     border-radius: 16px 16px 0 0;
     gap: 16px;
   }
 }
 
-.modal-header h2 {
+.report-form-modal-header h2 {
   margin: 0;
   font-size: 1.25rem;
   font-weight: 700;
@@ -141,18 +141,18 @@
 }
 
 @media (min-width: 641px) {
-  .modal-header h2 {
+  .report-form-modal-header h2 {
     font-size: 1.5rem;
   }
 }
 
 @media (min-width: 1025px) {
-  .modal-header h2 {
+  .report-form-modal-header h2 {
     font-size: 1.75rem;
   }
 }
 
-.modal-close {
+.report-form-modal-close {
   background: rgba(255, 255, 255, 0.2);
   border: none;
   color: white;
@@ -167,25 +167,25 @@
 }
 
 @media (min-width: 641px) {
-  .modal-close {
+  .report-form-modal-close {
     padding: 7px;
     border-radius: 7px;
   }
 }
 
 @media (min-width: 1025px) {
-  .modal-close {
+  .report-form-modal-close {
     padding: 8px;
     border-radius: 8px;
   }
 }
 
-.modal-close:hover {
+.report-form-modal-close:hover {
   background: rgba(255, 255, 255, 0.3);
   transform: scale(1.1);
 }
 
-.report-modal {
+.report-form-modal {
   max-width: 900px;
 }
 
@@ -353,43 +353,43 @@
   }
 }
 
-.form-group {
+.report-form-group {
   display: flex;
   flex-direction: column;
   gap: 4px;
 }
 
 @media (min-width: 641px) {
-  .form-group {
+  .report-form-group {
     gap: 5px;
   }
 }
 
 @media (min-width: 1025px) {
-  .form-group {
+  .report-form-group {
     gap: 6px;
   }
 }
 
-.form-group label {
+.report-form-group label {
   font-size: 0.8rem;
   color: #333;
   font-weight: 500;
 }
 
 @media (min-width: 641px) {
-  .form-group label {
+  .report-form-group label {
     font-size: 0.85rem;
   }
 }
 
 @media (min-width: 1025px) {
-  .form-group label {
+  .report-form-group label {
     font-size: 0.9rem;
   }
 }
 
-.form-group input {
+.report-form-group input {
   padding: 8px 10px;
   border: 1px solid #ddd;
   border-radius: 4px;
@@ -397,30 +397,30 @@
   transition: border-color 0.2s;
 }
 
-.form-group input:focus {
+.report-form-group input:focus {
   outline: 2px solid transparent;
   border-color: #7a0901;
 }
 
-.form-group input::placeholder {
+.report-form-group input::placeholder {
   color: #6b7280;
   font-style: italic;
   opacity: 0.7;
 }
 
-.form-group-inline {
+.report-form-group-inline {
   display: flex;
   align-items: center;
   gap: 8px;
 }
 
-.form-group-inline label {
+.report-form-group-inline label {
   font-size: 0.875rem;
   color: #666;
   white-space: nowrap;
 }
 
-.form-group-inline input {
+.report-form-group-inline input {
   padding: 6px 10px;
   border: 1px solid #ddd;
   border-radius: 4px;
@@ -428,17 +428,17 @@
   width: 100px;
 }
 
-.form-group-inline input::placeholder {
+.report-form-group-inline input::placeholder {
   color: #6b7280;
   font-style: italic;
   opacity: 0.7;
 }
 
-.form-group-inline.total {
+.report-form-group-inline.total {
   margin-left: auto;
 }
 
-.form-group-inline.total span {
+.report-form-group-inline.total span {
   font-weight: 600;
   color: #7a0901;
 }
@@ -682,7 +682,7 @@
 }
 
 /* Modal Actions */
-.modal-actions {
+.report-form-actions {
   display: flex;
   flex-direction: row;
   justify-content: flex-end;
@@ -694,7 +694,7 @@
   border-top: 2px solid #e5e7eb;
 }
 
-.modal-actions > button {
+.report-form-actions > button {
   flex-shrink: 0;
   white-space: nowrap;
 }
@@ -713,7 +713,7 @@ input[type='number'].no-arrows {
 
 /* Responsive */
 @media (max-width: 768px) {
-  .report-modal {
+  .report-form-modal {
     max-width: 95%;
     margin: 20px auto;
   }
@@ -728,11 +728,11 @@ input[type='number'].no-arrows {
     align-items: stretch;
   }
 
-  .form-group-inline.total {
+  .report-form-group-inline.total {
     margin-left: 0;
   }
 
-  .modal-actions {
+  .report-form-actions {
     flex-direction: row;
     flex-wrap: nowrap;
   }

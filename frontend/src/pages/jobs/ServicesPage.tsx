@@ -800,19 +800,19 @@ export default function ServicesPage(): React.ReactElement {
 
       {modalOpen && (
         <div
-          className="modal-overlay"
+          className="services-modal-overlay"
           role="dialog"
           aria-modal="true"
           aria-labelledby="services-details-modal-title"
         >
-          <div className="modal">
-            <div className="modal-header">
+          <div className="services-modal">
+            <div className="services-modal-header">
               <h3 id="services-details-modal-title" className="services-modal-title">
                 {t('pages.services.serviceDetails')}
               </h3>
               <button
                 type="button"
-                className="modal-close-light"
+                className="services-modal-close-light"
                 aria-label="Close"
                 onClick={closeModal}
               >
@@ -885,19 +885,19 @@ export default function ServicesPage(): React.ReactElement {
 
       {createModalOpen && (
         <div
-          className="modal-overlay"
+          className="services-modal-overlay"
           role="dialog"
           aria-modal="true"
           aria-labelledby="services-create-modal-title"
         >
-          <div className="modal">
-            <div className="modal-header">
+          <div className="services-modal">
+            <div className="services-modal-header">
               <h3 id="services-create-modal-title" className="services-modal-title">
                 {t('pages.services.createNewService')}
               </h3>
               <button
                 type="button"
-                className="modal-close-light"
+                className="services-modal-close-light"
                 aria-label="Close"
                 onClick={closeCreateModal}
                 disabled={createLoading}
@@ -914,7 +914,7 @@ export default function ServicesPage(): React.ReactElement {
             )}
 
             <form
-              className="create-job-form"
+              className="create-job-form services-form"
               onSubmit={(e) => {
                 e.preventDefault();
                 void handleCreateJob();
@@ -1086,20 +1086,20 @@ export default function ServicesPage(): React.ReactElement {
 
       {updateModalOpen && (
         <div
-          className="modal-overlay"
+          className="services-modal-overlay"
           role="dialog"
           aria-modal="true"
           aria-labelledby="services-update-modal-title"
           onClick={closeUpdateModal}
         >
-          <div className="modal" onClick={(e) => e.stopPropagation()}>
-            <div className="modal-header">
+          <div className="services-modal" onClick={(e) => e.stopPropagation()}>
+            <div className="services-modal-header">
               <h3 id="services-update-modal-title" className="services-modal-title">
                 {t('pages.services.modifyService')}
               </h3>
               <button
                 type="button"
-                className="modal-close-light"
+                className="services-modal-close-light"
                 aria-label="Close"
                 onClick={closeUpdateModal}
                 disabled={updateLoading}
@@ -1116,7 +1116,7 @@ export default function ServicesPage(): React.ReactElement {
             )}
 
             <form
-              className="create-job-form"
+              className="create-job-form services-form"
               onSubmit={(e) => {
                 e.preventDefault();
                 void handleUpdateJob();
