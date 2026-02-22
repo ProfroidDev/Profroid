@@ -216,7 +216,15 @@ const ServiceReports = () => {
               maxLength={100}
               title={`${searchQuery.length}/100`}
             />
-            <span style={{ fontSize: '0.75rem', color: '#999', position: 'absolute', right: '4px', top: '8px' }}>
+            <span
+              style={{
+                fontSize: '0.75rem',
+                color: '#999',
+                position: 'absolute',
+                right: '4px',
+                top: '8px',
+              }}
+            >
               {searchQuery.length}/100
             </span>
           </div>

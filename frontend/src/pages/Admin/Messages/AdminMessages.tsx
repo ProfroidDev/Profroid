@@ -387,7 +387,14 @@ export default function AdminMessages() {
               {/* Admin Notes */}
               <div className="msg-section">
                 <h3>{t('pages.adminMessages.adminNotesLabel')}</h3>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+                <div
+                  style={{
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                    marginBottom: '8px',
+                  }}
+                >
                   <label>{t('pages.adminMessages.adminNotesLabel')}</label>
                   <span style={{ fontSize: '0.85rem', color: '#666' }}>
                     {adminNotes.length}/2000

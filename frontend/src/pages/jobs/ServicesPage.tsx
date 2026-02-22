@@ -943,7 +943,14 @@ export default function ServicesPage(): React.ReactElement {
 
               <div className="form-group">
                 <label htmlFor="jobDescription">{t('pages.services.description')} *</label>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' }}>
+                <div
+                  style={{
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                    marginBottom: '4px',
+                  }}
+                >
                   <span></span>
                   <span style={{ fontSize: '0.85rem', color: '#666' }}>
                     {formData.jobDescription.length}/1000
@@ -986,7 +993,14 @@ export default function ServicesPage(): React.ReactElement {
 
               <div className="form-group">
                 <label htmlFor="jobDescriptionFr">{t('pages.services.descriptionFr')}</label>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' }}>
+                <div
+                  style={{
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                    marginBottom: '4px',
+                  }}
+                >
                   <span></span>
                   <span style={{ fontSize: '0.85rem', color: '#666' }}>
                     {(formData.jobDescriptionFr || '').length}/1000
@@ -1171,7 +1185,14 @@ export default function ServicesPage(): React.ReactElement {
 
               <div className="form-group">
                 <label htmlFor="updateJobDescription">{t('pages.services.description')} *</label>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' }}>
+                <div
+                  style={{
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                    marginBottom: '4px',
+                  }}
+                >
                   <span></span>
                   <span style={{ fontSize: '0.85rem', color: '#666' }}>
                     {updateFormData.jobDescription.length}/1000
@@ -1214,7 +1235,14 @@ export default function ServicesPage(): React.ReactElement {
 
               <div className="form-group">
                 <label htmlFor="updateJobDescriptionFr">{t('pages.services.descriptionFr')}</label>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' }}>
+                <div
+                  style={{
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                    marginBottom: '4px',
+                  }}
+                >
                   <span></span>
                   <span style={{ fontSize: '0.85rem', color: '#666' }}>
                     {(updateFormData.jobDescriptionFr || '').length}/1000

@@ -457,7 +457,14 @@ export default function ReportFormModal({
                       </div>
                     </div>
                     <div className="report-form-group">
-                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+                      <div
+                        style={{
+                          display: 'flex',
+                          justifyContent: 'space-between',
+                          alignItems: 'center',
+                          marginBottom: '8px',
+                        }}
+                      >
                         <label>{isFrench ? 'Notes (optionnel)' : 'Notes (optional)'}</label>
                         <span style={{ fontSize: '0.85rem', color: '#666' }}>
                           {(part.notes || '').length}/500

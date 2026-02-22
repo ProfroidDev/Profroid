@@ -1719,9 +1719,7 @@ export default function AddAppointmentModal({
             <label className="field">
               <span>
                 {t('pages.appointments.description')}
-                <span className="char-count">
-                  {description.length}/500
-                </span>
+                <span className="char-count">{description.length}/500</span>
               </span>
               <textarea
                 value={description}

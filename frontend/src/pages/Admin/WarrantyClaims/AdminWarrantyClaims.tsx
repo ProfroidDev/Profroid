@@ -267,7 +267,14 @@ export default function AdminWarrantyClaims() {
                 </div>
 
                 <div className="admin-warranty-form-group">
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+                  <div
+                    style={{
+                      display: 'flex',
+                      justifyContent: 'space-between',
+                      alignItems: 'center',
+                      marginBottom: '8px',
+                    }}
+                  >
                     <label>{t('pages.adminWarranty.adminNotes')}</label>
                     <span style={{ fontSize: '0.85rem', color: '#666' }}>
                       {updateData.adminNotes.length}/2000
@@ -291,7 +298,14 @@ export default function AdminWarrantyClaims() {
                 </div>
 
                 <div className="admin-warranty-form-group">
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+                  <div
+                    style={{
+                      display: 'flex',
+                      justifyContent: 'space-between',
+                      alignItems: 'center',
+                      marginBottom: '8px',
+                    }}
+                  >
                     <label>{t('pages.adminWarranty.resolutionDetails')}</label>
                     <span style={{ fontSize: '0.85rem', color: '#666' }}>
                       {updateData.resolutionDetails.length}/2000

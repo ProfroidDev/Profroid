@@ -116,7 +116,14 @@ const FeedbackSection: React.FC = () => {
               )}
 
               <div className="feedback-input-group">
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+                <div
+                  style={{
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                    marginBottom: '8px',
+                  }}
+                >
                   <label style={{ fontSize: '0.9rem', fontWeight: '500' }}>
                     {t('pages.home.feedback.namePlaceholder') || 'Your Name'}
                   </label>
@@ -161,11 +168,16 @@ const FeedbackSection: React.FC = () => {
               </div>
 
               <div className="feedback-input-group">
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+                <div
+                  style={{
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                    marginBottom: '8px',
+                  }}
+                >
                   <label>{t('pages.home.feedback.placeholder')}</label>
-                  <span style={{ fontSize: '0.85rem', color: '#666' }}>
-                    {feedback.length}/2000
-                  </span>
+                  <span style={{ fontSize: '0.85rem', color: '#666' }}>{feedback.length}/2000</span>
                 </div>
                 <textarea
                   className="feedback-textarea"

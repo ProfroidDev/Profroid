@@ -202,7 +202,15 @@ const CustomerBills = () => {
             maxLength={100}
             title={`${searchQuery.length}/100`}
           />
-          <span style={{ fontSize: '0.75rem', color: '#999', position: 'absolute', right: '4px', top: '22px' }}>
+          <span
+            style={{
+              fontSize: '0.75rem',
+              color: '#999',
+              position: 'absolute',
+              right: '4px',
+              top: '22px',
+            }}
+          >
             {searchQuery.length}/100
           </span>
         </div>
